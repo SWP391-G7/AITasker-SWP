@@ -1,0 +1,390 @@
+.landing-wrapper {
+  background-color: var(--bg-primary);
+  background-image: var(--bg-glow);
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  color: var(--text-main);
+  min-height: 100vh;
+}
+
+.hero-section {
+  padding-top: 72px;
+}
+
+.landing-container {
+  padding-top: 140px;
+  padding-bottom: 80px;
+  position: relative;
+  z-index: 1;
+}
+
+.hero-content {
+  animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.hero-title {
+  font-size: 3.5rem;
+  font-weight: 800;
+  line-height: 1.15;
+  color: var(--text-main);
+  letter-spacing: -1px;
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-sky) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+}
+
+.hero-description {
+  font-size: 1.2rem;
+  font-weight: 400;
+  line-height: 1.6;
+  color: var(--text-muted);
+  max-width: 680px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Glassmorphic Search Bar with Bootstrap input */
+.search-box-wrapper {
+  max-width: 640px;
+  width: 100%;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 50px;
+  padding: 6px;
+  transition: var(--transition-smooth);
+}
+
+.search-box-wrapper:hover {
+  border-color: rgba(255, 255, 255, 0.15);
+  background: rgba(15, 23, 42, 0.55);
+}
+
+.search-box-wrapper:focus-within {
+  border-color: rgba(59, 130, 246, 0.4);
+  box-shadow: 0 0 25px rgba(59, 130, 246, 0.15);
+  background: rgba(15, 23, 42, 0.65);
+}
+
+.search-icon-container {
+  color: var(--text-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.search-input {
+  font-size: 1rem;
+}
+
+.search-input::placeholder {
+  color: var(--text-dark) !important;
+  opacity: 0.9;
+}
+
+.search-button {
+  background: var(--accent-blue) !important;
+  border: none !important;
+  color: #ffffff !important;
+  transition: var(--transition-smooth) !important;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+}
+
+.search-button:hover {
+  background: var(--accent-blue-hover) !important;
+  box-shadow: 0 4px 20px rgba(59, 130, 246, 0.45);
+  transform: translateY(-1px);
+}
+
+/* Button CTA CSS using Bootstrap overrides */
+.btn-primary {
+  background-color: var(--accent-blue) !important;
+  border: none !important;
+  color: #ffffff !important;
+  transition: var(--transition-smooth) !important;
+  box-shadow: 0 4px 14px rgba(59, 130, 246, 0.3);
+}
+
+.btn-primary:hover {
+  background-color: var(--accent-blue-hover) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.5);
+}
+
+.btn-secondary {
+  background-color: rgba(15, 23, 42, 0.3) !important;
+  border: 1px solid rgba(59, 130, 246, 0.4) !important;
+  color: var(--text-main) !important;
+  transition: var(--transition-smooth) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.btn-secondary:hover {
+  border-color: var(--accent-sky) !important;
+  background-color: rgba(59, 130, 246, 0.08) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.15);
+}
+
+/* 2. Popular Services Styling */
+.view-all-link {
+  color: var(--accent-sky);
+  font-size: 0.95rem;
+  transition: var(--transition-smooth);
+}
+
+.view-all-link:hover {
+  color: var(--accent-blue);
+}
+
+.view-all-link .arrow-icon {
+  transition: var(--transition-smooth);
+}
+
+.view-all-link:hover .arrow-icon {
+  transform: translateX(4px);
+}
+
+.service-card, .expert-card {
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  transition: var(--transition-smooth);
+}
+
+.service-card:hover, .expert-card:hover {
+  transform: translateY(-5px);
+  border-color: rgba(59, 130, 246, 0.25);
+  box-shadow: 0 10px 30px rgba(59, 130, 246, 0.08);
+  background: rgba(15, 23, 42, 0.6);
+}
+
+.service-icon-box {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  transition: var(--transition-smooth);
+}
+
+.service-card:hover .service-icon-box {
+  transform: scale(1.05) rotate(5deg);
+}
+
+.service-card-title {
+  color: var(--text-main);
+  font-size: 1.25rem;
+}
+
+.service-card-desc {
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.service-tag {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.05);
+  transition: var(--transition-smooth);
+}
+
+.service-card:hover .service-tag {
+  background: rgba(59, 130, 246, 0.15);
+  color: var(--accent-sky);
+}
+
+/* 3. How It Works Styling */
+.timeline-line {
+  position: absolute;
+  top: 24px;
+  left: 10%;
+  right: 10%;
+  height: 2px;
+  background: linear-gradient(90deg, rgba(59, 130, 246, 0.1), rgba(59, 130, 246, 0.5) 50%, rgba(59, 130, 246, 0.1));
+  z-index: 1;
+}
+
+.timeline-badge-wrapper {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: rgba(2, 6, 23, 0.8);
+  border: 2px solid var(--accent-blue);
+  box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
+  position: relative;
+  z-index: 2;
+  transition: var(--transition-smooth);
+}
+
+.timeline-badge-wrapper:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 25px var(--accent-sky);
+}
+
+.step-title {
+  font-size: 1.25rem;
+  color: var(--text-main);
+}
+
+.step-desc {
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+/* 4. Featured Experts Styling */
+.carousel-nav {
+  display: flex;
+}
+
+.carousel-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: transparent;
+  color: var(--text-muted);
+  transition: var(--transition-smooth);
+}
+
+.carousel-btn:hover {
+  color: var(--text-main);
+  border-color: var(--text-main);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.expert-avatar-wrapper {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  padding: 3px;
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-sky));
+  display: inline-block;
+  transition: var(--transition-smooth);
+}
+
+.expert-card:hover .expert-avatar-wrapper {
+  transform: scale(1.05);
+}
+
+.expert-avatar-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--bg-primary);
+}
+
+.expert-rating {
+  position: absolute;
+  bottom: -5px;
+  right: -10px;
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.expert-name {
+  color: var(--text-main);
+  font-size: 1.25rem;
+}
+
+.expert-role {
+  font-size: 0.9rem;
+}
+
+.expert-footer {
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+.expert-rate {
+  font-size: 1.1rem;
+  color: var(--text-main);
+}
+
+.btn-hire {
+  background: rgba(59, 130, 246, 0.15) !important;
+  border: 1px solid rgba(59, 130, 246, 0.3) !important;
+  transition: var(--transition-smooth) !important;
+}
+
+.btn-hire:hover {
+  background: var(--accent-blue) !important;
+  border-color: var(--accent-blue) !important;
+  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+}
+
+/* 5. Footer Styling */
+.footer-divider {
+  height: 1px;
+  background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0) 100%);
+}
+
+.footer-brand {
+  font-weight: 800 !important;
+  letter-spacing: -0.5px;
+  background: linear-gradient(135deg, #ffffff 60%, #93c5fd 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.footer-link {
+  font-size: 0.9rem;
+  transition: var(--transition-smooth);
+}
+
+.footer-link:hover {
+  color: var(--text-main) !important;
+}
+
+.copyright-text {
+  font-size: 0.85rem;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive Overrides */
+@media (max-width: 768px) {
+  .hero-title {
+    font-size: 2.3rem;
+  }
+  
+  .hero-description {
+    font-size: 1rem;
+  }
+  
+  .search-box-wrapper {
+    padding: 4px;
+  }
+  
+  .search-input {
+    font-size: 0.9rem;
+  }
+  
+  .search-button {
+    padding: 8px 16px !important;
+    font-size: 0.85rem !important;
+  }
+  
+  .section-title {
+    font-size: 1.75rem;
+  }
+}
