@@ -1,14 +1,7 @@
-import './App.css'
-import HeaderCom from './Components/Navbar/HeaderCom'
-import LandingPages from './Components/LandingPages/LandingPages'
+import AppRoutes from "./routes/AppRoutes";
 
 function App() {
-  return (
-    <>
-      <HeaderCom />
-      <LandingPages />
-    </>
-  )
+  return <AppRoutes />;
 }
 
-export default App
+export default App;
