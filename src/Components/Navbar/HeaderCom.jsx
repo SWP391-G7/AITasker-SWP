@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import avatar from '../LandingPages/image/user_avatar.png'
 import './HeaderCom.css'
 import { Bell, Mail } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import { checkLogin } from '../../Services/checkLogin'
 
 export default class HeaderCom extends Component {
@@ -61,9 +62,9 @@ export default class HeaderCom extends Component {
                 </div>
               </>
             ) : (
-              <>
-                <a className="btn btn-outline-light" href="">Log in</a>
-                <a className="btn btn-light" href="">Sign up</a>
+                <>
+                <Link to="/login" className="btn btn-outline-light">Log in</Link>
+                <Link to="/register" className="btn btn-light">Sign up</Link>
               </>
             )
             }
