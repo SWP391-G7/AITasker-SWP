@@ -1,80 +1,80 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { register } from "../../services/authService";
+import { useState } from "react"
+import { useNavigate } from "react-router-dom"
+import { register } from "../../services/authService"
 
 function RegisterForm() {
-  const navigate = useNavigate();
+  const navigate = useNavigate()
 
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
     password: "",
     confirmPassword: "",
-  });
+  })
 
-  const [error, setError] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [error, setError] = useState("")
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
   const handleChange = (event) => {
-    const { name, value } = event.target;
+    const { name, value } = event.target
 
     setFormData({
       ...formData,
       [name]: value,
-    });
-  };
+    })
+  }
 
   const validateForm = () => {
     if (!formData.fullName.trim()) {
-      return "Full name is required";
+      return "Full name is required"
     }
 
     if (!formData.email.trim()) {
-      return "Email is required";
+      return "Email is required"
     }
 
     if (!formData.email.includes("@")) {
-      return "Email is invalid";
+      return "Email is invalid"
     }
 
     if (!formData.password.trim()) {
-      return "Password is required";
+      return "Password is required"
     }
 
     if (formData.password.length < 6) {
-      return "Password must be at least 6 characters";
+      return "Password must be at least 6 characters"
     }
 
     if (formData.password !== formData.confirmPassword) {
-      return "Confirm password does not match";
+      return "Confirm password does not match"
     }
 
-    return "";
-  };
+    return ""
+  }
 
   const handleSubmit = async (event) => {
-    event.preventDefault();
+    event.preventDefault()
 
-    const validateError = validateForm();
+    const validateError = validateForm()
 
     if (validateError) {
-      setError(validateError);
-      return;
+      setError(validateError)
+      return
     }
 
     try {
-      setError("");
+      setError("")
 
-      const result = await register(formData);
+      const result = await register(formData)
 
-      console.log("Register success:", result);
+      console.log("Register success:", result)
 
-      navigate("/login");
+      navigate("/verify", { state: { email: formData.email } })
     } catch (err) {
-      setError("Register failed. Please try again.");
+      setError("Register failed. Please try again.")
     }
-  };
+  }
 
   return (
     <>
@@ -105,44 +105,44 @@ function RegisterForm() {
         </div>
 
         <div className="input-group">
-  <span className="input-icon">🔒</span>
+          <span className="input-icon">🔒</span>
 
-  <input
-    type={showPassword ? "text" : "password"}
-    name="password"
-    placeholder="Password"
-    value={formData.password}
-    onChange={handleChange}
-  />
+          <input
+            type={showPassword ? "text" : "password"}
+            name="password"
+            placeholder="Password"
+            value={formData.password}
+            onChange={handleChange}
+          />
 
-         <button
-           type="button"
-           className="show-password-btn"
-           onClick={() => setShowPassword(!showPassword)}
-  >
-    {showPassword ? "◡" : "👁"}
-         </button>
+          <button
+            type="button"
+            className="show-password-btn"
+            onClick={() => setShowPassword(!showPassword)}
+          >
+            {showPassword ? "◡" : "👁"}
+          </button>
         </div>
 
         <div className="input-group">
-  <span className="input-icon">🔒</span>
+          <span className="input-icon">🔒</span>
 
-  <input
-    type={showConfirmPassword ? "text" : "password"}
-    name="confirmPassword"
-    placeholder="Confirm password"
-    value={formData.confirmPassword}
-    onChange={handleChange}
-  />
+          <input
+            type={showConfirmPassword ? "text" : "password"}
+            name="confirmPassword"
+            placeholder="Confirm password"
+            value={formData.confirmPassword}
+            onChange={handleChange}
+          />
 
-  <button
-    type="button"
-    className="show-password-btn"
-    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-  >
-    {showConfirmPassword ? "◡" : "👁"}
-  </button>
-</div>
+          <button
+            type="button"
+            className="show-password-btn"
+            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+          >
+            {showConfirmPassword ? "◡" : "👁"}
+          </button>
+        </div>
 
         {error && <p className="error-message">{error}</p>}
 
@@ -158,7 +158,7 @@ function RegisterForm() {
         </button>
       </div>
     </>
-  );
+  )
 }
 
-export default RegisterForm;
+export default RegisterForm
