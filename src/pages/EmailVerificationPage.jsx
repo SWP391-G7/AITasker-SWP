@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
-import EmailVerification from './EmailVerification';
-import './Auth.css';
+
+import EmailVerification from '../components/Auth/EmailVerificationForm';
+
+import '../components/Auth/Auth.css';
 
 const Auth = () => {
   const [userEmail, setUserEmail] = useState('nguyenvana@gmail.com');
   const [showSuccess, setShowSuccess] = useState(false);
+
 
   useEffect(() => {
     // Logic: Kiểm tra xem có email nào được lưu trong máy không

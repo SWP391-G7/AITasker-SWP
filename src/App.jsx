@@ -1,10 +1,10 @@
-import EmailAuthentication from './components/Auth/EmailAuthentication'
+import EmailVerificationPage from './pages/EmailVerificationPage'
 import './App.css'
 
 function App() {
   return (
     <div className="App">
-      <EmailAuthentication />
+      <EmailVerificationPage />
     </div>
   )
 }
