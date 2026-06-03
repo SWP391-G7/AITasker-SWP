@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { login } from "../../services/authService";
+import { login } from "../../Services/authService";
 
 function LoginForm() {
   const navigate = useNavigate();
@@ -12,6 +12,7 @@ function LoginForm() {
 
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -50,6 +51,7 @@ function LoginForm() {
 
     try {
       setError("");
+      setIsLoading(true);
 
       const result = await login(formData);
 
@@ -57,7 +59,9 @@ function LoginForm() {
 
       navigate("/dashboard");
     } catch (err) {
-      setError("Login failed. Please check your email or password.");
+      setError(err.message || "Login failed. Please check your email or password.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -75,6 +79,7 @@ function LoginForm() {
             placeholder="Email address"
             value={formData.email}
             onChange={handleChange}
+            disabled={isLoading}
           />
         </div>
 
@@ -86,12 +91,14 @@ function LoginForm() {
             placeholder="Password"
             value={formData.password}
             onChange={handleChange}
+            disabled={isLoading}
           />
 
           <button
             type="button"
             className="show-password-btn"
             onClick={() => setShowPassword(!showPassword)}
+            disabled={isLoading}
           >
             {showPassword ? "◡" : "👁"}
           </button>
@@ -99,12 +106,12 @@ function LoginForm() {
 
         {error && <p className="error-message">{error}</p>}
 
-        <button type="submit" className="primary-btn">
-          Log In
+        <button type="submit" className="primary-btn" disabled={isLoading}>
+          {isLoading ? "Logging in..." : "Log In"}
         </button>
       </form>
 
-      <button className="forgot-btn" type="button">
+      <button className="forgot-btn" type="button" disabled={isLoading}>
         Forgot password?
       </button>
 
@@ -118,6 +125,7 @@ function LoginForm() {
         type="button"
         className="outline-btn"
         onClick={() => navigate("/register")}
+        disabled={isLoading}
       >
         Create new account
       </button>
@@ -126,4 +134,3 @@ function LoginForm() {
 }
 
 export default LoginForm;
-

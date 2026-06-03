@@ -1,8 +1,12 @@
 import { useState, useRef, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import * as authService from '../../Services/authService'
 
-const EmailVerification = ({ email, onVerify, onResend }) => {
+const EmailVerification = ({ email, onVerificationSuccess }) => {
+  const navigate = useNavigate()
   const [otp, setOtp] = useState(['', '', '', '', '', ''])
   const [isVerifying, setIsVerifying] = useState(false)
+  const [isResending, setIsResending] = useState(false)
   const [errorMsg, setErrorMsg] = useState('')
   const [countdown, setCountdown] = useState(0)
   const [showResendMsg, setShowResendMsg] = useState(false)
@@ -13,6 +17,8 @@ const EmailVerification = ({ email, onVerify, onResend }) => {
     if (inputRefs.current[0]) {
       inputRefs.current[0].focus()
     }
+    // Auto-send verification code on mount
+    sendCodeToEmail()
   }, [])
 
   // Countdown timer logic
@@ -86,13 +92,24 @@ const EmailVerification = ({ email, onVerify, onResend }) => {
     setIsVerifying(true)
     setErrorMsg('')
 
-    // Giả lập gọi API
     try {
-      await onVerify(code)
+      await authService.verifyCode(email, code)
+      // Call parent callback for success
+      if (onVerificationSuccess) {
+        onVerificationSuccess()
+      }
     } catch (err) {
       triggerError(err.message || 'Invalid verification code')
     } finally {
       setIsVerifying(false)
+    }
+  }
+
+  const sendCodeToEmail = async () => {
+    try {
+      await authService.sendVerificationCode(email)
+    } catch (err) {
+      setErrorMsg(err.message || 'Failed to send verification code')
     }
   }
 
@@ -102,11 +119,21 @@ const EmailVerification = ({ email, onVerify, onResend }) => {
     inputRefs.current[0].focus()
   }
 
-  const handleInternalResend = () => {
+  const handleInternalResend = async () => {
     if (countdown > 0) return
-    onResend()
-    setCountdown(60)
-    setShowResendMsg(true)
+    
+    setIsResending(true)
+    try {
+      await authService.sendVerificationCode(email)
+      setCountdown(60)
+      setShowResendMsg(true)
+      setOtp(['', '', '', '', '', ''])
+      inputRefs.current[0].focus()
+    } catch (err) {
+      setErrorMsg(err.message || 'Failed to resend code')
+    } finally {
+      setIsResending(false)
+    }
   }
 
   return (
@@ -175,7 +202,7 @@ const EmailVerification = ({ email, onVerify, onResend }) => {
           </p>
         ) : (
           <p className="small text-muted">
-            Didn't receive the code? <span className="auth-link cursor-pointer" style={{ cursor: 'pointer' }} onClick={handleInternalResend}>Resend Code</span>
+            Didn't receive the code? <span className="auth-link cursor-pointer" style={{ cursor: isResending ? 'not-allowed' : 'pointer', opacity: isResending ? 0.6 : 1 }} onClick={handleInternalResend}>{isResending ? 'Sending...' : 'Resend Code'}</span>
           </p>
         )}
 

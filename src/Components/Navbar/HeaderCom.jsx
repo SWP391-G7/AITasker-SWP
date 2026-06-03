@@ -1,76 +1,126 @@
-import React, { Component } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import avatar from '../LandingPages/image/user_avatar.png'
 import './HeaderCom.css'
 import { Bell, Mail } from 'lucide-react'
-import { Link } from 'react-router-dom'
-import { checkLogin } from '../../Services/checkLogin'
+import { Link, useNavigate } from 'react-router-dom'
+import { isLoggedIn, logout } from '../../Services/checkLogin'
 
-export default class HeaderCom extends Component {
+export default function HeaderCom() {
+  const navigate = useNavigate()
+  const [isLogin, setIsLogin] = useState(false)
+  const [showDropdown, setShowDropdown] = useState(false)
+  const dropdownRef = useRef(null)
 
-  state = {
-    isLogin: checkLogin()
+  useEffect(() => {
+    setIsLogin(isLoggedIn())
+  }, [])
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowDropdown(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  const handleLogout = () => {
+    logout()
+    setIsLogin(false)
+    setShowDropdown(false)
+    navigate('/login')
   }
 
-  render() {
-    return (
-      <nav className="navbar navbar-expand-lg navbar-dark header-container py-0">
-        <div className="container-fluid px-sm-5 h-100 d-flex align-items-center justify-content-between">
-          <a className="logo-text navbar-brand fw-bold mb-0" href="#explore">
-            AITasker
-          </a>
+  const handleDashboard = () => {
+    setShowDropdown(false)
+    navigate('/dashboard')
+  }
 
-          <button
-            className="navbar-toggler border-0 focus-none"
-            type="button"
-            data-bs-toggle="collapse"
-            data-bs-target="#navbarNav"
-            aria-controls="navbarNav"
-            aria-expanded="false"
-            aria-label="Toggle navigation"
-          >
-            <span className="navbar-toggler-icon"></span>
-          </button>
+  return (
+    <nav className="navbar navbar-expand-lg navbar-dark header-container py-0">
+      <div className="container-fluid px-sm-5 h-100 d-flex align-items-center justify-content-between">
+        <a className="logo-text navbar-brand fw-bold mb-0" href="#explore">
+          AITasker
+        </a>
 
-          <div className="collapse navbar-collapse justify-content-center h-100" id="navbarNav">
-            <ul className="navbar-nav gap-lg-4 mb-2 mb-lg-0 align-items-center">
-              <li className="nav-item">
-                <a className="nav-link active fw-semibold" href="#explore">Explore</a>
-              </li>
-              <li className="nav-item">
-                <a className="nav-link fw-semibold" href="#experts">Experts</a>
-              </li>
-              <li className="nav-item">
-                <a className="nav-link fw-semibold" href="#dashboard">Dashboard</a>
-              </li>
-            </ul>
-          </div>
+        <button
+          className="navbar-toggler border-0 focus-none"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+          aria-controls="navbarNav"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span className="navbar-toggler-icon"></span>
+        </button>
 
-          <div className="d-flex align-items-center gap-3">
-            {this.state.isLogin ? (
-              <>
-                <button className="icon-button position-relative" aria-label="Notifications">
-                  <Bell size={20} />
-                  <span className="icon-badge"></span>
-                </button>
-
-                <button className="icon-button" aria-label="Messages">
-                  <Mail size={20} />
-                </button>
-
-                <div className="avatar-wrapper">
-                  <img src={avatar} alt="User Profile" className="user-avatar" />
-                </div>
-              </>
-            ) : (
-                <>
-                <Link to="/login" className="btn btn-outline-light">Log in</Link>
-                <Link to="/register" className="btn btn-light">Sign up</Link>
-              </>
-            )
-            }
-          </div>
+        <div className="collapse navbar-collapse justify-content-center h-100" id="navbarNav">
+          <ul className="navbar-nav gap-lg-4 mb-2 mb-lg-0 align-items-center">
+            <li className="nav-item">
+              <a className="nav-link active fw-semibold" href="#explore">Explore</a>
+            </li>
+            <li className="nav-item">
+              <a className="nav-link fw-semibold" href="#experts">Experts</a>
+            </li>
+            <li className="nav-item">
+              <a className="nav-link fw-semibold" href="#dashboard">Dashboard</a>
+            </li>
+          </ul>
         </div>
-      </nav>
-    )
-  }
+
+        <div className="d-flex align-items-center gap-3">
+          {isLogin ? (
+            <>
+              <button className="icon-button position-relative" aria-label="Notifications">
+                <Bell size={20} />
+                <span className="icon-badge"></span>
+              </button>
+
+              <button className="icon-button" aria-label="Messages">
+                <Mail size={20} />
+              </button>
+
+              <div className="avatar-wrapper position-relative" ref={dropdownRef}>
+                <button 
+                  className="avatar-button"
+                  onClick={() => setShowDropdown(!showDropdown)}
+                  aria-label="User Menu"
+                >
+                  <img src={avatar} alt="User Profile" className="user-avatar" />
+                </button>
+
+                {showDropdown && (
+                  <div className="avatar-dropdown">
+                    <button 
+                      className="dropdown-item"
+                      onClick={handleDashboard}
+                    >
+                      <i className="bi bi-speedometer2 me-2"></i>Dashboard
+                    </button>
+                    <hr className="dropdown-divider my-1" />
+                    <button 
+                      className="dropdown-item logout-item"
+                      onClick={handleLogout}
+                    >
+                      <i className="bi bi-box-arrow-right me-2"></i>Log out
+                    </button>
+                  </div>
+                )}
+              </div>
+            </>
+          ) : (
+            <>
+              <Link to="/login" className="btn btn-outline-light">Log in</Link>
+              <Link to="/register" className="btn btn-light">Sign up</Link>
+            </>
+          )
+          }
+        </div>
+      </div>
+    </nav>
+  )
 }
