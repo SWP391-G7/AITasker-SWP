@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { register } from "../../services/authService"
+import { register } from "../../Services/authService"
 
 function RegisterForm() {
   const navigate = useNavigate()
@@ -153,7 +153,7 @@ function RegisterForm() {
 
       <div className="bottom-text">
         Already have an account?{" "}
-        <button type="button" onClick={() => navigate("/login")}>
+        <button type="button" onClick={() => navigate("/onboarding")}>
           Log in
         </button>
       </div>
