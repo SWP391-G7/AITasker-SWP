@@ -1,11 +1,11 @@
-import EmailVerificationPage from './pages/EmailVerificationPage'
-import './App.css'
+//import HeaderCom from "./Components/Navbar/HeaderCom"
+import AppRoutes from "./routes/AppRoutes"
 
 function App() {
   return (
-    <div className="App">
-      <EmailVerificationPage />
-    </div>
+    <>
+      <AppRoutes />
+    </>
   )
 }
 

@@ -1,0 +1,83 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+  --bg-primary: #020617;
+  --bg-glow: radial-gradient(circle at top, rgba(30, 64, 175, 0.18) 0%, rgba(2, 6, 23, 0) 70%),
+             radial-gradient(circle at 50% 30%, rgba(59, 130, 246, 0.06) 0%, rgba(2, 6, 23, 0) 50%);
+  --bg-card: rgba(15, 23, 42, 0.5);
+  --accent-blue: #3b82f6;
+  --accent-blue-hover: #2563eb;
+  --accent-sky: #60a5fa;
+  --text-main: #f8fafc;
+  --text-muted: #cbd5e1; /* Increased brightness for readability */
+  --text-dark: #94a3b8; /* Increased brightness for readability */
+  --border-color: rgba(255, 255, 255, 0.08);
+  --border-glow: rgba(59, 130, 246, 0.2);
+  --font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --shadow-glow: 0 0 20px rgba(59, 130, 246, 0.25);
+}
+
+.text-muted {
+  color: var(--text-muted) !important;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--bg-primary);
+  background-image: var(--bg-glow);
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  color: var(--text-main);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+  transition: var(--transition-smooth);
+}
+
+button, input {
+  font-family: inherit;
+}
+
+/* Micro-animations and Utilities */
+@keyframes pulseGlow {
+  0%, 100% {
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.02);
+  }
+}
+
+.glow-hover {
+  position: relative;
+}
+
+.glow-hover::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  background: linear-gradient(90deg, var(--accent-blue), var(--accent-sky));
+  border-radius: inherit;
+  z-index: -1;
+  opacity: 0;
+  transition: var(--transition-smooth);
+}
+
+.glow-hover:hover::after {
+  opacity: 1;
+  filter: blur(8px);
+}

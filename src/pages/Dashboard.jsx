@@ -1,4 +1,16 @@
+import { useNavigate } from 'react-router-dom';
+
 const Dashboard = ({ email, onLogout }) => {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    if (onLogout) {
+      onLogout();
+    }
+    // Chuyển hướng người dùng về trang login
+    navigate('/login');
+  };
+
   return (
     <div className="container mt-5">
       <div className="row justify-content-center">
@@ -37,7 +49,7 @@ const Dashboard = ({ email, onLogout }) => {
               </div>
               <button 
                 className="btn btn-outline-danger mt-5 rounded-pill px-4" 
-                onClick={onLogout || (() => window.location.reload())}
+                onClick={handleLogout}
               >
                 Logout
               </button>

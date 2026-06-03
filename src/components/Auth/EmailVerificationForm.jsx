@@ -89,8 +89,9 @@ const EmailVerification = ({ email, onVerify, onResend }) => {
     // Giả lập gọi API
     try {
       await onVerify(code);
-    } catch (err) {
-      triggerError(err.message || 'Invalid verification code');
+    } catch  {
+      // Ép buộc hiển thị tiếng Anh bất kể server trả về gì
+      triggerError('Incorrect verification code. Please try again.');
     } finally {
       setIsVerifying(false);
     }

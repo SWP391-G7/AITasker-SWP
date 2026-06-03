@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import AuthLayout from '../components/auth/AuthLayout'
-import EmailVerification from '../components/Auth/EmailVerificationForm'
+import AuthLayout from '../Components/auth/AuthLayout'
+import EmailVerification from '../Components/Auth/EmailVerificationForm'
 
-import '../components/Auth/Auth.css'
+import '../Components/Auth/Auth.css'
 
 const EmailVerificationPage = () => {
   const location = useLocation()
