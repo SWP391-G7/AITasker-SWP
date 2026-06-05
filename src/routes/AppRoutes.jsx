@@ -6,6 +6,7 @@ import HeaderCom from "../Components/Navbar/HeaderCom"
 import EmailVerificationPage from "../pages/EmailVerificationPage"
 import Dashboard from "../pages/Dashboard"
 import OnboardingPage from "../pages/OnboardingPage";
+import ClientDashboard from "../pages/ClientDashboard"
 
 function AppRoutes() {
   return (
@@ -16,6 +17,8 @@ function AppRoutes() {
       <Route path="/verify" element={<EmailVerificationPage />} />
       <Route path="/onboarding" element={<OnboardingPage />} />
       <Route path="/dashboard" element={<Dashboard />} />
+      <Route path="/client/dashboard" element={<ClientDashboard />} />
+      
       
     </Routes>
   )

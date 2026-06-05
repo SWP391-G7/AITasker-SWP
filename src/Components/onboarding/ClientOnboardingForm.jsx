@@ -52,7 +52,7 @@ function ClientOnboardingForm({ onBack }) {
 
       console.log("Client onboarding success:", result);
 
-      navigate("/dashboard");
+      navigate("/client/dashboard")
     } catch (error) {
       setError("Submit failed. Please try again.");
     }
