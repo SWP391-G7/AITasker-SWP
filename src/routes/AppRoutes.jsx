@@ -7,6 +7,8 @@ import HeaderCom from "../Components/Navbar/HeaderCom"
 import EmailVerificationPage from "../pages/EmailVerificationPage"
 import Dashboard from "../pages/Dashboard"
 import { isLoggedIn } from "../Services/checkLogin"
+import OnboardingPage from "../pages/OnboardingPage";
+import ClientDashboard from "../pages/ClientDashboard"
 
 // Protected route wrapper - redirects logged-in users away from auth pages
 function AuthRoute({ children }) {
@@ -53,7 +55,11 @@ function AppRoutes() {
           </AuthRoute>
         } 
       />
+      <Route path="/onboarding" element={<OnboardingPage />} />
       <Route path="/dashboard" element={<Dashboard />} />
+      <Route path="/client/dashboard" element={<ClientDashboard />} />
+      
+      
     </Routes>
   )
 }
