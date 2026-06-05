@@ -1,113 +1,160 @@
-import React, { Component } from 'react'
-import avatar from '../LandingPages/image/user_avatar.png'
-import './HeaderCom.css'
-import { Bell, Mail } from 'lucide-react'
-import { Link } from 'react-router-dom'
-import { checkLogin } from '../../Services/checkLogin'
+import { useEffect, useRef, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { Bell, Mail } from "lucide-react";
+import avatar from "../LandingPages/image/user_avatar.png";
+import { isLoggedIn, logout } from "../../Services/checkLogin";
+import "./HeaderCom.css";
 
-export default class HeaderCom extends Component {
+export default function HeaderCom() {
+  const navigate = useNavigate();
+  const [isLogin, setIsLogin] = useState(() => isLoggedIn());
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const dropdownRef = useRef(null);
 
-  state = {
-    isLogin: checkLogin(),
-    isMenuOpen: false
-  }
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowDropdown(false);
+      }
+    };
 
-  toggleMenu = () => {
-    this.setState({ isMenuOpen: !this.state.isMenuOpen })
-  }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
-  closeMenu = () => {
-    this.setState({ isMenuOpen: false })
-  }
+  const closeMenu = () => setIsMenuOpen(false);
 
-  render() {
-    return (
-      <nav className="navbar navbar-expand-lg navbar-dark header-container py-0">
-        <div className="container-fluid px-3 px-sm-5 d-flex flex-wrap align-items-center justify-content-between py-2 py-lg-0" style={{ minHeight: '72px' }}>
-          <a className="logo-text navbar-brand fw-bold mb-0" href="#explore">
-            AITasker
-          </a>
+  const requireLogin = () => {
+    closeMenu();
+    setShowDropdown(false);
+    navigate("/login", {
+      state: { message: "Please log in or create an account to use this feature." },
+    });
+  };
 
-          <div className="d-flex align-items-center gap-2">
-            {this.state.isLogin && (
-              <div className="avatar-wrapper d-lg-none">
-                <img src={avatar} alt="User Profile" className="user-avatar" style={{ width: '30px', height: '30px' }} />
-              </div>
-            )}
+  const handleLogout = () => {
+    logout();
+    setIsLogin(false);
+    setShowDropdown(false);
+    closeMenu();
+    navigate("/login");
+  };
 
-            <button
-              className="navbar-toggler border-0 focus-none"
-              type="button"
-              onClick={this.toggleMenu}
-              aria-controls="navbarNav"
-              aria-expanded={this.state.isMenuOpen}
-              aria-label="Toggle navigation"
-            >
-              <span className="navbar-toggler-icon"></span>
-            </button>
-          </div>
+  const handleDashboard = () => {
+    closeMenu();
+    setShowDropdown(false);
+    if (isLogin) {
+      navigate("/dashboard");
+      return;
+    }
 
-          <div className={`collapse navbar-collapse justify-content-center ${this.state.isMenuOpen ? 'show' : ''}`} id="navbarNav">
-            <ul className="navbar-nav gap-lg-4 mb-2 mb-lg-0 align-items-center">
-              <li className="nav-item">
-                <a className="nav-link active fw-semibold" href="#explore" onClick={this.closeMenu}>Explore</a>
-              </li>
-              <li className="nav-item">
-                <a className="nav-link fw-semibold" href="#experts" onClick={this.closeMenu}>Experts</a>
-              </li>
-              <li className="nav-item">
-                <Link className="nav-link fw-semibold" to="/dashboard" onClick={this.closeMenu}>Dashboard</Link>
-              </li>
-            </ul>
+    requireLogin();
+  };
 
-            {/* Mobile Auth / Utility */}
-            <div className="d-flex d-lg-none flex-column align-items-center gap-3 w-100 mt-3 pt-3 border-top border-secondary-subtle">
-              {this.state.isLogin ? (
-                <div className="d-flex align-items-center justify-content-center gap-4 py-2">
-                  <button className="icon-button position-relative" aria-label="Notifications" onClick={this.closeMenu}>
-                    <Bell size={20} />
-                    <span className="icon-badge"></span>
-                  </button>
+  return (
+    <nav className="navbar navbar-expand-lg navbar-dark header-container py-0">
+      <div className="container-fluid px-3 px-sm-5 d-flex flex-wrap align-items-center justify-content-between py-2 py-lg-0" style={{ minHeight: "72px" }}>
+        <Link className="logo-text navbar-brand fw-bold mb-0" to="/" onClick={closeMenu}>
+          AITasker
+        </Link>
 
-                  <button className="icon-button" aria-label="Messages" onClick={this.closeMenu}>
-                    <Mail size={20} />
-                  </button>
-                </div>
-              ) : (
-                <div className="d-flex flex-column w-100 gap-2">
-                  <Link to="/login" className="btn btn-outline-light w-100" onClick={this.closeMenu}>Log in</Link>
-                  <Link to="/register" className="btn btn-light w-100" onClick={this.closeMenu}>Sign up</Link>
-                </div>
-              )}
+        <div className="d-flex align-items-center gap-2">
+          {isLogin && (
+            <div className="avatar-wrapper d-lg-none">
+              <img src={avatar} alt="User Profile" className="user-avatar" style={{ width: "30px", height: "30px" }} />
             </div>
-          </div>
+          )}
 
-          {/* Desktop Auth / Utility */}
-          <div className="d-none d-lg-flex align-items-center gap-3">
-            {this.state.isLogin ? (
-              <>
+          <button
+            className="navbar-toggler border-0 focus-none"
+            type="button"
+            onClick={() => setIsMenuOpen((value) => !value)}
+            aria-controls="navbarNav"
+            aria-expanded={isMenuOpen}
+            aria-label="Toggle navigation"
+          >
+            <span className="navbar-toggler-icon"></span>
+          </button>
+        </div>
+
+        <div className={`collapse navbar-collapse justify-content-center ${isMenuOpen ? "show" : ""}`} id="navbarNav">
+          <ul className="navbar-nav gap-lg-4 mb-2 mb-lg-0 align-items-center">
+            <li className="nav-item">
+              <a className="nav-link active fw-semibold" href="#explore" onClick={closeMenu}>Explore</a>
+            </li>
+            <li className="nav-item">
+              <a className="nav-link fw-semibold" href="#experts" onClick={closeMenu}>Experts</a>
+            </li>
+            <li className="nav-item">
+              <button className="nav-link fw-semibold nav-button-link" type="button" onClick={handleDashboard}>
+                Dashboard
+              </button>
+            </li>
+          </ul>
+
+          <div className="d-flex d-lg-none flex-column align-items-center gap-3 w-100 mt-3 pt-3 border-top border-secondary-subtle">
+            {isLogin ? (
+              <div className="d-flex align-items-center justify-content-center gap-4 py-2">
                 <button className="icon-button position-relative" aria-label="Notifications">
                   <Bell size={20} />
                   <span className="icon-badge"></span>
                 </button>
-
                 <button className="icon-button" aria-label="Messages">
                   <Mail size={20} />
                 </button>
-
-                <div className="avatar-wrapper">
-                  <img src={avatar} alt="User Profile" className="user-avatar" />
-                </div>
-              </>
+              </div>
             ) : (
-              <>
-                <Link to="/login" className="btn btn-outline-light">Log in</Link>
-                <Link to="/register" className="btn btn-light">Sign up</Link>
-              </>
+              <div className="d-flex flex-column w-100 gap-2">
+                <Link to="/login" className="btn btn-outline-light w-100" onClick={closeMenu}>Log in</Link>
+                <Link to="/register" className="btn btn-light w-100" onClick={closeMenu}>Sign up</Link>
+              </div>
             )}
           </div>
         </div>
-      </nav>
-    )
-  }
+
+        <div className="d-none d-lg-flex align-items-center gap-3">
+          {isLogin ? (
+            <>
+              <button className="icon-button position-relative" aria-label="Notifications">
+                <Bell size={20} />
+                <span className="icon-badge"></span>
+              </button>
+
+              <button className="icon-button" aria-label="Messages">
+                <Mail size={20} />
+              </button>
+
+              <div className="avatar-wrapper position-relative" ref={dropdownRef}>
+                <button
+                  className="avatar-button"
+                  onClick={() => setShowDropdown((value) => !value)}
+                  aria-label="User Menu"
+                >
+                  <img src={avatar} alt="User Profile" className="user-avatar" />
+                </button>
+
+                {showDropdown && (
+                  <div className="avatar-dropdown">
+                    <button className="dropdown-item" onClick={handleDashboard}>
+                      Dashboard
+                    </button>
+                    <hr className="dropdown-divider my-1" />
+                    <button className="dropdown-item logout-item" onClick={handleLogout}>
+                      Log out
+                    </button>
+                  </div>
+                )}
+              </div>
+            </>
+          ) : (
+            <>
+              <Link to="/login" className="btn btn-outline-light">Log in</Link>
+              <Link to="/register" className="btn btn-light">Sign up</Link>
+            </>
+          )}
+        </div>
+      </div>
+    </nav>
+  );
 }

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff, Lock, Mail, User } from "lucide-react";
-import { register } from "../../services/authService";
+import { register } from "../../Services/authService";
 
 function RegisterForm() {
   const navigate = useNavigate();
@@ -16,6 +16,7 @@ function RegisterForm() {
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -66,14 +67,19 @@ function RegisterForm() {
 
     try {
       setError("");
+      setIsLoading(true);
 
-      const result = await register(formData);
+      await register({
+        fullName: formData.fullName,
+        email: formData.email,
+        password: formData.password,
+      });
 
-      console.log("Register success:", result);
-
-      navigate("/verify", { state: { email: formData.email } });
+      navigate("/verify-email", { state: { email: formData.email } });
     } catch (err) {
-      setError("Register failed. Please try again.");
+      setError(err.message || "Register failed. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -93,6 +99,7 @@ function RegisterForm() {
             placeholder="Full name"
             value={formData.fullName}
             onChange={handleChange}
+            disabled={isLoading}
           />
         </div>
 
@@ -106,6 +113,7 @@ function RegisterForm() {
             placeholder="Email address"
             value={formData.email}
             onChange={handleChange}
+            disabled={isLoading}
           />
         </div>
 
@@ -120,12 +128,14 @@ function RegisterForm() {
             placeholder="Password"
             value={formData.password}
             onChange={handleChange}
+            disabled={isLoading}
           />
 
           <button
             type="button"
             className="show-password-btn"
-            onClick={() => setShowPassword(!showPassword)}
+            onClick={() => setShowPassword((value) => !value)}
+            disabled={isLoading}
             aria-label={showPassword ? "Hide password" : "Show password"}
           >
             {showPassword ? <EyeOff size={19} /> : <Eye size={19} />}
@@ -143,12 +153,14 @@ function RegisterForm() {
             placeholder="Confirm password"
             value={formData.confirmPassword}
             onChange={handleChange}
+            disabled={isLoading}
           />
 
           <button
             type="button"
             className="show-password-btn"
-            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+            onClick={() => setShowConfirmPassword((value) => !value)}
+            disabled={isLoading}
             aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
           >
             {showConfirmPassword ? <EyeOff size={19} /> : <Eye size={19} />}
@@ -157,14 +169,14 @@ function RegisterForm() {
 
         {error && <p className="error-message">{error}</p>}
 
-        <button type="submit" className="primary-btn">
-          Create account
+        <button type="submit" className="primary-btn" disabled={isLoading}>
+          {isLoading ? "Creating account..." : "Create account"}
         </button>
       </form>
 
       <div className="bottom-text">
         Already have an account?{" "}
-        <button type="button" onClick={() => navigate("/login")}>
+        <button type="button" onClick={() => navigate("/login")} disabled={isLoading}>
           Log in
         </button>
       </div>

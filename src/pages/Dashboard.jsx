@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import adminAvatar from '../Components/LandingPages/image/user_avatar.png'
 import expertSarah from '../Components/LandingPages/image/expert_sarah.png'
@@ -12,10 +12,7 @@ import {
   Settings,
   Search,
   Bell,
-  Check,
-  X,
   ShieldAlert,
-  ArrowUpRight,
   TrendingUp,
   FileText,
   LogOut,

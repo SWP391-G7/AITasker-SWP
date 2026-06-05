@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Eye, EyeOff, Lock, Mail } from "lucide-react";
-import { login } from "../../services/authService";
+import { login } from "../../Services/authService";
 
 function LoginForm() {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [formData, setFormData] = useState({
     email: "",
@@ -13,6 +14,7 @@ function LoginForm() {
 
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -51,17 +53,14 @@ function LoginForm() {
 
     try {
       setError("");
+      setIsLoading(true);
 
-      const result = await login(formData);
-
-      console.log("Login success:", result);
-
-      localStorage.setItem("token", result.token);
-      localStorage.setItem("email", result.user?.email || formData.email);
-
-      navigate("/");
+      await login(formData);
+      navigate(location.state?.from || "/", { replace: true });
     } catch (err) {
-      setError("Login failed. Please check your email or password.");
+      setError(err.message || "Login failed. Please check your email or password.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -69,6 +68,8 @@ function LoginForm() {
     <>
       <h2 className="form-title">Welcome back</h2>
       <p className="form-subtitle">Sign in to manage your AI workforce.</p>
+
+      {location.state?.message && <p className="auth-notice">{location.state.message}</p>}
 
       <form onSubmit={handleSubmit}>
         <div className="input-group">
@@ -81,6 +82,7 @@ function LoginForm() {
             placeholder="Email address"
             value={formData.email}
             onChange={handleChange}
+            disabled={isLoading}
           />
         </div>
 
@@ -94,12 +96,14 @@ function LoginForm() {
             placeholder="Password"
             value={formData.password}
             onChange={handleChange}
+            disabled={isLoading}
           />
 
           <button
             type="button"
             className="show-password-btn"
-            onClick={() => setShowPassword(!showPassword)}
+            onClick={() => setShowPassword((value) => !value)}
+            disabled={isLoading}
             aria-label={showPassword ? "Hide password" : "Show password"}
           >
             {showPassword ? <EyeOff size={19} /> : <Eye size={19} />}
@@ -108,12 +112,12 @@ function LoginForm() {
 
         {error && <p className="error-message">{error}</p>}
 
-        <button type="submit" className="primary-btn">
-          Log In
+        <button type="submit" className="primary-btn" disabled={isLoading}>
+          {isLoading ? "Logging in..." : "Log In"}
         </button>
       </form>
 
-      <button className="forgot-btn" type="button">
+      <button className="forgot-btn" type="button" disabled={isLoading}>
         Forgot password?
       </button>
 
@@ -127,6 +131,7 @@ function LoginForm() {
         type="button"
         className="outline-btn"
         onClick={() => navigate("/register")}
+        disabled={isLoading}
       >
         Create new account
       </button>
