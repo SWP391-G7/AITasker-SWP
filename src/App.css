@@ -263,3 +263,22 @@ body {
     padding: 32px;
   }
 }
+
+@media (max-width: 576px) {
+  .input-group, .primary-btn, .outline-btn {
+    height: 52px !important;
+  }
+  .input-group input {
+    font-size: 15px !important;
+  }
+  .primary-btn, .outline-btn {
+    font-size: 16px !important;
+  }
+  .form-title {
+    font-size: 24px !important;
+  }
+  .form-subtitle {
+    font-size: 14px !important;
+    margin-bottom: 24px !important;
+  }
+}

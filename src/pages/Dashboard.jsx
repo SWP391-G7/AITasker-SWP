@@ -4,7 +4,7 @@ const Dashboard = ({ email, onLogout }) => {
       <div className="row justify-content-center">
         <div className="col-md-8">
           <div className="card shadow border-0 rounded-4">
-            <div className="card-body p-5 text-center">
+            <div className="card-body p-4 p-md-5 text-center">
               <div className="mb-4">
                 <div className="display-4 text-primary">
                   <i className="bi bi-speedometer2"></i>

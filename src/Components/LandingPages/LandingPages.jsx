@@ -122,7 +122,7 @@ const LandingPages = () => {
 
       {/* 2. Popular Services Section */}
       <section className="services-section py-5">
-        <div className="container px-sm-5">
+        <div className="container px-3 px-sm-5">
           <div className="d-flex justify-content-between align-items-end mb-5">
             <div className="text-start">
               <h2 className="section-title fw-extrabold mb-2 text-white">Popular Services</h2>
@@ -156,7 +156,7 @@ const LandingPages = () => {
 
       {/* 3. How It Works Section */}
       <section className="how-it-works-section py-5 text-center">
-        <div className="container px-sm-5 py-4">
+        <div className="container px-3 px-sm-5 py-4">
           <h2 className="section-title fw-extrabold mb-2 text-white">How It Works</h2>
           <p className="section-subtitle text-muted mb-5">Streamlined procurement for AI talent</p>
           
@@ -201,13 +201,13 @@ const LandingPages = () => {
 
       {/* 4. Featured Experts Section */}
       <section className="experts-section py-5">
-        <div className="container px-sm-5 py-4">
+        <div className="container px-3 px-sm-5 py-4">
           <div className="d-flex justify-content-between align-items-end mb-5">
             <div className="text-start">
               <h2 className="section-title fw-extrabold mb-2 text-white">Featured Experts</h2>
               <p className="section-subtitle text-muted mb-0">Top-rated professionals ready to hire</p>
             </div>
-            <div className="carousel-nav d-flex gap-2">
+            <div className="carousel-nav d-none d-sm-flex gap-2">
               <button className="carousel-btn d-flex align-items-center justify-content-center" aria-label="Previous">
                 <ChevronLeft size={20} />
               </button>
@@ -246,7 +246,7 @@ const LandingPages = () => {
 
       {/* 5. Footer */}
       <footer className="footer-section py-5 mt-5">
-        <div className="container px-sm-5">
+        <div className="container px-3 px-sm-5">
           <div className="footer-divider mb-5"></div>
           <div className="row align-items-center justify-content-between g-4">
             <div className="col-12 col-md-3 text-center text-md-start">
