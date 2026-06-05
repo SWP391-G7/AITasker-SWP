@@ -9,10 +9,7 @@ function ClientOnboardingForm({ onBack }) {
   const [formData, setFormData] = useState({
     companyName: "",
     industry: "",
-    projectNeed: "",
-    budgetRange: "",
-    timeline: "",
-    description: "",
+    
   });
 
   const [error, setError] = useState("");
@@ -33,18 +30,6 @@ function ClientOnboardingForm({ onBack }) {
 
     if (!formData.industry.trim()) {
       return "Industry is required";
-    }
-
-    if (!formData.projectNeed.trim()) {
-      return "AI task type is required";
-    }
-
-    if (!formData.budgetRange.trim()) {
-      return "Budget range is required";
-    }
-
-    if (!formData.timeline.trim()) {
-      return "Timeline is required";
     }
 
     return "";
@@ -103,59 +88,6 @@ function ClientOnboardingForm({ onBack }) {
             value={formData.industry}
             onChange={handleChange}
           />
-        </div>
-
-        <div className="form-field">
-          <label>AI task type</label>
-          <select
-            name="projectNeed"
-            value={formData.projectNeed}
-            onChange={handleChange}
-          >
-            <option value="">Select task type</option>
-            <option value="chatbot">Chatbot Development</option>
-            <option value="data-analysis">Data Analysis</option>
-            <option value="automation">Automation</option>
-            <option value="computer-vision">Computer Vision</option>
-            <option value="content-generation">Content Generation</option>
-            <option value="other">Other</option>
-          </select>
-        </div>
-
-        <div className="form-field">
-          <label>Budget range</label>
-          <select
-            name="budgetRange"
-            value={formData.budgetRange}
-            onChange={handleChange}
-          >
-            <option value="">Select budget</option>
-            <option value="under-100">Under $100</option>
-            <option value="100-500">$100 - $500</option>
-            <option value="500-1000">$500 - $1000</option>
-            <option value="over-1000">Over $1000</option>
-          </select>
-        </div>
-
-        <div className="form-field">
-          <label>Expected timeline</label>
-          <input
-            type="text"
-            name="timeline"
-            placeholder="Example: 2 weeks"
-            value={formData.timeline}
-            onChange={handleChange}
-          />
-        </div>
-
-        <div className="form-field">
-          <label>Project description</label>
-          <textarea
-            name="description"
-            placeholder="Describe your project..."
-            value={formData.description}
-            onChange={handleChange}
-          ></textarea>
         </div>
 
         {error && <p className="error-message">{error}</p>}
