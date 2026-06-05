@@ -56,7 +56,7 @@ export default class HeaderCom extends Component {
                 <a className="nav-link fw-semibold" href="#experts" onClick={this.closeMenu}>Experts</a>
               </li>
               <li className="nav-item">
-                <a className="nav-link fw-semibold" href="#dashboard" onClick={this.closeMenu}>Dashboard</a>
+                <Link className="nav-link fw-semibold" to="/dashboard" onClick={this.closeMenu}>Dashboard</Link>
               </li>
             </ul>
 

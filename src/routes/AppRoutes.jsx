@@ -5,6 +5,7 @@ import LandingPages from "../Components/LandingPages/LandingPages"
 import HeaderCom from "../Components/Navbar/HeaderCom"
 import EmailVerificationPage from "../pages/EmailVerificationPage"
 import Dashboard from "../pages/Dashboard"
+import { checkLogin } from "../Services/checkLogin"
 
 function AppRoutes() {
   return (
@@ -13,7 +14,10 @@ function AppRoutes() {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/verify" element={<EmailVerificationPage />} />
-      <Route path="/dashboard" element={<Dashboard />} />
+      <Route 
+        path="/dashboard" 
+        element={checkLogin() ? <Dashboard /> : <Navigate to="/login" replace />} 
+      />
     </Routes>
   )
 }

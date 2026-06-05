@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Eye, EyeOff, Lock, Mail } from "lucide-react";
 import { login } from "../../services/authService";
 
 function LoginForm() {
@@ -55,7 +56,10 @@ function LoginForm() {
 
       console.log("Login success:", result);
 
-      navigate("/dashboard");
+      localStorage.setItem("token", result.token);
+      localStorage.setItem("email", result.user?.email || formData.email);
+
+      navigate("/");
     } catch (err) {
       setError("Login failed. Please check your email or password.");
     }
@@ -68,7 +72,9 @@ function LoginForm() {
 
       <form onSubmit={handleSubmit}>
         <div className="input-group">
-          <span className="input-icon">✉</span>
+          <span className="input-icon">
+            <Mail size={19} />
+          </span>
           <input
             type="email"
             name="email"
@@ -79,7 +85,9 @@ function LoginForm() {
         </div>
 
         <div className="input-group">
-          <span className="input-icon">🔒</span>
+          <span className="input-icon">
+            <Lock size={19} />
+          </span>
           <input
             type={showPassword ? "text" : "password"}
             name="password"
@@ -92,8 +100,9 @@ function LoginForm() {
             type="button"
             className="show-password-btn"
             onClick={() => setShowPassword(!showPassword)}
+            aria-label={showPassword ? "Hide password" : "Show password"}
           >
-            {showPassword ? "◡" : "👁"}
+            {showPassword ? <EyeOff size={19} /> : <Eye size={19} />}
           </button>
         </div>
 
@@ -126,4 +135,3 @@ function LoginForm() {
 }
 
 export default LoginForm;
-

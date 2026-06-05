@@ -1,80 +1,81 @@
-import { useState } from "react"
-import { useNavigate } from "react-router-dom"
-import { register } from "../../services/authService"
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Eye, EyeOff, Lock, Mail, User } from "lucide-react";
+import { register } from "../../services/authService";
 
 function RegisterForm() {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
     password: "",
     confirmPassword: "",
-  })
+  });
 
-  const [error, setError] = useState("")
-  const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleChange = (event) => {
-    const { name, value } = event.target
+    const { name, value } = event.target;
 
     setFormData({
       ...formData,
       [name]: value,
-    })
-  }
+    });
+  };
 
   const validateForm = () => {
     if (!formData.fullName.trim()) {
-      return "Full name is required"
+      return "Full name is required";
     }
 
     if (!formData.email.trim()) {
-      return "Email is required"
+      return "Email is required";
     }
 
     if (!formData.email.includes("@")) {
-      return "Email is invalid"
+      return "Email is invalid";
     }
 
     if (!formData.password.trim()) {
-      return "Password is required"
+      return "Password is required";
     }
 
     if (formData.password.length < 6) {
-      return "Password must be at least 6 characters"
+      return "Password must be at least 6 characters";
     }
 
     if (formData.password !== formData.confirmPassword) {
-      return "Confirm password does not match"
+      return "Confirm password does not match";
     }
 
-    return ""
-  }
+    return "";
+  };
 
   const handleSubmit = async (event) => {
-    event.preventDefault()
+    event.preventDefault();
 
-    const validateError = validateForm()
+    const validateError = validateForm();
 
     if (validateError) {
-      setError(validateError)
-      return
+      setError(validateError);
+      return;
     }
 
     try {
-      setError("")
+      setError("");
 
-      const result = await register(formData)
+      const result = await register(formData);
 
-      console.log("Register success:", result)
+      console.log("Register success:", result);
 
-      navigate("/verify", { state: { email: formData.email } })
+      navigate("/verify", { state: { email: formData.email } });
     } catch (err) {
-      setError("Register failed. Please try again.")
+      setError("Register failed. Please try again.");
     }
-  }
+  };
 
   return (
     <>
@@ -83,7 +84,9 @@ function RegisterForm() {
 
       <form onSubmit={handleSubmit}>
         <div className="input-group">
-          <span className="input-icon">👤</span>
+          <span className="input-icon">
+            <User size={19} />
+          </span>
           <input
             type="text"
             name="fullName"
@@ -94,7 +97,9 @@ function RegisterForm() {
         </div>
 
         <div className="input-group">
-          <span className="input-icon">✉</span>
+          <span className="input-icon">
+            <Mail size={19} />
+          </span>
           <input
             type="email"
             name="email"
@@ -105,7 +110,9 @@ function RegisterForm() {
         </div>
 
         <div className="input-group">
-          <span className="input-icon">🔒</span>
+          <span className="input-icon">
+            <Lock size={19} />
+          </span>
 
           <input
             type={showPassword ? "text" : "password"}
@@ -119,13 +126,16 @@ function RegisterForm() {
             type="button"
             className="show-password-btn"
             onClick={() => setShowPassword(!showPassword)}
+            aria-label={showPassword ? "Hide password" : "Show password"}
           >
-            {showPassword ? "◡" : "👁"}
+            {showPassword ? <EyeOff size={19} /> : <Eye size={19} />}
           </button>
         </div>
 
         <div className="input-group">
-          <span className="input-icon">🔒</span>
+          <span className="input-icon">
+            <Lock size={19} />
+          </span>
 
           <input
             type={showConfirmPassword ? "text" : "password"}
@@ -139,8 +149,9 @@ function RegisterForm() {
             type="button"
             className="show-password-btn"
             onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+            aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
           >
-            {showConfirmPassword ? "◡" : "👁"}
+            {showConfirmPassword ? <EyeOff size={19} /> : <Eye size={19} />}
           </button>
         </div>
 
@@ -158,7 +169,7 @@ function RegisterForm() {
         </button>
       </div>
     </>
-  )
+  );
 }
 
-export default RegisterForm
+export default RegisterForm;

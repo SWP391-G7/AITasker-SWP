@@ -5,10 +5,11 @@
   right: 0;
   min-height: 72px;
   height: auto;
-  background: rgba(2, 6, 23, 0.6) !important;
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+  background: rgba(3, 7, 18, 0.72) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.08) !important;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.18);
   z-index: 1000;
   transition: var(--transition-smooth);
 }
@@ -28,7 +29,7 @@
   font-weight: 500;
   color: var(--text-muted) !important;
   position: relative;
-  padding: 6px 0 !important;
+  padding: 8px 2px !important;
   transition: var(--transition-smooth);
 }
 
@@ -40,7 +41,7 @@
 .navbar-nav .nav-link.active::after {
   content: '';
   position: absolute;
-  bottom: -2px;
+  bottom: 0;
   left: 0;
   right: 0;
   height: 2px;
@@ -50,11 +51,11 @@
 }
 
 .icon-button {
-  background: none;
-  border: none;
+  background: rgba(15, 23, 42, 0.54);
+  border: 1px solid rgba(226, 232, 240, 0.08);
   color: var(--text-muted);
   cursor: pointer;
-  padding: 6px;
+  padding: 8px;
   border-radius: 8px;
   display: flex;
   align-items: center;
@@ -65,7 +66,8 @@
 
 .icon-button:hover {
   color: var(--text-main);
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(59, 130, 246, 0.12);
+  border-color: rgba(96, 165, 250, 0.28);
 }
 
 .icon-badge {
