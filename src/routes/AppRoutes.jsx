@@ -5,7 +5,8 @@ import LandingPages from "../Components/LandingPages/LandingPages"
 import HeaderCom from "../Components/Navbar/HeaderCom"
 import EmailVerificationPage from "../pages/EmailVerificationPage"
 import Dashboard from "../pages/Dashboard"
-
+import ForbiddenPage from "../pages/ForbiddenPage"
+import ExpertDashboardPage from "../pages/ExpertDashboardPage"
 function AppRoutes() {
   return (
     <Routes>
@@ -14,6 +15,8 @@ function AppRoutes() {
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/verify" element={<EmailVerificationPage />} />
       <Route path="/dashboard" element={<Dashboard />} />
+      <Route path="/expert-dashboard" element={<ExpertDashboardPage />} />
+      <Route path="/403" element={<ForbiddenPage />} />
     </Routes>
   )
 }

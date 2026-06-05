@@ -55,7 +55,8 @@ function LoginForm() {
 
       console.log("Login success:", result);
 
-      navigate("/dashboard");
+      // Chuyển hướng sang Expert Dashboard để test
+      navigate("/expert-dashboard");
     } catch  {
       setError("Login failed. Please check your email or password.");
     }
