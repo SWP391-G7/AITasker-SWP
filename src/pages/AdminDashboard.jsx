@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import adminAvatar from '../Components/LandingPages/image/user_avatar.png'
 import expertSarah from '../Components/LandingPages/image/expert_sarah.png'
-import './Dashboard.css'
+import './AdminDashboard.css'
 import {
   LayoutDashboard,
   Users,
@@ -19,7 +19,7 @@ import {
   Home
 } from 'lucide-react'
 
-const Dashboard = ({ onLogout }) => {
+const AdminDashboard = ({ onLogout }) => {
   const navigate = useNavigate()
   
   // Navigation tabs state
@@ -426,4 +426,4 @@ const Dashboard = ({ onLogout }) => {
   )
 }
 
-export default Dashboard
+export default AdminDashboard
