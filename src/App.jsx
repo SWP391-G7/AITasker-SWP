@@ -1,11 +1,13 @@
-import AdminDashboard from "./pages/AdminDashboard"
+import AdminDashboardPage from "./pages/AdminDashboardPage"
+import ExpertDashboardPage from "./pages/ExpertDashboardPage"
 import AppRoutes from "./routes/AppRoutes"
 
 function App() {
   return (
     <>
       {/* <AppRoutes /> */}
-      <AdminDashboard />
+      {/* <AdminDashboardPage /> */}
+      {/* <ExpertDashboardPage/> */}
     </>
   )
 }
