@@ -5,6 +5,8 @@ import LandingPages from "../Components/LandingPages/LandingPages";
 import HeaderCom from "../Components/Navbar/HeaderCom";
 import EmailVerificationPage from "../pages/EmailVerificationPage";
 import AdminDashboardPage from "../pages/AdminDashboardPage";
+import ExpertDashboardPage from "../pages/ExpertDashboardPage";
+import ClientDashboardPage from "../pages/ClientDashboardPage";
 import { isLoggedIn } from "../Services/checkLogin";
 
 function RequireAuth({ children }) {
@@ -46,6 +48,7 @@ function AppRoutes() {
           </>
         }
       />
+
       <Route
         path="/login"
         element={
@@ -54,6 +57,7 @@ function AppRoutes() {
           </GuestOnly>
         }
       />
+
       <Route
         path="/register"
         element={
@@ -62,6 +66,7 @@ function AppRoutes() {
           </GuestOnly>
         }
       />
+
       <Route
         path="/verify-email"
         element={
@@ -70,15 +75,38 @@ function AppRoutes() {
           </GuestOnly>
         }
       />
+
       <Route path="/verify" element={<Navigate to="/verify-email" replace />} />
+
       <Route
-        path="/dashboard"
+        path="/client/dashboard"
+        element={
+          <RequireAuth>
+            <ClientDashboardPage />
+          </RequireAuth>
+        }
+      />
+
+      <Route
+        path="/expert/dashboard"
+        element={
+          <RequireAuth>
+            <ExpertDashboardPage />
+          </RequireAuth>
+        }
+      />
+
+      <Route
+        path="/admin/dashboard"
         element={
           <RequireAuth>
             <AdminDashboardPage />
           </RequireAuth>
         }
       />
+
+      <Route path="/dashboard" element={<Navigate to="/client/dashboard" replace />} />
+
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

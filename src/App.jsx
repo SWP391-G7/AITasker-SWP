@@ -1,13 +1,7 @@
 import AppRoutes from "./routes/AppRoutes"
-import ExpertDashboardPage from "./pages/ExpertDashboardPage"
 
 function App() {
-  return (
-    <>
-      {/* <AppRoutes/> */}
-      <ExpertDashboardPage/>
-    </>
-  )
+  return <AppRoutes />
 }
 
 export default App
