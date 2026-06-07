@@ -1,11 +1,13 @@
+import ClientDashboard from "./pages/ClientDashboardPage"
+import ExpertDashboard from "./pages/ExpertDashboardPage"
 import AppRoutes from "./routes/AppRoutes"
-import ExpertDashboardPage from "./pages/ExpertDashboardPage"
 
 function App() {
   return (
     <>
-      {/* <AppRoutes/> */}
-      <ExpertDashboardPage/>
+      {/* <AppRoutes /> */}
+      <ClientDashboard/>
+      {/* <ExpertDashboard /> */}
     </>
   )
 }

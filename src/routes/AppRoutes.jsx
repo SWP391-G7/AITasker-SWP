@@ -4,7 +4,7 @@ import RegisterPage from "../pages/RegisterPage";
 import LandingPages from "../Components/LandingPages/LandingPages";
 import HeaderCom from "../Components/Navbar/HeaderCom";
 import EmailVerificationPage from "../pages/EmailVerificationPage";
-import AdminDashboardPage from "../pages/AdminDashboardPage";
+import ClientDashboardPage from "../pages/ClientDashboardPage";
 import { isLoggedIn } from "../Services/checkLogin";
 
 function RequireAuth({ children }) {
@@ -75,7 +75,7 @@ function AppRoutes() {
         path="/dashboard"
         element={
           <RequireAuth>
-            <AdminDashboardPage />
+            <ClientDashboardPage />
           </RequireAuth>
         }
       />
