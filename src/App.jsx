@@ -4,6 +4,7 @@ import AdminDashboard from "./pages/MarketplacePage/Admin/AdminDashboardPage"
 import AppRoutes from "./routes/AppRoutes"
 
 function App() {
+<<<<<<< HEAD
   return (
     <>
       {/* <AppRoutes /> */}
@@ -12,6 +13,9 @@ function App() {
       {/* <AdminDashboard /> */}
     </>
   )
+=======
+  return <AppRoutes />
+>>>>>>> dashboard-admin
 }
 
 export default App
