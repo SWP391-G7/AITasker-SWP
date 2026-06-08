@@ -78,14 +78,7 @@ function AppRoutes() {
 
       <Route path="/verify" element={<Navigate to="/verify-email" replace />} />
 
-      <Route
-        path="/client/dashboard"
-        element={
-          <RequireAuth>
-            <ClientDashboardPage />
-          </RequireAuth>
-        }
-      />
+      <Route path="/client/dashboard" element={<ClientDashboardPage />} />
 
       <Route
         path="/expert/dashboard"
