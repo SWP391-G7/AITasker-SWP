@@ -4,7 +4,7 @@ import RegisterPage from "../pages/RegisterPage";
 import LandingPages from "../Components/LandingPages/LandingPages";
 import HeaderCom from "../Components/Navbar/HeaderCom";
 import EmailVerificationPage from "../pages/EmailVerificationPage";
-import ClientDashboardPage from "../pages/ClientDashboardPage";
+import ClientDashboardPage from "../pages/MarketplacePage/Client/ClientDashboardPage";
 import { isLoggedIn } from "../Services/checkLogin";
 
 function RequireAuth({ children }) {

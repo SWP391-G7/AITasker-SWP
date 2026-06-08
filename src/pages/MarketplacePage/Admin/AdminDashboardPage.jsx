@@ -1,13 +1,13 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import AdminContentGrid from '../Components/Dashboard/Admin/AdminContentGrid'
-import AdminHeader from '../Components/Dashboard/Admin/AdminHeader'
-import AdminSidebar from '../Components/Dashboard/Admin/AdminSidebar'
-import AdminStats from '../Components/Dashboard/Admin/AdminStats'
-import DisputeDetailModal from '../Components/Dashboard/Admin/DisputeDetailModal'
-import UserGrowthChart from '../Components/Dashboard/Admin/UserGrowthChart'
-import { initialDisputes, initialModerations } from '../Components/Dashboard/Admin/adminDashboardData'
-import './Style/AdminDashboardPage.css'
+import AdminContentGrid from '../../../Components/Dashboard/Admin/AdminContentGrid'
+import AdminHeader from '../../../Components/Dashboard/Admin/AdminHeader'
+import AdminSidebar from '../../../Components/Dashboard/Admin/AdminSidebar'
+import AdminStats from '../../../Components/Dashboard/Admin/AdminStats'
+import DisputeDetailModal from '../../../Components/Dashboard/Admin/DisputeDetailModal'
+import UserGrowthChart from '../../../Components/Dashboard/Admin/UserGrowthChart'
+import { initialDisputes, initialModerations } from '../../../Components/Dashboard/Admin/adminDashboardData'
+import '../../Style/AdminDashboardPage.css'
 
 const AdminDashboardPage = ({ onLogout }) => {
   const navigate = useNavigate()
