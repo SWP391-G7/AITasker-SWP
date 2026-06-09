@@ -106,8 +106,12 @@
 
 /* Main Dashboard Panel */
 .admin-main-panel {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
   flex-grow: 1;
   margin-left: 280px;
+  min-height: 100vh;
   padding: 2.5rem 3rem;
   overflow-y: auto;
   max-width: calc(100% - 280px);

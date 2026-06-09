@@ -6,6 +6,7 @@ import AdminSidebar from '../../../Components/Dashboard/Admin/AdminSidebar'
 import AdminStats from '../../../Components/Dashboard/Admin/AdminStats'
 import DisputeDetailModal from '../../../Components/Dashboard/Admin/DisputeDetailModal'
 import UserGrowthChart from '../../../Components/Dashboard/Admin/UserGrowthChart'
+import Footer from '../../../Components/Footer/Footer'
 import { initialDisputes, initialModerations } from '../../../Components/Dashboard/Admin/adminDashboardData'
 import { handleAdminTabChange } from '../../../Components/Dashboard/Admin/adminNavigation'
 import '../../Style/AdminDashboardPage.css'
@@ -66,6 +67,7 @@ const AdminDashboardPage = ({ onLogout }) => {
           onSelectDispute={setSelectedDispute}
         />
         <UserGrowthChart />
+        <Footer variant="dashboard" />
       </main>
 
       <DisputeDetailModal

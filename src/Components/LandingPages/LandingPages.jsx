@@ -15,6 +15,7 @@ import {
   Users,
 } from "lucide-react";
 import { isLoggedIn } from "../../Services/checkLogin";
+import Footer from "../Footer/Footer";
 
 import expertSarah from "./image/expert_sarah.png";
 import expertMarcus from "./image/expert_marcus.png";
@@ -274,29 +275,7 @@ const LandingPages = () => {
         </div>
       </section>
 
-      <footer className="footer-section py-5 mt-5">
-        <div className="container px-3 px-sm-5">
-          <div className="footer-divider mb-5"></div>
-          <div className="row align-items-center justify-content-between g-4">
-            <div className="col-12 col-md-3 text-center text-md-start">
-              <span className="footer-brand fw-extrabold fs-4">AITasker</span>
-            </div>
-
-            <div className="col-12 col-md-6">
-              <div className="d-flex flex-wrap justify-content-center gap-4 footer-links">
-                <a href="#privacy" className="footer-link text-muted text-decoration-none">Privacy Policy</a>
-                <a href="#terms" className="footer-link text-muted text-decoration-none">Terms of Service</a>
-                <a href="#help" className="footer-link text-muted text-decoration-none">Help Center</a>
-                <a href="#api" className="footer-link text-muted text-decoration-none">API Documentation</a>
-              </div>
-            </div>
-
-            <div className="col-12 col-md-3 text-center text-md-end text-muted copyright-text">
-              (c) 2026 AITasker. All rights reserved.
-            </div>
-          </div>
-        </div>
-      </footer>
+      <Footer variant="landing" />
     </div>
   );
 };

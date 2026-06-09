@@ -1,9 +1,9 @@
 import { useNavigate } from 'react-router-dom'
 import AdminSidebar from '../../../Components/Dashboard/Admin/AdminSidebar'
-import UserManagementFooter from '../../../Components/Dashboard/Admin/UserManagement/UserManagementFooter'
 import UserManagementHeader from '../../../Components/Dashboard/Admin/UserManagement/UserManagementHeader'
 import UserManagementStats from '../../../Components/Dashboard/Admin/UserManagement/UserManagementStats'
 import UserManagementTable from '../../../Components/Dashboard/Admin/UserManagement/UserManagementTable'
+import Footer from '../../../Components/Footer/Footer'
 import { handleAdminTabChange } from '../../../Components/Dashboard/Admin/adminNavigation'
 import '../../../Components/Dashboard/Admin/UserManagement/UserManagement.css'
 import '../../Style/AdminDashboardPage.css'
@@ -29,7 +29,7 @@ const UserManagementPage = ({ onLogout }) => {
         <UserManagementHeader />
         <UserManagementStats />
         <UserManagementTable />
-        <UserManagementFooter />
+        <Footer variant="dashboard" />
       </main>
     </div>
   )

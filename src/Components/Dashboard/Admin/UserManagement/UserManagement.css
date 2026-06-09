@@ -390,42 +390,6 @@
   width: 30px;
 }
 
-.user-management-footer {
-  align-items: flex-end;
-  border-top: 1px solid rgba(148, 163, 184, 0.22);
-  color: #94a3b8;
-  display: flex;
-  justify-content: space-between;
-  margin-top: 1rem;
-  padding-top: 2.4rem;
-}
-
-.user-management-footer strong,
-.user-management-footer span {
-  display: block;
-}
-
-.user-management-footer strong {
-  color: #e2e8f0;
-  font-size: 0.9rem;
-  font-weight: 600;
-  margin-bottom: 0.55rem;
-}
-
-.user-management-footer span,
-.user-management-footer a {
-  color: #94a3b8;
-  font-size: 0.75rem;
-  text-decoration: none;
-}
-
-.user-management-footer nav {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 2rem;
-  justify-content: flex-end;
-}
-
 @media (max-width: 1200px) {
   .user-management-stats {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -435,8 +399,7 @@
 @media (max-width: 768px) {
   .user-management-header,
   .user-table-toolbar,
-  .user-table-footer,
-  .user-management-footer {
+  .user-table-footer {
     align-items: stretch;
     flex-direction: column;
   }
@@ -450,15 +413,6 @@
   }
 
   .user-table-actions {
-    justify-content: flex-start;
-  }
-
-  .user-management-footer {
-    gap: 1.5rem;
-  }
-
-  .user-management-footer nav {
-    gap: 1rem;
     justify-content: flex-start;
   }
 }
