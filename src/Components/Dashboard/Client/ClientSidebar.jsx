@@ -32,7 +32,9 @@ const ClientSidebar = ({ activeTab = "dashboard", onTabChange, onLogout }) => {
     if (id === "post-job") navigate("/client/post-job");
     if (id === "messages") navigate("/client/messages");
     if (id === "billing") navigate("/client/billing");
-    if (id === "settings") navigate("/client/settings");
+    if (id === "settings") {
+      alert("Settings page will be developed later.");
+    }
   };
 
   const handleLogout = () => {
