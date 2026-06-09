@@ -9,6 +9,11 @@ export const handleAdminTabChange = (tabId, navigate, setActiveTab) => {
     return
   }
 
+  if (tabId === 'moderation') {
+    navigate('/admin-moderation')
+    return
+  }
+
   if (setActiveTab) {
     setActiveTab(tabId)
   }

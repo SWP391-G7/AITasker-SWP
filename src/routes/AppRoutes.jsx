@@ -7,6 +7,7 @@ import EmailVerificationPage from "../pages/EmailVerificationPage";
 import ClientDashboardPage from "../pages/MarketplacePage/Client/ClientDashboardPage";
 import AdminDashboardPage from "../pages/MarketplacePage/Admin/AdminDashboardPage";
 import UserManagementPage from "../pages/MarketplacePage/Admin/UserManagementPage";
+import ContentModerationPage from "../pages/MarketplacePage/Admin/ContentModerationPage";
 import ExpertDashboardPage from "../pages/MarketplacePage/Expert/ExpertDashboardPage";
 import { isLoggedIn } from "../Services/checkLogin";
 
@@ -98,7 +99,22 @@ function AppRoutes() {
           </RequireAuth>
         }
       />
-      <Route path="/admin-users" element={<UserManagementPage />} />
+      <Route
+        path="/admin-users"
+        element={
+          <RequireAuth>
+            <UserManagementPage />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/admin-moderation"
+        element={
+          <RequireAuth>
+            <ContentModerationPage />
+          </RequireAuth>
+        }
+      />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
