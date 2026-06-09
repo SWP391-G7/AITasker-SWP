@@ -14,6 +14,11 @@ export const handleAdminTabChange = (tabId, navigate, setActiveTab) => {
     return
   }
 
+  if (tabId === 'disputes') {
+    navigate('/admin-disputes')
+    return
+  }
+
   if (setActiveTab) {
     setActiveTab(tabId)
   }

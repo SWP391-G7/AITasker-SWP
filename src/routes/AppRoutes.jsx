@@ -8,6 +8,7 @@ import ClientDashboardPage from "../pages/MarketplacePage/Client/ClientDashboard
 import AdminDashboardPage from "../pages/MarketplacePage/Admin/AdminDashboardPage";
 import UserManagementPage from "../pages/MarketplacePage/Admin/UserManagementPage";
 import ContentModerationPage from "../pages/MarketplacePage/Admin/ContentModerationPage";
+import DisputeResolutionPage from "../pages/MarketplacePage/Admin/DisputeResolutionPage";
 import ExpertDashboardPage from "../pages/MarketplacePage/Expert/ExpertDashboardPage";
 import { isLoggedIn } from "../Services/checkLogin";
 
@@ -112,6 +113,14 @@ function AppRoutes() {
         element={
           <RequireAuth>
             <ContentModerationPage />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/admin-disputes"
+        element={
+          <RequireAuth>
+            <DisputeResolutionPage />
           </RequireAuth>
         }
       />
