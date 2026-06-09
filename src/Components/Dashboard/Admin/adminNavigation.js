@@ -19,6 +19,11 @@ export const handleAdminTabChange = (tabId, navigate, setActiveTab) => {
     return
   }
 
+  if (tabId === 'analytics') {
+    navigate('/admin-analytics')
+    return
+  }
+
   if (setActiveTab) {
     setActiveTab(tabId)
   }
