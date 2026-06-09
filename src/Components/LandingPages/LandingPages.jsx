@@ -25,7 +25,7 @@ const LandingPages = () => {
   const navigate = useNavigate();
   const [notice, setNotice] = useState("");
 
-  const requireLogin = () => {
+  const requireLogin = () => { //Check if user is logged in before allowing access to protected features
     if (isLoggedIn()) {
       return true;
     }
@@ -37,12 +37,12 @@ const LandingPages = () => {
     return false;
   };
 
-  const handleSearch = (event) => {
+  const handleSearch = (event) => { //Check if user is logged in before allowing access to search results
     event.preventDefault();
     requireLogin();
   };
 
-  const handleProtectedClick = () => {
+  const handleProtectedClick = () => { //Check if user is logged in before allowing access to protected features
     requireLogin();
   };
 
