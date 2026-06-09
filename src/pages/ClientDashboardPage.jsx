@@ -14,6 +14,7 @@ import {
   initialClientActivities,
 } from "../Components/Dashboard/Client/clientDashboardData";
 
+import "./Style/AdminDashboardPage.css";
 import "./Style/ClientDashboardPage.css";
 
 function ClientDashboardPage() {
