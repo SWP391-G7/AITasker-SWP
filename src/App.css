@@ -122,7 +122,13 @@ body {
   margin-bottom: 34px;
   font-size: 17px;
 }
-
+.input-group input:-webkit-autofill,
+.input-group input:-webkit-autofill:hover, 
+.input-group input:-webkit-autofill:focus {
+  -webkit-text-fill-color: white !important;
+  -webkit-box-shadow: 0 0 0px 1000px transparent inset !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
 .input-group {
   height: 58px;
   border: 1px solid rgba(226, 232, 240, 0.1);
@@ -142,16 +148,19 @@ body {
 }
 
 .input-group:focus-within {
-  border-color: rgba(96, 165, 250, 0.58);
   background: rgba(15, 23, 42, 0.72);
-  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12);
+  /* Đảm bảo không có viền màu xanh và bóng đổ từ container */
+  border-color: rgba(226, 232, 240, 0.1) !important;
+  outline: none !important;
+  box-shadow: none !important;
 }
 
 .input-group input {
   flex: 1;
   height: 100%;
   border: none;
-  outline: none;
+  outline: none !important;
+  box-shadow: none !important;
   background: transparent;
   color: white;
   font-size: 17px;
