@@ -23,5 +23,3 @@ dist-ssr
 *.sln
 *.sw?
 
-# Bỏ qua file cụ thể
-src/Services/authService.js
