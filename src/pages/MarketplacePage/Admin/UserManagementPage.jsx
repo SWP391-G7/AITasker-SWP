@@ -4,6 +4,7 @@ import UserManagementFooter from '../../../Components/Dashboard/Admin/UserManage
 import UserManagementHeader from '../../../Components/Dashboard/Admin/UserManagement/UserManagementHeader'
 import UserManagementStats from '../../../Components/Dashboard/Admin/UserManagement/UserManagementStats'
 import UserManagementTable from '../../../Components/Dashboard/Admin/UserManagement/UserManagementTable'
+import { handleAdminTabChange } from '../../../Components/Dashboard/Admin/adminNavigation'
 import '../../../Components/Dashboard/Admin/UserManagement/UserManagement.css'
 import '../../Style/AdminDashboardPage.css'
 
@@ -16,20 +17,13 @@ const UserManagementPage = ({ onLogout }) => {
     navigate('/')
   })
 
-  const handleTabChange = (tabId) => {
-    if (tabId === 'dashboard') {
-      navigate('/admin-dashboard')
-      return
-    }
-
-    if (tabId === 'users') {
-      navigate('/admin-users')
-    }
-  }
-
   return (
     <div className="admin-dashboard-layout">
-      <AdminSidebar activeTab="users" onTabChange={handleTabChange} onLogout={handleLogout} />
+      <AdminSidebar
+        activeTab="users"
+        onTabChange={(tabId) => handleAdminTabChange(tabId, navigate)}
+        onLogout={handleLogout}
+      />
 
       <main className="admin-main-panel user-management-main">
         <UserManagementHeader />

@@ -2,8 +2,23 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Bell, Mail } from "lucide-react";
 import avatar from "../LandingPages/image/user_avatar.png";
-import { isLoggedIn, logout } from "../../Services/checkLogin";
+import { getStoredUser, isLoggedIn, logout } from "../../Services/checkLogin";
 import "./HeaderCom.css";
+
+// ROLE ROUTING: Map role trong localStorage.user sang dashboard tương ứng.
+const getDashboardPathByRole = (role) => {
+  const normalizedRole = String(role || "").toLowerCase();
+
+  if (normalizedRole.includes("admin")) {
+    return "/admin-dashboard";
+  }
+
+  if (normalizedRole.includes("expert")) {
+    return "/expert-dashboard";
+  }
+
+  return "/dashboard";
+};
 
 export default function HeaderCom() {
   const navigate = useNavigate();
@@ -45,7 +60,9 @@ export default function HeaderCom() {
     closeMenu();
     setShowDropdown(false);
     if (isLogin) {
-      navigate("/dashboard");
+      // ROLE ROUTING: Khi bấm Dashboard, đọc user đã lưu sau login để vào đúng marketplace page.
+      const user = getStoredUser();
+      navigate(getDashboardPathByRole(user?.role));
       return;
     }
 

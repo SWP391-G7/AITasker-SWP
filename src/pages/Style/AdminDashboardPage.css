@@ -12,6 +12,10 @@
 /* Sidebar Styling */
 .admin-sidebar {
   width: 280px;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
   background: linear-gradient(180deg, rgba(11, 18, 32, 0.98), rgba(3, 7, 18, 0.98));
   border-right: 1px solid rgba(226, 232, 240, 0.08);
   display: flex;
@@ -76,9 +80,34 @@
   box-shadow: inset 0 0 0 1px rgba(147, 197, 253, 0.16), 0 12px 28px rgba(37, 99, 235, 0.12);
 }
 
+.admin-post-task-button {
+  width: 100%;
+  min-height: 44px;
+  border: 0;
+  border-radius: 8px;
+  background: #a8c7ff;
+  color: #082145;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-decoration: none;
+  transition: transform 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.admin-post-task-button:hover {
+  background: #bfdbfe;
+  color: #082145;
+  box-shadow: 0 12px 28px rgba(96, 165, 250, 0.22);
+  transform: translateY(-1px);
+}
+
 /* Main Dashboard Panel */
 .admin-main-panel {
   flex-grow: 1;
+  margin-left: 280px;
   padding: 2.5rem 3rem;
   overflow-y: auto;
   max-width: calc(100% - 280px);
@@ -586,6 +615,8 @@
   }
   
   .admin-sidebar {
+    height: auto;
+    position: static;
     width: 100%;
     border-right: none;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
@@ -611,6 +642,7 @@
   }
   
   .admin-main-panel {
+    margin-left: 0;
     padding: 1.5rem;
     max-width: 100%;
   }

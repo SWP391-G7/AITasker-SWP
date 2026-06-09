@@ -46,7 +46,7 @@ const LandingPages = () => {
     requireLogin();
   };
 
-  const services = [
+  const services = [ //Static data for popular services section - in a real app this would likely come from an API
     {
       icon: <MessageSquare size={24} className="text-primary" />,
       bg: "rgba(59, 130, 246, 0.1)",
@@ -77,7 +77,7 @@ const LandingPages = () => {
     },
   ];
 
-  const experts = [
+  const experts = [ //Static data for expert profiles section - in a real app this would likely come from an API
     {
       img: expertSarah,
       name: "Dr. Sarah Chen",

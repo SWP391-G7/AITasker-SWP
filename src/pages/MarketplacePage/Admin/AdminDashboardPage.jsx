@@ -7,6 +7,7 @@ import AdminStats from '../../../Components/Dashboard/Admin/AdminStats'
 import DisputeDetailModal from '../../../Components/Dashboard/Admin/DisputeDetailModal'
 import UserGrowthChart from '../../../Components/Dashboard/Admin/UserGrowthChart'
 import { initialDisputes, initialModerations } from '../../../Components/Dashboard/Admin/adminDashboardData'
+import { handleAdminTabChange } from '../../../Components/Dashboard/Admin/adminNavigation'
 import '../../Style/AdminDashboardPage.css'
 
 const AdminDashboardPage = ({ onLogout }) => {
@@ -23,15 +24,6 @@ const AdminDashboardPage = ({ onLogout }) => {
     localStorage.removeItem('email')
     navigate('/')
   })
-
-  const handleTabChange = (tabId) => {
-    if (tabId === 'users') {
-      navigate('/admin-users')
-      return
-    }
-
-    setActiveTab(tabId)
-  }
 
   const handleResolveDispute = (id) => {
     setDisputes((prev) => prev.filter((item) => item.id !== id))
@@ -52,7 +44,11 @@ const AdminDashboardPage = ({ onLogout }) => {
 
   return (
     <div className="admin-dashboard-layout">
-      <AdminSidebar activeTab={activeTab} onTabChange={handleTabChange} onLogout={handleLogout} />
+      <AdminSidebar
+        activeTab={activeTab}
+        onTabChange={(tabId) => handleAdminTabChange(tabId, navigate, setActiveTab)}
+        onLogout={handleLogout}
+      />
 
       <main className="admin-main-panel">
         <AdminHeader

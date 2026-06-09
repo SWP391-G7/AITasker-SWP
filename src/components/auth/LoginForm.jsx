@@ -16,7 +16,7 @@ function LoginForm() {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleChange = (event) => {
+  const handleChange = (event) => { //Set form data state when user types in email or password fields
     const { name, value } = event.target;
 
     setFormData({
@@ -25,7 +25,7 @@ function LoginForm() {
     });
   };
 
-  const validateForm = () => {
+  const validateForm = () => { //Validate form inputs
     if (!formData.email.trim()) {
       return "Email is required";
     }
@@ -41,7 +41,7 @@ function LoginForm() {
     return "";
   };
 
-  const handleSubmit = async (event) => {
+  const handleSubmit = async (event) => { //Handle form submission when user clicks "Log In" button
     event.preventDefault();
 
     const validateError = validateForm();

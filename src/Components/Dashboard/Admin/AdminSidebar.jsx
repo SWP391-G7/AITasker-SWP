@@ -4,12 +4,14 @@ import {
   Home,
   LayoutDashboard,
   LogOut,
+  PlusCircle,
   Scale,
   Settings,
   Shield,
   Users
 } from 'lucide-react'
 
+//List of sidebar menu items for admin dashboard - in a real app this might be generated dynamically based on user permissions or fetched from an API
 const adminMenuItems = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { id: 'users', label: 'User Management', icon: Users },
@@ -49,6 +51,11 @@ const AdminSidebar = ({ activeTab, onTabChange, onLogout }) => (
         <LogOut size={18} />
         <span>Log out</span>
       </div>
+      {/* ADMIN SIDEBAR: Quick action nằm dưới Log out giống nút Post a New Task ở client sidebar. */}
+      <Link to="/dashboard" className="admin-post-task-button">
+        <PlusCircle size={15} />
+        <span>Post a New Task</span>
+      </Link>
     </div>
   </aside>
 )

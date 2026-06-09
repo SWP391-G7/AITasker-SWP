@@ -7,6 +7,7 @@ import EmailVerificationPage from "../pages/EmailVerificationPage";
 import ClientDashboardPage from "../pages/MarketplacePage/Client/ClientDashboardPage";
 import AdminDashboardPage from "../pages/MarketplacePage/Admin/AdminDashboardPage";
 import UserManagementPage from "../pages/MarketplacePage/Admin/UserManagementPage";
+import ExpertDashboardPage from "../pages/MarketplacePage/Expert/ExpertDashboardPage";
 import { isLoggedIn } from "../Services/checkLogin";
 
 function RequireAuth({ children }) {
@@ -28,7 +29,7 @@ function RequireAuth({ children }) {
   return children;
 }
 
-function GuestOnly({ children }) {
+function GuestOnly({ children }) { //Redirect logged in users away from login/register pages
   if (isLoggedIn()) {
     return <Navigate to="/" replace />;
   }
@@ -81,7 +82,22 @@ function AppRoutes() {
           </RequireAuth>
         }
       />
-      <Route path="/admin-dashboard" element={<AdminDashboardPage />} />
+      <Route
+        path="/admin-dashboard"
+        element={
+          <RequireAuth>
+            <AdminDashboardPage />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/expert-dashboard"
+        element={
+          <RequireAuth>
+            <ExpertDashboardPage />
+          </RequireAuth>
+        }
+      />
       <Route path="/admin-users" element={<UserManagementPage />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
