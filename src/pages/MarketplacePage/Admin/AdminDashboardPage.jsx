@@ -24,6 +24,15 @@ const AdminDashboardPage = ({ onLogout }) => {
     navigate('/')
   })
 
+  const handleTabChange = (tabId) => {
+    if (tabId === 'users') {
+      navigate('/admin-users')
+      return
+    }
+
+    setActiveTab(tabId)
+  }
+
   const handleResolveDispute = (id) => {
     setDisputes((prev) => prev.filter((item) => item.id !== id))
     setSelectedDispute(null)
@@ -43,7 +52,7 @@ const AdminDashboardPage = ({ onLogout }) => {
 
   return (
     <div className="admin-dashboard-layout">
-      <AdminSidebar activeTab={activeTab} onTabChange={setActiveTab} onLogout={handleLogout} />
+      <AdminSidebar activeTab={activeTab} onTabChange={handleTabChange} onLogout={handleLogout} />
 
       <main className="admin-main-panel">
         <AdminHeader

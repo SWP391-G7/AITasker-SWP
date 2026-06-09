@@ -1,17 +1,11 @@
-import ClientDashboard from "./pages/MarketplacePage/Client/ClientDashboardPage"
-import ExpertDashboard from "./pages/MarketplacePage/Expert/ExpertDashboardPage"
-import AdminDashboard from "./pages/MarketplacePage/Admin/AdminDashboardPage"
+import AdminDashboardPage from "./pages/MarketplacePage/Admin/AdminDashboardPage";
+import UserManagementPage from "./pages/MarketplacePage/Admin/UserManagementPage";
 import AppRoutes from "./routes/AppRoutes"
 
 function App() {
   return (
-    <>
-      {/* <AppRoutes /> */}
-      {/* <ClientDashboard/> */}
-      <ExpertDashboard />
-      {/* <AdminDashboard /> */}
-    </>
-  )
+    <UserManagementPage/>
+  );
 }
 
 export default App
