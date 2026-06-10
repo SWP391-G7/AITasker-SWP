@@ -1,0 +1,311 @@
+/* Updated MessagesPage Styles for 3-Column Layout */
+
+.messages-layout-container {
+  display: grid;
+  grid-template-columns: 320px 1fr 300px;
+  height: calc(100vh - 180px);
+  background-color: #121829;
+  border: 1px solid #1E293B;
+  border-radius: 20px;
+  overflow: hidden;
+  margin: 0 1.5rem 1.5rem;
+}
+
+/* Column 1: Chat List */
+.chat-list-sidebar {
+  border-right: 1px solid #1E293B;
+  display: flex;
+  flex-direction: column;
+  background-color: rgba(15, 23, 42, 0.4);
+}
+
+.chat-list-header {
+  padding: 1.25rem;
+  border-bottom: 1px solid #1E293B;
+}
+
+.list-section-label {
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: #64748b;
+  letter-spacing: 1px;
+  margin-bottom: 1rem;
+  display: block;
+}
+
+.conversation-item {
+  padding: 1rem 1.25rem;
+  display: flex;
+  gap: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+}
+
+.conversation-item.active {
+  background-color: rgba(59, 130, 246, 0.1);
+}
+
+.chat-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.chat-name-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.chat-name {
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.chat-time {
+  color: #64748b;
+  font-size: 0.7rem;
+}
+
+.chat-subtext {
+  color: #64748b;
+  font-size: 0.75rem;
+  margin: 1px 0;
+}
+
+.chat-last-msg {
+  color: #8a94a6;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Column 2: Chat Window */
+.chat-window-main {
+  display: flex;
+  flex-direction: column;
+  background-color: #0d111e;
+  border-right: 1px solid #1E293B;
+}
+
+.chat-header {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #1E293B;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header-user-info h4 {
+  color: #ffffff;
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.header-user-info span {
+  color: #10b981;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.chat-messages-area {
+  flex: 1;
+  padding: 1.5rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.date-divider {
+  text-align: center;
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: #475569;
+  letter-spacing: 1px;
+  margin: 1rem 0;
+}
+
+.message-bubble {
+  max-width: 80%;
+  padding: 0.85rem 1rem;
+  border-radius: 14px;
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.msg-client {
+  align-self: flex-start;
+  background-color: #1e293b;
+  color: #cbd5e1;
+}
+
+.msg-expert {
+  align-self: flex-end;
+  background-color: #3b82f6;
+  color: #ffffff;
+}
+
+.file-attachment-card {
+  align-self: flex-end;
+  background-color: #121829;
+  border: 1px solid #1E293B;
+  border-radius: 12px;
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: 260px;
+}
+
+.file-icon {
+  width: 40px;
+  height: 40px;
+  background-color: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.file-info {
+  flex: 1;
+}
+
+.file-name {
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.85rem;
+  display: block;
+}
+
+.file-meta {
+  color: #64748b;
+  font-size: 0.7rem;
+}
+
+.chat-input-footer {
+  padding: 1.25rem;
+  border-top: 1px solid #1E293B;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.input-actions-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background-color: #090D1A;
+  border: 1px solid #1E293B;
+  border-radius: 12px;
+  padding: 0.5rem 1rem;
+}
+
+.input-actions-row input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  padding: 0.5rem 0;
+  font-size: 0.9rem;
+  outline: none;
+}
+
+.footer-hint {
+  font-size: 0.6rem;
+  color: #475569;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Column 3: Project Sidebar */
+.project-overview-sidebar {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  background-color: rgba(15, 23, 42, 0.2);
+}
+
+.sidebar-section-title {
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: #64748b;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 1rem;
+}
+
+.project-brief-card {
+  background-color: #090D1A;
+  border: 1px solid #1E293B;
+  border-radius: 14px;
+  padding: 1.25rem;
+}
+
+.project-brief-title {
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.95rem;
+  margin-bottom: 0.75rem;
+}
+
+.milestone-text {
+  color: #8a94a6;
+  font-size: 0.8rem;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.shared-file-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.shared-file-name {
+  color: #cbd5e1;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.shared-file-date {
+  color: #64748b;
+  font-size: 0.7rem;
+}
+
+.payment-card {
+  margin-top: auto;
+  background-color: #090D1A;
+  border: 1px solid #1E293B;
+  border-radius: 14px;
+  padding: 1.25rem;
+}
+
+.payment-amount {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0.5rem 0;
+}
+
+.payment-status {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #10b981;
+}
+
+@media (max-width: 1200px) {
+  .messages-layout-container {
+    grid-template-columns: 280px 1fr;
+  }
+  .project-overview-sidebar { display: none; }
+}

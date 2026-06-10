@@ -4,11 +4,16 @@ import { logout } from '../../../Services/authService'
 import ExpertSidebar from '../../../Components/Dashboard/Expert/ExpertSidebar'
 import ExpertHeader from '../../../Components/Dashboard/Expert/ExpertHeader'
 import ExpertDashboardFooter from '../../../Components/Dashboard/Expert/ExpertDashboardFooter'
+import ChatList from '../../../Components/Dashboard/Expert/Messages/ChatList'
+import ChatWindow from '../../../Components/Dashboard/Expert/Messages/ChatWindow'
+import { conversations } from '../../../Components/Dashboard/Expert/Messages/messagesData'
 import '../../Style/AdminDashboardPage.css'
 import '../../Style/ExpertDashboardPage.css'
+import '../../../Components/Dashboard/Expert/Messages/MessagesPage.css'
 
 const MessagesPage = () => {
   const navigate = useNavigate()
+  const [activeChatId, setActiveChatId] = useState(conversations[0].id)
   const [searchQuery, setSearchQuery] = useState('')
   const [notifications, setNotifications] = useState(2)
 
@@ -31,6 +36,10 @@ const MessagesPage = () => {
     else navigate(`/expert/${id}`)
   }
 
+  const activeConversation = useMemo(() => 
+    conversations.find(c => c.id === activeChatId), 
+  [activeChatId])
+
   return (
     <div className="admin-dashboard-layout expert-dashboard-layout">
       <ExpertSidebar activeTab="messages" onTabChange={handleTabChange} onLogout={handleLogout} />
@@ -45,14 +54,23 @@ const MessagesPage = () => {
           onLogout={handleLogout}
         />
 
-        <section className="admin-panel-card">
-          <div className="panel-header">
-            <h2 className="panel-title">Messages</h2>
+        <div className="expert-content-container">
+          <div className="page-title-section" style={{ paddingLeft: '1.5rem' }}>
+            <div>
+              <h1>Messages</h1>
+              <p>Connect and collaborate with your clients in real-time.</p>
+            </div>
           </div>
-          <div style={{ padding: '2rem', textAlign: 'center', color: '#94a3b8' }}>
-            <p>Trung tâm tin nhắn: Kết nối trực tiếp với khách hàng của bạn.</p>
+
+          <div className="messages-layout-container">
+            <ChatList 
+              conversations={conversations} 
+              activeId={activeChatId} 
+              onSelect={setActiveChatId} 
+            />
+            <ChatWindow conversation={activeConversation} />
           </div>
-        </section>
+        </div>
 
         <ExpertDashboardFooter />
       </main>
