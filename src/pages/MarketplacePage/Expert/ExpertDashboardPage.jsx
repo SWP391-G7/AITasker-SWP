@@ -57,6 +57,8 @@ const ExpertDashboardPage = ({ onLogout }) => {
 
       <main className="admin-main-panel expert-main-panel">
         <ExpertHeader
+          title="Expert Overview"
+          subtitle={<>Your performance is up <span className="trend-up">+12.4%</span> this month.</>}
           notifications={notifications}
           onClearNotifications={() => setNotifications(0)}
           searchQuery={searchQuery}

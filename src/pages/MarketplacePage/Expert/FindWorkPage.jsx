@@ -57,34 +57,22 @@ const FindWorkPage = () => {
         />
 
         <div className="expert-content-container">
-          <div className="page-title-section" style={{ padding: '0 1.5rem', marginBottom: '1.5rem' }}>
-            <h1 style={{ fontSize: '1.8rem', fontWeight: '800', color: '#ffffff', margin: '0 0 0.5rem 0' }}>Find Work</h1>
-            <p style={{ color: '#8a94a6', margin: 0 }}>Explore new opportunities that match your AI expertise.</p>
+          <div className="page-header-row">
+            <div>
+              <h1 style={{ fontSize: '1.8rem', fontWeight: '800', color: '#ffffff', margin: '0 0 0.5rem 0' }}>Find Work</h1>
+              <p style={{ color: '#8a94a6', margin: 0 }}>Browse high-value AI opportunities from global companies.</p>
+            </div>
+            <div className="jobs-count-badge">
+              428 New Jobs Today
+            </div>
           </div>
 
-          <div className="find-work-container">
-            <JobFilters />
-            
-            <div className="job-list-container">
-              <div className="job-list-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                <span style={{ color: '#94a3b8', fontSize: '0.9rem', fontWeight: '600' }}>
-                  Showing {filteredJobs.length} jobs
-                </span>
-                <div className="sort-select" style={{ color: '#cbd5e1', fontSize: '0.9rem' }}>
-                  Sort by: <span style={{ color: '#3b82f6', fontWeight: '700', cursor: 'pointer' }}>Newest First</span>
-                </div>
-              </div>
-
-              {filteredJobs.map((job) => (
-                <JobCard key={job.id} job={job} />
-              ))}
-
-              {filteredJobs.length === 0 && (
-                <div style={{ padding: '3rem', textAlign: 'center', color: '#64748b', backgroundColor: '#121829', borderRadius: '16px', border: '1px dashed rgba(255,255,255,0.1)' }}>
-                  <p>No jobs found matching your search criteria.</p>
-                </div>
-              )}
-            </div>
+          <JobFilters />
+          
+          <div className="job-list-stack">
+            {jobListings.map((job) => (
+              <JobCard key={job.id} job={job} />
+            ))}
           </div>
         </div>
 

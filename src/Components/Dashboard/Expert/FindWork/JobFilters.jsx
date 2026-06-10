@@ -1,58 +1,44 @@
 import React from 'react';
-import { Filter, ChevronDown } from 'lucide-react';
-import { jobCategories } from './jobsData';
+import { ChevronDown, Filter } from 'lucide-react';
 
 const JobFilters = () => {
   return (
-    <aside className="job-filters-sidebar">
-      <div className="filter-group">
-        <h4 className="filter-title">
-          <Filter size={16} />
-          Filters
-        </h4>
-      </div>
-
-      <div className="filter-group">
-        <h5 className="group-label">Category</h5>
-        <div className="category-list">
-          {jobCategories.map((category, index) => (
-            <label key={index} className="filter-checkbox-item">
-              <input type="checkbox" />
-              <span>{category}</span>
-            </label>
-          ))}
+    <div className="horizontal-filter-bar">
+      <div className="filter-dropdown-group">
+        <div className="filter-select-wrapper">
+          <label>TECH STACK</label>
+          <div className="custom-select">
+            <span>All Technologies</span>
+            <ChevronDown size={16} />
+          </div>
+        </div>
+        
+        <div className="filter-divider"></div>
+        
+        <div className="filter-select-wrapper">
+          <label>MIN. BUDGET</label>
+          <div className="custom-select">
+            <span>$500+</span>
+            <ChevronDown size={16} />
+          </div>
+        </div>
+        
+        <div className="filter-divider"></div>
+        
+        <div className="filter-select-wrapper">
+          <label>DURATION</label>
+          <div className="custom-select">
+            <span>Any Duration</span>
+            <ChevronDown size={16} />
+          </div>
         </div>
       </div>
-
-      <div className="filter-group">
-        <h5 className="group-label">Budget Range</h5>
-        <div className="range-inputs">
-          <input type="number" placeholder="Min" className="range-input" />
-          <span className="range-divider">-</span>
-          <input type="number" placeholder="Max" className="range-input" />
-        </div>
-      </div>
-
-      <div className="filter-group">
-        <h5 className="group-label">Job Type</h5>
-        <div className="type-list">
-          <label className="filter-checkbox-item">
-            <input type="checkbox" />
-            <span>Full-time</span>
-          </label>
-          <label className="filter-checkbox-item">
-            <input type="checkbox" />
-            <span>Contract</span>
-          </label>
-          <label className="filter-checkbox-item">
-            <input type="checkbox" />
-            <span>Freelance</span>
-          </label>
-        </div>
-      </div>
-
-      <button className="reset-filters-btn">Clear All Filters</button>
-    </aside>
+      
+      <button className="filter-apply-btn">
+        <Filter size={18} />
+        Apply
+      </button>
+    </div>
   );
 };
 

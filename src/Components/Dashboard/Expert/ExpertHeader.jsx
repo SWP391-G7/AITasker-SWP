@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { Bell, Search, User, Settings, LogOut, ChevronDown } from 'lucide-react'
 import expertAvatar from '../../LandingPages/image/expert_sarah.png'
 
-const ExpertHeader = ({ notifications, onClearNotifications, searchQuery, onSearchChange, user, onLogout }) => {
+const ExpertHeader = ({ title, subtitle, notifications, onClearNotifications, searchQuery, onSearchChange, user, onLogout }) => {
   const [isProfileOpen, setIsProfileOpen] = useState(false)
   const dropdownRef = useRef(null)
 
@@ -19,8 +19,8 @@ const ExpertHeader = ({ notifications, onClearNotifications, searchQuery, onSear
   return (
     <header className="admin-header-section">
       <div className="admin-header-title">
-        <h1>Expert Overview</h1>
-        <p>Your performance is up <span className="trend-up">+12.4%</span> this month.</p>
+        {title && <h1>{title}</h1>}
+        {subtitle && <p>{subtitle}</p>}
       </div>
 
       <div className="admin-search-box">

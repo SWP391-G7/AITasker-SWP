@@ -54,14 +54,14 @@ const MyProjectsPage = () => {
           onLogout={handleLogout}
         />
 
-        <div className="expert-content-container" style={{ padding: '0 1.5rem 1.5rem' }}>
-          <div className="page-title-section" style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+        <div className="expert-content-container">
+          <div className="page-title-section">
             <div>
-              <h1 style={{ fontSize: '1.8rem', fontWeight: '800', color: '#ffffff', margin: '0 0 0.5rem 0' }}>My Projects</h1>
-              <p style={{ color: '#8a94a6', margin: 0 }}>Manage your active AI contracts and deliverables.</p>
+              <h1>My Projects</h1>
+              <p>Manage your active AI contracts and deliverables.</p>
             </div>
-            <div className="expert-rating-widget" style={{ backgroundColor: 'rgba(16, 185, 129, 0.1)', padding: '0.5rem 1rem', borderRadius: '12px', border: '1px solid rgba(16, 185, 129, 0.2)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span style={{ color: '#10b981', fontWeight: '700' }}>Expert Rating</span>
+            <div className="expert-rating-widget">
+              <span>Expert Rating</span>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', color: '#fbbf24' }}>
                 <span style={{ fontWeight: '800', color: '#ffffff' }}>4.98</span>
                 <span style={{ fontSize: '1.1rem' }}>★</span>
