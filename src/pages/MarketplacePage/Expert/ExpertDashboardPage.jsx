@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { logout } from '../../../Services/authService'
 import ContractsPanel from '../../../Components/Dashboard/Expert/ContractsPanel'
 import ExpertDashboardFooter from '../../../Components/Dashboard/Expert/ExpertDashboardFooter'
 import ExpertHeader from '../../../Components/Dashboard/Expert/ExpertHeader'
@@ -28,9 +29,7 @@ const ExpertDashboardPage = ({ onLogout }) => {
   }, [])
 
   const handleLogout = onLogout || (() => {
-    localStorage.removeItem('user')
-    localStorage.removeItem('token')
-    localStorage.removeItem('email')
+    logout()
     navigate('/')
   })
 
@@ -57,6 +56,7 @@ const ExpertDashboardPage = ({ onLogout }) => {
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
           user={user}
+          onLogout={handleLogout}
         />
 
         <section className="expert-overview-grid">

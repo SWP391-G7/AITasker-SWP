@@ -138,4 +138,5 @@ export const verifyCode = async (email, code) => {
 export const logout = () => {
   localStorage.removeItem('token');
   localStorage.removeItem('user');
+  localStorage.removeItem('email');
 };

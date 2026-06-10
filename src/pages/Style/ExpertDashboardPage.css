@@ -14,6 +14,30 @@
 
 .expert-dashboard-layout {
   min-height: 100vh;
+  display: flex;
+}
+
+.expert-dashboard-layout .admin-sidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  z-index: 100;
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+
+/* Custom scrollbar for sidebar */
+.expert-dashboard-layout .admin-sidebar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.expert-dashboard-layout .admin-sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.expert-dashboard-layout .admin-sidebar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
 }
 
 .expert-main-panel {
@@ -21,6 +45,20 @@
   flex-direction: column;
   gap: 1.5rem;
   padding-bottom: 1.5rem;
+  flex-grow: 1;
+  min-width: 0;
+}
+
+@media (max-width: 991px) {
+  .expert-dashboard-layout {
+    flex-direction: column;
+  }
+
+  .expert-dashboard-layout .admin-sidebar {
+    position: relative;
+    height: auto;
+    width: 100%;
+  }
 }
 
 .expert-main-panel .admin-header-section {
@@ -294,4 +332,127 @@
   .expert-dashboard-layout .item-actions button {
     flex: 1;
   }
+}
+
+/* User Profile Dropdown & Custom Header Styles */
+.expert-dashboard-layout .admin-profile-widget {
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  padding: 0.4rem 0.8rem 0.4rem 1rem;
+}
+
+.expert-dashboard-layout .admin-profile-widget:hover,
+.expert-dashboard-layout .admin-profile-widget.active {
+  background-color: rgba(30, 41, 59, 0.8);
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+.expert-dashboard-layout .admin-profile-container {
+  position: relative;
+}
+
+.expert-dashboard-layout .admin-profile-avatar-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.expert-dashboard-layout .avatar-status-indicator {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 10px;
+  height: 10px;
+  background-color: #10b981;
+  border: 2px solid #0f172a;
+  border-radius: 50%;
+}
+
+.expert-dashboard-layout .profile-chevron {
+  color: #64748b;
+  transition: transform 0.3s ease;
+}
+
+.expert-dashboard-layout .profile-chevron.rotate {
+  transform: rotate(180deg);
+}
+
+.expert-dashboard-layout .profile-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  width: 220px;
+  background: #0f172a;
+  border: 1px solid rgba(226, 232, 240, 0.1);
+  border-radius: 12px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
+  z-index: 1000;
+  overflow: hidden;
+  animation: dropdownSlideIn 0.2s ease-out;
+}
+
+@keyframes dropdownSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.expert-dashboard-layout .dropdown-header {
+  padding: 1rem;
+  background-color: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.expert-dashboard-layout .user-email {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.expert-dashboard-layout .dropdown-list {
+  list-style: none;
+  padding: 0.5rem;
+  margin: 0;
+}
+
+.expert-dashboard-layout .dropdown-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 0.75rem;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  color: #cbd5e1;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.expert-dashboard-layout .dropdown-item:hover {
+  background-color: rgba(59, 130, 246, 0.1);
+  color: #ffffff;
+}
+
+.expert-dashboard-layout .dropdown-item.text-danger:hover {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: #f87171;
+}
+
+.expert-dashboard-layout .dropdown-divider {
+  height: 1px;
+  background-color: rgba(255, 255, 255, 0.05);
+  margin: 0.5rem 0;
 }
