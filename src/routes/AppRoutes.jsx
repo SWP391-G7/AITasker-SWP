@@ -9,6 +9,7 @@ import Dashboard from "../pages/Dashboard"
 import { isLoggedIn } from "../Services/checkLogin"
 import OnboardingPage from "../pages/OnboardingPage";
 import ClientDashboard from "../pages/ClientDashboard"
+import ProfilePage from "../pages/ProfilePage"
 
 // Protected route wrapper - redirects logged-in users away from auth pages
 function AuthRoute({ children }) {
@@ -58,6 +59,7 @@ function AppRoutes() {
       <Route path="/onboarding" element={<OnboardingPage />} />
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/client/dashboard" element={<ClientDashboard />} />
+      <Route path="/profile/:userId" element={<ProfilePage />} />
       
       
     </Routes>

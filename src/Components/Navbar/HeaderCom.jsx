@@ -3,7 +3,7 @@ import avatar from '../LandingPages/image/user_avatar.png'
 import './HeaderCom.css'
 import { Bell, Mail } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
-import { isLoggedIn, logout } from '../../Services/checkLogin'
+import { isLoggedIn, logout, getStoredUser } from '../../Services/checkLogin'
 
 export default function HeaderCom() {
   const navigate = useNavigate()
@@ -37,6 +37,14 @@ export default function HeaderCom() {
   const handleDashboard = () => {
     setShowDropdown(false)
     navigate('/dashboard')
+  }
+
+  const handleProfile = () => {
+    setShowDropdown(false)
+    const storedUser = getStoredUser()
+    if (storedUser && storedUser.id) {
+      navigate(`/profile/${storedUser.id}`)
+    }
   }
 
   return (
@@ -95,6 +103,12 @@ export default function HeaderCom() {
 
                 {showDropdown && (
                   <div className="avatar-dropdown">
+                    <button 
+                      className="dropdown-item"
+                      onClick={handleProfile}
+                    >
+                      <i className="bi bi-person me-2"></i>My Profile
+                    </button>
                     <button 
                       className="dropdown-item"
                       onClick={handleDashboard}

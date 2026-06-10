@@ -93,7 +93,11 @@ const EmailVerification = ({ email, onVerificationSuccess }) => {
     setErrorMsg('')
 
     try {
-      await authService.verifyCode(email, code)
+      const result = await authService.verifyCode(email, code)
+      if (result.token) {
+        localStorage.setItem('token', result.token)
+        localStorage.setItem('user', JSON.stringify(result.user))
+      }
       // Call parent callback for success
       if (onVerificationSuccess) {
         onVerificationSuccess()
