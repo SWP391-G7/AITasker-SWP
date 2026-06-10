@@ -33,6 +33,12 @@ const ExpertDashboardPage = ({ onLogout }) => {
     navigate('/')
   })
 
+  const handleTabChange = (id) => {
+    setActiveTab(id)
+    if (id === 'dashboard') navigate('/expert/dashboard')
+    else navigate(`/expert/${id}`)
+  }
+
   const filteredContracts = contracts.filter((item) =>
     item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     item.client.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -47,7 +53,7 @@ const ExpertDashboardPage = ({ onLogout }) => {
 
   return (
     <div className="admin-dashboard-layout expert-dashboard-layout">
-      <ExpertSidebar activeTab={activeTab} onTabChange={setActiveTab} onLogout={handleLogout} />
+      <ExpertSidebar activeTab={activeTab} onTabChange={handleTabChange} onLogout={handleLogout} />
 
       <main className="admin-main-panel expert-main-panel">
         <ExpertHeader

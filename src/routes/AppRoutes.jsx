@@ -5,6 +5,12 @@ import LandingPages from "../Components/LandingPages/LandingPages";
 import HeaderCom from "../Components/Navbar/HeaderCom";
 import EmailVerificationPage from "../pages/EmailVerificationPage";
 import ClientDashboardPage from "../pages/MarketplacePage/Client/ClientDashboardPage";
+import ExpertDashboardPage from "../pages/MarketplacePage/Expert/ExpertDashboardPage";
+import MyProjectsPage from "../pages/MarketplacePage/Expert/MyProjectsPage";
+import FindWorkPage from "../pages/MarketplacePage/Expert/FindWorkPage";
+import EarningsPage from "../pages/MarketplacePage/Expert/EarningsPage";
+import MessagesPage from "../pages/MarketplacePage/Expert/MessagesPage";
+import SettingsPage from "../pages/MarketplacePage/Expert/SettingsPage";
 import { isLoggedIn } from "../Services/checkLogin";
 
 function RequireAuth({ children }) {
@@ -39,6 +45,10 @@ function AppRoutes() {
     <Routes>
       <Route
         path="/"
+        element={<Navigate to="/expert/dashboard" replace />}
+      />
+      <Route
+        path="/landing"
         element={
           <>
             <HeaderCom />
@@ -72,13 +82,23 @@ function AppRoutes() {
       />
       <Route path="/verify" element={<Navigate to="/verify-email" replace />} />
       <Route
-        path="/dashboard"
+        path="/client/dashboard"
         element={
           <RequireAuth>
             <ClientDashboardPage />
           </RequireAuth>
         }
       />
+      
+      {/* Expert Routes - No Auth Required for Testing */}
+      <Route path="/expert/dashboard" element={<ExpertDashboardPage />} />
+      <Route path="/expert/projects" element={<MyProjectsPage />} />
+      <Route path="/expert/work" element={<FindWorkPage />} />
+      <Route path="/expert/earnings" element={<EarningsPage />} />
+      <Route path="/expert/messages" element={<MessagesPage />} />
+      <Route path="/expert/settings" element={<SettingsPage />} />
+
+      <Route path="/dashboard" element={<Navigate to="/client/dashboard" replace />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
