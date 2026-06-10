@@ -36,7 +36,11 @@ export default function HeaderCom() {
 
   const handleDashboard = () => {
     setShowDropdown(false)
-    navigate('/dashboard')
+    const storedUser = getStoredUser()
+    if (storedUser && storedUser.id) {
+      navigate(`${storedUser.role}/dashboard`)
+    }
+
   }
 
   const handleProfile = () => {
@@ -47,6 +51,9 @@ export default function HeaderCom() {
     }
   }
 
+  const currentUser = getStoredUser();
+  const currentUserName = currentUser?.fullName || "@"
+  const avatarLetter = currentUserName.charAt(0).toUpperCase()
   return (
     <nav className="navbar navbar-expand-lg navbar-dark header-container py-0">
       <div className="container-fluid px-sm-5 h-100 d-flex align-items-center justify-content-between">
@@ -93,30 +100,31 @@ export default function HeaderCom() {
               </button>
 
               <div className="avatar-wrapper position-relative" ref={dropdownRef}>
-                <button 
+                <button
                   className="avatar-button"
                   onClick={() => setShowDropdown(!showDropdown)}
                   aria-label="User Menu"
                 >
-                  <img src={avatar} alt="User Profile" className="user-avatar" />
+                  {/* <img src={avatar} alt="User Profile" className="user-avatar" /> */}
+                  <div className="avatar">{avatarLetter}</div>
                 </button>
 
                 {showDropdown && (
                   <div className="avatar-dropdown">
-                    <button 
+                    <button
                       className="dropdown-item"
                       onClick={handleProfile}
                     >
                       <i className="bi bi-person me-2"></i>My Profile
                     </button>
-                    <button 
+                    <button
                       className="dropdown-item"
                       onClick={handleDashboard}
                     >
                       <i className="bi bi-speedometer2 me-2"></i>Dashboard
                     </button>
                     <hr className="dropdown-divider my-1" />
-                    <button 
+                    <button
                       className="dropdown-item logout-item"
                       onClick={handleLogout}
                     >
