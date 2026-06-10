@@ -4,8 +4,12 @@ import { logout } from '../../../Services/authService'
 import ExpertSidebar from '../../../Components/Dashboard/Expert/ExpertSidebar'
 import ExpertHeader from '../../../Components/Dashboard/Expert/ExpertHeader'
 import ExpertDashboardFooter from '../../../Components/Dashboard/Expert/ExpertDashboardFooter'
+import JobFilters from '../../../Components/Dashboard/Expert/FindWork/JobFilters'
+import JobCard from '../../../Components/Dashboard/Expert/FindWork/JobCard'
+import { jobListings } from '../../../Components/Dashboard/Expert/FindWork/jobsData'
 import '../../Style/AdminDashboardPage.css'
 import '../../Style/ExpertDashboardPage.css'
+import '../../../Components/Dashboard/Expert/FindWork/FindWorkPage.css'
 
 const FindWorkPage = () => {
   const navigate = useNavigate()
@@ -31,6 +35,13 @@ const FindWorkPage = () => {
     else navigate(`/expert/${id}`)
   }
 
+  const filteredJobs = jobListings.filter((job) =>
+    job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    job.company.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    job.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    job.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
+  )
+
   return (
     <div className="admin-dashboard-layout expert-dashboard-layout">
       <ExpertSidebar activeTab="work" onTabChange={handleTabChange} onLogout={handleLogout} />
@@ -45,14 +56,37 @@ const FindWorkPage = () => {
           onLogout={handleLogout}
         />
 
-        <section className="admin-panel-card">
-          <div className="panel-header">
-            <h2 className="panel-title">Find Work</h2>
+        <div className="expert-content-container">
+          <div className="page-title-section" style={{ padding: '0 1.5rem', marginBottom: '1.5rem' }}>
+            <h1 style={{ fontSize: '1.8rem', fontWeight: '800', color: '#ffffff', margin: '0 0 0.5rem 0' }}>Find Work</h1>
+            <p style={{ color: '#8a94a6', margin: 0 }}>Explore new opportunities that match your AI expertise.</p>
           </div>
-          <div style={{ padding: '2rem', textAlign: 'center', color: '#94a3b8' }}>
-            <p>Khám phá các cơ hội việc làm mới phù hợp với kỹ năng AI của bạn.</p>
+
+          <div className="find-work-container">
+            <JobFilters />
+            
+            <div className="job-list-container">
+              <div className="job-list-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                <span style={{ color: '#94a3b8', fontSize: '0.9rem', fontWeight: '600' }}>
+                  Showing {filteredJobs.length} jobs
+                </span>
+                <div className="sort-select" style={{ color: '#cbd5e1', fontSize: '0.9rem' }}>
+                  Sort by: <span style={{ color: '#3b82f6', fontWeight: '700', cursor: 'pointer' }}>Newest First</span>
+                </div>
+              </div>
+
+              {filteredJobs.map((job) => (
+                <JobCard key={job.id} job={job} />
+              ))}
+
+              {filteredJobs.length === 0 && (
+                <div style={{ padding: '3rem', textAlign: 'center', color: '#64748b', backgroundColor: '#121829', borderRadius: '16px', border: '1px dashed rgba(255,255,255,0.1)' }}>
+                  <p>No jobs found matching your search criteria.</p>
+                </div>
+              )}
+            </div>
           </div>
-        </section>
+        </div>
 
         <ExpertDashboardFooter />
       </main>
