@@ -2,15 +2,28 @@
 
 .expert-content-container {
   padding: 1.5rem;
-  background-color: #090D1A;
   min-height: calc(100vh - 80px);
 }
 
 .page-header-row {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
+  align-items: flex-end;
+  margin-bottom: 2.5rem;
+  padding-top: 1.5rem;
+}
+
+.page-header-row h1 {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0 0 0.5rem 0;
+}
+
+.page-header-row p {
+  color: #8a94a6;
+  margin: 0;
+  font-size: 1rem;
 }
 
 .jobs-count-badge {

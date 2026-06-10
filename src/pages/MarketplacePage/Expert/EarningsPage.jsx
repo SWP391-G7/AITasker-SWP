@@ -1,11 +1,17 @@
 import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Wallet } from 'lucide-react'
 import { logout } from '../../../Services/authService'
 import ExpertSidebar from '../../../Components/Dashboard/Expert/ExpertSidebar'
 import ExpertHeader from '../../../Components/Dashboard/Expert/ExpertHeader'
 import ExpertDashboardFooter from '../../../Components/Dashboard/Expert/ExpertDashboardFooter'
+import EarningsOverviewCards from '../../../Components/Dashboard/Expert/Earnings/EarningsOverviewCards'
+import EarningsCharts from '../../../Components/Dashboard/Expert/Earnings/EarningsCharts'
+import TransactionTable from '../../../Components/Dashboard/Expert/Earnings/TransactionTable'
+import { earningsStats, incomeSummary, transactions } from '../../../Components/Dashboard/Expert/Earnings/earningsData'
 import '../../Style/AdminDashboardPage.css'
 import '../../Style/ExpertDashboardPage.css'
+import '../../../Components/Dashboard/Expert/Earnings/EarningsPage.css'
 
 const EarningsPage = () => {
   const navigate = useNavigate()
@@ -45,14 +51,27 @@ const EarningsPage = () => {
           onLogout={handleLogout}
         />
 
-        <section className="admin-panel-card">
-          <div className="panel-header">
-            <h2 className="panel-title">Earnings</h2>
+        <div className="earnings-container">
+          <div className="page-title-section">
+            <div>
+              <h1>Earnings</h1>
+              <p>Monitor your revenue and manage your payouts.</p>
+            </div>
+            <div className="header-actions">
+              <button className="btn-export">Export Statement</button>
+              <button className="btn-withdraw">
+                <Wallet size={18} />
+                Withdraw Funds
+              </button>
+            </div>
           </div>
-          <div style={{ padding: '2rem', textAlign: 'center', color: '#94a3b8' }}>
-            <p>Theo dõi thu nhập, lịch sử giao dịch và yêu cầu rút tiền.</p>
-          </div>
-        </section>
+
+          <EarningsOverviewCards stats={earningsStats} />
+          
+          <EarningsCharts summary={incomeSummary} />
+          
+          <TransactionTable transactions={transactions} />
+        </div>
 
         <ExpertDashboardFooter />
       </main>

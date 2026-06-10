@@ -59,8 +59,8 @@ const FindWorkPage = () => {
         <div className="expert-content-container">
           <div className="page-header-row">
             <div>
-              <h1 style={{ fontSize: '1.8rem', fontWeight: '800', color: '#ffffff', margin: '0 0 0.5rem 0' }}>Find Work</h1>
-              <p style={{ color: '#8a94a6', margin: 0 }}>Browse high-value AI opportunities from global companies.</p>
+              <h1>Find Work</h1>
+              <p>Browse high-value AI opportunities from global companies.</p>
             </div>
             <div className="jobs-count-badge">
               428 New Jobs Today
