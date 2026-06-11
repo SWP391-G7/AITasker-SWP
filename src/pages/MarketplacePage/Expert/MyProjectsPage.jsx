@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { logout } from '../../../Services/authService'
 import ExpertSidebar from '../../../Components/Dashboard/Expert/ExpertSidebar'
 import ExpertHeader from '../../../Components/Dashboard/Expert/ExpertHeader'
-import ExpertDashboardFooter from '../../../Components/Dashboard/Expert/ExpertDashboardFooter'
+import Footer from '../../../Components/Footer/Footer'
 import ProjectOverviewCards from '../../../Components/Dashboard/Expert/MyProjects/ProjectOverviewCards'
 import ProjectDeliverables from '../../../Components/Dashboard/Expert/MyProjects/ProjectDeliverables'
 import { myProjects } from '../../../Components/Dashboard/Expert/MyProjects/projectsData'
@@ -74,7 +74,7 @@ const MyProjectsPage = () => {
           <ProjectDeliverables projects={filteredProjects} />
         </div>
 
-        <ExpertDashboardFooter />
+        <Footer variant="dashboard" />
       </main>
     </div>
   )

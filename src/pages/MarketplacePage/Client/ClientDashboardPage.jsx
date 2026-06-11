@@ -7,7 +7,7 @@ import ClientSpendingChart from "../../../Components/Dashboard/Client/ClientSpen
 import ClientActiveProjectsTable from "../../../Components/Dashboard/Client/ClientActiveProjectsTable";
 import ClientRecentActivity from "../../../Components/Dashboard/Client/ClientRecentActivity";
 import ClientTalentCard from "../../../Components/Dashboard/Client/ClientTalentCard";
-import ClientDashboardFooter from "../../../Components/Dashboard/Client/ClientDashboardFooter";
+import Footer from "../../../Components/Footer/Footer";
 
 import {
   initialClientProjects,
@@ -58,7 +58,7 @@ function ClientDashboardPage() {
           </div>
         </section>
 
-        <ClientDashboardFooter />
+        <Footer variant="dashboard" />
       </main>
     </div>
   );

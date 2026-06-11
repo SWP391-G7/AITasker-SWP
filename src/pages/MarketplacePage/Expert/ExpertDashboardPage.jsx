@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { logout } from '../../../Services/authService'
 import ContractsPanel from '../../../Components/Dashboard/Expert/ContractsPanel'
-import ExpertDashboardFooter from '../../../Components/Dashboard/Expert/ExpertDashboardFooter'
+import Footer from '../../../Components/Footer/Footer'
 import ExpertHeader from '../../../Components/Dashboard/Expert/ExpertHeader'
 import ExpertRatingPanel from '../../../Components/Dashboard/Expert/ExpertRatingPanel'
 import ExpertSidebar from '../../../Components/Dashboard/Expert/ExpertSidebar'
@@ -80,7 +80,7 @@ const ExpertDashboardPage = ({ onLogout }) => {
           <InvitationsPanel invitations={filteredInvitations} />
         </section>
 
-        <ExpertDashboardFooter />
+        <Footer variant="dashboard" />
       </main>
     </div>
   )

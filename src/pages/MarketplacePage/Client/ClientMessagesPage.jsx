@@ -1,5 +1,6 @@
 import { Search, Send, Paperclip, MoreVertical, Phone, Video } from "lucide-react";
 import ClientSidebar from "../../../Components/Dashboard/Client/ClientSidebar";
+import Footer from "../../../Components/Footer/Footer";
 import "./ClientMarketplace.css";
 
 const conversations = [
@@ -180,6 +181,8 @@ function ClientMessagesPage() {
           </section>
         </section>
 
+        <Footer variant="dashboard" />
+        {/*
         <footer className="market-footer messages-footer">
           <div>
             <strong>AITasker</strong>
@@ -193,6 +196,7 @@ function ClientMessagesPage() {
             <span>API Documentation</span>
           </div>
         </footer>
+        */}
       </main>
     </div>
   );

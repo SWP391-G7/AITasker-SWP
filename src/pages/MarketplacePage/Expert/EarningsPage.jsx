@@ -4,7 +4,7 @@ import { Wallet } from 'lucide-react'
 import { logout } from '../../../Services/authService'
 import ExpertSidebar from '../../../Components/Dashboard/Expert/ExpertSidebar'
 import ExpertHeader from '../../../Components/Dashboard/Expert/ExpertHeader'
-import ExpertDashboardFooter from '../../../Components/Dashboard/Expert/ExpertDashboardFooter'
+import Footer from '../../../Components/Footer/Footer'
 import EarningsOverviewCards from '../../../Components/Dashboard/Expert/Earnings/EarningsOverviewCards'
 import EarningsCharts from '../../../Components/Dashboard/Expert/Earnings/EarningsCharts'
 import TransactionTable from '../../../Components/Dashboard/Expert/Earnings/TransactionTable'
@@ -73,7 +73,7 @@ const EarningsPage = () => {
           <TransactionTable transactions={transactions} />
         </div>
 
-        <ExpertDashboardFooter />
+        <Footer variant="dashboard" />
       </main>
     </div>
   )

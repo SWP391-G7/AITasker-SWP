@@ -1,5 +1,6 @@
 import { ArrowLeft, Bot, Code2, Eye, MoreHorizontal, Database, Workflow } from "lucide-react";
 import ClientSidebar from "../../../Components/Dashboard/Client/ClientSidebar";
+import Footer from "../../../Components/Footer/Footer";
 import "./ClientMarketplace.css";
 
 const categories = [
@@ -109,6 +110,8 @@ function PostJobPage() {
           <button className="next-btn">Next: Tech Stack</button>
         </section>
 
+        <Footer variant="dashboard" />
+        {/*
         <footer className="market-footer post-footer">
           <div>
             <strong>AITasker</strong>
@@ -122,6 +125,7 @@ function PostJobPage() {
             <span>API Documentation</span>
           </div>
         </footer>
+        */}
       </main>
     </div>
   );

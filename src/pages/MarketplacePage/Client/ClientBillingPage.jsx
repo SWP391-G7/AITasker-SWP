@@ -8,6 +8,7 @@ import {
   HelpCircle,
 } from "lucide-react";
 import ClientSidebar from "../../../Components/Dashboard/Client/ClientSidebar";
+import Footer from "../../../Components/Footer/Footer";
 import "./ClientMarketplace.css";
 
 const transactions = [
@@ -243,6 +244,8 @@ function ClientBillingPage() {
           </aside>
         </section>
 
+        <Footer variant="dashboard" />
+        {/*
         <footer className="market-footer billing-footer">
           <div>
             <strong>AITasker</strong>
@@ -256,6 +259,7 @@ function ClientBillingPage() {
             <span>API Documentation</span>
           </div>
         </footer>
+        */}
       </main>
     </div>
   );

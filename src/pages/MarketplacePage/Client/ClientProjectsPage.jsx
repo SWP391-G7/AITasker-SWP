@@ -1,4 +1,5 @@
 import ClientSidebar from "../../../Components/Dashboard/Client/ClientSidebar";
+import Footer from "../../../Components/Footer/Footer";
 import "./ClientMarketplace.css";
 
 const projects = [
@@ -186,6 +187,8 @@ function ClientProjectsPage() {
           </article>
         </section>
 
+        <Footer variant="dashboard" />
+        {/*
         <footer className="market-footer">
           <div>
             <strong>AITasker</strong>
@@ -199,6 +202,7 @@ function ClientProjectsPage() {
             <span>API Documentation</span>
           </div>
         </footer>
+        */}
       </main>
     </div>
   );

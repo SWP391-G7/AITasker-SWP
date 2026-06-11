@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { logout } from '../../../Services/authService'
 import ExpertSidebar from '../../../Components/Dashboard/Expert/ExpertSidebar'
 import ExpertHeader from '../../../Components/Dashboard/Expert/ExpertHeader'
-import ExpertDashboardFooter from '../../../Components/Dashboard/Expert/ExpertDashboardFooter'
+import Footer from '../../../Components/Footer/Footer'
 import JobFilters from '../../../Components/Dashboard/Expert/FindWork/JobFilters'
 import JobCard from '../../../Components/Dashboard/Expert/FindWork/JobCard'
 import { jobListings } from '../../../Components/Dashboard/Expert/FindWork/jobsData'
@@ -76,7 +76,7 @@ const FindWorkPage = () => {
           </div>
         </div>
 
-        <ExpertDashboardFooter />
+        <Footer variant="dashboard" />
       </main>
     </div>
   )

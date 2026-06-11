@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { logout } from '../../../Services/authService'
 import ExpertSidebar from '../../../Components/Dashboard/Expert/ExpertSidebar'
 import ExpertHeader from '../../../Components/Dashboard/Expert/ExpertHeader'
-import ExpertDashboardFooter from '../../../Components/Dashboard/Expert/ExpertDashboardFooter'
+import Footer from '../../../Components/Footer/Footer'
 import '../../Style/AdminDashboardPage.css'
 import '../../Style/ExpertDashboardPage.css'
 
@@ -54,7 +54,7 @@ const SettingsPage = () => {
           </div>
         </section>
 
-        <ExpertDashboardFooter />
+        <Footer variant="dashboard" />
       </main>
     </div>
   )
