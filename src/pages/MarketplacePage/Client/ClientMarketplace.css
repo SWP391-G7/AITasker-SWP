@@ -618,7 +618,7 @@
 
 .messages-layout {
   display: grid;
-  grid-template-columns: 390px minmax(0, 1fr);
+  grid-template-columns: 380px minmax(0, 1fr);
   gap: 28px;
   min-height: 720px;
 }
@@ -1360,6 +1360,7 @@
   gap: 1.5rem;
 }
 
+
 .market-topbar h1,
 .post-job-header h1,
 .messages-header h1,
@@ -1617,4 +1618,88 @@
   .billing-stats {
     grid-template-columns: 1fr;
   }
+}
+
+/* Messenger-style fixed client messages page. */
+.messages-main {
+  height: 100vh;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.messages-header {
+  flex: 0 0 auto;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.16);
+}
+
+.messages-header h1 {
+  font-size: 1.45rem;
+  line-height: 1.15;
+}
+
+.messages-header p {
+  font-size: 0.82rem;
+  margin-top: 0.25rem;
+}
+
+.messages-header-actions {
+  gap: 0.75rem;
+}
+
+.messages-header-actions button {
+  height: 38px;
+  padding: 0 1rem;
+  border-radius: 8px;
+  font-size: 0.82rem;
+}
+
+.messages-header .market-avatar {
+  width: 36px;
+  height: 36px;
+}
+
+.messages-layout {
+  flex: 1;
+  min-height: 0;
+  height: auto;
+}
+
+.conversation-panel,
+.chat-panel {
+  min-height: 0;
+}
+
+.conversation-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+.conversation-search {
+  flex: 0 0 auto;
+}
+
+.conversation-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 0.25rem;
+}
+
+.chat-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-header,
+.chat-input-area {
+  flex: 0 0 auto;
+}
+
+.chat-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
 }
