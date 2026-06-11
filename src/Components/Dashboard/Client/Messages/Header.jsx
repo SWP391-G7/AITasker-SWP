@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import "../../../../pages/MarketplacePage/Client/ClientMarketplace.css"
+import "../../../../pages/DashboardPage/Client/ClientMarketplace.css"
 
 export default class Header extends Component {
   render() {

@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import { Phone, Video, MoreVertical, Paperclip, Send } from "lucide-react";
-import "../../../../pages/MarketplacePage/Client/ClientMarketplace.css"
+import "../../../../pages/DashboardPage/Client/ClientMarketplace.css"
 import { messages } from "./Messages";
 
 export default class ChatPanel extends Component {

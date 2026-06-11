@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import { Search } from "lucide-react";
-import "../../../../pages/MarketplacePage/Client/ClientMarketplace.css"
+import "../../../../pages/DashboardPage/Client/ClientMarketplace.css"
 import { conversations } from "./Conversations";
 
 export default class ConversationPanel extends Component {
