@@ -12,6 +12,7 @@ import ClientDashboard from "../pages/ClientDashboard"
 import ProfilePage from "../pages/ProfilePage"
 import JobPostPage from "../pages/JobPostPage"
 import MyJobsPage from "../pages/MyJobsPage"
+import SearchResultsPage from "../pages/SearchResultsPage"
 
 // Protected route wrapper - redirects logged-in users away from auth pages
 function AuthRoute({ children }) {
@@ -121,6 +122,12 @@ function AppRoutes() {
           <ProtectedRoute>
             <MyJobsPage />
           </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/search-results" 
+        element={
+          <SearchResultsPage />
         } 
       />
     </Routes>
