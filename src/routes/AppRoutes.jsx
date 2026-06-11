@@ -5,12 +5,22 @@ import LandingPages from "../Components/LandingPages/LandingPages";
 import HeaderCom from "../Components/Navbar/HeaderCom";
 import EmailVerificationPage from "../pages/EmailVerificationPage";
 import ClientDashboardPage from "../pages/MarketplacePage/Client/ClientDashboardPage";
+import ClientProjectsPage from "../pages/MarketplacePage/Client/ClientProjectsPage";
+import PostJobPage from "../pages/MarketplacePage/Client/PostJobPage";
+import ClientMessagesPage from "../pages/MarketplacePage/Client/ClientMessagesPage";
+import ClientBillingPage from "../pages/MarketplacePage/Client/ClientBillingPage";
+import ClientSettingsPage from "../pages/MarketplacePage/Client/ClientSettingsPage";
 import AdminDashboardPage from "../pages/MarketplacePage/Admin/AdminDashboardPage";
 import UserManagementPage from "../pages/MarketplacePage/Admin/UserManagementPage";
 import ContentModerationPage from "../pages/MarketplacePage/Admin/ContentModerationPage";
 import DisputeResolutionPage from "../pages/MarketplacePage/Admin/DisputeResolutionPage";
 import AnalyticsPage from "../pages/MarketplacePage/Admin/AnalyticsPage";
 import ExpertDashboardPage from "../pages/MarketplacePage/Expert/ExpertDashboardPage";
+import MyProjectsPage from "../pages/MarketplacePage/Expert/MyProjectsPage";
+import FindWorkPage from "../pages/MarketplacePage/Expert/FindWorkPage";
+import EarningsPage from "../pages/MarketplacePage/Expert/EarningsPage";
+import ExpertMessagesPage from "../pages/MarketplacePage/Expert/MessagesPage";
+import ExpertSettingsPage from "../pages/MarketplacePage/Expert/SettingsPage";
 import { isLoggedIn } from "../Services/checkLogin";
 
 function RequireAuth({ children }) {
@@ -86,6 +96,54 @@ function AppRoutes() {
         }
       />
       <Route
+        path="/client/dashboard"
+        element={
+          <RequireAuth>
+            <ClientDashboardPage />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/client/projects"
+        element={
+          <RequireAuth>
+            <ClientProjectsPage />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/client/post-job"
+        element={
+          <RequireAuth>
+            <PostJobPage />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/client/messages"
+        element={
+          <RequireAuth>
+            <ClientMessagesPage />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/client/billing"
+        element={
+          <RequireAuth>
+            <ClientBillingPage />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/client/settings"
+        element={
+          <RequireAuth>
+            <ClientSettingsPage />
+          </RequireAuth>
+        }
+      />
+      <Route
         path="/admin-dashboard"
         element={
           <RequireAuth>
@@ -98,6 +156,54 @@ function AppRoutes() {
         element={
           <RequireAuth>
             <ExpertDashboardPage />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/expert/dashboard"
+        element={
+          <RequireAuth>
+            <ExpertDashboardPage />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/expert/projects"
+        element={
+          <RequireAuth>
+            <MyProjectsPage />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/expert/work"
+        element={
+          <RequireAuth>
+            <FindWorkPage />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/expert/earnings"
+        element={
+          <RequireAuth>
+            <EarningsPage />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/expert/messages"
+        element={
+          <RequireAuth>
+            <ExpertMessagesPage />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/expert/settings"
+        element={
+          <RequireAuth>
+            <ExpertSettingsPage />
           </RequireAuth>
         }
       />

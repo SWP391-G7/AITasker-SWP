@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { logout } from '../../../Services/authService'
 import ContractsPanel from '../../../Components/Dashboard/Expert/ContractsPanel'
 import ExpertDashboardFooter from '../../../Components/Dashboard/Expert/ExpertDashboardFooter'
 import ExpertHeader from '../../../Components/Dashboard/Expert/ExpertHeader'
@@ -28,11 +29,15 @@ const ExpertDashboardPage = ({ onLogout }) => {
   }, [])
 
   const handleLogout = onLogout || (() => {
-    localStorage.removeItem('user')
-    localStorage.removeItem('token')
-    localStorage.removeItem('email')
+    logout()
     navigate('/')
   })
+
+  const handleTabChange = (id) => {
+    setActiveTab(id)
+    if (id === 'dashboard') navigate('/expert/dashboard')
+    else navigate(`/expert/${id}`)
+  }
 
   const filteredContracts = contracts.filter((item) =>
     item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -48,15 +53,18 @@ const ExpertDashboardPage = ({ onLogout }) => {
 
   return (
     <div className="admin-dashboard-layout expert-dashboard-layout">
-      <ExpertSidebar activeTab={activeTab} onTabChange={setActiveTab} onLogout={handleLogout} />
+      <ExpertSidebar activeTab={activeTab} onTabChange={handleTabChange} onLogout={handleLogout} />
 
       <main className="admin-main-panel expert-main-panel">
         <ExpertHeader
+          title="Expert Overview"
+          subtitle={<>Your performance is up <span className="trend-up">+12.4%</span> this month.</>}
           notifications={notifications}
           onClearNotifications={() => setNotifications(0)}
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
           user={user}
+          onLogout={handleLogout}
         />
 
         <section className="expert-overview-grid">

@@ -10,7 +10,7 @@ const FAKE_USER = {
   id: 'fake-user-1',
   fullName: 'Frontend Tester',
   email: 'test@aitasker.local',
-  role: 'admin', // Có thể đổi thành 'client' để test giao diện client
+  role: 'client', // Có thể đổi thành 'client' để test giao diện client
 };
 
 // FAKE AUTH: Email/password dùng để đăng nhập trên form Login.

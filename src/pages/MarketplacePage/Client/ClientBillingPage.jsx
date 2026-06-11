@@ -1,0 +1,264 @@
+import {
+  CreditCard,
+  Download,
+  Plus,
+  ShieldCheck,
+  Wallet,
+  ReceiptText,
+  HelpCircle,
+} from "lucide-react";
+import ClientSidebar from "../../../Components/Dashboard/Client/ClientSidebar";
+import "./ClientMarketplace.css";
+
+const transactions = [
+  {
+    id: "INV-2024-0142",
+    service: "Enterprise LLM Fine-tuning",
+    expert: "Dr. Julian V.",
+    date: "Oct 21, 2024",
+    amount: "$2,400.00",
+    status: "Paid",
+  },
+  {
+    id: "INV-2024-0138",
+    service: "Neural Voice Synthesis",
+    expert: "Sarah K.",
+    date: "Oct 18, 2024",
+    amount: "$1,250.00",
+    status: "Escrow",
+  },
+  {
+    id: "INV-2024-0127",
+    service: "Predictive Churn Model v2",
+    expert: "Marcus T.",
+    date: "Oct 12, 2024",
+    amount: "$3,800.00",
+    status: "Paid",
+  },
+  {
+    id: "INV-2024-0119",
+    service: "Legacy Code Automation",
+    expert: "Nexus Dev Labs",
+    date: "Oct 02, 2024",
+    amount: "$950.00",
+    status: "Pending",
+  },
+];
+
+function ClientBillingPage() {
+  return (
+    <div className="market-client-layout">
+      <ClientSidebar activeTab="billing" />
+
+      <main className="billing-main">
+        <header className="billing-header">
+          <div>
+            <h1>Billing & Payments</h1>
+            <p>Manage payment methods, escrow funds, and transaction history.</p>
+          </div>
+
+          <button className="billing-download-btn">
+            <Download size={18} />
+            Download Report
+          </button>
+        </header>
+
+        <section className="billing-stats">
+          <div className="billing-stat-card">
+            <div>
+              <span>ACTIVE ESCROW</span>
+              <strong>$7,650.00</strong>
+              <p>Funds secured for active milestones</p>
+            </div>
+
+            <div className="billing-icon blue">
+              <ShieldCheck size={26} />
+            </div>
+          </div>
+
+          <div className="billing-stat-card">
+            <div>
+              <span>THIS MONTH</span>
+              <strong>$14,280.00</strong>
+              <p>Total AI service spending</p>
+            </div>
+
+            <div className="billing-icon green">
+              <Wallet size={26} />
+            </div>
+          </div>
+
+          <div className="billing-stat-card">
+            <div>
+              <span>PENDING INVOICES</span>
+              <strong>03</strong>
+              <p>Invoices awaiting confirmation</p>
+            </div>
+
+            <div className="billing-icon orange">
+              <ReceiptText size={26} />
+            </div>
+          </div>
+        </section>
+
+        <section className="billing-layout">
+          <div className="billing-left">
+            <section className="billing-panel payment-methods">
+              <div className="billing-panel-header">
+                <div>
+                  <h2>Payment Methods</h2>
+                  <p>Your saved cards and billing options.</p>
+                </div>
+
+                <button>
+                  <Plus size={16} />
+                  Add Method
+                </button>
+              </div>
+
+              <div className="payment-card primary">
+                <div className="payment-card-top">
+                  <CreditCard size={28} />
+                  <span>PRIMARY</span>
+                </div>
+
+                <h3>Visa ending in 4242</h3>
+                <p>Expires 08/2028</p>
+
+                <div className="payment-card-footer">
+                  <strong>Andy Client</strong>
+                  <button>Edit</button>
+                </div>
+              </div>
+
+              <div className="payment-card">
+                <div className="payment-card-top">
+                  <CreditCard size={28} />
+                  <span>BACKUP</span>
+                </div>
+
+                <h3>Mastercard ending in 9182</h3>
+                <p>Expires 11/2027</p>
+
+                <div className="payment-card-footer">
+                  <strong>AITasker Business</strong>
+                  <button>Edit</button>
+                </div>
+              </div>
+            </section>
+
+            <section className="billing-panel transaction-panel">
+              <div className="billing-panel-header">
+                <div>
+                  <h2>Transaction History</h2>
+                  <p>Recent payments and escrow releases.</p>
+                </div>
+
+                <button className="ghost-download">
+                  <Download size={16} />
+                  Export
+                </button>
+              </div>
+
+              <table className="billing-table">
+                <thead>
+                  <tr>
+                    <th>Invoice</th>
+                    <th>Service</th>
+                    <th>Date</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {transactions.map((item) => (
+                    <tr key={item.id}>
+                      <td>
+                        <strong>{item.id}</strong>
+                        <p>{item.expert}</p>
+                      </td>
+
+                      <td>{item.service}</td>
+                      <td>{item.date}</td>
+                      <td className="billing-amount">{item.amount}</td>
+
+                      <td>
+                        <span
+                          className={`billing-status ${item.status.toLowerCase()}`}
+                        >
+                          {item.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </section>
+          </div>
+
+          <aside className="billing-right">
+            <section className="billing-panel escrow-panel">
+              <h2>Escrow Overview</h2>
+
+              <div className="escrow-circle">
+                <div>
+                  <strong>72%</strong>
+                  <span>Allocated</span>
+                </div>
+              </div>
+
+              <div className="escrow-list">
+                <div>
+                  <span>Released</span>
+                  <strong>$18,250</strong>
+                </div>
+
+                <div>
+                  <span>In Escrow</span>
+                  <strong>$7,650</strong>
+                </div>
+
+                <div>
+                  <span>Pending Review</span>
+                  <strong>$2,100</strong>
+                </div>
+              </div>
+            </section>
+
+            <section className="billing-support-card">
+              <div className="support-icon">
+                <HelpCircle size={28} />
+              </div>
+
+              <h2>Need billing support?</h2>
+
+              <p>
+                Our payment team can help with invoices, escrow questions, and
+                refund requests.
+              </p>
+
+              <button>Contact Support</button>
+            </section>
+          </aside>
+        </section>
+
+        <footer className="market-footer billing-footer">
+          <div>
+            <strong>AITasker</strong>
+            <p>© 2024 AITasker. All rights reserved.</p>
+          </div>
+
+          <div>
+            <span>Privacy Policy</span>
+            <span>Terms of Service</span>
+            <span>Help Center</span>
+            <span>API Documentation</span>
+          </div>
+        </footer>
+      </main>
+    </div>
+  );
+}
+
+export default ClientBillingPage;

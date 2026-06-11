@@ -14,10 +14,10 @@ const getDashboardPathByRole = (role) => {
   }
 
   if (normalizedRole.includes("expert")) {
-    return "/expert-dashboard";
+    return "/expert/dashboard";
   }
 
-  return "/dashboard";
+  return "/client/dashboard";
 };
 
 export default function HeaderCom() {
