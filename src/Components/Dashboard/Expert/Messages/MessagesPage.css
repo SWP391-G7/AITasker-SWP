@@ -1,27 +1,86 @@
-/* Updated MessagesPage Styles for 3-Column Layout */
+/* Updated MessagesPage Styles for Messenger-like Layout */
+
+.expert-messages-main {
+  height: 100vh;
+  min-height: 0;
+  overflow: hidden;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.expert-messages-header {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.16);
+}
+
+.expert-messages-header h1 {
+  color: #ffffff;
+  font-size: 1.45rem;
+  font-weight: 800;
+  line-height: 1.15;
+  margin: 0;
+}
+
+.expert-messages-header p {
+  color: #94a3b8;
+  font-size: 0.82rem;
+  margin: 0.25rem 0 0;
+}
 
 .messages-layout-container {
   display: grid;
   grid-template-columns: 320px 1fr 300px;
-  height: calc(100vh - 180px);
-  background-color: #121829;
-  border: 1px solid #1E293B;
-  border-radius: 20px;
+  flex: 1;
+  min-height: 0;
+  background: linear-gradient(145deg, rgba(15, 30, 53, 0.96), rgba(8, 20, 39, 0.96));
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: 14px;
   overflow: hidden;
-  margin: 0 1.5rem 1.5rem;
 }
 
 /* Column 1: Chat List */
 .chat-list-sidebar {
-  border-right: 1px solid #1E293B;
+  border-right: 1px solid rgba(148, 163, 184, 0.2);
   display: flex;
   flex-direction: column;
-  background-color: rgba(15, 23, 42, 0.4);
+  min-height: 0;
+  background-color: rgba(15, 30, 53, 0.48);
 }
 
 .chat-list-header {
-  padding: 1.25rem;
-  border-bottom: 1px solid #1E293B;
+  flex: 0 0 auto;
+  padding: 1rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.chat-search-box {
+  height: 42px;
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  background: #061326;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0 0.9rem;
+}
+
+.chat-search-box input {
+  flex: 1;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #e5edff;
+  font-size: 0.85rem;
+}
+
+.conversations-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .list-section-label {
@@ -34,16 +93,51 @@
 }
 
 .conversation-item {
-  padding: 1rem 1.25rem;
+  padding: 0.9rem 1rem;
   display: flex;
   gap: 0.85rem;
   cursor: pointer;
   transition: all 0.2s ease;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+  border: 1px solid transparent;
+  border-radius: 12px;
+  margin: 0.35rem 0.65rem;
 }
 
+.conversation-item:hover,
 .conversation-item.active {
-  background-color: rgba(59, 130, 246, 0.1);
+  background: rgba(59, 130, 246, 0.12);
+  border-color: rgba(147, 197, 253, 0.22);
+}
+
+.avatar-wrapper {
+  flex-shrink: 0;
+  position: relative;
+}
+
+.chat-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: linear-gradient(135deg, #2563eb, #22d3ee);
+}
+
+.status-dot {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 10px;
+  height: 10px;
+  border: 2px solid #0f172a;
+  border-radius: 50%;
+}
+
+.status-online {
+  background: #10b981;
+}
+
+.status-offline {
+  background: #64748b;
 }
 
 .chat-info {
@@ -60,7 +154,7 @@
 .chat-name {
   color: #ffffff;
   font-weight: 700;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
 }
 
 .chat-time {
@@ -75,7 +169,7 @@
 }
 
 .chat-last-msg {
-  color: #8a94a6;
+  color: #aab6cf;
   font-size: 0.8rem;
   white-space: nowrap;
   overflow: hidden;
@@ -86,13 +180,16 @@
 .chat-window-main {
   display: flex;
   flex-direction: column;
-  background-color: #0d111e;
-  border-right: 1px solid #1E293B;
+  min-height: 0;
+  background-color: rgba(6, 19, 38, 0.42);
+  border-right: 1px solid rgba(148, 163, 184, 0.2);
 }
 
 .chat-header {
-  padding: 1rem 1.5rem;
-  border-bottom: 1px solid #1E293B;
+  flex: 0 0 auto;
+  min-height: 72px;
+  padding: 0.85rem 1.25rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.2);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -100,7 +197,7 @@
 
 .header-user-info h4 {
   color: #ffffff;
-  font-size: 0.95rem;
+  font-size: 1rem;
   font-weight: 700;
   margin: 0;
 }
@@ -113,11 +210,15 @@
 
 .chat-messages-area {
   flex: 1;
+  min-height: 0;
   padding: 1.5rem;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 1rem;
+  background:
+    radial-gradient(circle at top right, rgba(59, 130, 246, 0.08), transparent 35%),
+    rgba(6, 19, 38, 0.28);
 }
 
 .date-divider {
@@ -132,21 +233,24 @@
 .message-bubble {
   max-width: 80%;
   padding: 0.85rem 1rem;
-  border-radius: 14px;
+  border-radius: 18px;
   font-size: 0.88rem;
   line-height: 1.5;
+  border: 1px solid rgba(148, 163, 184, 0.16);
 }
 
 .msg-client {
   align-self: flex-start;
-  background-color: #1e293b;
-  color: #cbd5e1;
+  background: rgba(15, 30, 53, 0.92);
+  color: #dbeafe;
+  border-top-left-radius: 6px;
 }
 
 .msg-expert {
   align-self: flex-end;
-  background-color: #3b82f6;
-  color: #ffffff;
+  background: #b7d0ff;
+  color: #082143;
+  border-top-right-radius: 6px;
 }
 
 .file-attachment-card {
@@ -189,11 +293,47 @@
 }
 
 .chat-input-footer {
-  padding: 1.25rem;
-  border-top: 1px solid #1E293B;
+  flex: 0 0 auto;
+  padding: 1rem;
+  border-top: 1px solid rgba(148, 163, 184, 0.2);
   display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.chat-input-wrapper {
+  flex: 1;
+}
+
+.chat-input-wrapper input {
+  width: 100%;
+  height: 44px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  background: #061326;
+  color: #e5edff;
+  outline: 0;
+  padding: 0 1rem;
+  font-size: 0.88rem;
+}
+
+.btn-send-msg,
+.chat-header .icon-button {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  background: rgba(15, 30, 53, 0.72);
+  color: #dbeafe;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-send-msg {
+  border: 0;
+  background: #b7d0ff;
+  color: #082143;
 }
 
 .input-actions-row {
@@ -226,11 +366,13 @@
 
 /* Column 3: Project Sidebar */
 .project-overview-sidebar {
-  padding: 1.5rem;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 1.25rem;
   display: flex;
   flex-direction: column;
   gap: 2rem;
-  background-color: rgba(15, 23, 42, 0.2);
+  background-color: rgba(15, 30, 53, 0.24);
 }
 
 .sidebar-section-title {
@@ -243,9 +385,9 @@
 }
 
 .project-brief-card {
-  background-color: #090D1A;
-  border: 1px solid #1E293B;
-  border-radius: 14px;
+  background: rgba(6, 19, 38, 0.72);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 12px;
   padding: 1.25rem;
 }
 
@@ -308,4 +450,15 @@
     grid-template-columns: 280px 1fr;
   }
   .project-overview-sidebar { display: none; }
+}
+
+@media (max-width: 991px) {
+  .expert-messages-main {
+    height: auto;
+    overflow: visible;
+  }
+
+  .messages-layout-container {
+    min-height: 680px;
+  }
 }

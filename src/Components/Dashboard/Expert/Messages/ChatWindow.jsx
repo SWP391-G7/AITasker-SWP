@@ -17,7 +17,6 @@ const ChatWindow = ({ conversation }) => {
           <img src={conversation.avatar} alt={conversation.name} className="chat-avatar" style={{ width: 40, height: 40 }} />
           <div className="header-user-info">
             <h4>{conversation.name}</h4>
-            <span>{conversation.status === 'online' ? 'Online' : 'Offline'}</span>
           </div>
         </div>
         <div className="header-actions" style={{ gap: '1.25rem' }}>
