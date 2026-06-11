@@ -1,3 +1,5 @@
+import { useState, useEffect } from "react"
+import { useLocation, useNavigate } from "react-router-dom"
 import Sidebar from "../Components/dashboard/Sidebar"
 import DashboardHeader from "../Components/dashboard/DashboardHeader"
 import StatCard from "../Components/dashboard/StatCard"
@@ -8,6 +10,22 @@ import TalentCard from "../Components/dashboard/TalentCard"
 import "../Components/dashboard/Dashboard.css"
 
 function ClientDashboard() {
+  const location = useLocation()
+  const navigate = useNavigate()
+  const [alert, setAlert] = useState(null)
+
+  useEffect(() => {
+    if (location.state && location.state.message) {
+      setAlert(location.state)
+      // Clear history state to avoid alert showing up on manual reloads
+      window.history.replaceState({}, document.title)
+      const timer = setTimeout(() => {
+        setAlert(null)
+      }, 5000)
+      return () => clearTimeout(timer)
+    }
+  }, [location.state])
+
   return (
     <div className="dashboard-page">
       <Sidebar />
@@ -15,9 +33,17 @@ function ClientDashboard() {
       <main className="dashboard-main">
         <DashboardHeader />
 
+        {alert && (
+          <div className={`dashboard-alert alert-${alert.type}`}>
+            <span className="alert-icon">{alert.type === "success" ? "✅" : "❌"}</span>
+            <p className="alert-message">{alert.message}</p>
+            <button className="close-alert-btn" onClick={() => setAlert(null)}>×</button>
+          </div>
+        )}
+
         <div className="dashboard-actions">
           <button className="secondary-btn">Download Report</button>
-          <button className="primary-small-btn">New Project</button>
+          <button className="primary-small-btn" onClick={() => navigate("/post-job")}>New Project</button>
         </div>
 
         <section className="stats-grid">

@@ -10,6 +10,8 @@ import { isLoggedIn } from "../Services/checkLogin"
 import OnboardingPage from "../pages/OnboardingPage";
 import ClientDashboard from "../pages/ClientDashboard"
 import ProfilePage from "../pages/ProfilePage"
+import JobPostPage from "../pages/JobPostPage"
+import MyJobsPage from "../pages/MyJobsPage"
 
 // Protected route wrapper - redirects logged-in users away from auth pages
 function AuthRoute({ children }) {
@@ -23,6 +25,23 @@ function AuthRoute({ children }) {
 
   if (isUserLoggedIn) {
     return <Navigate to="/" replace />
+  }
+
+  return children
+}
+
+// Protected route wrapper - redirects guests to the login page
+function ProtectedRoute({ children }) {
+  const [isUserLoggedIn, setIsUserLoggedIn] = useState(null)
+
+  useEffect(() => {
+    setIsUserLoggedIn(isLoggedIn())
+  }, [])
+
+  if (isUserLoggedIn === null) return null // Loading
+
+  if (!isUserLoggedIn) {
+    return <Navigate to="/login" replace />
   }
 
   return children
@@ -56,12 +75,54 @@ function AppRoutes() {
           </AuthRoute>
         } 
       />
-      <Route path="/onboarding" element={<OnboardingPage />} />
-      <Route path="/dashboard" element={<Dashboard />} />
-      <Route path="/client/dashboard" element={<ClientDashboard />} />
-      <Route path="/profile/:userId" element={<ProfilePage />} />
-      
-      
+      <Route 
+        path="/onboarding" 
+        element={
+          <ProtectedRoute>
+            <OnboardingPage />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/dashboard" 
+        element={
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/client/dashboard" 
+        element={
+          <ProtectedRoute>
+            <ClientDashboard />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/profile/:userId" 
+        element={
+          <ProtectedRoute>
+            <ProfilePage />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/post-job" 
+        element={
+          <ProtectedRoute>
+            <JobPostPage />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/my-jobs" 
+        element={
+          <ProtectedRoute>
+            <MyJobsPage />
+          </ProtectedRoute>
+        } 
+      />
     </Routes>
   )
 }

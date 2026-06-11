@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { getStoredUser } from "../../Services/checkLogin";
 
-function DashboardHeader() {
+function DashboardHeader({ title, subtitle }) {
   const navigate = useNavigate();
   const currentUser = getStoredUser();
   
@@ -18,8 +18,8 @@ function DashboardHeader() {
   return (
     <header className="dashboard-header">
       <div>
-        <h1>Client Overview</h1>
-        <p>Welcome back. Here's what's happening with your projects today.</p>
+        <h1>{title || "Client Overview"}</h1>
+        <p>{subtitle || "Welcome back. Here's what's happening with your projects today."}</p>
       </div>
 
       <div className="header-right">
