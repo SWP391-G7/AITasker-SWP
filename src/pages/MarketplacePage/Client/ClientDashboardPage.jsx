@@ -1,21 +1,21 @@
 import { useState } from "react";
 
-import ClientSidebar from "../Components/Dashboard/Client/ClientSidebar";
-import ClientHeader from "../Components/Dashboard/Client/ClientHeader";
-import ClientStats from "../Components/Dashboard/Client/ClientStats";
-import ClientSpendingChart from "../Components/Dashboard/Client/ClientSpendingChart";
-import ClientActiveProjectsTable from "../Components/Dashboard/Client/ClientActiveProjectsTable";
-import ClientRecentActivity from "../Components/Dashboard/Client/ClientRecentActivity";
-import ClientTalentCard from "../Components/Dashboard/Client/ClientTalentCard";
-import ClientDashboardFooter from "../Components/Dashboard/Client/ClientDashboardFooter";
+import ClientSidebar from "../../../Components/Dashboard/Client/ClientSidebar";
+import ClientHeader from "../../../Components/Dashboard/Client/ClientHeader";
+import ClientStats from "../../../Components/Dashboard/Client/ClientStats";
+import ClientSpendingChart from "../../../Components/Dashboard/Client/ClientSpendingChart";
+import ClientActiveProjectsTable from "../../../Components/Dashboard/Client/ClientActiveProjectsTable";
+import ClientRecentActivity from "../../../Components/Dashboard/Client/ClientRecentActivity";
+import ClientTalentCard from "../../../Components/Dashboard/Client/ClientTalentCard";
+import ClientDashboardFooter from "../../../Components/Dashboard/Client/ClientDashboardFooter";
 
 import {
   initialClientProjects,
   initialClientActivities,
-} from "../Components/Dashboard/Client/clientDashboardData";
+} from "../../../Components/Dashboard/Client/clientDashboardData";
 
-import "./Style/AdminDashboardPage.css";
-import "./Style/ClientDashboardPage.css";
+import "../../Style/AdminDashboardPage.css";
+import "../../Style/ClientDashboardPage.css";
 
 function ClientDashboardPage() {
   const [searchQuery, setSearchQuery] = useState("");
