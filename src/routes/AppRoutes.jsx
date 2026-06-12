@@ -4,6 +4,7 @@ import RegisterPage from "../pages/RegisterPage";
 import LandingPages from "../Components/LandingPages/LandingPages";
 import HeaderCom from "../Components/Navbar/HeaderCom";
 import EmailVerificationPage from "../pages/EmailVerificationPage";
+import OnboardingPage from "../pages/OnboardingPage";
 import ClientDashboardPage from "../pages/DashboardPage/Client/ClientDashboardPage";
 import ClientProjectsPage from "../pages/DashboardPage/Client/ClientProjectsPage";
 import PostJobPage from "../pages/DashboardPage/Client/PostJobPage";
@@ -42,12 +43,16 @@ function RequireAuth({ children }) {
   return children;
 }
 
-function GuestOnly({ children }) { //Redirect logged in users away from login/register pages
+function GuestOnly({ children }) {
   if (isLoggedIn()) {
     return <Navigate to="/" replace />;
   }
 
   return children;
+}
+
+function ProtectedRoute({ children }) {
+  return <RequireAuth>{children}</RequireAuth>;
 }
 
 function AppRoutes() {
@@ -88,157 +93,161 @@ function AppRoutes() {
       />
       <Route path="/verify" element={<Navigate to="/verify-email" replace />} />
       <Route
-        path="/dashboard"
+        path="/onboarding"
         element={
-          <RequireAuth>
-            <ClientDashboardPage />
-          </RequireAuth>
+          <ProtectedRoute>
+            <OnboardingPage />
+          </ProtectedRoute>
         }
       />
       <Route
+        path="/dashboard"
+        element={<Navigate to="/client/dashboard" replace />}
+      />
+
+      <Route
         path="/client/dashboard"
         element={
-          <RequireAuth>
+          <ProtectedRoute>
             <ClientDashboardPage />
-          </RequireAuth>
+          </ProtectedRoute>
         }
       />
       <Route
         path="/client/projects"
         element={
-          <RequireAuth>
+          <ProtectedRoute>
             <ClientProjectsPage />
-          </RequireAuth>
+          </ProtectedRoute>
         }
       />
       <Route
         path="/client/post-job"
         element={
-          <RequireAuth>
+          <ProtectedRoute>
             <PostJobPage />
-          </RequireAuth>
+          </ProtectedRoute>
         }
       />
       <Route
         path="/client/messages"
         element={
-          <RequireAuth>
+          <ProtectedRoute>
             <ClientMessagesPage />
-          </RequireAuth>
+          </ProtectedRoute>
         }
       />
       <Route
         path="/client/billing"
         element={
-          <RequireAuth>
+          <ProtectedRoute>
             <ClientBillingPage />
-          </RequireAuth>
+          </ProtectedRoute>
         }
       />
       <Route
         path="/client/settings"
         element={
-          <RequireAuth>
+          <ProtectedRoute>
             <ClientSettingsPage />
-          </RequireAuth>
+          </ProtectedRoute>
         }
       />
+
       <Route
         path="/admin-dashboard"
         element={
-          <RequireAuth>
+          <ProtectedRoute>
             <AdminDashboardPage />
-          </RequireAuth>
-        }
-      />
-      <Route
-        path="/expert-dashboard"
-        element={
-          <RequireAuth>
-            <ExpertDashboardPage />
-          </RequireAuth>
-        }
-      />
-      <Route
-        path="/expert/dashboard"
-        element={
-          <RequireAuth>
-            <ExpertDashboardPage />
-          </RequireAuth>
-        }
-      />
-      <Route
-        path="/expert/projects"
-        element={
-          <RequireAuth>
-            <MyProjectsPage />
-          </RequireAuth>
-        }
-      />
-      <Route
-        path="/expert/work"
-        element={
-          <RequireAuth>
-            <FindWorkPage />
-          </RequireAuth>
-        }
-      />
-      <Route
-        path="/expert/earnings"
-        element={
-          <RequireAuth>
-            <EarningsPage />
-          </RequireAuth>
-        }
-      />
-      <Route
-        path="/expert/messages"
-        element={
-          <RequireAuth>
-            <ExpertMessagesPage />
-          </RequireAuth>
-        }
-      />
-      <Route
-        path="/expert/settings"
-        element={
-          <RequireAuth>
-            <ExpertSettingsPage />
-          </RequireAuth>
+          </ProtectedRoute>
         }
       />
       <Route
         path="/admin-users"
         element={
-          <RequireAuth>
+          <ProtectedRoute>
             <UserManagementPage />
-          </RequireAuth>
+          </ProtectedRoute>
         }
       />
       <Route
         path="/admin-moderation"
         element={
-          <RequireAuth>
+          <ProtectedRoute>
             <ContentModerationPage />
-          </RequireAuth>
+          </ProtectedRoute>
         }
       />
       <Route
         path="/admin-disputes"
         element={
-          <RequireAuth>
+          <ProtectedRoute>
             <DisputeResolutionPage />
-          </RequireAuth>
+          </ProtectedRoute>
         }
       />
       <Route
         path="/admin-analytics"
         element={
-          <RequireAuth>
+          <ProtectedRoute>
             <AnalyticsPage />
-          </RequireAuth>
+          </ProtectedRoute>
         }
       />
+
+      <Route
+        path="/expert-dashboard"
+        element={<Navigate to="/expert/dashboard" replace />}
+      />
+      <Route
+        path="/expert/dashboard"
+        element={
+          <ProtectedRoute>
+            <ExpertDashboardPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/expert/projects"
+        element={
+          <ProtectedRoute>
+            <MyProjectsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/expert/work"
+        element={
+          <ProtectedRoute>
+            <FindWorkPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/expert/earnings"
+        element={
+          <ProtectedRoute>
+            <EarningsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/expert/messages"
+        element={
+          <ProtectedRoute>
+            <ExpertMessagesPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/expert/settings"
+        element={
+          <ProtectedRoute>
+            <ExpertSettingsPage />
+          </ProtectedRoute>
+        }
+      />
+
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

@@ -176,7 +176,7 @@ function RegisterForm() {
 
       <div className="bottom-text">
         Already have an account?{" "}
-        <button type="button" onClick={() => navigate("/login")} disabled={isLoading}>
+        <button type="button" onClick={() => navigate("/onboarding")} disabled={isLoading}>
           Log in
         </button>
       </div>
