@@ -1,87 +1,87 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Eye, EyeOff, Lock, Mail, User } from "lucide-react";
-import { register } from "../../Services/authService";
+import { useState } from "react"
+import { useNavigate } from "react-router-dom"
+import { Eye, EyeOff, Lock, Mail, User } from "lucide-react"
+import { register } from "../../Services/authService"
 
 function RegisterForm() {
-  const navigate = useNavigate();
+  const navigate = useNavigate()
 
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
     password: "",
     confirmPassword: "",
-  });
+  })
 
-  const [error, setError] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("")
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
 
   const handleChange = (event) => {
-    const { name, value } = event.target;
+    const { name, value } = event.target
 
     setFormData({
       ...formData,
       [name]: value,
-    });
-  };
+    })
+  }
 
   const validateForm = () => {
     if (!formData.fullName.trim()) {
-      return "Full name is required";
+      return "Full name is required"
     }
 
     if (!formData.email.trim()) {
-      return "Email is required";
+      return "Email is required"
     }
 
     if (!formData.email.includes("@")) {
-      return "Email is invalid";
+      return "Email is invalid"
     }
 
     if (!formData.password.trim()) {
-      return "Password is required";
+      return "Password is required"
     }
 
     if (formData.password.length < 6) {
-      return "Password must be at least 6 characters";
+      return "Password must be at least 6 characters"
     }
 
     if (formData.password !== formData.confirmPassword) {
-      return "Confirm password does not match";
+      return "Confirm password does not match"
     }
 
-    return "";
-  };
+    return ""
+  }
 
   const handleSubmit = async (event) => {
-    event.preventDefault();
+    event.preventDefault()
 
-    const validateError = validateForm();
+    const validateError = validateForm()
 
     if (validateError) {
-      setError(validateError);
-      return;
+      setError(validateError)
+      return
     }
 
     try {
-      setError("");
-      setIsLoading(true);
+      setError("")
+      setIsLoading(true)
 
       await register({
         fullName: formData.fullName,
         email: formData.email,
         password: formData.password,
-      });
+      })
 
-      navigate("/verify-email", { state: { email: formData.email } });
+      navigate("/verify-email", { state: { email: formData.email } })
     } catch (err) {
-      setError(err.message || "Register failed. Please try again.");
+      setError(err.message || "Register failed. Please try again.")
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   return (
     <>
@@ -181,7 +181,7 @@ function RegisterForm() {
         </button>
       </div>
     </>
-  );
+  )
 }
 
-export default RegisterForm;
+export default RegisterForm

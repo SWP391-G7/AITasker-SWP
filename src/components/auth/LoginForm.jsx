@@ -1,68 +1,80 @@
-import { useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { Eye, EyeOff, Lock, Mail } from "lucide-react";
-import { login } from "../../Services/authService";
+import { useState } from "react"
+import { useLocation, useNavigate } from "react-router-dom"
+import { Eye, EyeOff, Lock, Mail } from "lucide-react"
+import { login } from "../../Services/authService"
 
 function LoginForm() {
-  const navigate = useNavigate();
-  const location = useLocation();
+  const navigate = useNavigate()
+  const location = useLocation()
 
   const [formData, setFormData] = useState({
     email: "",
     password: "",
-  });
+  })
 
-  const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false)
+  const [error, setError] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
 
   const handleChange = (event) => { //Set form data state when user types in email or password fields
-    const { name, value } = event.target;
+    const { name, value } = event.target
 
     setFormData({
       ...formData,
       [name]: value,
-    });
-  };
+    })
+  }
 
   const validateForm = () => { //Validate form inputs
     if (!formData.email.trim()) {
-      return "Email is required";
+      return "Email is required"
     }
 
     if (!formData.email.includes("@")) {
-      return "Email is invalid";
+      return "Email is invalid"
     }
 
     if (!formData.password.trim()) {
-      return "Password is required";
+      return "Password is required"
     }
 
-    return "";
-  };
+    return ""
+  }
 
   const handleSubmit = async (event) => { //Handle form submission when user clicks "Log In" button
-    event.preventDefault();
+    event.preventDefault()
 
-    const validateError = validateForm();
+    const validateError = validateForm()
 
     if (validateError) {
-      setError(validateError);
-      return;
+      setError(validateError)
+      return
     }
 
     try {
-      setError("");
-      setIsLoading(true);
+      setError("")
+      setIsLoading(true)
 
-      await login(formData);
-      navigate(location.state?.from || "/", { replace: true });
+      const result = await login(formData)
+
+      console.log("Login success:", result)
+
+      navigate("/dashboard")
     } catch (err) {
-      setError(err.message || "Login failed. Please check your email or password.");
+      // Handle email verification required error
+      if (err.isVerificationRequired) {
+        console.log("Email verification required, redirecting to verification page")
+        navigate("/email-verification", {
+          state: { email: err.email }
+        })
+        return
+      }
+
+      setError(err.message || "Login failed. Please check your email or password.")
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   return (
     <>
@@ -136,7 +148,7 @@ function LoginForm() {
         Create new account
       </button>
     </>
-  );
+  )
 }
 
-export default LoginForm;
+export default LoginForm

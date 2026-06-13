@@ -1,31 +1,32 @@
-import { Navigate, Route, Routes, useLocation } from "react-router-dom";
-import LoginPage from "../pages/LoginPage";
-import RegisterPage from "../pages/RegisterPage";
-import LandingPages from "../Components/LandingPages/LandingPages";
-import HeaderCom from "../Components/Navbar/HeaderCom";
-import EmailVerificationPage from "../pages/EmailVerificationPage";
-import OnboardingPage from "../pages/OnboardingPage";
-import ClientDashboardPage from "../pages/DashboardPage/Client/ClientDashboardPage";
-import ClientProjectsPage from "../pages/DashboardPage/Client/ClientProjectsPage";
-import PostJobPage from "../pages/DashboardPage/Client/PostJobPage";
-import ClientMessagesPage from "../pages/DashboardPage/Client/ClientMessagesPage";
-import ClientBillingPage from "../pages/DashboardPage/Client/ClientBillingPage";
-import ClientSettingsPage from "../pages/DashboardPage/Client/ClientSettingsPage";
-import AdminDashboardPage from "../pages/DashboardPage/Admin/AdminDashboardPage";
-import UserManagementPage from "../pages/DashboardPage/Admin/UserManagementPage";
-import ContentModerationPage from "../pages/DashboardPage/Admin/ContentModerationPage";
-import DisputeResolutionPage from "../pages/DashboardPage/Admin/DisputeResolutionPage";
-import AnalyticsPage from "../pages/DashboardPage/Admin/AnalyticsPage";
-import ExpertDashboardPage from "../pages/DashboardPage/Expert/ExpertDashboardPage";
-import MyProjectsPage from "../pages/DashboardPage/Expert/MyProjectsPage";
-import FindWorkPage from "../pages/DashboardPage/Expert/FindWorkPage";
-import EarningsPage from "../pages/DashboardPage/Expert/EarningsPage";
-import ExpertMessagesPage from "../pages/DashboardPage/Expert/MessagesPage";
-import ExpertSettingsPage from "../pages/DashboardPage/Expert/SettingsPage";
-import { isLoggedIn } from "../Services/checkLogin";
+import { Navigate, Route, Routes, useLocation } from "react-router-dom"
+import LoginPage from "../pages/LoginPage"
+import RegisterPage from "../pages/RegisterPage"
+import LandingPages from "../Components/LandingPages/LandingPages"
+import HeaderCom from "../Components/Navbar/HeaderCom"
+import EmailVerificationPage from "../pages/EmailVerificationPage"
+import { isLoggedIn } from "../Services/checkLogin"
+import OnboardingPage from "../pages/OnboardingPage"
+import ClientDashboardPage from "../pages/DashboardPage/Client/ClientDashboardPage"
+import ClientProjectsPage from "../pages/DashboardPage/Client/ClientProjectsPage"
+import PostJobPage from "../pages/DashboardPage/Client/PostJobPage"
+import ClientMessagesPage from "../pages/DashboardPage/Client/ClientMessagesPage"
+import ClientBillingPage from "../pages/DashboardPage/Client/ClientBillingPage"
+import ClientSettingsPage from "../pages/DashboardPage/Client/ClientSettingsPage"
+import AdminDashboardPage from "../pages/DashboardPage/Admin/AdminDashboardPage"
+import UserManagementPage from "../pages/DashboardPage/Admin/UserManagementPage"
+import ContentModerationPage from "../pages/DashboardPage/Admin/ContentModerationPage"
+import DisputeResolutionPage from "../pages/DashboardPage/Admin/DisputeResolutionPage"
+import AnalyticsPage from "../pages/DashboardPage/Admin/AnalyticsPage"
+import ExpertDashboardPage from "../pages/DashboardPage/Expert/ExpertDashboardPage"
+import MyProjectsPage from "../pages/DashboardPage/Expert/MyProjectsPage"
+import FindWorkPage from "../pages/DashboardPage/Expert/FindWorkPage"
+import EarningsPage from "../pages/DashboardPage/Expert/EarningsPage"
+import ExpertMessagesPage from "../pages/DashboardPage/Expert/MessagesPage"
+import ExpertSettingsPage from "../pages/DashboardPage/Expert/SettingsPage"
+import { isLoggedIn } from "../Services/checkLogin"
 
 function RequireAuth({ children }) {
-  const location = useLocation();
+  const location = useLocation()
 
   if (!isLoggedIn()) {
     return (
@@ -37,29 +38,30 @@ function RequireAuth({ children }) {
           message: "Please log in or create an account to use this feature.",
         }}
       />
-    );
+    )
   }
 
-  return children;
+  return children
 }
 
 function GuestOnly({ children }) {
   if (isLoggedIn()) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/" replace />
   }
 
-  return children;
+  return children
 }
 
 function ProtectedRoute({ children }) {
-  return <RequireAuth>{children}</RequireAuth>;
+  return <RequireAuth>{children}</RequireAuth>
 }
 
 function AppRoutes() {
   return (
     <Routes>
+      <Route path="/" element={<> <HeaderCom /> <LandingPages /></>} />
       <Route
-        path="/"
+        path="/login"
         element={
           <>
             <HeaderCom />
@@ -249,8 +251,8 @@ function AppRoutes() {
       />
 
       <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
-  );
+    </Routes >
+  )
 }
 
-export default AppRoutes;
+export default AppRoutes
