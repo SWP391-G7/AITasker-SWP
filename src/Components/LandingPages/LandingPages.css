@@ -180,7 +180,8 @@
   transform: translateX(4px);
 }
 
-.service-card, .expert-card {
+.service-card,
+.expert-card {
   background: linear-gradient(180deg, rgba(15, 23, 42, 0.74), rgba(8, 13, 26, 0.72));
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
@@ -190,7 +191,8 @@
   box-shadow: var(--shadow-card);
 }
 
-.service-card:hover, .expert-card:hover {
+.service-card:hover,
+.expert-card:hover {
   transform: translateY(-5px);
   border-color: rgba(96, 165, 250, 0.3);
   box-shadow: 0 24px 54px rgba(37, 99, 235, 0.16);
@@ -358,6 +360,7 @@
     opacity: 0;
     transform: translateY(30px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -369,24 +372,24 @@
   .hero-title {
     font-size: 2.3rem;
   }
-  
+
   .hero-description {
     font-size: 1rem;
   }
-  
+
   .search-box-wrapper {
     padding: 4px;
   }
-  
+
   .search-input {
     font-size: 0.9rem;
   }
-  
+
   .search-button {
     padding: 8px 16px !important;
     font-size: 0.85rem !important;
   }
-  
+
   .section-title {
     font-size: 1.75rem;
   }
@@ -400,21 +403,21 @@
     gap: 8px !important;
     align-items: stretch !important;
   }
-  
+
   .search-icon-container {
     position: absolute;
     left: 20px;
     top: 24px;
     height: auto;
   }
-  
+
   .search-input {
     padding-left: 36px !important;
     text-align: left;
     height: 48px;
     font-size: 0.9rem !important;
   }
-  
+
   .search-button {
     width: 100%;
     border-radius: 30px !important;
@@ -422,4 +425,111 @@
     padding: 12px !important;
     font-size: 0.95rem !important;
   }
+}
+
+/* Landing Page Search Filter Styles */
+.search-category-tabs {
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.category-tab-btn {
+  background: rgba(15, 23, 42, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  color: var(--text-muted);
+  padding: 8px 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+
+.category-tab-btn:hover {
+  background: rgba(15, 23, 42, 0.65);
+  color: white;
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.category-tab-btn.active {
+  background: var(--accent-blue);
+  color: white;
+  border-color: var(--accent-blue);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+/* Filter Toggle Button */
+.filter-toggle-btn {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: var(--text-muted) !important;
+  border-radius: 50% !important;
+  width: 40px !important;
+  height: 40px !important;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+
+.filter-toggle-btn:hover,
+.filter-toggle-btn.active {
+  background: rgba(59, 130, 246, 0.1) !important;
+  border-color: var(--accent-blue) !important;
+  color: var(--accent-sky) !important;
+}
+
+/* Advanced Filters Panel */
+.advanced-filters-panel {
+  max-width: 640px;
+  width: 100%;
+  background: rgba(15, 23, 42, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 24px;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  animation: slideDown 0.3s ease-out;
+}
+
+.filters-panel-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: white;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 8px;
+}
+
+.filter-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--accent-sky);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.filter-input {
+  background: rgba(2, 6, 23, 0.4) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: white !important;
+  border-radius: 8px !important;
+  padding: 8px 12px !important;
+  font-size: 0.9rem !important;
+  transition: var(--transition-smooth);
+}
+
+.filter-input:focus {
+  border-color: var(--accent-blue) !important;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25) !important;
+  background: rgba(2, 6, 23, 0.6) !important;
+}
+
+/* Dropdown override */
+select.filter-input option {
+  background: #020617;
+  color: white;
 }

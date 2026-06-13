@@ -52,8 +52,21 @@ function GuestOnly({ children }) {
   return children
 }
 
+// Protected route wrapper - redirects guests to the login page
 function ProtectedRoute({ children }) {
-  return <RequireAuth>{children}</RequireAuth>
+  const [isUserLoggedIn, setIsUserLoggedIn] = useState(null)
+
+  useEffect(() => {
+    setIsUserLoggedIn(isLoggedIn())
+  }, [])
+
+  if (isUserLoggedIn === null) return null // Loading
+
+  if (!isUserLoggedIn) {
+    return <Navigate to="/login" replace />
+  }
+
+  return children
 }
 
 function AppRoutes() {

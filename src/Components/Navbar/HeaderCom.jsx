@@ -1,74 +1,81 @@
-import { useEffect, useRef, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { Bell, Mail } from "lucide-react";
-import avatar from "../LandingPages/image/user_avatar.png";
-import { getStoredUser, isLoggedIn, logout } from "../../Services/checkLogin";
-import "./HeaderCom.css";
+import { useEffect, useRef, useState } from "react"
+import { Link, useNavigate } from "react-router-dom"
+import { Bell, Mail } from "lucide-react"
+import avatar from "../LandingPages/image/user_avatar.png"
+import { getStoredUser, isLoggedIn, logout } from "../../Services/checkLogin"
+import "./HeaderCom.css"
 
 // ROLE ROUTING: Map role trong localStorage.user sang dashboard tương ứng.
 const getDashboardPathByRole = (role) => {
-  const normalizedRole = String(role || "").toLowerCase();
+  const normalizedRole = String(role || "").toLowerCase()
 
   if (normalizedRole.includes("admin")) {
-    return "/admin-dashboard";
+    return "/admin-dashboard"
   }
 
   if (normalizedRole.includes("expert")) {
-    return "/expert/dashboard";
+    return "/expert/dashboard"
   }
 
-  return "/client/dashboard";
-};
+  return "/client/dashboard"
+}
 
 export default function HeaderCom() {
-  const navigate = useNavigate();
-  const [isLogin, setIsLogin] = useState(() => isLoggedIn());
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [showDropdown, setShowDropdown] = useState(false);
-  const dropdownRef = useRef(null);
+  const navigate = useNavigate()
+  const [isLogin, setIsLogin] = useState(() => isLoggedIn())
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [showDropdown, setShowDropdown] = useState(false)
+  const dropdownRef = useRef(null)
 
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setShowDropdown(false);
+        setShowDropdown(false)
       }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  const closeMenu = () => setIsMenuOpen(false);
-
-  const requireLogin = () => {
-    closeMenu();
-    setShowDropdown(false);
-    navigate("/login", {
-      state: { message: "Please log in or create an account to use this feature." },
-    });
-  };
-
-  const handleLogout = () => {
-    logout();
-    setIsLogin(false);
-    setShowDropdown(false);
-    closeMenu();
-    navigate("/login");
-  };
-
-  const handleDashboard = () => {
-    closeMenu();
-    setShowDropdown(false);
-    if (isLogin) {
-      // ROLE ROUTING: Khi bấm Dashboard, đọc user đã lưu sau login để vào đúng marketplace page.
-      const user = getStoredUser();
-      navigate(getDashboardPathByRole(user?.role));
-      return;
     }
 
-    requireLogin();
-  };
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [])
 
+  const closeMenu = () => setIsMenuOpen(false)
+
+  const requireLogin = () => {
+    closeMenu()
+    setShowDropdown(false)
+    navigate("/login", {
+      state: { message: "Please log in or create an account to use this feature." },
+    })
+  }
+
+  const handleLogout = () => {
+    logout()
+    setIsLogin(false)
+    setShowDropdown(false)
+    closeMenu()
+    navigate("/login")
+  }
+
+  const handleDashboard = () => {
+    setShowDropdown(false)
+    const storedUser = getStoredUser()
+    if (storedUser && storedUser.id) {
+      navigate(`${storedUser.role}/dashboard`)
+    }
+
+  }
+
+  const handleProfile = () => {
+    setShowDropdown(false)
+    const storedUser = getStoredUser()
+    if (storedUser && storedUser.id) {
+      navigate(`/profile/${storedUser.id}`)
+    }
+  }
+
+  const currentUser = getStoredUser()
+  const currentUserName = currentUser?.fullName || "@"
+  const avatarLetter = currentUserName.charAt(0).toUpperCase()
   return (
     <nav className="navbar navbar-expand-lg navbar-dark header-container py-0">
       <div className="container-fluid px-3 px-sm-5 d-flex flex-wrap align-items-center justify-content-between py-2 py-lg-0" style={{ minHeight: "72px" }}>
@@ -148,17 +155,30 @@ export default function HeaderCom() {
                   onClick={() => setShowDropdown((value) => !value)}
                   aria-label="User Menu"
                 >
-                  <img src={avatar} alt="User Profile" className="user-avatar" />
+                  {/* <img src={avatar} alt="User Profile" className="user-avatar" /> */}
+                  <div className="avatar">{avatarLetter}</div>
                 </button>
 
                 {showDropdown && (
                   <div className="avatar-dropdown">
-                    <button className="dropdown-item" onClick={handleDashboard}>
-                      Dashboard
+                    <button
+                      className="dropdown-item"
+                      onClick={handleProfile}
+                    >
+                      <i className="bi bi-person me-2"></i>My Profile
+                    </button>
+                    <button
+                      className="dropdown-item"
+                      onClick={handleDashboard}
+                    >
+                      <i className="bi bi-speedometer2 me-2"></i>Dashboard
                     </button>
                     <hr className="dropdown-divider my-1" />
-                    <button className="dropdown-item logout-item" onClick={handleLogout}>
-                      Log out
+                    <button
+                      className="dropdown-item logout-item"
+                      onClick={handleLogout}
+                    >
+                      <i className="bi bi-box-arrow-right me-2"></i>Log out
                     </button>
                   </div>
                 )}
@@ -173,5 +193,5 @@ export default function HeaderCom() {
         </div>
       </div>
     </nav>
-  );
+  )
 }

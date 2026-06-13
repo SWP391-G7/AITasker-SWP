@@ -46,9 +46,9 @@ const EmailVerificationPage = () => {
             </p>
             <button
               className="btn btn-primary w-100 btn-lg rounded-pill"
-              onClick={() => navigate('/login')}
+              onClick={() => navigate('/onboarding')}
             >
-              Continue to Log in
+              Continue to Onboarding
             </button>
           </div>
         </div>
