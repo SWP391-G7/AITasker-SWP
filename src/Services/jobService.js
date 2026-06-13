@@ -1,14 +1,11 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'
 
-/**
- * Creates a new job post in the backend.
- * @param {Object} jobData - The job post form data
- */
-export const createJobPost = async (jobData) => {
+export const createJobPost = async (data) => {
   try {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('token')
+    
     if (!token) {
-      throw new Error('Not logged in. No token found.');
+      throw new Error('No authentication token found')
     }
 
     const response = await fetch(`${API_BASE_URL}/jobs`, {
@@ -17,38 +14,28 @@ export const createJobPost = async (jobData) => {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
       },
-      body: JSON.stringify({
-        title: jobData.title,
-        description: jobData.description,
-        budgetMin: jobData.budgetMin,
-        budgetMax: jobData.budgetMax,
-        requiredSkill: jobData.requiredSkill,
-        durationDays: jobData.durationDays,
-        deadline: jobData.deadline
-      })
-    });
+      body: JSON.stringify(data)
+    })
 
-    const result = await response.json();
+    const result = await response.json()
 
     if (!response.ok) {
-      throw new Error(result.message || 'Failed to create job post.');
+      throw new Error(result.message || 'Failed to create job post')
     }
 
-    return result;
+    return result
   } catch (error) {
-    console.error('Create Job API Error:', error);
-    throw error;
+    console.error('Create job post error:', error)
+    throw error
   }
-};
+}
 
-/**
- * Retrieves all job posts created by the current user.
- */
 export const getMyJobs = async () => {
   try {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('token')
+    
     if (!token) {
-      throw new Error('Not logged in. No token found.');
+      throw new Error('No authentication token found')
     }
 
     const response = await fetch(`${API_BASE_URL}/jobs/my`, {
@@ -57,17 +44,105 @@ export const getMyJobs = async () => {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
       }
-    });
+    })
 
-    const result = await response.json();
+    const result = await response.json()
 
     if (!response.ok) {
-      throw new Error(result.message || 'Failed to retrieve your jobs.');
+      throw new Error(result.message || 'Failed to fetch user jobs')
     }
 
-    return result.jobPosts || [];
+    return result
   } catch (error) {
-    console.error('Get My Jobs API Error:', error);
-    throw error;
+    console.error('Get user jobs error:', error)
+    throw error
   }
-};
+}
+
+export const getJobById = async (jobId) => {
+  try {
+    const token = localStorage.getItem('token')
+    
+    if (!token) {
+      throw new Error('No authentication token found')
+    }
+
+    const response = await fetch(`${API_BASE_URL}/jobs/${jobId}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      }
+    })
+
+    const result = await response.json()
+
+    if (!response.ok) {
+      throw new Error(result.message || 'Failed to fetch job')
+    }
+
+    return result
+  } catch (error) {
+    console.error('Get job error:', error)
+    throw error
+  }
+}
+
+export const updateJobPost = async (jobId, data) => {
+  try {
+    const token = localStorage.getItem('token')
+    
+    if (!token) {
+      throw new Error('No authentication token found')
+    }
+
+    const response = await fetch(`${API_BASE_URL}/jobs/${jobId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(data)
+    })
+
+    const result = await response.json()
+
+    if (!response.ok) {
+      throw new Error(result.message || 'Failed to update job post')
+    }
+
+    return result
+  } catch (error) {
+    console.error('Update job post error:', error)
+    throw error
+  }
+}
+
+export const deleteJobPost = async (jobId) => {
+  try {
+    const token = localStorage.getItem('token')
+    
+    if (!token) {
+      throw new Error('No authentication token found')
+    }
+
+    const response = await fetch(`${API_BASE_URL}/jobs/${jobId}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      }
+    })
+
+    const result = await response.json()
+
+    if (!response.ok) {
+      throw new Error(result.message || 'Failed to delete job post')
+    }
+
+    return result
+  } catch (error) {
+    console.error('Delete job post error:', error)
+    throw error
+  }
+}
