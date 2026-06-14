@@ -23,7 +23,6 @@ import FindWorkPage from "../pages/DashboardPage/Expert/FindWorkPage"
 import EarningsPage from "../pages/DashboardPage/Expert/EarningsPage"
 import ExpertMessagesPage from "../pages/DashboardPage/Expert/MessagesPage"
 import ExpertSettingsPage from "../pages/DashboardPage/Expert/SettingsPage"
-import { isLoggedIn } from "../Services/checkLogin"
 
 function RequireAuth({ children }) {
   const location = useLocation()
