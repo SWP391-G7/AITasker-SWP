@@ -23,6 +23,8 @@ import EarningsPage from "../pages/DashboardPage/Expert/EarningsPage";
 import ExpertMessagesPage from "../pages/DashboardPage/Expert/MessagesPage";
 import ExpertSettingsPage from "../pages/DashboardPage/Expert/SettingsPage";
 import { isLoggedIn } from "../Services/checkLogin";
+import MarketplacePage from "../pages/MarketplacePage";
+import ClienAndExpertPage from "../pages/ClienAndExpertPage";
 
 function RequireAuth({ children }) {
   const location = useLocation();
@@ -65,6 +67,24 @@ function AppRoutes() {
             <HeaderCom />
             <LandingPages />
           </>
+        }
+      />
+      <Route
+        path="/marketplace"
+        element={
+          <ProtectedRoute>
+            <HeaderCom />
+            <MarketplacePage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/client&expert"
+        element={
+          <ProtectedRoute>
+            <HeaderCom />
+            <ClienAndExpertPage />
+          </ProtectedRoute>
         }
       />
       <Route
