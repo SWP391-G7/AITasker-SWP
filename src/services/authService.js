@@ -11,7 +11,7 @@ export const register = async (data) => {
         fullName: data.fullName,
         email: data.email,
         password: data.password,
-        role: 'client'  // Default role, will be customizable later
+        role: 'client'  // Default role, will be customizable later :>
       })
     })
 
