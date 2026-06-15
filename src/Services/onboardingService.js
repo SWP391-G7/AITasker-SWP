@@ -8,7 +8,7 @@ export const submitClientOnboarding = async (data) => {
       throw new Error('No authentication token found')
     }
 
-    const response = await fetch(`${API_BASE_URL}/profiles/client`, {
+    const response = await fetch(`${API_BASE_URL}/profile/client`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -41,7 +41,7 @@ export const submitExpertOnboarding = async (data) => {
       throw new Error('No authentication token found')
     }
 
-    const response = await fetch(`${API_BASE_URL}/profiles/expert`, {
+    const response = await fetch(`${API_BASE_URL}/profile/expert`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
