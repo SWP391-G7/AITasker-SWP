@@ -101,6 +101,9 @@ export default function HeaderCom() {
               <a className="nav-link active fw-semibold" href="#explore" onClick={closeMenu}>Explore</a>
             </li>
             <li className="nav-item">
+              <Link className="nav-link fw-semibold" to="/marketplace" onClick={closeMenu}>Service</Link>
+            </li>
+            <li className="nav-item">
               <a className="nav-link fw-semibold" href="#experts" onClick={closeMenu}>Experts</a>
             </li>
             <li className="nav-item">

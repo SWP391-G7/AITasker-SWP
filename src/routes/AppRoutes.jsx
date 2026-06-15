@@ -22,6 +22,7 @@ import FindWorkPage from "../pages/DashboardPage/Expert/FindWorkPage";
 import EarningsPage from "../pages/DashboardPage/Expert/EarningsPage";
 import ExpertMessagesPage from "../pages/DashboardPage/Expert/MessagesPage";
 import ExpertSettingsPage from "../pages/DashboardPage/Expert/SettingsPage";
+import AISolutionMarketplacePage from "../pages/AISolutionMarketplacePage";
 import { isLoggedIn } from "../Services/checkLogin";
 
 function RequireAuth({ children }) {
@@ -82,6 +83,10 @@ function AppRoutes() {
             <RegisterPage />
           </GuestOnly>
         }
+      />
+      <Route
+        path="/marketplace"
+        element={<AISolutionMarketplacePage />}
       />
       <Route
         path="/verify-email"
