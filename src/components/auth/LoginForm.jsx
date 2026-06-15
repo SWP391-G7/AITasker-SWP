@@ -61,7 +61,7 @@ function LoginForm() {
 
       // Navigate to dashboard; ProtectedRoute will redirect unverified
       // users to /verify automatically based on their isVerified status.
-      navigate("/dashboard")
+      navigate("/")
     } catch (err) {
       setError(err.message || "Login failed. Please check your email or password.")
     } finally {
