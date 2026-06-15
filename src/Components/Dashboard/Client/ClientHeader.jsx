@@ -1,14 +1,11 @@
 import { Bell, Search } from 'lucide-react'
-import clientAvatar from '../../LandingPages/image/user_avatar.png'
 import { getStoredUser } from '../../../Services/checkLogin'
 
 const currentUser = getStoredUser()
 
 const avatarLetter = () => {
-  const currentUserName = currentUser?.fullName || "@"
-  return (
-    currentUserName.charAt(0).toUpperCase()
-  )
+  const currentUserName = currentUser?.fullName || currentUser?.name || "Client"
+  return currentUserName.charAt(0).toUpperCase()
 }
 const userAvatar = avatarLetter()
 
@@ -41,7 +38,7 @@ const ClientHeader = ({ notifications, onClearNotifications, searchQuery, onSear
 
       <div className="admin-profile-widget">
         <div className="admin-profile-info">
-          <span className="admin-profile-name">{currentUser.fullName}</span>
+          <span className="admin-profile-name">{currentUser?.fullName || currentUser?.name || "Client User"}</span>
           <span className="admin-profile-role">Client User</span>
         </div>
         <div className="avatar">{userAvatar}</div>

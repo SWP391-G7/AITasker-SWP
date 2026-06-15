@@ -343,3 +343,51 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Analytics: align with shared dashboard theme. */
+.analytics-header h1,
+.analytics-panel h2,
+.analytics-experts-heading h2,
+.analytics-kpi-card strong {
+  color: var(--text-main);
+  letter-spacing: 0;
+}
+
+.analytics-header p,
+.analytics-kpi-label,
+.analytics-panel p,
+.analytics-bar-column small,
+.retention-panel blockquote,
+.analytics-experts-table th,
+.analytics-experts-table td {
+  color: var(--text-dark);
+}
+
+.analytics-kpi-card,
+.analytics-panel,
+.analytics-experts-table-wrap {
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.76), rgba(8, 13, 26, 0.72));
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  box-shadow: var(--shadow-card);
+}
+
+.analytics-date-button,
+.analytics-panel-header button,
+.analytics-experts-heading button {
+  background: rgba(15, 23, 42, 0.66);
+  border-color: var(--border-color);
+  color: var(--text-muted);
+}
+
+.analytics-export-button {
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+  border-color: rgba(96, 165, 250, 0.35);
+  color: #ffffff;
+}
+
+.analytics-progress-track span,
+.retention-track.tone-blue span,
+.analytics-bar.active {
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+}

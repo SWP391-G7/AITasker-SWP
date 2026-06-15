@@ -395,3 +395,87 @@
 .client-dashboard-layout .site-footer-dashboard {
   margin-top: auto;
 }
+
+/* Client dashboard: match LandingPages visual system. */
+.client-dashboard-layout {
+  background-color: var(--bg-primary);
+  background-image: var(--bg-glow);
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  color: var(--text-main);
+  font-family: var(--font-family);
+}
+
+.client-main-panel {
+  border-left: 1px solid var(--border-color);
+  color: var(--text-main);
+}
+
+.client-panel,
+.recent-activity-panel,
+.talent-cta-card {
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.76), rgba(8, 13, 26, 0.72));
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  box-shadow: var(--shadow-card);
+}
+
+.client-panel-header h2,
+.recent-activity-panel h2,
+.talent-cta-card h2,
+.client-projects-table strong,
+.activity-content h3,
+.budget-cell {
+  color: var(--text-main);
+}
+
+.client-panel-header button,
+.view-all-btn,
+.client-projects-table th,
+.client-projects-table p,
+.activity-content p,
+.activity-content span,
+.client-dashboard-footer,
+.client-dashboard-footer .footer-links {
+  color: var(--text-dark);
+}
+
+.client-projects-table th,
+.client-projects-table td,
+.chart-empty-space,
+.client-dashboard-footer {
+  border-color: var(--border-color);
+}
+
+.client-status.in-progress {
+  background: rgba(59, 130, 246, 0.14);
+  color: #bfdbfe;
+}
+
+.client-status.completed {
+  background: rgba(52, 211, 153, 0.14);
+  color: var(--accent-green);
+}
+
+.activity-dot {
+  background: var(--bg-primary);
+  border-color: var(--accent-sky);
+  box-shadow: 0 0 12px rgba(96, 165, 250, 0.22);
+}
+
+.talent-cta-card {
+  background:
+    linear-gradient(135deg, rgba(59, 130, 246, 0.24), rgba(8, 13, 26, 0.82)),
+    linear-gradient(180deg, rgba(15, 23, 42, 0.76), rgba(8, 13, 26, 0.72));
+}
+
+.talent-icon-box {
+  background: rgba(59, 130, 246, 0.12);
+  color: var(--accent-sky);
+}
+
+.talent-cta-card button {
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+  color: #ffffff;
+  box-shadow: 0 12px 28px rgba(37, 99, 235, 0.2);
+}

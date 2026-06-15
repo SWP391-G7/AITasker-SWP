@@ -430,3 +430,59 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Dispute resolution: align with shared dashboard theme. */
+.dispute-header h1,
+.dispute-section-heading h2,
+.dispute-side-panel h2,
+.dispute-case-topline h3,
+.dispute-case-details strong,
+.evidence-file-row strong {
+  color: var(--text-main);
+  letter-spacing: 0;
+}
+
+.dispute-header p,
+.dispute-stat-label,
+.dispute-stat-note,
+.dispute-case-topline span,
+.dispute-case-details span,
+.dispute-case-footer span,
+.evidence-file-row span {
+  color: var(--text-dark);
+}
+
+.dispute-stat-card,
+.dispute-case-card,
+.dispute-side-panel {
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.76), rgba(8, 13, 26, 0.72));
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  box-shadow: var(--shadow-card);
+}
+
+.dispute-search,
+.dispute-icon-button,
+.dispute-filter-button,
+.evidence-file-row {
+  background: rgba(15, 23, 42, 0.66);
+  border-color: var(--border-color);
+  color: var(--text-muted);
+}
+
+.dispute-search:focus-within {
+  border-color: rgba(96, 165, 250, 0.56);
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12);
+}
+
+.dispute-filter-button.active,
+.dispute-case-footer button,
+.chat-log-button {
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+  border-color: rgba(96, 165, 250, 0.35);
+  color: #ffffff;
+}
+
+.evidence-preview-window {
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.16), rgba(15, 23, 42, 0.76));
+}
