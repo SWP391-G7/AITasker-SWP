@@ -47,14 +47,25 @@ function Sidebar() {
           My Projects
         </a>
 
-        <a 
-          className={`menu-item ${isActive("/post-job")}`} 
-          href="#"
-          onClick={(e) => handleNavigation("/post-job", e)}
-        >
-          <span>＋</span>
-          Post a Job
-        </a>
+        {role === "expert" ? (
+          <a 
+            className={`menu-item ${isActive("/post-service")}`} 
+            href="#"
+            onClick={(e) => handleNavigation("/post-service", e)}
+          >
+            <span>＋</span>
+            Post a Service
+          </a>
+        ) : (
+          <a 
+            className={`menu-item ${isActive("/post-job")}`} 
+            href="#"
+            onClick={(e) => handleNavigation("/post-job", e)}
+          >
+            <span>＋</span>
+            Post a Job
+          </a>
+        )}
 
         <a className="menu-item" href="#" onClick={(e) => e.preventDefault()}>
           <span>✉</span>
@@ -75,9 +86,9 @@ function Sidebar() {
       <div className="sidebar-bottom">
         <button 
           className="post-task-btn" 
-          onClick={(e) => handleNavigation("/post-job", e)}
+          onClick={(e) => handleNavigation(role === "expert" ? "/post-service" : "/post-job", e)}
         >
-          ＋ Post a New Task
+          ＋ {role === "expert" ? "Post a Service" : "Post a New Task"}
         </button>
       </div>
     </aside>

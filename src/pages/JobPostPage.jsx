@@ -99,7 +99,7 @@ function JobPostPage() {
       // Success redirection with state
       navigate("/client/dashboard", { 
         state: { 
-          message: "Job posted successfully!", 
+          message: "post successfully", 
           type: "success" 
         } 
       });
@@ -108,7 +108,7 @@ function JobPostPage() {
       // Failure redirection with state as per workflow requirements
       navigate("/client/dashboard", { 
         state: { 
-          message: "Job posted not successfully.", 
+          message: "post not successfully", 
           type: "danger" 
         } 
       });

@@ -6,12 +6,14 @@ import LandingPages from "../Components/LandingPages/LandingPages"
 import HeaderCom from "../Components/Navbar/HeaderCom"
 import EmailVerificationPage from "../pages/EmailVerificationPage"
 import Dashboard from "../pages/Dashboard"
-import { isLoggedIn } from "../Services/checkLogin"
+import { isLoggedIn, getStoredUser } from "../Services/checkLogin"
 import OnboardingPage from "../pages/OnboardingPage";
 import ClientDashboard from "../pages/ClientDashboard"
-import ProfilePage from "../pages/ProfilePage"
+import ExpertDashboard from "../pages/ExpertDashboard"
 import JobPostPage from "../pages/JobPostPage"
+import ServicePostPage from "../pages/ServicePostPage"
 import MyJobsPage from "../pages/MyJobsPage"
+import ProfilePage from "../pages/ProfilePage"
 import SearchResultsPage from "../pages/SearchResultsPage"
 
 // Protected route wrapper - redirects logged-in users away from auth pages
@@ -46,6 +48,12 @@ function ProtectedRoute({ children }) {
   }
 
   return children
+}
+
+function DashboardRedirect() {
+  const user = getStoredUser()
+  const role = user?.role || "client"
+  return <Navigate to={`/${role}/dashboard`} replace />
 }
 
 function AppRoutes() {
@@ -88,7 +96,7 @@ function AppRoutes() {
         path="/dashboard" 
         element={
           <ProtectedRoute>
-            <Dashboard />
+            <DashboardRedirect />
           </ProtectedRoute>
         } 
       />
@@ -97,6 +105,22 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <ClientDashboard />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/expert/dashboard" 
+        element={
+          <ProtectedRoute>
+            <ExpertDashboard />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/post-service" 
+        element={
+          <ProtectedRoute>
+            <ServicePostPage />
           </ProtectedRoute>
         } 
       />
