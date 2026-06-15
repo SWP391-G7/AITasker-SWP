@@ -1,4 +1,27 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+
+// FAKE AUTH: Bật fake login khi VITE_USE_FAKE_AUTH=true hoặc chưa cấu hình VITE_API_BASE_URL.
+// Dùng tạm để test Front-End khi backend chưa chạy.
+const USE_FAKE_AUTH =
+  import.meta.env.VITE_USE_FAKE_AUTH === 'true' || !import.meta.env.VITE_API_BASE_URL;
+
+// FAKE AUTH: Tài khoản test cố định cho Front-End.
+const FAKE_USER = {
+  id: 'fake-user-1',
+  fullName: 'Frontend Tester',
+  email: 'test@aitasker.local',
+  role: 'client', // Có thể đổi thành 'client' để test giao diện client
+};
+
+// FAKE AUTH: Email/password dùng để đăng nhập trên form Login.
+const FAKE_ACCOUNT = {
+  email: FAKE_USER.email,
+  password: '123456',
+};
+
+// FAKE AUTH: Token giả để mô phỏng token backend trả về.
+const FAKE_TOKEN = 'fake-auth-token-for-frontend-test';
+
 
 export const register = async (data) => {
   try {
