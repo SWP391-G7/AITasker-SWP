@@ -34,7 +34,7 @@ const ClientSidebar = ({ activeTab = "dashboard", onTabChange }) => {
   return (
     <aside className="admin-sidebar">
       <div className="sidebar-header">
-        <Link to="/client/dashboard" className="sidebar-brand mb-0">
+        <Link to="/" className="sidebar-brand mb-0">
           AITasker
         </Link>
         <span className="sidebar-subtitle">Client Workspace</span>
