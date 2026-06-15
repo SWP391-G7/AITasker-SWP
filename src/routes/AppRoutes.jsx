@@ -197,7 +197,7 @@ function AppRoutes() {
         }
       />
       <Route
-        path="/clients&expert"
+        path="/clients&experts"
         element={
           <ProtectedRoute>
             <HeaderCom />
