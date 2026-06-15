@@ -101,12 +101,10 @@ export default function HeaderCom() {
               <Link className="nav-link active fw-semibold" to="/" onClick={closeMenu}>Home</Link>
             </li>
             <li className="nav-item">
-              <a className="nav-link fw-semibold" href="#experts" onClick={closeMenu}>Marketplace</a>
+              <Link className="nav-link fw-semibold" to="/marketplace" onClick={closeMenu}>Marketplace</Link>
             </li>
             <li className="nav-item">
-              <button className="nav-link fw-semibold nav-button-link" type="button" onClick={handleDashboard}>
-                Dashboard
-              </button>
+              <Link className="nav-link fw-semibold" to="/client&expert" onClick={closeMenu}>Client & Expert</Link>
             </li>
           </ul>
 
@@ -153,6 +151,10 @@ export default function HeaderCom() {
 
                 {showDropdown && (
                   <div className="avatar-dropdown">
+                    <button className="dropdown-item" >
+                      Profile
+                    </button>
+                    <hr className="dropdown-divider my-1" />
                     <button className="dropdown-item" onClick={handleDashboard}>
                       Dashboard
                     </button>
