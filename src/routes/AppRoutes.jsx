@@ -26,7 +26,7 @@ import ExpertMessagesPage from "../pages/DashboardPage/Expert/MessagesPage"
 import ExpertSettingsPage from "../pages/DashboardPage/Expert/SettingsPage"
 import ProfilePage from "../pages/ProfilePage"
 import MarketplacePage from "../pages/MarketplacePage"
-import ClienAndExpertPage from "../pages/ClienAndExpertPage"
+import ClientsAndExpertsPage from "../pages/ClientsAndExpertsPage"
 
 /**
  * Fetches current auth status from the backend.
@@ -197,29 +197,11 @@ function AppRoutes() {
         }
       />
       <Route
-        path="/client&expert"
+        path="/clients&expert"
         element={
           <ProtectedRoute>
             <HeaderCom />
-            <ClienAndExpertPage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/marketplace"
-        element={
-          <ProtectedRoute>
-            <HeaderCom />
-            <MarketplacePage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/client&expert"
-        element={
-          <ProtectedRoute>
-            <HeaderCom />
-            <ClienAndExpertPage />
+            <ClientsAndExpertsPage />
           </ProtectedRoute>
         }
       />
