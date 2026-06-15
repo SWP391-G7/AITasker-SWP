@@ -61,6 +61,13 @@
   margin-right: auto;
 }
 
+.hero-search-form {
+  max-width: 640px;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
 /* Glassmorphic Search Bar with Bootstrap input */
 .search-box-wrapper {
   max-width: 640px;
@@ -353,6 +360,33 @@
   background: var(--accent-blue) !important;
   border-color: var(--accent-blue) !important;
   box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+}
+
+/* 5. Footer Styling */
+.footer-divider {
+  height: 1px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.06) 50%, rgba(255, 255, 255, 0) 100%);
+}
+
+.footer-brand {
+  font-weight: 800 !important;
+  letter-spacing: -0.5px;
+  background: linear-gradient(135deg, #ffffff 60%, #93c5fd 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.footer-link {
+  font-size: 0.9rem;
+  transition: var(--transition-smooth);
+}
+
+.footer-link:hover {
+  color: var(--text-main) !important;
+}
+
+.copyright-text {
+  font-size: 0.85rem;
 }
 
 @keyframes fadeInUp {
