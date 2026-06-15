@@ -25,8 +25,13 @@ import EarningsPage from "../pages/DashboardPage/Expert/EarningsPage"
 import ExpertMessagesPage from "../pages/DashboardPage/Expert/MessagesPage"
 import ExpertSettingsPage from "../pages/DashboardPage/Expert/SettingsPage"
 
+/**
+ * Fetches current auth status from the backend.
+ * Returns { isLoggedIn: bool | null, isVerified: bool | null }
+ * null means the check is still in-flight (loading state).
+ */
 function useAuthStatus() {
-  const [isLoggedInStatus, setIsLoggedInStatus] = useState(null)
+  const [status, setStatus] = useState({ isLoggedIn: null, isVerified: null })
 
   useEffect(() => {
     let mounted = true
@@ -34,12 +39,15 @@ function useAuthStatus() {
     checkLogin()
       .then((result) => {
         if (mounted) {
-          setIsLoggedInStatus(result?.isLoggedIn ?? false)
+          const loggedIn = result?.isLoggedIn ?? false
+          // getMe response shape: { success, user: { isVerified, ... } }
+          const verified = loggedIn ? (result?.user?.user?.isVerified ?? false) : false
+          setStatus({ isLoggedIn: loggedIn, isVerified: verified })
         }
       })
       .catch(() => {
         if (mounted) {
-          setIsLoggedInStatus(false)
+          setStatus({ isLoggedIn: false, isVerified: false })
         }
       })
 
@@ -48,16 +56,76 @@ function useAuthStatus() {
     }
   }, [])
 
-  return isLoggedInStatus
+  return status
 }
 
-function RequireAuth({ children }) {
+/**
+ * GuestOnly – for /login and /register.
+ * - Loading  → render nothing
+ * - Logged in AND verified → redirect to home (already fully authenticated)
+ * - Logged in but NOT verified → let through so the user can still access
+ *   these pages (though ProtectedRoute on dashboards will push them to /verify)
+ * - Not logged in → let through
+ */
+function GuestOnly({ children }) {
+  const { isLoggedIn, isVerified } = useAuthStatus()
+
+  if (isLoggedIn === null) return null
+
+  if (isLoggedIn && isVerified) {
+    return <Navigate to="/" replace />
+  }
+
+  return children
+}
+
+/**
+ * VerifyOnly – exclusively for /verify.
+ * - Loading → render nothing
+ * - Not logged in → redirect to /login (need an account first)
+ * - Logged in AND verified → redirect to / (nothing left to verify)
+ * - Logged in but NOT verified → allow access ✓
+ */
+function VerifyOnly({ children }) {
   const location = useLocation()
-  const isUserLoggedIn = useAuthStatus()
+  const { isLoggedIn, isVerified } = useAuthStatus()
 
-  if (isUserLoggedIn === null) return null
+  if (isLoggedIn === null) return null
 
-  if (!isUserLoggedIn) {
+  if (!isLoggedIn) {
+    return (
+      <Navigate
+        to="/login"
+        replace
+        state={{
+          from: location.pathname,
+          message: "Please log in to verify your email.",
+        }}
+      />
+    )
+  }
+
+  if (isVerified) {
+    return <Navigate to="/" replace />
+  }
+
+  return children
+}
+
+/**
+ * ProtectedRoute – for all dashboard / onboarding pages.
+ * - Loading → render nothing
+ * - Not logged in → redirect to /login
+ * - Logged in but NOT verified → redirect to /verify
+ * - Logged in AND verified → allow access ✓
+ */
+function ProtectedRoute({ children }) {
+  const location = useLocation()
+  const { isLoggedIn, isVerified } = useAuthStatus()
+
+  if (isLoggedIn === null) return null // Loading
+
+  if (!isLoggedIn) {
     return (
       <Navigate
         to="/login"
@@ -70,29 +138,34 @@ function RequireAuth({ children }) {
     )
   }
 
-  return children
-}
-
-function GuestOnly({ children }) {
-  const isUserLoggedIn = useAuthStatus()
-
-  if (isUserLoggedIn === null) return null
-
-  if (isUserLoggedIn) {
-    return <Navigate to="/" replace />
+  if (!isVerified) {
+    return <Navigate to="/verify" replace />
   }
 
   return children
 }
 
-// Protected route wrapper - redirects guests to the login page
-function ProtectedRoute({ children }) {
-  const isUserLoggedIn = useAuthStatus()
+/**
+ * RequireAuth – simple "must be logged in" check (no verification requirement).
+ * Kept for any future use-cases that only need a login gate.
+ */
+function RequireAuth({ children }) {
+  const location = useLocation()
+  const { isLoggedIn } = useAuthStatus()
 
-  if (isUserLoggedIn === null) return null // Loading
+  if (isLoggedIn === null) return null
 
-  if (!isUserLoggedIn) {
-    return <Navigate to="/login" replace />
+  if (!isLoggedIn) {
+    return (
+      <Navigate
+        to="/login"
+        replace
+        state={{
+          from: location.pathname,
+          message: "Please log in or create an account to use this feature.",
+        }}
+      />
+    )
   }
 
   return children
@@ -127,15 +200,26 @@ function AppRoutes() {
           </GuestOnly>
         }
       />
+
+      {/* /verify – only for logged-in users who have NOT yet verified their email */}
+      <Route
+        path="/verify"
+        element={
+          <VerifyOnly>
+            <EmailVerificationPage />
+          </VerifyOnly>
+        }
+      />
+      {/* /verify-email kept as alias for backwards-compat, same guard */}
       <Route
         path="/verify-email"
         element={
-          <GuestOnly>
+          <VerifyOnly>
             <EmailVerificationPage />
-          </GuestOnly>
+          </VerifyOnly>
         }
       />
-      <Route path="/verify" element={<Navigate to="/verify-email" replace />} />
+
       <Route
         path="/onboarding"
         element={
