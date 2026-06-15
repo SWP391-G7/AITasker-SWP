@@ -51,6 +51,7 @@
 .otp-input {
   width: 3rem;
   height: 3.5rem;
+  max-width: 14%;
   font-size: 1.5rem;
   font-weight: bold;
   text-align: center;
@@ -58,6 +59,13 @@
   border-radius: 8px;
   background-color: #ffffff;
   color: #212529;
+}
+
+@media (max-width: 576px) {
+  .otp-input {
+    height: 3rem;
+    font-size: 1.25rem;
+  }
 }
 
 .otp-input:focus {
