@@ -59,17 +59,10 @@ function LoginForm() {
 
       console.log("Login success:", result)
 
+      // Navigate to dashboard; ProtectedRoute will redirect unverified
+      // users to /verify automatically based on their isVerified status.
       navigate("/dashboard")
     } catch (err) {
-      // Handle email verification required error
-      if (err.isVerificationRequired) {
-        console.log("Email verification required, redirecting to verification page")
-        navigate("/email-verification", {
-          state: { email: err.email }
-        })
-        return
-      }
-
       setError(err.message || "Login failed. Please check your email or password.")
     } finally {
       setIsLoading(false)

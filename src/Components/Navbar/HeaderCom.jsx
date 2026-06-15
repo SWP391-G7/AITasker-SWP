@@ -73,15 +73,9 @@ export default function HeaderCom() {
     }
   }
 
-  const avatarLetter = () => {
-    const currentUser = getStoredUser()
-    const currentUserName = currentUser?.fullName || "@"
-    return (
-      currentUserName.charAt(0).toUpperCase()
-    )
-  }
-  const userAvatar = avatarLetter()
-
+  const currentUser = getStoredUser()
+  const currentUserName = currentUser?.fullName || "@"
+  const avatarLetter = currentUserName.charAt(0).toUpperCase()
   return (
     <nav className="navbar navbar-expand-lg navbar-dark header-container py-0">
       <div className="container-fluid px-3 px-sm-5 d-flex flex-wrap align-items-center justify-content-between py-2 py-lg-0" style={{ minHeight: "72px" }}>
@@ -162,7 +156,7 @@ export default function HeaderCom() {
                   aria-label="User Menu"
                 >
                   {/* <img src={avatar} alt="User Profile" className="user-avatar" /> */}
-                  <div className="avatar">{userAvatar}</div>
+                  <div className="avatar">{avatarLetter}</div>
                 </button>
 
                 {showDropdown && (
