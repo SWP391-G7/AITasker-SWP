@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react"
-import { Link, useNavigate } from "react-router-dom"
+import { Link, useNavigate, NavLink } from "react-router-dom"
 import { Bell, Mail } from "lucide-react"
 import avatar from "../LandingPages/image/user_avatar.png"
 import { getStoredUser, isLoggedIn, logout } from "../../Services/checkLogin"
@@ -105,15 +105,13 @@ export default function HeaderCom() {
         <div className={`collapse navbar-collapse justify-content-center ${isMenuOpen ? "show" : ""}`} id="navbarNav">
           <ul className="navbar-nav gap-lg-4 mb-2 mb-lg-0 align-items-center">
             <li className="nav-item">
-              <a className="nav-link active fw-semibold" href="#explore" onClick={closeMenu}>Explore</a>
+              <NavLink className={({ isActive }) => `nav-link fw-semibold ${isActive ? "active" : ""}`} to="/" onClick={closeMenu}>Home</NavLink>
             </li>
             <li className="nav-item">
-              <a className="nav-link fw-semibold" href="#experts" onClick={closeMenu}>Experts</a>
+              <NavLink className={({ isActive }) => `nav-link fw-semibold ${isActive ? "active" : ""}`} to="/marketplace" onClick={closeMenu}>Marketplace</NavLink>
             </li>
             <li className="nav-item">
-              <button className="nav-link fw-semibold nav-button-link" type="button" onClick={handleDashboard}>
-                Dashboard
-              </button>
+              <NavLink className={({ isActive }) => `nav-link fw-semibold ${isActive ? "active" : ""}`} to="/client&expert" onClick={closeMenu}>Client & Expert</NavLink>
             </li>
           </ul>
 
@@ -181,8 +179,9 @@ export default function HeaderCom() {
                       <i className="bi bi-box-arrow-right me-2"></i>Log out
                     </button>
                   </div>
-                )}
-              </div>
+                )
+                }
+              </div >
             </>
           ) : (
             <>
@@ -190,8 +189,8 @@ export default function HeaderCom() {
               <Link to="/register" className="btn btn-light">Sign up</Link>
             </>
           )}
-        </div>
-      </div>
-    </nav>
+        </div >
+      </div >
+    </nav >
   )
 }
