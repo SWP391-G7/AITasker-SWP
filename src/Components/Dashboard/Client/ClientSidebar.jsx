@@ -62,9 +62,9 @@ const ClientSidebar = ({ activeTab = "dashboard", onTabChange }) => {
           Post a New Task
         </button>
 
-        <Link to="/client/dashboard" className="sidebar-item-link py-2 px-3">
+        <Link to="/" className="sidebar-item-link py-2 px-3">
           <Home size={18} />
-          <span>Return to Dashboard</span>
+          <span>Return to Homepage</span>
         </Link>
       </div>
     </aside>
