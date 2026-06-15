@@ -1,10 +1,11 @@
+import { useEffect, useState } from "react"
 import { Navigate, Route, Routes, useLocation } from "react-router-dom"
 import LoginPage from "../pages/LoginPage"
 import RegisterPage from "../pages/RegisterPage"
 import LandingPages from "../Components/LandingPages/LandingPages"
 import HeaderCom from "../Components/Navbar/HeaderCom"
 import EmailVerificationPage from "../pages/EmailVerificationPage"
-import { isLoggedIn } from "../Services/checkLogin"
+import { checkLogin } from "../Services/checkLogin"
 import OnboardingPage from "../pages/OnboardingPage"
 import ClientDashboardPage from "../pages/DashboardPage/Client/ClientDashboardPage"
 import ClientProjectsPage from "../pages/DashboardPage/Client/ClientProjectsPage"
@@ -24,10 +25,39 @@ import EarningsPage from "../pages/DashboardPage/Expert/EarningsPage"
 import ExpertMessagesPage from "../pages/DashboardPage/Expert/MessagesPage"
 import ExpertSettingsPage from "../pages/DashboardPage/Expert/SettingsPage"
 
+function useAuthStatus() {
+  const [isLoggedInStatus, setIsLoggedInStatus] = useState(null)
+
+  useEffect(() => {
+    let mounted = true
+
+    checkLogin()
+      .then((result) => {
+        if (mounted) {
+          setIsLoggedInStatus(result?.isLoggedIn ?? false)
+        }
+      })
+      .catch(() => {
+        if (mounted) {
+          setIsLoggedInStatus(false)
+        }
+      })
+
+    return () => {
+      mounted = false
+    }
+  }, [])
+
+  return isLoggedInStatus
+}
+
 function RequireAuth({ children }) {
   const location = useLocation()
+  const isUserLoggedIn = useAuthStatus()
 
-  if (!isLoggedIn()) {
+  if (isUserLoggedIn === null) return null
+
+  if (!isUserLoggedIn) {
     return (
       <Navigate
         to="/login"
@@ -44,7 +74,11 @@ function RequireAuth({ children }) {
 }
 
 function GuestOnly({ children }) {
-  if (isLoggedIn()) {
+  const isUserLoggedIn = useAuthStatus()
+
+  if (isUserLoggedIn === null) return null
+
+  if (isUserLoggedIn) {
     return <Navigate to="/" replace />
   }
 
@@ -53,11 +87,7 @@ function GuestOnly({ children }) {
 
 // Protected route wrapper - redirects guests to the login page
 function ProtectedRoute({ children }) {
-  const [isUserLoggedIn, setIsUserLoggedIn] = useState(null)
-
-  useEffect(() => {
-    setIsUserLoggedIn(isLoggedIn())
-  }, [])
+  const isUserLoggedIn = useAuthStatus()
 
   if (isUserLoggedIn === null) return null // Loading
 
@@ -73,7 +103,7 @@ function AppRoutes() {
     <Routes>
       <Route path="/" element={<> <HeaderCom /> <LandingPages /></>} />
       <Route
-        path="/login"
+        path="/"
         element={
           <>
             <HeaderCom />
