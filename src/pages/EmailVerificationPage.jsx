@@ -5,30 +5,16 @@ import EmailVerification from '../Components/Auth/EmailVerificationForm'
 
 import '../Components/Auth/Auth.css'
 
-/** Pull email from localStorage-stored user when no state email is passed. */
-function getStoredEmail() {
-  try {
-    const raw = localStorage.getItem('user')
-    if (!raw) return ''
-    const parsed = JSON.parse(raw)
-    // The stored object may be the full getMe response { user: { email } }
-    // or a flat user object { email } depending on where it was saved.
-    return parsed?.user?.email || parsed?.email || ''
-  } catch {
-    return ''
-  }
-}
-
 const EmailVerificationPage = () => {
   const location = useLocation()
   const navigate = useNavigate()
-  const [userEmail] = useState(location.state?.email || getStoredEmail())
+  const [userEmail] = useState(location.state?.email || '')
   const [showSuccess, setShowSuccess] = useState(false)
 
   useEffect(() => {
     // Email is passed from registration form via location.state
     if (!location.state?.email) {
-      console.warn('No email in location state — falling back to stored user email')
+      console.warn('No email provided for verification')
     }
   }, [location.state])
 
