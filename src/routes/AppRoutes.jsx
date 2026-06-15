@@ -24,6 +24,7 @@ import FindWorkPage from "../pages/DashboardPage/Expert/FindWorkPage"
 import EarningsPage from "../pages/DashboardPage/Expert/EarningsPage"
 import ExpertMessagesPage from "../pages/DashboardPage/Expert/MessagesPage"
 import ExpertSettingsPage from "../pages/DashboardPage/Expert/SettingsPage"
+import ProfilePage from "../pages/ProfilePage"
 
 /**
  * Fetches current auth status from the backend.
@@ -372,6 +373,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <ExpertSettingsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/profile/:userId"
+        element={
+          <ProtectedRoute>
+            <ProfilePage />
           </ProtectedRoute>
         }
       />
