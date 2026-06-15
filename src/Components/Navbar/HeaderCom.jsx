@@ -98,10 +98,10 @@ export default function HeaderCom() {
         <div className={`collapse navbar-collapse justify-content-center ${isMenuOpen ? "show" : ""}`} id="navbarNav">
           <ul className="navbar-nav gap-lg-4 mb-2 mb-lg-0 align-items-center">
             <li className="nav-item">
-              <a className="nav-link active fw-semibold" href="#explore" onClick={closeMenu}>Explore</a>
+              <Link className="nav-link active fw-semibold" to="/" onClick={closeMenu}>Home</Link>
             </li>
             <li className="nav-item">
-              <a className="nav-link fw-semibold" href="#experts" onClick={closeMenu}>Experts</a>
+              <a className="nav-link fw-semibold" href="#experts" onClick={closeMenu}>Marketplace</a>
             </li>
             <li className="nav-item">
               <button className="nav-link fw-semibold nav-button-link" type="button" onClick={handleDashboard}>
