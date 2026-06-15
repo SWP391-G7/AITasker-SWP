@@ -99,11 +99,6 @@ const LandingPages = () => {
     return false
   }
 
-  const handleSearch = (event) => { //Check if user is logged in before allowing access to search results
-    event.preventDefault()
-    requireLogin()
-  }
-
   const handleProtectedClick = () => { //Check if user is logged in before allowing access to protected features
     requireLogin()
   }
