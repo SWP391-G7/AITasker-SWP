@@ -4,22 +4,19 @@ import {
   CreditCard,
   Home,
   LayoutDashboard,
-  LogOut,
   MessageSquare,
-  PlusCircle,
   Settings,
 } from "lucide-react";
 
 const clientMenuItems = [
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
   { id: "projects", label: "My Projects", icon: BriefcaseBusiness },
-  { id: "post-job", label: "Post a Job", icon: PlusCircle },
   { id: "messages", label: "Messages", icon: MessageSquare },
   { id: "billing", label: "Billing", icon: CreditCard },
   { id: "settings", label: "Settings", icon: Settings },
 ];
 
-const ClientSidebar = ({ activeTab = "dashboard", onTabChange, onLogout }) => {
+const ClientSidebar = ({ activeTab = "dashboard", onTabChange }) => {
   const navigate = useNavigate();
 
   const handleMenuClick = (id) => {
@@ -29,21 +26,9 @@ const ClientSidebar = ({ activeTab = "dashboard", onTabChange, onLogout }) => {
 
     if (id === "dashboard") navigate("/client/dashboard");
     if (id === "projects") navigate("/client/projects");
-    if (id === "post-job") navigate("/client/post-job");
     if (id === "messages") navigate("/client/messages");
     if (id === "billing") navigate("/client/billing");
     if (id === "settings") navigate("/client/settings");
-  };
-
-  const handleLogout = () => {
-    if (onLogout) {
-      onLogout();
-      return;
-    }
-
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    navigate("/login");
   };
 
   return (
@@ -81,14 +66,6 @@ const ClientSidebar = ({ activeTab = "dashboard", onTabChange, onLogout }) => {
           <Home size={18} />
           <span>Return to Dashboard</span>
         </Link>
-
-        <div
-          className="sidebar-item-link py-2 px-3 text-danger"
-          onClick={handleLogout}
-        >
-          <LogOut size={18} />
-          <span>Log out</span>
-        </div>
       </div>
     </aside>
   );
