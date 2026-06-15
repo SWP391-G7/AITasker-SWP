@@ -1,12 +1,21 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import Sidebar from "../Components/dashboard/Sidebar";
-import DashboardHeader from "../Components/dashboard/DashboardHeader";
+import Sidebar from "../Components/Dashboard/Sidebar";
+import DashboardHeader from "../Components/Dashboard/DashboardHeader";
 import { createJobPost } from "../Services/jobService";
+import { getStoredUser } from "../Services/checkLogin";
 import "./JobPostPage.css";
 
 function JobPostPage() {
   const navigate = useNavigate();
+  
+  useEffect(() => {
+    const user = getStoredUser();
+    const role = user?.role || "client";
+    if (role !== "client" && role !== "admin") {
+      navigate(`/${role}/dashboard`, { replace: true });
+    }
+  }, [navigate]);
   const [formData, setFormData] = useState({
     title: "",
     description: "",

@@ -5,12 +5,21 @@ import DashboardHeader from "../Components/Dashboard/DashboardHeader"
 import StatCard from "../Components/Dashboard/StatCard"
 import SpendingChart from "../Components/Dashboard/SpendingChart"
 import RecentActivity from "../Components/Dashboard/RecentActivity"
+import { getStoredUser } from "../Services/checkLogin"
 import "../Components/Dashboard/Dashboard.css"
 
 function ExpertDashboard() {
   const location = useLocation()
   const navigate = useNavigate()
   const [alert, setAlert] = useState(null)
+
+  useEffect(() => {
+    const user = getStoredUser();
+    const role = user?.role || "client";
+    if (role !== "expert" && role !== "admin") {
+      navigate(`/${role}/dashboard`, { replace: true });
+    }
+  }, [navigate]);
 
   useEffect(() => {
     if (location.state && location.state.message) {
