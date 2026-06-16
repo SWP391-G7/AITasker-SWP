@@ -1,9 +1,25 @@
-function DashboardHeader() {
+import { useNavigate } from "react-router-dom";
+import { getStoredUser } from "../../Services/checkLogin";
+
+function DashboardHeader({ title, subtitle }) {
+  const navigate = useNavigate();
+  const currentUser = getStoredUser();
+  
+  const handleProfileClick = () => {
+    if (currentUser?.id) {
+      navigate(`/profile/${currentUser.id}`);
+    }
+  };
+
+  const displayName = currentUser?.fullName || "Andy";
+  const displayRole = currentUser?.role === "expert" ? "Expert User" : "Client User";
+  const avatarLetter = displayName.charAt(0).toUpperCase();
+
   return (
     <header className="dashboard-header">
       <div>
-        <h1>Client Overview</h1>
-        <p>Welcome back. Here's what's happening with your projects today.</p>
+        <h1>{title || "Client Overview"}</h1>
+        <p>{subtitle || "Welcome back. Here's what's happening with your projects today."}</p>
       </div>
 
       <div className="header-right">
@@ -14,13 +30,13 @@ function DashboardHeader() {
 
         <button className="notification-btn">🔔</button>
 
-        <div className="user-profile">
+        <div className="user-profile" onClick={handleProfileClick} style={{ cursor: "pointer" }}>
           <div className="user-info">
-            <strong>Andy</strong>
-            <span>Client User</span>
+            <strong>{displayName}</strong>
+            <span>{displayRole}</span>
           </div>
 
-          <div className="avatar">A</div>
+          <div className="avatar">{avatarLetter}</div>
         </div>
       </div>
     </header>

@@ -6,13 +6,11 @@ import {
   LayoutDashboard,
   MessageSquare,
   Settings,
-  Users,
 } from "lucide-react";
 
 const clientMenuItems = [
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
   { id: "projects", label: "My Projects", icon: BriefcaseBusiness },
-  { id: "experts", label: "Client & Expert", icon: Users },
   { id: "messages", label: "Messages", icon: MessageSquare },
   { id: "billing", label: "Billing", icon: CreditCard },
   { id: "settings", label: "Settings", icon: Settings },
@@ -22,11 +20,12 @@ const ClientSidebar = ({ activeTab = "dashboard", onTabChange }) => {
   const navigate = useNavigate();
 
   const handleMenuClick = (id) => {
-    if (onTabChange) onTabChange(id);
+    if (onTabChange) {
+      onTabChange(id);
+    }
 
     if (id === "dashboard") navigate("/client/dashboard");
     if (id === "projects") navigate("/client/projects");
-    if (id === "experts") navigate("/client/experts");
     if (id === "messages") navigate("/client/messages");
     if (id === "billing") navigate("/client/billing");
     if (id === "settings") navigate("/client/settings");
@@ -63,10 +62,9 @@ const ClientSidebar = ({ activeTab = "dashboard", onTabChange }) => {
           Post a New Task
         </button>
 
-
         <Link to="/" className="sidebar-item-link py-2 px-3">
           <Home size={18} />
-          <span>Back to Home</span>
+          <span>Return to Homepage</span>
         </Link>
       </div>
     </aside>

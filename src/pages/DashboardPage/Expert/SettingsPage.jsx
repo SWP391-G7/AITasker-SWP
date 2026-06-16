@@ -37,8 +37,6 @@ const SettingsPage = () => {
 
       <main className="admin-main-panel expert-main-panel">
         <ExpertHeader
-          title="Settings"
-          subtitle="Manage your profile settings, notification preferences, and account security."
           notifications={notifications}
           onClearNotifications={() => setNotifications(0)}
           searchQuery={searchQuery}
@@ -48,6 +46,9 @@ const SettingsPage = () => {
         />
 
         <section className="admin-panel-card">
+          <div className="panel-header">
+            <h2 className="panel-title">Settings</h2>
+          </div>
           <div style={{ padding: '2rem', textAlign: 'center', color: '#94a3b8' }}>
             <p>Cài đặt tài khoản, thông báo và bảo mật thông tin cá nhân.</p>
           </div>

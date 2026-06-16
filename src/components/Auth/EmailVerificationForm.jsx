@@ -1,9 +1,7 @@
-import { useState, useRef, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useCallback, useState, useRef, useEffect } from 'react'
 import * as authService from '../../Services/authService'
 
 const EmailVerification = ({ email, onVerificationSuccess }) => {
-  const navigate = useNavigate()
   const [otp, setOtp] = useState(['', '', '', '', '', ''])
   const [isVerifying, setIsVerifying] = useState(false)
   const [isResending, setIsResending] = useState(false)
@@ -12,14 +10,26 @@ const EmailVerification = ({ email, onVerificationSuccess }) => {
   const [showResendMsg, setShowResendMsg] = useState(false)
   const inputRefs = useRef([])
 
+  const sendCodeToEmail = useCallback(async () => {
+    if (!email) {
+      setErrorMsg('No email address was provided for verification')
+      return
+    }
+
+    try {
+      await authService.sendVerificationCode(email)
+    } catch (err) {
+      setErrorMsg(err.message || 'Failed to send verification code')
+    }
+  }, [email])
+
   // Auto-focus vào ô đầu tiên
   useEffect(() => {
     if (inputRefs.current[0]) {
       inputRefs.current[0].focus()
     }
-    // Auto-send verification code on mount
-    sendCodeToEmail()
-  }, [])
+    queueMicrotask(sendCodeToEmail)
+  }, [sendCodeToEmail])
 
   // Countdown timer logic
   useEffect(() => {
@@ -93,7 +103,11 @@ const EmailVerification = ({ email, onVerificationSuccess }) => {
     setErrorMsg('')
 
     try {
-      await authService.verifyCode(email, code)
+      const result = await authService.verifyCode(email, code)
+      if (result.token) {
+        localStorage.setItem('token', result.token)
+        localStorage.setItem('user', JSON.stringify(result.user))
+      }
       // Call parent callback for success
       if (onVerificationSuccess) {
         onVerificationSuccess()
@@ -102,14 +116,6 @@ const EmailVerification = ({ email, onVerificationSuccess }) => {
       triggerError(err.message || 'Invalid verification code')
     } finally {
       setIsVerifying(false)
-    }
-  }
-
-  const sendCodeToEmail = async () => {
-    try {
-      await authService.sendVerificationCode(email)
-    } catch (err) {
-      setErrorMsg(err.message || 'Failed to send verification code')
     }
   }
 
@@ -163,7 +169,7 @@ const EmailVerification = ({ email, onVerificationSuccess }) => {
             type="text"
             inputMode="numeric"
             pattern="[0-9]*"
-            autocomplete="one-time-code"
+            autoComplete="one-time-code"
             className={`otp-input ${errorMsg ? 'error' : ''}`}
             maxLength="1"
             value={digit}

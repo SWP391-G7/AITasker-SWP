@@ -1,7 +1,17 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Bell, Search } from 'lucide-react'
+import clientAvatar from '../../LandingPages/image/user_avatar.png'
+import { getStoredUser } from '../../../Services/checkLogin'
 
-const user = JSON.parse(localStorage.getItem("user") || "{}");
+const currentUser = getStoredUser()
+
+const avatarLetter = () => {
+  const currentUserName = currentUser?.fullName || "@"
+  return (
+    currentUserName.charAt(0).toUpperCase()
+  )
+}
+const userAvatar = avatarLetter()
+
 const ClientHeader = ({ notifications, onClearNotifications, searchQuery, onSearchChange }) => (
   <header className="admin-header-section">
     <div className="admin-header-title">
@@ -31,10 +41,10 @@ const ClientHeader = ({ notifications, onClearNotifications, searchQuery, onSear
 
       <div className="admin-profile-widget">
         <div className="admin-profile-info">
-          <span className="admin-profile-name">Andy</span>
+          <span className="admin-profile-name">{currentUser.fullName}</span>
           <span className="admin-profile-role">Client User</span>
         </div>
-        <img src={clientAvatar} alt="Client Profile" className="admin-profile-avatar" />
+        <div className="avatar">{userAvatar}</div>
       </div>
     </div>
   </header>

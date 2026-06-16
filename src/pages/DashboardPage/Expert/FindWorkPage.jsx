@@ -48,8 +48,6 @@ const FindWorkPage = () => {
 
       <main className="admin-main-panel expert-main-panel">
         <ExpertHeader
-          title="Find Work"
-          subtitle="Browse high-value AI opportunities from global companies."
           notifications={notifications}
           onClearNotifications={() => setNotifications(0)}
           searchQuery={searchQuery}
@@ -59,7 +57,11 @@ const FindWorkPage = () => {
         />
 
         <div className="expert-content-container">
-          <div className="page-header-row justify-content-end">
+          <div className="page-header-row">
+            <div>
+              <h1>Find Work</h1>
+              <p>Browse high-value AI opportunities from global companies.</p>
+            </div>
             <div className="jobs-count-badge">
               428 New Jobs Today
             </div>

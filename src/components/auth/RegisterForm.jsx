@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
+import { Eye, EyeOff, Lock, Mail, User } from "lucide-react"
 import { register } from "../../Services/authService"
 
 function RegisterForm() {
@@ -9,7 +10,7 @@ function RegisterForm() {
     fullName: "",
     email: "",
     password: "",
-    confirmPassword: ""
+    confirmPassword: "",
   })
 
   const [error, setError] = useState("")
@@ -68,13 +69,11 @@ function RegisterForm() {
       setError("")
       setIsLoading(true)
 
-      const result = await register({
+      await register({
         fullName: formData.fullName,
         email: formData.email,
-        password: formData.password
+        password: formData.password,
       })
-
-      console.log("Register success:", result)
 
       navigate("/verify-email", { state: { email: formData.email } })
     } catch (err) {
@@ -91,7 +90,9 @@ function RegisterForm() {
 
       <form onSubmit={handleSubmit}>
         <div className="input-group">
-          <span className="input-icon">👤</span>
+          <span className="input-icon">
+            <User size={19} />
+          </span>
           <input
             type="text"
             name="fullName"
@@ -103,7 +104,9 @@ function RegisterForm() {
         </div>
 
         <div className="input-group">
-          <span className="input-icon">✉</span>
+          <span className="input-icon">
+            <Mail size={19} />
+          </span>
           <input
             type="email"
             name="email"
@@ -115,7 +118,9 @@ function RegisterForm() {
         </div>
 
         <div className="input-group">
-          <span className="input-icon">🔒</span>
+          <span className="input-icon">
+            <Lock size={19} />
+          </span>
 
           <input
             type={showPassword ? "text" : "password"}
@@ -129,15 +134,18 @@ function RegisterForm() {
           <button
             type="button"
             className="show-password-btn"
-            onClick={() => setShowPassword(!showPassword)}
+            onClick={() => setShowPassword((value) => !value)}
             disabled={isLoading}
+            aria-label={showPassword ? "Hide password" : "Show password"}
           >
-            {showPassword ? "◡" : "👁"}
+            {showPassword ? <EyeOff size={19} /> : <Eye size={19} />}
           </button>
         </div>
 
         <div className="input-group">
-          <span className="input-icon">🔒</span>
+          <span className="input-icon">
+            <Lock size={19} />
+          </span>
 
           <input
             type={showConfirmPassword ? "text" : "password"}
@@ -151,10 +159,11 @@ function RegisterForm() {
           <button
             type="button"
             className="show-password-btn"
-            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+            onClick={() => setShowConfirmPassword((value) => !value)}
             disabled={isLoading}
+            aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
           >
-            {showConfirmPassword ? "◡" : "👁"}
+            {showConfirmPassword ? <EyeOff size={19} /> : <Eye size={19} />}
           </button>
         </div>
 
@@ -167,7 +176,7 @@ function RegisterForm() {
 
       <div className="bottom-text">
         Already have an account?{" "}
-        <button type="button" onClick={() => navigate("/onboarding")}>
+        <button type="button" onClick={() => navigate("/onboarding")} disabled={isLoading}>
           Log in
         </button>
       </div>
