@@ -1854,6 +1854,27 @@
   gap: 10px;
 }
 
+.client-header-action {
+  min-height: 38px;
+  padding: 0.5rem 1rem;
+  border-radius: 10px;
+  border: 1px solid rgba(226, 232, 240, 0.12);
+  background: transparent;
+  color: #cbd5e1;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  transition: all 0.2s ease;
+}
+
+.client-header-action:hover {
+  border-color: rgba(96, 165, 250, 0.3);
+  background: rgba(59, 130, 246, 0.09);
+  color: #ffffff;
+}
+
 .delete-project-btn {
   border: 1px solid rgba(248, 113, 113, 0.35);
   background: rgba(127, 29, 29, 0.25);

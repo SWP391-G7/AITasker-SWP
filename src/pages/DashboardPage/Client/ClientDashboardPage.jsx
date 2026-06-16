@@ -1,6 +1,6 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-
+import { useClientUser } from "../../../Components/Dashboard/Client/user";
 import ClientSidebar from "../../../Components/Dashboard/Client/ClientSidebar";
 import ClientHeader from "../../../Components/Dashboard/Client/ClientHeader";
 import ClientStats from "../../../Components/Dashboard/Client/ClientStats";
@@ -23,15 +23,7 @@ function ClientDashboardPage() {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [notifications, setNotifications] = useState(2);
-
-  const user = useMemo(() => {
-    try {
-      const storedUser = localStorage.getItem("user");
-      return storedUser ? JSON.parse(storedUser) : null;
-    } catch {
-      return null;
-    }
-  }, []);
+  const user = useClientUser();
 
   const filteredProjects = initialClientProjects.filter(
     (item) =>
@@ -51,6 +43,8 @@ function ClientDashboardPage() {
 
       <main className="client-main-panel">
         <ClientHeader
+          title="Client Overview"
+          subtitle="Welcome back. Here is what is happening with your projects today."
           notifications={notifications}
           onClearNotifications={() => setNotifications(0)}
           searchQuery={searchQuery}

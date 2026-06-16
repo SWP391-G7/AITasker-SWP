@@ -25,6 +25,7 @@
 
 .client-dashboard-layout .admin-profile-widget {
   cursor: pointer;
+  padding: 0.4rem 0.8rem 0.4rem 1rem;
   transition: all 0.2s ease;
 }
 
@@ -41,6 +42,12 @@
 
 .client-dashboard-layout .profile-chevron.rotate {
   transform: rotate(180deg);
+}
+
+.client-dashboard-layout .admin-profile-avatar-wrapper {
+  display: flex;
+  align-items: center;
+  position: relative;
 }
 
 .client-dashboard-layout .profile-dropdown-menu {

@@ -10,8 +10,12 @@ import {
   Workflow,
 } from "lucide-react";
 import ClientSidebar from "../../../Components/Dashboard/Client/ClientSidebar";
+import ClientHeader from "../../../Components/Dashboard/Client/ClientHeader";
 import Footer from "../../../Components/Footer/Footer";
-import { createJobPost } from "../../../services/jobService";
+import { useClientUser } from "../../../Components/Dashboard/Client/user";
+import { logout } from "../../../Services/authService";
+import { createJobPost } from "../../../Services/jobService";
+import "../../Style/AdminDashboardPage.css";
 import "./ClientMarketplace.css";
 
 const categories = [
@@ -40,6 +44,9 @@ function PostJobPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [notifications, setNotifications] = useState(2);
+  const user = useClientUser();
 
   const minDate = new Date();
   minDate.setDate(minDate.getDate() + 1);
@@ -154,25 +161,36 @@ ${formData.requirements.trim()}`,
     }
   };
 
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+  };
+
   return (
     <div className="market-client-layout">
       <ClientSidebar activeTab="post-job" />
 
       <main className="post-job-main">
-        <header className="post-job-header">
-          <button
-            type="button"
-            className="back-circle"
-            onClick={() => navigate("/client/dashboard")}
-          >
-            <ArrowLeft size={28} />
-          </button>
-
-          <div>
-            <h1>Post a New Task</h1>
-            <p>Connect with elite AI experts to bring your vision to life.</p>
-          </div>
-        </header>
+        <ClientHeader
+          title="Post a New Task"
+          subtitle="Connect with elite AI experts to bring your vision to life."
+          headerActions={
+            <button
+              type="button"
+              className="client-header-action"
+              onClick={() => navigate("/client/dashboard")}
+            >
+              <ArrowLeft size={16} />
+              Back
+            </button>
+          }
+          notifications={notifications}
+          onClearNotifications={() => setNotifications(0)}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          user={user}
+          onLogout={handleLogout}
+        />
 
         <section className="post-stepper">
           <div className={`step ${step >= 1 ? "active" : ""}`}>

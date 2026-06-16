@@ -2,7 +2,7 @@ import { Bell, ChevronDown, LogOut, Search, Settings, User } from 'lucide-react'
 import { getStoredUser } from '../../../Services/checkLogin'
 import useHandleClickOutside from '../HandleClickOutside'
 
-const ClientHeader = ({ notifications, onClearNotifications, searchQuery, onSearchChange, user, onLogout }) => {
+const ClientHeader = ({ title, subtitle, headerActions, notifications, onClearNotifications, searchQuery, onSearchChange, user, onLogout }) => {
   const { isProfileOpen, setIsProfileOpen, dropdownRef } = useHandleClickOutside()
   const currentUser = user || getStoredUser()
   const currentUserName = currentUser?.fullName || currentUser?.name || 'Client User'
@@ -11,21 +11,23 @@ const ClientHeader = ({ notifications, onClearNotifications, searchQuery, onSear
   return (
     <header className="admin-header-section">
       <div className="admin-header-title">
-        <h1>Client Overview</h1>
-        <p>Welcome back. Here is what is happening with your projects today.</p>
+        {title && <h1>{title}</h1>}
+        {subtitle && <p>{subtitle}</p>}
       </div>
 
-      <div className="admin-search-box">
-        <Search size={16} className="admin-search-icon" />
-        <input
-          type="text"
-          placeholder="Search projects, experts, or tasks..."
-          value={searchQuery}
-          onChange={(event) => onSearchChange(event.target.value)}
-        />
-      </div>
+      <div className="admin-header-controls">
+        {headerActions && <div className="admin-header-extra">{headerActions}</div>}
 
-      <div className="d-flex align-items-center gap-3">
+        <div className="admin-search-box">
+          <Search size={16} className="admin-search-icon" />
+          <input
+            type="text"
+            placeholder="Search projects, experts..."
+            value={searchQuery}
+            onChange={(event) => onSearchChange(event.target.value)}
+          />
+        </div>
+
         <button
           className="icon-button position-relative"
           aria-label="Client Notifications"
@@ -42,9 +44,11 @@ const ClientHeader = ({ notifications, onClearNotifications, searchQuery, onSear
           >
             <div className="admin-profile-info">
               <span className="admin-profile-name">{currentUserName}</span>
-              <span className="admin-profile-role">Client </span>
+              <span className="admin-profile-role">Client</span>
             </div>
-            <div className="avatar">{userAvatar}</div>
+            <div className="admin-profile-avatar-wrapper">
+              <div className="avatar">{userAvatar}</div>
+            </div>
             <ChevronDown size={14} className={`profile-chevron ${isProfileOpen ? 'rotate' : ''}`} />
           </div>
 
