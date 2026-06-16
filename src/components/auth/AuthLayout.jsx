@@ -1,8 +1,14 @@
+import { Link } from "react-router-dom";
 import "../../App.css";
 
 function AuthLayout({ children }) {
   return (
     <div className="auth-page">
+      {/* Shared navigation back to the public landing page. */}
+      <Link to="/" className="auth-home-link">
+        ← Back to Homepage
+      </Link>
+
       <div className="auth-left d-none d-lg-block">
         <div className="brand">
           <div className="logo-box">AI</div>
