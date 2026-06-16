@@ -1,11 +1,11 @@
-import Sidebar from "../Components/dashboard/Sidebar"
-import DashboardHeader from "../Components/dashboard/DashboardHeader"
-import StatCard from "../Components/dashboard/StatCard"
-import SpendingChart from "../Components/dashboard/SpendingChart"
-import ActiveProjectsTable from "../Components/dashboard/ActiveProjectsTable"
-import RecentActivity from "../Components/dashboard/RecentActivity"
-import TalentCard from "../Components/dashboard/TalentCard"
-import "../Components/dashboard/Dashboard.css"
+import Sidebar from "../Components/Dashboard/Sidebar"
+import DashboardHeader from "../Components/Dashboard/DashboardHeader"
+import StatCard from "../Components/Dashboard/StatCard"
+import SpendingChart from "../Components/Dashboard/SpendingChart"
+import ActiveProjectsTable from "../Components/Dashboard/ActiveProjectsTable"
+import RecentActivity from "../Components/Dashboard/RecentActivity"
+import TalentCard from "../Components/Dashboard/TalentCard"
+import "../Components/Dashboard/Dashboard.css"
 
 function ClientDashboard() {
   return (
