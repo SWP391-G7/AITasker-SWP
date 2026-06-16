@@ -86,15 +86,6 @@ function ClientProjectsPage() {
             <h1>My Projects</h1>
             <p>Track all tasks you have posted for AI experts.</p>
           </div>
-
-          <button
-            className="next-btn"
-            type="button"
-            onClick={() => navigate("/client/post-job")}
-          >
-            <PlusCircle size={18} />
-            Post a New Task
-          </button>
         </header>
 
         <section className="post-form-card">
