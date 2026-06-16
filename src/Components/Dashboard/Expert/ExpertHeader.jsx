@@ -47,7 +47,6 @@ const ExpertHeader = ({ title, subtitle, notifications, onClearNotifications, se
             </div>
             <div className="admin-profile-avatar-wrapper">
               <div className="avatar">{userAvatar}</div>
-              <div className="avatar-status-indicator"></div>
             </div>
             <ChevronDown size={14} className={`profile-chevron ${isProfileOpen ? 'rotate' : ''}`} />
           </div>
