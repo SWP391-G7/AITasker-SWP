@@ -2,7 +2,7 @@ import { Bell, Search, User, Settings, LogOut, ChevronDown } from 'lucide-react'
 import { getStoredUser } from '../../../Services/checkLogin'
 import useHandleClickOutside from '../HandleClickOutside'
 
-const ExpertHeader = ({ title, subtitle, notifications, onClearNotifications, searchQuery, onSearchChange, user, onLogout }) => {
+const ExpertHeader = ({ title, subtitle, headerActions, notifications, onClearNotifications, searchQuery, onSearchChange, user, onLogout }) => {
   const { isProfileOpen, setIsProfileOpen, dropdownRef } = useHandleClickOutside()
 
   const currentUser = getStoredUser()
@@ -20,17 +20,19 @@ const ExpertHeader = ({ title, subtitle, notifications, onClearNotifications, se
         {subtitle && <p>{subtitle}</p>}
       </div>
 
-      <div className="admin-search-box">
-        <Search size={16} className="admin-search-icon" />
-        <input
-          type="text"
-          placeholder="Search projects, tasks..."
-          value={searchQuery}
-          onChange={(event) => onSearchChange(event.target.value)}
-        />
-      </div>
+      <div className="admin-header-controls">
+        {headerActions && <div className="admin-header-extra">{headerActions}</div>}
 
-      <div className="d-flex align-items-center gap-3">
+        <div className="admin-search-box">
+          <Search size={16} className="admin-search-icon" />
+          <input
+            type="text"
+            placeholder="Search projects, tasks..."
+            value={searchQuery}
+            onChange={(event) => onSearchChange(event.target.value)}
+          />
+        </div>
+
         <button className="icon-button position-relative" aria-label="Expert Notifications" onClick={onClearNotifications}>
           <Bell size={20} />
           {notifications > 0 && <span className="icon-badge bg-sky"></span>}
