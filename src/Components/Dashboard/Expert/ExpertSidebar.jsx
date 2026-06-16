@@ -22,7 +22,7 @@ const ExpertSidebar = ({ activeTab, onTabChange }) => (
   <aside className="admin-sidebar">
     <div className="sidebar-header">
       <Link to="/" className="sidebar-brand mb-0">AITasker</Link>
-      <span className="sidebar-subtitle">AI Services Marketplace</span>
+      <span className="sidebar-subtitle">Expert Workspace</span>
     </div>
 
     <ul className="sidebar-menu">

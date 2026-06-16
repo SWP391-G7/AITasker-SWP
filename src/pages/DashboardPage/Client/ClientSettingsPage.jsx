@@ -8,7 +8,7 @@ function ClientSettingsPage() {
       <ClientSidebar activeTab="settings" />
 
       <main className="market-main">
-        <header className="market-topbar">
+        <header className="market-topbar settings-header">
           <div>
             <h1>Settings</h1>
             <p>This page allows client to update account settings.</p>

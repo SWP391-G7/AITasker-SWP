@@ -1594,6 +1594,16 @@
   margin: 0;
 }
 
+.settings-header h1 {
+  font-size: 2rem;
+  line-height: 1.2;
+}
+
+.settings-header p {
+  font-size: 0.9rem;
+  margin-top: 0.25rem;
+}
+
 .market-client-layout .site-footer-dashboard {
   margin-top: auto;
 }
@@ -1636,12 +1646,12 @@
 }
 
 .messages-header h1 {
-  font-size: 1.45rem;
-  line-height: 1.15;
+  font-size: 2rem;
+  line-height: 1.2;
 }
 
 .messages-header p {
-  font-size: 0.82rem;
+  font-size: 0.9rem;
   margin-top: 0.25rem;
 }
 
