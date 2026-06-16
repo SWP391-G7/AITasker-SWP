@@ -4,9 +4,7 @@ import {
   DollarSign,
   Home,
   LayoutDashboard,
-  LogOut,
   MessageSquare,
-  PlusCircle,
   Search,
   Settings
 } from 'lucide-react'
@@ -20,7 +18,7 @@ const expertMenuItems = [
   { id: 'settings', label: 'Settings', icon: Settings }
 ]
 
-const ExpertSidebar = ({ activeTab, onTabChange, onLogout }) => (
+const ExpertSidebar = ({ activeTab, onTabChange }) => (
   <aside className="admin-sidebar">
     <div className="sidebar-header">
       <Link to="/" className="sidebar-brand mb-0">AITasker</Link>
@@ -41,15 +39,14 @@ const ExpertSidebar = ({ activeTab, onTabChange, onLogout }) => (
       ))}
     </ul>
 
-    <div className="mt-auto pt-4 border-top border-secondary border-opacity-25 d-flex flex-column gap-3">
-      <Link to="/expert/post-task" className="sidebar-post-task-btn">
-        <PlusCircle size={18} />
-        <span>Post a New Task</span>
+    <div className="mt-auto pt-4 border-top border-secondary border-opacity-25 d-flex flex-column gap-2">
+      <Link to="/expert/post-task" className="btn btn-primary btn-sm fw-semibold">
+        Post a New Task
       </Link>
-      <div className="sidebar-item-link py-2 px-3 text-danger" style={{ cursor: 'pointer' }} onClick={onLogout}>
-        <LogOut size={18} />
-        <span>Log out</span>
-      </div>
+      <Link to="/" className="sidebar-item-link py-2 px-3">
+        <Home size={18} />
+        <span>Return to Homepage</span>
+      </Link>
     </div>
   </aside>
 )

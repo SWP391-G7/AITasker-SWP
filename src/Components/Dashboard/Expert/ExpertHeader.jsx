@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { Bell, Search, User, Settings, LogOut, ChevronDown } from 'lucide-react'
 import expertAvatar from '../../LandingPages/image/expert_sarah.png'
+import { getStoredUser } from '../../../Services/checkLogin'
 
 const ExpertHeader = ({ title, subtitle, notifications, onClearNotifications, searchQuery, onSearchChange, user, onLogout }) => {
   const [isProfileOpen, setIsProfileOpen] = useState(false)
@@ -15,6 +16,14 @@ const ExpertHeader = ({ title, subtitle, notifications, onClearNotifications, se
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
+
+  const currentUser = getStoredUser()
+
+  const avatarLetter = () => {
+    const currentUserName = currentUser?.fullName || currentUser?.name || "Client"
+    return currentUserName.charAt(0).toUpperCase()
+  }
+  const userAvatar = avatarLetter()
 
   return (
     <header className="admin-header-section">
@@ -40,16 +49,16 @@ const ExpertHeader = ({ title, subtitle, notifications, onClearNotifications, se
         </button>
 
         <div className="admin-profile-container" ref={dropdownRef}>
-          <div 
-            className={`admin-profile-widget ${isProfileOpen ? 'active' : ''}`} 
+          <div
+            className={`admin-profile-widget ${isProfileOpen ? 'active' : ''}`}
             onClick={() => setIsProfileOpen(!isProfileOpen)}
           >
             <div className="admin-profile-info">
-              <span className="admin-profile-name">{user?.name || user?.username || 'Sarah Kim'}</span>
+              <span className="admin-profile-name">{currentUser?.fullName || currentUser?.name || "Client User"}</span>
               <span className="admin-profile-role">AI Expert</span>
             </div>
             <div className="admin-profile-avatar-wrapper">
-              <img src={user?.avatar || expertAvatar} alt="Expert Profile" className="admin-profile-avatar" />
+              <div className="avatar">{userAvatar}</div>
               <div className="avatar-status-indicator"></div>
             </div>
             <ChevronDown size={14} className={`profile-chevron ${isProfileOpen ? 'rotate' : ''}`} />
