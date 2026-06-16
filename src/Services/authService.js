@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'
 
 export const register = async (data) => {
   try {
@@ -13,21 +13,21 @@ export const register = async (data) => {
         password: data.password,
         role: 'client'  // Default role, will be customizable later
       })
-    });
+    })
 
-    const result = await response.json();
+    const result = await response.json()
 
     if (!response.ok) {
-      throw new Error(result.message || 'Registration failed');
+      throw new Error(result.message || 'Registration failed')
     }
 
     // Don't save token yet - only save after email verification and login
-    return result;
+    return result
   } catch (error) {
-    console.error('Registration error:', error);
-    throw error;
+    console.error('Registration error:', error)
+    throw error
   }
-};
+}
 
 export const login = async (data) => {
   try {
@@ -40,32 +40,36 @@ export const login = async (data) => {
         email: data.email,
         password: data.password
       })
-    });
+    })
 
-    const result = await response.json();
+    const result = await response.json()
 
     if (!response.ok) {
-      throw new Error(result.message || 'Login failed');
+      const error = new Error(result.message || 'Login failed')
+      error.isVerificationRequired = result.isVerificationRequired || false
+      error.email = result.email || data.email
+      error.statusCode = response.status
+      throw error
     }
 
     if (result.token) {
-      localStorage.setItem('token', result.token);
-      localStorage.setItem('user', JSON.stringify(result.user));
+      localStorage.setItem('token', result.token)
+      localStorage.setItem('user', JSON.stringify(result.user))
     }
 
-    return result;
+    return result
   } catch (error) {
-    console.error('Login error:', error);
-    throw error;
+    console.error('Login error:', error)
+    throw error
   }
-};
+}
 
 export const getMe = async () => {
   try {
-    const token = localStorage.getItem('token');
-    
+    const token = localStorage.getItem('token')
+
     if (!token) {
-      throw new Error('No authentication token found');
+      throw new Error('No authentication token found')
     }
 
     const response = await fetch(`${API_BASE_URL}/auth/me`, {
@@ -74,20 +78,20 @@ export const getMe = async () => {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
       }
-    });
+    })
 
-    const result = await response.json();
+    const result = await response.json()
 
     if (!response.ok) {
-      throw new Error(result.message || 'Failed to fetch user profile');
+      throw new Error(result.message || 'Failed to fetch user profile')
     }
 
-    return result;
+    return result
   } catch (error) {
-    console.error('Get user error:', error);
-    throw error;
+    console.error('Get user error:', error)
+    throw error
   }
-};
+}
 
 export const sendVerificationCode = async (email) => {
   try {
@@ -97,20 +101,20 @@ export const sendVerificationCode = async (email) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ email })
-    });
+    })
 
-    const result = await response.json();
+    const result = await response.json()
 
     if (!response.ok) {
-      throw new Error(result.message || 'Failed to send verification code');
+      throw new Error(result.message || 'Failed to send verification code')
     }
 
-    return result;
+    return result
   } catch (error) {
-    console.error('Send verification code error:', error);
-    throw error;
+    console.error('Send verification code error:', error)
+    throw error
   }
-};
+}
 
 export const verifyCode = async (email, code) => {
   try {
@@ -120,22 +124,22 @@ export const verifyCode = async (email, code) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ email, code })
-    });
+    })
 
-    const result = await response.json();
+    const result = await response.json()
 
     if (!response.ok) {
-      throw new Error(result.message || 'Failed to verify code');
+      throw new Error(result.message || 'Failed to verify code')
     }
 
-    return result;
+    return result
   } catch (error) {
-    console.error('Verify code error:', error);
-    throw error;
+    console.error('Verify code error:', error)
+    throw error
   }
-};
+}
 
 export const logout = () => {
-  localStorage.removeItem('token');
-  localStorage.removeItem('user');
-};
+  localStorage.removeItem('token')
+  localStorage.removeItem('user')
+}
