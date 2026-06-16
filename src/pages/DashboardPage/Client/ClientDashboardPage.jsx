@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import ClientSidebar from "../../../Components/Dashboard/Client/ClientSidebar";
@@ -24,6 +24,15 @@ function ClientDashboardPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [notifications, setNotifications] = useState(2);
 
+  const user = useMemo(() => {
+    try {
+      const storedUser = localStorage.getItem("user");
+      return storedUser ? JSON.parse(storedUser) : null;
+    } catch {
+      return null;
+    }
+  }, []);
+
   const filteredProjects = initialClientProjects.filter(
     (item) =>
       item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -46,6 +55,7 @@ function ClientDashboardPage() {
           onClearNotifications={() => setNotifications(0)}
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
+          user={user}
           onLogout={handleLogout}
         />
 

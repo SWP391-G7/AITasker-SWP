@@ -2,16 +2,11 @@ import { Bell, ChevronDown, LogOut, Search, Settings, User } from 'lucide-react'
 import { getStoredUser } from '../../../Services/checkLogin'
 import useHandleClickOutside from '../HandleClickOutside'
 
-const currentUser = getStoredUser()
-
-const avatarLetter = () => {
-  const currentUserName = currentUser?.fullName || currentUser?.name || "Client"
-  return currentUserName.charAt(0).toUpperCase()
-}
-const userAvatar = avatarLetter()
-
-const ClientHeader = ({ notifications, onClearNotifications, searchQuery, onSearchChange, onLogout }) => {
+const ClientHeader = ({ notifications, onClearNotifications, searchQuery, onSearchChange, user, onLogout }) => {
   const { isProfileOpen, setIsProfileOpen, dropdownRef } = useHandleClickOutside()
+  const currentUser = user || getStoredUser()
+  const currentUserName = currentUser?.fullName || currentUser?.name || 'Client User'
+  const userAvatar = currentUserName.charAt(0).toUpperCase()
 
   return (
     <header className="admin-header-section">
@@ -46,7 +41,7 @@ const ClientHeader = ({ notifications, onClearNotifications, searchQuery, onSear
             onClick={() => setIsProfileOpen(!isProfileOpen)}
           >
             <div className="admin-profile-info">
-              <span className="admin-profile-name">{currentUser?.fullName || currentUser?.name || "Client User"}</span>
+              <span className="admin-profile-name">{currentUserName}</span>
               <span className="admin-profile-role">Client </span>
             </div>
             <div className="avatar">{userAvatar}</div>

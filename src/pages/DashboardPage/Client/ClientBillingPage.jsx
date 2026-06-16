@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import ClientSidebar from "../../../Components/Dashboard/Client/ClientSidebar";
 import Footer from "../../../Components/Footer/Footer";
+import { getStoredUser } from "../../../Services/checkLogin";
 import "./ClientMarketplace.css";
 
 const transactions = [
@@ -47,6 +48,9 @@ const transactions = [
 ];
 
 function ClientBillingPage() {
+  const currentUser = getStoredUser();
+  const clientName = currentUser?.fullName || currentUser?.name || "Client User";
+
   return (
     <div className="market-client-layout">
       <ClientSidebar activeTab="billing" />
@@ -127,7 +131,7 @@ function ClientBillingPage() {
                 <p>Expires 08/2028</p>
 
                 <div className="payment-card-footer">
-                  <strong>Andy Client</strong>
+                  <strong>{clientName}</strong>
                   <button>Edit</button>
                 </div>
               </div>
