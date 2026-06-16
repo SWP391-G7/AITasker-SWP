@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import ClientSidebar from "../../../Components/Dashboard/Client/ClientSidebar";
 import ClientHeader from "../../../Components/Dashboard/Client/ClientHeader";
@@ -13,11 +14,13 @@ import {
   initialClientProjects,
   initialClientActivities,
 } from "../../../Components/Dashboard/Client/clientDashboardData";
+import { logout } from "../../../Services/authService";
 
 import "../../Style/AdminDashboardPage.css";
 import "../../Style/ClientDashboardPage.css";
 
 function ClientDashboardPage() {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [notifications, setNotifications] = useState(2);
 
@@ -27,6 +30,11 @@ function ClientDashboardPage() {
       item.expert.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.status.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+  };
 
   return (
     <div className="client-dashboard-layout">
@@ -38,6 +46,7 @@ function ClientDashboardPage() {
           onClearNotifications={() => setNotifications(0)}
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
+          onLogout={handleLogout}
         />
 
         <ClientStats

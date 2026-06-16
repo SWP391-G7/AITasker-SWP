@@ -313,8 +313,8 @@
   width: 100px;
   height: 100px;
   border-radius: 50%;
-  padding: 3px;
-  background: linear-gradient(135deg, var(--accent-blue), var(--accent-sky));
+  padding: 0;
+  background: transparent;
   display: inline-block;
   transition: var(--transition-smooth);
 }
@@ -328,7 +328,6 @@
   height: 100%;
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid var(--bg-primary);
 }
 
 .expert-rating {

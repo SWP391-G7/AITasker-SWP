@@ -207,8 +207,6 @@
   height: 36px;
   border-radius: 50%;
   object-fit: cover;
-  border: 1.5px solid #3b82f6;
-  box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
 }
 
 /* Stat Cards Section */
@@ -855,10 +853,4 @@
   border-color: rgba(96, 165, 250, 0.3);
   color: #ffffff;
   background: rgba(59, 130, 246, 0.09);
-}
-
-.admin-profile-avatar,
-.avatar {
-  border: 1.5px solid var(--accent-blue);
-  box-shadow: 0 0 14px rgba(59, 130, 246, 0.3);
 }

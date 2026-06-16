@@ -1,21 +1,9 @@
-import { useState, useRef, useEffect } from 'react'
 import { Bell, Search, User, Settings, LogOut, ChevronDown } from 'lucide-react'
-import expertAvatar from '../../LandingPages/image/expert_sarah.png'
 import { getStoredUser } from '../../../Services/checkLogin'
+import useHandleClickOutside from '../HandleClickOutside'
 
 const ExpertHeader = ({ title, subtitle, notifications, onClearNotifications, searchQuery, onSearchChange, user, onLogout }) => {
-  const [isProfileOpen, setIsProfileOpen] = useState(false)
-  const dropdownRef = useRef(null)
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsProfileOpen(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
+  const { isProfileOpen, setIsProfileOpen, dropdownRef } = useHandleClickOutside()
 
   const currentUser = getStoredUser()
 

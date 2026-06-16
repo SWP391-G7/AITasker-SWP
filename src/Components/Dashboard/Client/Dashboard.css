@@ -656,8 +656,8 @@
 }
 
 .client-dashboard-layout .avatar {
-  border: 1.5px solid #3b82f6;
-  box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
+  border: 0;
+  box-shadow: none;
 }
 
 .client-dashboard-layout .dashboard-actions button {
