@@ -238,6 +238,28 @@
   object-fit: cover;
 }
 
+.admin-profile-avatar-wrapper {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.admin-profile-avatar-wrapper .avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3b82f6, #06b6d4);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 0.9rem;
+  font-weight: 800;
+  line-height: 1;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18), 0 10px 22px rgba(37, 99, 235, 0.18);
+}
+
 /* Stat Cards Section */
 .admin-stats-grid {
   display: grid;

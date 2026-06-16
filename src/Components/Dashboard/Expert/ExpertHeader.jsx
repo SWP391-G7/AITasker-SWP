@@ -8,8 +8,8 @@ const ExpertHeader = ({ title, subtitle, headerActions, notifications, onClearNo
   const currentUser = getStoredUser()
 
   const avatarLetter = () => {
-    const currentUserName = currentUser?.fullName || currentUser?.name || "Client"
-    return currentUserName.charAt(0).toUpperCase()
+    const currentUserName = currentUser?.fullName || currentUser?.name || "Expert"
+    return currentUserName.trim().charAt(0).toUpperCase() || "E"
   }
   const userAvatar = avatarLetter()
 

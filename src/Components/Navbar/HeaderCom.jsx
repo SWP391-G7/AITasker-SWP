@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 import { Link, useNavigate, NavLink } from "react-router-dom"
 import { Bell, Mail } from "lucide-react"
-import avatar from "../LandingPages/image/user_avatar.png"
 import { getStoredUser, isLoggedIn, logout } from "../../Services/checkLogin"
 import "./HeaderCom.css"
 
@@ -40,14 +39,6 @@ export default function HeaderCom() {
 
   const closeMenu = () => setIsMenuOpen(false)
 
-  const requireLogin = () => {
-    closeMenu()
-    setShowDropdown(false)
-    navigate("/login", {
-      state: { message: "Please log in or create an account to use this feature." },
-    })
-  }
-
   const handleLogout = () => {
     logout()
     setIsLogin(false)
@@ -59,10 +50,7 @@ export default function HeaderCom() {
   const handleDashboard = () => {
     setShowDropdown(false)
     const storedUser = getStoredUser()
-    if (storedUser && storedUser.id) {
-      navigate(`${storedUser.role}/dashboard`)
-    }
-
+    navigate(getDashboardPathByRole(storedUser?.role))
   }
 
   const handleProfile = () => {
@@ -76,10 +64,8 @@ export default function HeaderCom() {
 
   const avatarLetter = () => {
     const currentUser = getStoredUser()
-    const currentUserName = currentUser?.fullName || "@"
-    return (
-      currentUserName.charAt(0).toUpperCase()
-    )
+    const currentUserName = currentUser?.fullName || currentUser?.name || "User"
+    return currentUserName.trim().charAt(0).toUpperCase() || "U"
   }
   const userAvatar = avatarLetter()
   return (
@@ -92,7 +78,7 @@ export default function HeaderCom() {
         <div className="d-flex align-items-center gap-2">
           {isLogin && (
             <div className="avatar-wrapper d-lg-none">
-              <img src={avatar} alt="User Profile" className="user-avatar" style={{ width: "30px", height: "30px" }} />
+              <div className="avatar">{userAvatar}</div>
             </div>
           )}
 
