@@ -62,6 +62,14 @@ export default function HeaderCom() {
     if (isLogin) {
       // ROLE ROUTING: Khi bấm Dashboard, đọc user đã lưu sau login để vào đúng marketplace page.
       const user = getStoredUser();
+      
+      // Nếu chưa onboarding (chưa chọn role hoặc chưa điền thông tin), chuyển sang trang onboarding
+      // Admin không cần qua bước onboarding này
+      if (!user?.isOnboarded && !user?.role?.toLowerCase().includes("admin")) {
+        navigate("/onboarding");
+        return;
+      }
+
       navigate(getDashboardPathByRole(user?.role));
       return;
     }

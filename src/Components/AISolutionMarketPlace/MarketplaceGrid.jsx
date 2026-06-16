@@ -1,8 +1,9 @@
-import React, { useState, useMemo } from 'react';
-import { Grid, List, Search as SearchIcon } from 'lucide-react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { Grid, List, Search as SearchIcon, Loader2 } from 'lucide-react';
 import ServiceCard from './ServiceCard';
 import MarketplacePagination from './MarketplacePagination';
-import { allServices } from './servicesData';
+import { allServices as mockServices } from './servicesData';
+import { getMarketplaceServices } from '../../Services/serviceService';
 import './Marketplace.css';
 
 const MarketplaceGrid = () => {
@@ -11,16 +12,46 @@ const MarketplaceGrid = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [category, setCategory] = useState('All Categories');
   const [budget, setBudget] = useState('Any Price');
+  const [realServices, setRealServices] = useState([]);
+  const [loading, setLoading] = useState(true);
   const itemsPerPage = 8;
+
+  // Fetch real services from DB
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        const services = await getMarketplaceServices();
+        // Transform backend data to match UI expectations
+        const formatted = services.map(s => ({
+          tag: s.tags?.toUpperCase() || "AI",
+          expert: s.expert_name,
+          rating: s.avg_rating?.toString() || "5.0",
+          title: s.title,
+          price: `$${parseFloat(s.price).toLocaleString()}`,
+          image: null // Real image logic would go here
+        }));
+        setRealServices(formatted);
+      } catch (err) {
+        console.error("Failed to fetch services:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchServices();
+  }, []);
+
+  // Combine Mock and Real data (Real data first)
+  const combinedServices = useMemo(() => {
+    return [...realServices, ...mockServices];
+  }, [realServices]);
 
   // Filter Logic
   const filteredServices = useMemo(() => {
-    return allServices.filter(svc => {
+    return combinedServices.filter(svc => {
       const matchesSearch = svc.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
                            svc.expert.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesCategory = category === 'All Categories' || svc.tag.toUpperCase() === category.toUpperCase();
       
-      // Basic Budget Filter Logic (simplified for demo)
       let matchesBudget = true;
       if (budget === '$0 - $500') {
         const price = parseInt(svc.price.replace('$', '').replace(',', ''));
@@ -35,7 +66,7 @@ const MarketplaceGrid = () => {
 
       return matchesSearch && matchesCategory && matchesBudget;
     });
-  }, [searchQuery, category, budget]);
+  }, [searchQuery, category, budget, combinedServices]);
 
   // Pagination Logic
   const totalPages = Math.ceil(filteredServices.length / itemsPerPage);
@@ -47,6 +78,15 @@ const MarketplaceGrid = () => {
     setCurrentPage(pageNumber);
     window.scrollTo({ top: 300, behavior: 'smooth' });
   };
+
+  if (loading) {
+    return (
+      <div className="d-flex flex-column align-items-center justify-content-center py-5" style={{ minHeight: '400px' }}>
+        <Loader2 className="animate-spin text-primary mb-3" size={48} />
+        <p className="text-muted">Loading AI Marketplace...</p>
+      </div>
+    );
+  }
 
   return (
     <>

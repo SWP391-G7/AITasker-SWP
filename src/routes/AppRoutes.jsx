@@ -22,6 +22,7 @@ import FindWorkPage from "../pages/DashboardPage/Expert/FindWorkPage";
 import EarningsPage from "../pages/DashboardPage/Expert/EarningsPage";
 import ExpertMessagesPage from "../pages/DashboardPage/Expert/MessagesPage";
 import ExpertSettingsPage from "../pages/DashboardPage/Expert/SettingsPage";
+import PostServicePage from "../pages/DashboardPage/Expert/PostServicePage";
 import AISolutionMarketplacePage from "../pages/AISolutionMarketplacePage";
 import { isLoggedIn } from "../Services/checkLogin";
 
@@ -209,6 +210,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <ExpertDashboardPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/expert/post-service"
+        element={
+          <ProtectedRoute>
+            <PostServicePage />
           </ProtectedRoute>
         }
       />
