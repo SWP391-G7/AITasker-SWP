@@ -1,32 +1,33 @@
-import { useEffect, useState } from "react"
-import { Navigate, Route, Routes, useLocation } from "react-router-dom"
-import LoginPage from "../pages/LoginPage"
-import RegisterPage from "../pages/RegisterPage"
-import LandingPages from "../Components/LandingPages/LandingPages"
-import HeaderCom from "../Components/Navbar/HeaderCom"
-import EmailVerificationPage from "../pages/EmailVerificationPage"
-import { checkLogin } from "../Services/checkLogin"
-import OnboardingPage from "../pages/OnboardingPage"
-import ClientDashboardPage from "../pages/DashboardPage/Client/ClientDashboardPage"
-import ClientProjectsPage from "../pages/DashboardPage/Client/ClientProjectsPage"
-import PostJobPage from "../pages/DashboardPage/Client/PostJobPage"
-import ClientMessagesPage from "../pages/DashboardPage/Client/ClientMessagesPage"
-import ClientBillingPage from "../pages/DashboardPage/Client/ClientBillingPage"
-import ClientSettingsPage from "../pages/DashboardPage/Client/ClientSettingsPage"
-import AdminDashboardPage from "../pages/DashboardPage/Admin/AdminDashboardPage"
-import UserManagementPage from "../pages/DashboardPage/Admin/UserManagementPage"
-import ContentModerationPage from "../pages/DashboardPage/Admin/ContentModerationPage"
-import DisputeResolutionPage from "../pages/DashboardPage/Admin/DisputeResolutionPage"
-import AnalyticsPage from "../pages/DashboardPage/Admin/AnalyticsPage"
-import ExpertDashboardPage from "../pages/DashboardPage/Expert/ExpertDashboardPage"
-import MyProjectsPage from "../pages/DashboardPage/Expert/MyProjectsPage"
-import FindWorkPage from "../pages/DashboardPage/Expert/FindWorkPage"
-import EarningsPage from "../pages/DashboardPage/Expert/EarningsPage"
-import ExpertMessagesPage from "../pages/DashboardPage/Expert/MessagesPage"
-import ExpertSettingsPage from "../pages/DashboardPage/Expert/SettingsPage"
-import ProfilePage from "../pages/ProfilePage"
-import MarketplacePage from "../pages/MarketplacePage"
-import ClientsAndExpertsPage from "../pages/ClientsAndExpertsPage"
+import { useEffect, useState } from "react";
+import { Navigate, Route, Routes, useLocation } from "react-router-dom";
+import LoginPage from "../pages/LoginPage";
+import RegisterPage from "../pages/RegisterPage";
+import LandingPages from "../Components/LandingPages/LandingPages";
+import HeaderCom from "../Components/Navbar/HeaderCom";
+import EmailVerificationPage from "../pages/EmailVerificationPage";
+import { checkLogin } from "../Services/checkLogin";
+import OnboardingPage from "../pages/OnboardingPage";
+import ClientDashboardPage from "../pages/DashboardPage/Client/ClientDashboardPage";
+import ClientProjectsPage from "../pages/DashboardPage/Client/ClientProjectsPage";
+import PostJobPage from "../pages/DashboardPage/Client/PostJobPage";
+import ClientMessagesPage from "../pages/DashboardPage/Client/ClientMessagesPage";
+import ClientBillingPage from "../pages/DashboardPage/Client/ClientBillingPage";
+import ClientSettingsPage from "../pages/DashboardPage/Client/ClientSettingsPage";
+import AdminDashboardPage from "../pages/DashboardPage/Admin/AdminDashboardPage";
+import UserManagementPage from "../pages/DashboardPage/Admin/UserManagementPage";
+import ContentModerationPage from "../pages/DashboardPage/Admin/ContentModerationPage";
+import DisputeResolutionPage from "../pages/DashboardPage/Admin/DisputeResolutionPage";
+import AnalyticsPage from "../pages/DashboardPage/Admin/AnalyticsPage";
+import ExpertDashboardPage from "../pages/DashboardPage/Expert/ExpertDashboardPage";
+import MyProjectsPage from "../pages/DashboardPage/Expert/MyProjectsPage";
+import FindWorkPage from "../pages/DashboardPage/Expert/FindWorkPage";
+import EarningsPage from "../pages/DashboardPage/Expert/EarningsPage";
+import ExpertMessagesPage from "../pages/DashboardPage/Expert/MessagesPage";
+import ExpertSettingsPage from "../pages/DashboardPage/Expert/SettingsPage";
+import ExpertSearchPage from "../pages/DashboardPage/Client/ExpertSearchPage";
+import ProfilePage from "../pages/ProfilePage";
+import MarketplacePage from "../pages/MarketplacePage";
+import ClientsAndExpertsPage from "../pages/ClientsAndExpertsPage";
 
 /**
  * Fetches current auth status from the backend.
@@ -34,32 +35,34 @@ import ClientsAndExpertsPage from "../pages/ClientsAndExpertsPage"
  * null means the check is still in-flight (loading state).
  */
 function useAuthStatus() {
-  const [status, setStatus] = useState({ isLoggedIn: null, isVerified: null })
+  const [status, setStatus] = useState({ isLoggedIn: null, isVerified: null });
 
   useEffect(() => {
-    let mounted = true
+    let mounted = true;
 
     checkLogin()
       .then((result) => {
         if (mounted) {
-          const loggedIn = result?.isLoggedIn ?? false
+          const loggedIn = result?.isLoggedIn ?? false;
           // getMe response shape: { success, user: { isVerified, ... } }
-          const verified = loggedIn ? (result?.user?.user?.isVerified ?? false) : false
-          setStatus({ isLoggedIn: loggedIn, isVerified: verified })
+          const verified = loggedIn
+            ? (result?.user?.user?.isVerified ?? false)
+            : false;
+          setStatus({ isLoggedIn: loggedIn, isVerified: verified });
         }
       })
       .catch(() => {
         if (mounted) {
-          setStatus({ isLoggedIn: false, isVerified: false })
+          setStatus({ isLoggedIn: false, isVerified: false });
         }
-      })
+      });
 
     return () => {
-      mounted = false
-    }
-  }, [])
+      mounted = false;
+    };
+  }, []);
 
-  return status
+  return status;
 }
 
 /**
@@ -71,15 +74,15 @@ function useAuthStatus() {
  * - Not logged in → let through
  */
 function GuestOnly({ children }) {
-  const { isLoggedIn, isVerified } = useAuthStatus()
+  const { isLoggedIn, isVerified } = useAuthStatus();
 
-  if (isLoggedIn === null) return null
+  if (isLoggedIn === null) return null;
 
   if (isLoggedIn && isVerified) {
-    return <Navigate to="/" replace />
+    return <Navigate to="/" replace />;
   }
 
-  return children
+  return children;
 }
 
 /**
@@ -90,10 +93,10 @@ function GuestOnly({ children }) {
  * - Logged in but NOT verified → allow access ✓
  */
 function VerifyOnly({ children }) {
-  const location = useLocation()
-  const { isLoggedIn, isVerified } = useAuthStatus()
+  const location = useLocation();
+  const { isLoggedIn, isVerified } = useAuthStatus();
 
-  if (isLoggedIn === null) return null
+  if (isLoggedIn === null) return null;
 
   if (!isLoggedIn) {
     return (
@@ -105,14 +108,14 @@ function VerifyOnly({ children }) {
           message: "Please log in to verify your email.",
         }}
       />
-    )
+    );
   }
 
   if (isVerified) {
-    return <Navigate to="/" replace />
+    return <Navigate to="/" replace />;
   }
 
-  return children
+  return children;
 }
 
 /**
@@ -123,10 +126,10 @@ function VerifyOnly({ children }) {
  * - Logged in AND verified → allow access ✓
  */
 function ProtectedRoute({ children }) {
-  const location = useLocation()
-  const { isLoggedIn, isVerified } = useAuthStatus()
+  const location = useLocation();
+  const { isLoggedIn, isVerified } = useAuthStatus();
 
-  if (isLoggedIn === null) return null // Loading
+  if (isLoggedIn === null) return null; // Loading
 
   if (!isLoggedIn) {
     return (
@@ -138,14 +141,14 @@ function ProtectedRoute({ children }) {
           message: "Please log in or create an account to use this feature.",
         }}
       />
-    )
+    );
   }
 
   if (!isVerified) {
-    return <Navigate to="/verify" replace />
+    return <Navigate to="/verify" replace />;
   }
 
-  return children
+  return children;
 }
 
 /**
@@ -153,10 +156,10 @@ function ProtectedRoute({ children }) {
  * Kept for any future use-cases that only need a login gate.
  */
 function RequireAuth({ children }) {
-  const location = useLocation()
-  const { isLoggedIn } = useAuthStatus()
+  const location = useLocation();
+  const { isLoggedIn } = useAuthStatus();
 
-  if (isLoggedIn === null) return null
+  if (isLoggedIn === null) return null;
 
   if (!isLoggedIn) {
     return (
@@ -168,16 +171,24 @@ function RequireAuth({ children }) {
           message: "Please log in or create an account to use this feature.",
         }}
       />
-    )
+    );
   }
 
-  return children
+  return children;
 }
 
 function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<> <HeaderCom /> <LandingPages /></>} />
+      <Route
+        path="/"
+        element={
+          <>
+            {" "}
+            <HeaderCom /> <LandingPages />
+          </>
+        }
+      />
       <Route
         path="/"
         element={
@@ -187,6 +198,17 @@ function AppRoutes() {
           </>
         }
       />
+
+      <Route
+        path="/clients-experts"
+        element={
+          <>
+            <HeaderCom />
+            <ExpertSearchPage />
+          </>
+        }
+      />
+
       <Route
         path="/marketplace"
         element={
@@ -406,8 +428,8 @@ function AppRoutes() {
       />
 
       <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes >
-  )
+    </Routes>
+  );
 }
 
-export default AppRoutes
+export default AppRoutes;
