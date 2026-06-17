@@ -1,5 +1,6 @@
 import { useState } from "react";
-
+import { useNavigate } from "react-router-dom";
+import { useClientUser } from "../../../Components/Dashboard/Client/user";
 import ClientSidebar from "../../../Components/Dashboard/Client/ClientSidebar";
 import ClientHeader from "../../../Components/Dashboard/Client/ClientHeader";
 import ClientStats from "../../../Components/Dashboard/Client/ClientStats";
@@ -13,13 +14,16 @@ import {
   initialClientProjects,
   initialClientActivities,
 } from "../../../Components/Dashboard/Client/clientDashboardData";
+import { logout } from "../../../Services/authService";
 
 import "../../Style/AdminDashboardPage.css";
 import "../../Style/ClientDashboardPage.css";
 
 function ClientDashboardPage() {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [notifications, setNotifications] = useState(2);
+  const user = useClientUser();
 
   const filteredProjects = initialClientProjects.filter(
     (item) =>
@@ -28,16 +32,25 @@ function ClientDashboardPage() {
       item.status.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+  };
+
   return (
     <div className="client-dashboard-layout">
       <ClientSidebar />
 
       <main className="client-main-panel">
         <ClientHeader
+          title="Client Overview"
+          subtitle="Welcome back. Here is what is happening with your projects today."
           notifications={notifications}
           onClearNotifications={() => setNotifications(0)}
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
+          user={user}
+          onLogout={handleLogout}
         />
 
         <ClientStats

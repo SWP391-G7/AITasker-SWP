@@ -1,20 +1,17 @@
-import { useState, useRef, useEffect } from 'react'
 import { Bell, Search, User, Settings, LogOut, ChevronDown } from 'lucide-react'
-import expertAvatar from '../../LandingPages/image/expert_sarah.png'
+import { getStoredUser } from '../../../Services/checkLogin'
+import useHandleClickOutside from '../HandleClickOutside'
 
-const ExpertHeader = ({ title, subtitle, notifications, onClearNotifications, searchQuery, onSearchChange, user, onLogout }) => {
-  const [isProfileOpen, setIsProfileOpen] = useState(false)
-  const dropdownRef = useRef(null)
+const ExpertHeader = ({ title, subtitle, headerActions, notifications, onClearNotifications, searchQuery, onSearchChange, user, onLogout }) => {
+  const { isProfileOpen, setIsProfileOpen, dropdownRef } = useHandleClickOutside()
 
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsProfileOpen(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
+  const currentUser = getStoredUser()
+
+  const avatarLetter = () => {
+    const currentUserName = currentUser?.fullName || currentUser?.name || "Expert"
+    return currentUserName.trim().charAt(0).toUpperCase() || "E"
+  }
+  const userAvatar = avatarLetter()
 
   return (
     <header className="admin-header-section">
@@ -23,34 +20,35 @@ const ExpertHeader = ({ title, subtitle, notifications, onClearNotifications, se
         {subtitle && <p>{subtitle}</p>}
       </div>
 
-      <div className="admin-search-box">
-        <Search size={16} className="admin-search-icon" />
-        <input
-          type="text"
-          placeholder="Search projects, tasks..."
-          value={searchQuery}
-          onChange={(event) => onSearchChange(event.target.value)}
-        />
-      </div>
+      <div className="admin-header-controls">
+        {headerActions && <div className="admin-header-extra">{headerActions}</div>}
 
-      <div className="d-flex align-items-center gap-3">
+        <div className="admin-search-box">
+          <Search size={16} className="admin-search-icon" />
+          <input
+            type="text"
+            placeholder="Search projects, tasks..."
+            value={searchQuery}
+            onChange={(event) => onSearchChange(event.target.value)}
+          />
+        </div>
+
         <button className="icon-button position-relative" aria-label="Expert Notifications" onClick={onClearNotifications}>
           <Bell size={20} />
           {notifications > 0 && <span className="icon-badge bg-sky"></span>}
         </button>
 
         <div className="admin-profile-container" ref={dropdownRef}>
-          <div 
-            className={`admin-profile-widget ${isProfileOpen ? 'active' : ''}`} 
+          <div
+            className={`admin-profile-widget ${isProfileOpen ? 'active' : ''}`}
             onClick={() => setIsProfileOpen(!isProfileOpen)}
           >
             <div className="admin-profile-info">
-              <span className="admin-profile-name">{user?.name || user?.username || 'Sarah Kim'}</span>
+              <span className="admin-profile-name">{currentUser?.fullName || currentUser?.name || "Client User"}</span>
               <span className="admin-profile-role">AI Expert</span>
             </div>
             <div className="admin-profile-avatar-wrapper">
-              <img src={user?.avatar || expertAvatar} alt="Expert Profile" className="admin-profile-avatar" />
-              <div className="avatar-status-indicator"></div>
+              <div className="avatar">{userAvatar}</div>
             </div>
             <ChevronDown size={14} className={`profile-chevron ${isProfileOpen ? 'rotate' : ''}`} />
           </div>

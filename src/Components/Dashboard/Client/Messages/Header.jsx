@@ -1,19 +1,13 @@
-import React, { Component } from 'react'
+import { Component } from 'react'
 import "../../../../pages/DashboardPage/Client/ClientMarketplace.css"
 import { getStoredUser } from '../../../../Services/checkLogin'
 
-const currentUser = getStoredUser();
-const avatarLetter = () => {
-    const currentUser = getStoredUser()
-    const currentUserName = currentUser?.fullName || "@"
-    return (
-      currentUserName.charAt(0).toUpperCase()
-    )
-  }
-  const userAvatar = avatarLetter()
-
 export default class Header extends Component {
   render() {
+    const currentUser = getStoredUser()
+    const currentUserName = currentUser?.fullName || currentUser?.name || "@"
+    const userAvatar = currentUserName.charAt(0).toUpperCase()
+
     return (
       <header className="messages-header">
           <div>

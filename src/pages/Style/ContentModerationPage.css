@@ -374,3 +374,59 @@
     gap: 1rem;
   }
 }
+
+/* Content moderation: align with shared dashboard theme. */
+.moderation-title,
+.moderation-card-title {
+  color: var(--text-main);
+  letter-spacing: 0;
+}
+
+.moderation-stat-label,
+.moderation-stat-note,
+.moderation-time,
+.moderation-card-description,
+.moderation-severity-filter,
+.moderation-pagination-row {
+  color: var(--text-dark);
+}
+
+.moderation-topbar,
+.moderation-actions {
+  border-color: var(--border-color);
+}
+
+.moderation-stat-card,
+.moderation-card {
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.76), rgba(8, 13, 26, 0.72));
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  box-shadow: var(--shadow-card);
+}
+
+.moderation-search,
+.moderation-filter-button,
+.moderation-severity-filter select,
+.moderation-page-button {
+  background: rgba(15, 23, 42, 0.66);
+  border-color: var(--border-color);
+  color: var(--text-muted);
+}
+
+.moderation-search:focus-within,
+.moderation-severity-filter select:focus {
+  border-color: rgba(96, 165, 250, 0.56);
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12);
+}
+
+.moderation-filter-button.active,
+.moderation-page-button.active,
+.moderation-action-button.approve {
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+  border-color: rgba(96, 165, 250, 0.35);
+  color: #ffffff;
+}
+
+.moderation-card-image {
+  background: rgba(2, 6, 23, 0.52);
+}
