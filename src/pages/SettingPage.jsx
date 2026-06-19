@@ -42,7 +42,7 @@ const SettingPage = ({ isOpen, onClose, user, role = "Client", onLogout, onSwitc
 
   if (!isOpen) return null;
 
-  const targetRole = role === "Expert" ? "Client" : "Expert";
+  const targetRole = role === "expert" ? "Client" : "Expert";
 
   return (
     <div className="settings-modal-backdrop" role="dialog" aria-modal="true" aria-label="Account settings">
