@@ -51,11 +51,9 @@ function ProfilePage() {
   const handleBack = () => {
     // Navigate back to dashboard based on role
     if (currentUser) {
-      if (currentUser.role === "client") {
-        navigate("/client/dashboard");
-      } else {
-        navigate("/dashboard");
-      }
+      let x = currentUser.role;
+      console.log(x);
+      navigate("/"+x+"/dashboard");
     } else {
       navigate("/");
     }

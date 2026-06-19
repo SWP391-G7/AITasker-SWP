@@ -5,8 +5,7 @@ import {
   Home,
   LayoutDashboard,
   MessageSquare,
-  Search,
-  Settings
+  Search
 } from 'lucide-react'
 
 const expertMenuItems = [
@@ -15,7 +14,8 @@ const expertMenuItems = [
   { id: 'work', label: 'Find Work', icon: Search },
   { id: 'earnings', label: 'Earnings', icon: DollarSign },
   { id: 'messages', label: 'Messages', icon: MessageSquare },
-  { id: 'settings', label: 'Settings', icon: Settings }
+  // Settings moved to the avatar popup; keep this line for quick rollback.
+  // { id: 'settings', label: 'Settings', icon: Settings }
 ]
 
 const ExpertSidebar = ({ activeTab, onTabChange }) => (

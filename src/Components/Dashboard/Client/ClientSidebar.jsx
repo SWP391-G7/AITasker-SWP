@@ -5,7 +5,6 @@ import {
   Home,
   LayoutDashboard,
   MessageSquare,
-  Settings,
 } from "lucide-react";
 
 const clientMenuItems = [
@@ -13,7 +12,8 @@ const clientMenuItems = [
   { id: "projects", label: "My Projects", icon: BriefcaseBusiness },
   { id: "messages", label: "Messages", icon: MessageSquare },
   { id: "billing", label: "Billing", icon: CreditCard },
-  { id: "settings", label: "Settings", icon: Settings },
+  // Settings moved to the avatar popup; keep this line for quick rollback.
+  // { id: "settings", label: "Settings", icon: Settings },
 ];
 
 const ClientSidebar = ({ activeTab = "dashboard", onTabChange }) => {
@@ -28,7 +28,8 @@ const ClientSidebar = ({ activeTab = "dashboard", onTabChange }) => {
     if (id === "projects") navigate("/client/projects");
     if (id === "messages") navigate("/client/messages");
     if (id === "billing") navigate("/client/billing");
-    if (id === "settings") navigate("/client/settings");
+    // Settings now opens from the avatar popup instead of sidebar navigation.
+    // if (id === "settings") navigate("/client/settings");
   };
 
   return (
