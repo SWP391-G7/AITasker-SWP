@@ -14,9 +14,11 @@ const expertMenuItems = [
   { id: 'work', label: 'Find Work', icon: Search },
   { id: 'earnings', label: 'Earnings', icon: DollarSign },
   { id: 'messages', label: 'Messages', icon: MessageSquare },
-  // Settings moved to the avatar popup; keep this line for quick rollback.
-  // { id: 'settings', label: 'Settings', icon: Settings }
+  // Settings is temporarily disabled here because it now opens from the avatar popup.
 ]
+
+// Defensive filter: keep Settings hidden even if the menu array is changed later.
+const visibleExpertMenuItems = expertMenuItems.filter((item) => item.id !== 'settings')
 
 const ExpertSidebar = ({ activeTab, onTabChange }) => (
   <aside className="admin-sidebar">
@@ -26,7 +28,7 @@ const ExpertSidebar = ({ activeTab, onTabChange }) => (
     </div>
 
     <ul className="sidebar-menu">
-      {expertMenuItems.map(({ id, label, icon: Icon }) => (
+      {visibleExpertMenuItems.map(({ id, label, icon: Icon }) => (
         <li key={id}>
           <div
             className={`sidebar-item-link ${activeTab === id ? 'active' : ''}`}

@@ -57,6 +57,7 @@ const AdminDashboardPage = ({ onLogout }) => {
           onClearNotifications={() => setNotifications(0)}
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
+          onLogout={handleLogout}
         />
         <AdminStats moderationCount={moderations.length} disputeCount={disputes.length} />
         <AdminContentGrid

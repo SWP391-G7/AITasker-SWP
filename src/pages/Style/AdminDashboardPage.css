@@ -213,6 +213,84 @@
   border: 1px solid rgba(226, 232, 240, 0.08);
 }
 
+/* Admin avatar menu: opens profile/settings actions from the header avatar. */
+.admin-profile-container {
+  position: relative;
+}
+
+.admin-profile-button {
+  cursor: pointer;
+}
+
+.admin-profile-button:hover,
+.admin-profile-button.active {
+  background-color: rgba(30, 41, 59, 0.8);
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+.profile-chevron.rotate {
+  transform: rotate(180deg);
+}
+
+.admin-dashboard-layout .profile-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  width: 220px;
+  z-index: 1000;
+  overflow: hidden;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
+}
+
+.admin-dashboard-layout .dropdown-header {
+  padding: 1rem;
+  background-color: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.admin-dashboard-layout .user-email {
+  margin: 0;
+  color: var(--text-dark);
+  font-size: 0.75rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-dashboard-layout .dropdown-list {
+  list-style: none;
+  margin: 0;
+  padding: 0.5rem;
+}
+
+.admin-dashboard-layout .dropdown-item {
+  width: 100%;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 0.75rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: left;
+}
+
+.admin-dashboard-layout .dropdown-item:hover {
+  background-color: rgba(59, 130, 246, 0.1);
+  color: #ffffff;
+}
+
+.admin-dashboard-layout .dropdown-divider {
+  height: 1px;
+  background-color: rgba(255, 255, 255, 0.08);
+  margin: 0.5rem 0;
+}
+
 .admin-profile-info {
   text-align: right;
 }

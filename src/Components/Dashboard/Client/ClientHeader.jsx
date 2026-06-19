@@ -69,20 +69,27 @@ const ClientHeader = ({ title, subtitle, headerActions, notifications, onClearNo
                 </div>
                 <ul className="dropdown-list">
                   <li>
-                    <button className="dropdown-item">
+                    <button className="dropdown-item" type="button">
                       <User size={16} />
                       <span>My Profile</span>
                     </button>
                   </li>
                   <li>
-                    <button className="dropdown-item" onClick={handleOpenSettings}>
+                    <button
+                      className="dropdown-item"
+                      type="button"
+                      onMouseDown={(event) => {
+                        event.preventDefault()
+                        handleOpenSettings()
+                      }}
+                    >
                       <Settings size={16} />
                       <span>Settings</span>
                     </button>
                   </li>
                   <li className="dropdown-divider"></li>
                   <li>
-                    <button className="dropdown-item text-danger" onClick={onLogout}>
+                    <button className="dropdown-item text-danger" type="button" onClick={onLogout}>
                       <LogOut size={16} />
                       <span>Log out</span>
                     </button>

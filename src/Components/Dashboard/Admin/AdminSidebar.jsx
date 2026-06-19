@@ -6,7 +6,6 @@ import {
   LogOut,
   PlusCircle,
   Scale,
-  Settings,
   Shield,
   Users
 } from 'lucide-react'
@@ -18,7 +17,8 @@ const adminMenuItems = [
   { id: 'moderation', label: 'Content Moderation', icon: Shield },
   { id: 'disputes', label: 'Dispute Resolution', icon: Scale },
   { id: 'analytics', label: 'Analytics', icon: BarChart3 },
-  { id: 'settings', label: 'Settings', icon: Settings }
+  // Settings moved to the avatar popup; keep this line for quick rollback.
+  // { id: 'settings', label: 'Settings', icon: Settings }
 ]
 
 const AdminSidebar = ({ activeTab, onTabChange, onLogout }) => (

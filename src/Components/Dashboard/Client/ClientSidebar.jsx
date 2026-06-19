@@ -12,9 +12,11 @@ const clientMenuItems = [
   { id: "projects", label: "My Projects", icon: BriefcaseBusiness },
   { id: "messages", label: "Messages", icon: MessageSquare },
   { id: "billing", label: "Billing", icon: CreditCard },
-  // Settings moved to the avatar popup; keep this line for quick rollback.
-  // { id: "settings", label: "Settings", icon: Settings },
+  // Settings is temporarily disabled here because it now opens from the avatar popup.
 ];
+
+// Defensive filter: keep Settings hidden even if the menu array is changed later.
+const visibleClientMenuItems = clientMenuItems.filter((item) => item.id !== "settings");
 
 const ClientSidebar = ({ activeTab = "dashboard", onTabChange }) => {
   const navigate = useNavigate();
@@ -42,7 +44,7 @@ const ClientSidebar = ({ activeTab = "dashboard", onTabChange }) => {
       </div>
 
       <ul className="sidebar-menu">
-        {clientMenuItems.map(({ id, label, icon: Icon }) => (
+        {visibleClientMenuItems.map(({ id, label, icon: Icon }) => (
           <li key={id}>
             <div
               className={`sidebar-item-link ${activeTab === id ? "active" : ""}`}
