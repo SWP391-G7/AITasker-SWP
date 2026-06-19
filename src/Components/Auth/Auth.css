@@ -4,49 +4,7 @@
   --bg-dark-blue: #0D1C32;
 }
 
-.auth-page {
-  background-color: var(--bg-dark-blue);
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
 
-.auth-card {
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 18px;
-  box-shadow: 0 0 40px rgba(59, 130, 246, 0.08);
-  background-color: rgba(25, 46, 104, 0.4);
-}
-
-.btn-primary {
-  background-color: var(--primary-blue);
-  border: none;
-  padding: 10px;
-  font-weight: 600;
-}
-
-.btn-primary:hover {
-  background-color: #0b5ed7;
-}
-
-.form-control:focus {
-  border-color: #bbdefb;
-  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.1);
-}
-
-.auth-card.dark-card {
-  background-color: #27354C;
-  color: #ffffff;
-}
-
-.auth-card.dark-card .text-muted {
-  color: #b0b8c4 !important;
-}
-
-.auth-card.dark-card .auth-link {
-  color: #64b5f6;
-}
 
 .otp-input {
   width: 3rem;
@@ -163,4 +121,18 @@
     transform: translateY(0);
     opacity: 1;
   }
+}
+
+/* Google Login Button Styles */
+.google-login-btn {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  margin-bottom: 15px;
+}
+
+.google-icon-svg {
+  display: block;
 }

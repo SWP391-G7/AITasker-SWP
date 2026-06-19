@@ -139,14 +139,14 @@ export const verifyCode = async (email, code) => {
   }
 }
 
-export const googleLogin = async (idToken) => {
+export const googleLogin = async (credentials) => {
   try {
     const response = await fetch(`${API_BASE_URL}/auth/google`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ idToken })
+      body: JSON.stringify(credentials)
     })
 
     const result = await response.json()
