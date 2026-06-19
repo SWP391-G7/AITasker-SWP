@@ -1,7 +1,8 @@
 import { useState } from "react"
 import { useLocation, useNavigate } from "react-router-dom"
 import { Eye, EyeOff, Lock, Mail } from "lucide-react"
-import { login } from "../../Services/authService"
+import { login, googleLogin } from "../../Services/authService"
+import { GoogleLogin } from "@react-oauth/google"
 
 function LoginForm() {
   const navigate = useNavigate()
@@ -69,6 +70,25 @@ function LoginForm() {
     }
   }
 
+  const handleGoogleSuccess = async (credentialResponse) => {
+    try {
+      setError("")
+      setIsLoading(true)
+      const idToken = credentialResponse.credential
+      const result = await googleLogin(idToken)
+      console.log("Google Login success:", result)
+      navigate("/")
+    } catch (err) {
+      setError(err.message || "Google Login failed. Please try again.")
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleGoogleError = () => {
+    setError("Google Login was unsuccessful. Try again later.")
+  }
+
   return (
     <>
       <h2 className="form-title">Welcome back</h2>
@@ -130,6 +150,16 @@ function LoginForm() {
         <span></span>
         <p>or</p>
         <span></span>
+      </div>
+
+      <div className="google-login-container" style={{ display: 'flex', justifyContent: 'center', marginBottom: '15px' }}>
+        <GoogleLogin
+          onSuccess={handleGoogleSuccess}
+          onError={handleGoogleError}
+          theme="outline"
+          size="large"
+          width="320px"
+        />
       </div>
 
       <button

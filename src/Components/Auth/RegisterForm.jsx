@@ -1,7 +1,8 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { Eye, EyeOff, Lock, Mail, User } from "lucide-react"
-import { register } from "../../Services/authService"
+import { register, googleLogin } from "../../Services/authService"
+import { GoogleLogin } from "@react-oauth/google"
 
 function RegisterForm() {
   const navigate = useNavigate()
@@ -81,6 +82,25 @@ function RegisterForm() {
     } finally {
       setIsLoading(false)
     }
+  }
+
+  const handleGoogleSuccess = async (credentialResponse) => {
+    try {
+      setError("")
+      setIsLoading(true)
+      const idToken = credentialResponse.credential
+      const result = await googleLogin(idToken)
+      console.log("Google Login success:", result)
+      navigate("/")
+    } catch (err) {
+      setError(err.message || "Google Login failed. Please try again.")
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleGoogleError = () => {
+    setError("Google Login was unsuccessful. Try again later.")
   }
 
   return (
@@ -173,6 +193,22 @@ function RegisterForm() {
           {isLoading ? "Creating account..." : "Create account"}
         </button>
       </form>
+
+      <div className="divider">
+        <span></span>
+        <p>or</p>
+        <span></span>
+      </div>
+
+      <div className="google-login-container" style={{ display: 'flex', justifyContent: 'center', marginBottom: '15px' }}>
+        <GoogleLogin
+          onSuccess={handleGoogleSuccess}
+          onError={handleGoogleError}
+          theme="outline"
+          size="large"
+          width="320px"
+        />
+      </div>
 
       <div className="bottom-text">
         Already have an account?{" "}
