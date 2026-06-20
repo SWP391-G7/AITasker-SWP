@@ -117,7 +117,7 @@ export default function HeaderCom() {
               <NavLink className={({ isActive }) => `nav-link fw-semibold ${isActive ? "active" : ""}`} to="/marketplace" onClick={closeMenu}>Marketplace</NavLink>
             </li>
             <li className="nav-item">
-              <NavLink className={({ isActive }) => `nav-link fw-semibold ${isActive ? "active" : ""}`} to="/clients&experts" onClick={closeMenu}>Client & Expert</NavLink>
+              <NavLink className={({ isActive }) => `nav-link fw-semibold ${isActive ? "active" : ""}`} to="/clients-experts" onClick={closeMenu}>Client & Expert</NavLink>
             </li>
           </ul>
 

@@ -6,11 +6,12 @@ import {
   DollarSign,
   PlusCircle,
   RefreshCcw,
+  Eye,
   Trash2,
 } from "lucide-react";
 import ClientSidebar from "../../../Components/Dashboard/Client/ClientSidebar";
 import Footer from "../../../Components/Footer/Footer";
-import { getMyJobs, deleteJobPost } from "../../../services/jobService";
+import { getMyJobs, deleteJobPost } from "../../../Services/jobService";
 import "./ClientMarketplace.css";
 
 function ClientProjectsPage() {
@@ -29,6 +30,7 @@ function ClientProjectsPage() {
       const result = await getMyJobs();
 
       const list =
+        result.jobPosts ||
         result.jobs ||
         result.data ||
         result.projects ||
@@ -44,12 +46,23 @@ function ClientProjectsPage() {
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchJobs();
   }, []);
 
   const formatDate = (dateValue) => {
     if (!dateValue) return "No deadline";
     return new Date(dateValue).toLocaleDateString();
+  };
+
+  const formatBudget = (job) => {
+    const min = job.budget_min ?? job.budgetMin;
+    const max = job.budget_max ?? job.budgetMax ?? job.budget;
+
+    if (min && max && min !== max) return `$${min} - $${max}`;
+    if (max) return `$${max}`;
+    if (min) return `$${min}`;
+    return "No budget";
   };
 
   const handleDelete = async (e, jobId) => {
@@ -74,6 +87,17 @@ function ClientProjectsPage() {
     } finally {
       setDeletingId(null);
     }
+  };
+
+  const handleViewDetail = (e, jobId, job) => {
+    e.stopPropagation();
+
+    if (!jobId) {
+      setError("Cannot open this task because job ID is missing.");
+      return;
+    }
+
+    navigate(`/client/projects/${jobId}`, { state: { job } });
   };
 
   return (
@@ -142,21 +166,27 @@ function ClientProjectsPage() {
           {!loading && !error && jobs.length > 0 && (
             <div className="project-list">
               {jobs.map((job) => {
-                const jobId = job.id || job.job_id;
+                const jobId = job._id || job.id || job.jobId || job.job_id;
 
                 return (
                   <article
                     className="project-card"
                     key={jobId || job.title}
                     onClick={() =>
-                      jobId ? navigate(`/client/projects/${jobId}`) : null
+                      jobId
+                        ? navigate(`/client/projects/${jobId}`, { state: { job } })
+                        : null
                     }
                   >
                     <div className="project-card-header">
                       <div>
                         <h3>{job.title || job.jobTitle || "Untitled Task"}</h3>
                         <span>
-                          {job.category || job.serviceCategory || "AI Task"}
+                          {job.required_skill ||
+                            job.requiredSkill ||
+                            job.category ||
+                            job.serviceCategory ||
+                            "AI Task"}
                         </span>
                       </div>
 
@@ -164,6 +194,15 @@ function ClientProjectsPage() {
                         <span className="project-status">
                           {job.status || "open"}
                         </span>
+
+                        <button
+                          type="button"
+                          className="view-project-btn"
+                          onClick={(e) => handleViewDetail(e, jobId, job)}
+                        >
+                          <Eye size={14} />
+                          View Detail
+                        </button>
 
                         <button
                           type="button"
@@ -184,7 +223,7 @@ function ClientProjectsPage() {
                     <div className="project-meta">
                       <span>
                         <DollarSign size={16} />
-                        {job.budget ? `$${job.budget}` : "No budget"}
+                        {formatBudget(job)}
                       </span>
 
                       <span>

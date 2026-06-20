@@ -1858,6 +1858,24 @@
   gap: 6px;
 }
 
+.view-project-btn {
+  border: 1px solid rgba(147, 197, 253, 0.35);
+  background: rgba(59, 130, 246, 0.18);
+  color: #bfdbfe;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.view-project-btn:hover {
+  background: rgba(59, 130, 246, 0.3);
+}
+
 .delete-project-btn:hover:not(:disabled) {
   background: rgba(220, 38, 38, 0.35);
 }
@@ -1865,4 +1883,170 @@
 .delete-project-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+.task-detail-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.task-detail-card {
+  max-width: none;
+}
+
+.task-detail-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.task-detail-header h2 {
+  color: #ffffff;
+  font-size: 1.6rem;
+  font-weight: 800;
+  margin: 1rem 0 0.35rem;
+}
+
+.task-detail-header p,
+.task-detail-description,
+.task-proposal-summary p,
+.proposal-cover {
+  color: #cbd5e1;
+  line-height: 1.6;
+}
+
+.task-detail-description {
+  white-space: pre-line;
+  margin-bottom: 1.5rem;
+}
+
+.task-detail-meta,
+.proposal-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.85rem;
+}
+
+.task-detail-meta span,
+.proposal-meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  background: rgba(15, 23, 42, 0.45);
+  color: #dbeafe;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.85rem;
+}
+
+.task-proposal-summary {
+  max-width: none;
+  align-self: start;
+}
+
+.task-proposal-summary span {
+  color: #93c5fd;
+  font-size: 0.75rem;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+}
+
+.task-proposal-summary strong {
+  display: block;
+  color: #ffffff;
+  font-size: 3rem;
+  font-weight: 900;
+  margin: 0.8rem 0;
+}
+
+.proposals-panel {
+  max-width: none;
+}
+
+.proposal-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.proposal-card {
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background: rgba(15, 30, 53, 0.72);
+  border-radius: 16px;
+  padding: 1.25rem;
+}
+
+.proposal-card-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.proposal-expert {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  min-width: 0;
+}
+
+.proposal-avatar {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #2563eb, #22d3ee);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #dbeafe;
+  flex-shrink: 0;
+}
+
+.proposal-expert h3 {
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 800;
+  margin: 0 0 0.25rem;
+}
+
+.proposal-expert p {
+  color: #93a4bd;
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+.proposal-cover {
+  margin-bottom: 1rem;
+}
+
+.proposal-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1.25rem;
+}
+
+.proposal-actions .next-btn {
+  min-width: 170px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+@media (max-width: 1100px) {
+  .task-detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .proposal-card-header,
+  .proposal-actions,
+  .task-detail-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
 }

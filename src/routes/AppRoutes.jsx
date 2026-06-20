@@ -9,6 +9,7 @@ import { checkLogin } from "../Services/checkLogin"
 import OnboardingPage from "../pages/OnboardingPage"
 import ClientDashboardPage from "../pages/DashboardPage/Client/ClientDashboardPage"
 import ClientProjectsPage from "../pages/DashboardPage/Client/ClientProjectsPage"
+import ClientTaskDetailPage from "../pages/DashboardPage/Client/ClientTaskDetailPage"
 import PostJobPage from "../pages/DashboardPage/Client/PostJobPage"
 import ClientMessagesPage from "../pages/DashboardPage/Client/ClientMessagesPage"
 import ClientBillingPage from "../pages/DashboardPage/Client/ClientBillingPage"
@@ -24,9 +25,9 @@ import FindWorkPage from "../pages/DashboardPage/Expert/FindWorkPage"
 import EarningsPage from "../pages/DashboardPage/Expert/EarningsPage"
 import ExpertMessagesPage from "../pages/DashboardPage/Expert/MessagesPage"
 import ExpertSettingsPage from "../pages/DashboardPage/Expert/SettingsPage"
+import ExpertSearchPage from "../pages/DashboardPage/Client/ExpertSearchPage"
 import ProfilePage from "../pages/ProfilePage"
 import MarketplacePage from "../pages/MarketplacePage"
-import ClientsAndExpertsPage from "../pages/ClientsAndExpertsPage"
 
 /**
  * Fetches current auth status from the backend.
@@ -190,20 +191,24 @@ function AppRoutes() {
       <Route
         path="/marketplace"
         element={
-          <ProtectedRoute>
+          <RequireAuth>
             <HeaderCom />
             <MarketplacePage />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/clients-experts"
+        element={
+          <ProtectedRoute>
+            <HeaderCom />
+            <ExpertSearchPage />
           </ProtectedRoute>
         }
       />
       <Route
         path="/clients&experts"
-        element={
-          <ProtectedRoute>
-            <HeaderCom />
-            <ClientsAndExpertsPage />
-          </ProtectedRoute>
-        }
+        element={<Navigate to="/clients-experts" replace />}
       />
       <Route
         path="/login"
@@ -267,6 +272,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <ClientProjectsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/client/projects/:jobId"
+        element={
+          <ProtectedRoute>
+            <ClientTaskDetailPage />
           </ProtectedRoute>
         }
       />
