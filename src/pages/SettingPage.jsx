@@ -7,9 +7,62 @@ import {
   UserRound,
   X,
 } from "lucide-react";
+import {
+  updateFullname,
+  updateEmail,
+  updatePassword,
+  sendVerificationCode,
+} from "../Services/authService";
 
 const SettingPage = ({ isOpen, onClose, user, role = "Client", onLogout, onSwitchRole }) => {
   const [isTwoFactorEnabled, setIsTwoFactorEnabled] = useState(false);
+
+  // Profile Edit State
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [editFullName, setEditFullName] = useState("");
+  const [editEmail, setEditEmail] = useState("");
+  const [verificationCodeEmail, setVerificationCodeEmail] = useState("");
+  const [isEmailCodeSent, setIsEmailCodeSent] = useState(false);
+  const [countdownEmail, setCountdownEmail] = useState(0);
+  const [profileError, setProfileError] = useState("");
+  const [profileSuccess, setProfileSuccess] = useState("");
+  const [isProfileSubmitting, setIsProfileSubmitting] = useState(false);
+
+  // Password Edit State
+  const [isEditingPassword, setIsEditingPassword] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [verificationCodePassword, setVerificationCodePassword] = useState("");
+  const [isPasswordCodeSent, setIsPasswordCodeSent] = useState(false);
+  const [countdownPassword, setCountdownPassword] = useState(0);
+  const [passwordError, setPasswordError] = useState("");
+  const [passwordSuccess, setPasswordSuccess] = useState("");
+  const [isPasswordSubmitting, setIsPasswordSubmitting] = useState(false);
+
+  // Initialize input values when user prop changes
+  useEffect(() => {
+    if (user) {
+      setEditFullName(user.fullName || user.name || "");
+      setEditEmail(user.email || "");
+    }
+  }, [user]);
+
+  // Email countdown timer
+  useEffect(() => {
+    if (countdownEmail === 0) return;
+    const interval = setInterval(() => {
+      setCountdownEmail((c) => c - 1);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [countdownEmail]);
+
+  // Password countdown timer
+  useEffect(() => {
+    if (countdownPassword === 0) return;
+    const interval = setInterval(() => {
+      setCountdownPassword((c) => c - 1);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [countdownPassword]);
 
   // Normalize stored user fields so every navbar can reuse this modal.
   const profile = useMemo(() => {
@@ -44,6 +97,124 @@ const SettingPage = ({ isOpen, onClose, user, role = "Client", onLogout, onSwitc
 
   const targetRole = role === "expert" ? "Client" : "Expert";
 
+  const handleSendEmailCode = async () => {
+    if (!editEmail || !editEmail.includes("@")) {
+      setProfileError("Please enter a valid email address first.");
+      return;
+    }
+    setProfileError("");
+    setProfileSuccess("");
+    try {
+      await sendVerificationCode(editEmail.trim());
+      setIsEmailCodeSent(true);
+      setCountdownEmail(60);
+      setProfileSuccess("Verification code sent to your new email.");
+    } catch (error) {
+      setProfileError(error.message || "Failed to send verification code.");
+    }
+  };
+
+  const handleProfileSubmit = async (e) => {
+    e.preventDefault();
+    setProfileError("");
+    setProfileSuccess("");
+    setIsProfileSubmitting(true);
+
+    try {
+      let updatedUser = null;
+      let updatedToken = null;
+
+      const nameChanged = editFullName.trim() !== (user?.fullName || user?.name || "").trim();
+      const emailChanged = editEmail.trim() !== (user?.email || "").trim();
+
+      if (nameChanged) {
+        const nameRes = await updateFullname(editFullName.trim());
+        updatedUser = nameRes.user;
+      }
+
+      if (emailChanged) {
+        if (!isEmailCodeSent || !verificationCodeEmail) {
+          setProfileError("Please request and verify the code for the new email.");
+          setIsProfileSubmitting(false);
+          return;
+        }
+        const emailRes = await updateEmail(editEmail.trim(), verificationCodeEmail.trim());
+        updatedUser = emailRes.user;
+        updatedToken = emailRes.token;
+      }
+
+      if (updatedUser) {
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+        if (updatedToken) {
+          localStorage.setItem("token", updatedToken);
+        }
+        setProfileSuccess("Account information updated successfully!");
+        
+        setTimeout(() => {
+          setIsEditingProfile(false);
+          setIsProfileSubmitting(false);
+          window.location.reload();
+        }, 1200);
+      } else {
+        setIsEditingProfile(false);
+        setIsProfileSubmitting(false);
+      }
+    } catch (error) {
+      setProfileError(error.message || "Failed to update account information.");
+      setIsProfileSubmitting(false);
+    }
+  };
+
+  const handleSendPasswordCode = async () => {
+    if (!user?.email) {
+      setPasswordError("User email not found.");
+      return;
+    }
+    setPasswordError("");
+    setPasswordSuccess("");
+    try {
+      await sendVerificationCode(user.email);
+      setIsPasswordCodeSent(true);
+      setCountdownPassword(60);
+      setPasswordSuccess("Verification code sent to your email.");
+    } catch (error) {
+      setPasswordError(error.message || "Failed to send verification code.");
+    }
+  };
+
+  const handlePasswordSubmit = async (e) => {
+    e.preventDefault();
+    setPasswordError("");
+    setPasswordSuccess("");
+
+    if (!newPassword || newPassword.length < 6) {
+      setPasswordError("Password must be at least 6 characters long.");
+      return;
+    }
+
+    if (!verificationCodePassword || verificationCodePassword.length !== 6) {
+      setPasswordError("Please enter a 6-digit verification code.");
+      return;
+    }
+
+    setIsPasswordSubmitting(true);
+    try {
+      await updatePassword(newPassword, verificationCodePassword);
+      setPasswordSuccess("Password updated successfully!");
+      
+      setTimeout(() => {
+        setIsEditingPassword(false);
+        setNewPassword("");
+        setVerificationCodePassword("");
+        setIsPasswordSubmitting(false);
+        setPasswordSuccess("");
+      }, 1500);
+    } catch (error) {
+      setPasswordError(error.message || "Failed to update password.");
+      setIsPasswordSubmitting(false);
+    }
+  };
+
   return (
     <div className="settings-modal-backdrop" role="dialog" aria-modal="true" aria-label="Account settings">
       <div className="settings-modal-shell" onClick={(event) => event.target === event.currentTarget && onClose?.()}>
@@ -58,16 +229,109 @@ const SettingPage = ({ isOpen, onClose, user, role = "Client", onLogout, onSwitc
               <h2>1. Account Details</h2>
             </div>
 
-            <div className="settings-account-row">
-              <div className="settings-account-info">
-                <div className="settings-avatar">{profile.avatarLetter}</div>
-                <div>
-                  <h3>{profile.displayName}</h3>
-                  <p>{profile.email}</p>
+            {isEditingProfile ? (
+              <form onSubmit={handleProfileSubmit} className="settings-form animate-fade-in">
+                <div className="settings-input-group">
+                  <label className="settings-input-label">Full Name</label>
+                  <input
+                    type="text"
+                    className="settings-input"
+                    value={editFullName}
+                    onChange={(e) => setEditFullName(e.target.value)}
+                    placeholder="Enter your full name"
+                    required
+                  />
                 </div>
+
+                <div className="settings-input-group">
+                  <label className="settings-input-label">Email Address</label>
+                  <div className="settings-input-with-button">
+                    <input
+                      type="email"
+                      className="settings-input"
+                      value={editEmail}
+                      onChange={(e) => {
+                        setEditEmail(e.target.value);
+                        if (e.target.value !== user?.email) {
+                          setIsEmailCodeSent(false);
+                        }
+                      }}
+                      placeholder="Enter new email address"
+                      required
+                    />
+                    {editEmail !== user?.email && (
+                      <button
+                        type="button"
+                        className="settings-outline-btn"
+                        onClick={handleSendEmailCode}
+                        disabled={countdownEmail > 0}
+                      >
+                        {countdownEmail > 0 ? `Resend (${countdownEmail}s)` : "Send Code"}
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {editEmail !== user?.email && isEmailCodeSent && (
+                  <div className="settings-input-group animate-fade-in">
+                    <label className="settings-input-label">Verification Code (Sent to new email)</label>
+                    <input
+                      type="text"
+                      maxLength={6}
+                      className="settings-input code-input"
+                      value={verificationCodeEmail}
+                      onChange={(e) => setVerificationCodeEmail(e.target.value)}
+                      placeholder="Enter 6-digit code"
+                      required
+                    />
+                  </div>
+                )}
+
+                {profileError && <p className="settings-error-msg">{profileError}</p>}
+                {profileSuccess && <p className="settings-success-msg">{profileSuccess}</p>}
+
+                <div className="settings-form-actions">
+                  <button
+                    type="button"
+                    className="settings-outline-btn"
+                    onClick={() => {
+                      setIsEditingProfile(false);
+                      setEditFullName(user?.fullName || user?.name || "");
+                      setEditEmail(user?.email || "");
+                      setProfileError("");
+                      setProfileSuccess("");
+                    }}
+                    disabled={isProfileSubmitting}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="settings-primary-btn"
+                    disabled={isProfileSubmitting}
+                  >
+                    {isProfileSubmitting ? "Saving..." : "Save Changes"}
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <div className="settings-account-row">
+                <div className="settings-account-info">
+                  <div className="settings-avatar">{profile.avatarLetter}</div>
+                  <div>
+                    <h3>{profile.displayName}</h3>
+                    <p>{profile.email}</p>
+                  </div>
+                </div>
+                <button
+                  className="settings-primary-btn"
+                  type="button"
+                  onClick={() => setIsEditingProfile(true)}
+                >
+                  Edit Profile
+                </button>
               </div>
-              <button className="settings-primary-btn" type="button">Edit Profile</button>
-            </div>
+            )}
           </div>
 
           <div className="settings-card">
@@ -76,30 +340,86 @@ const SettingPage = ({ isOpen, onClose, user, role = "Client", onLogout, onSwitc
               <h2>2. Security & Privacy</h2>
             </div>
 
-            <div className="settings-action-row">
-              <div>
-                <h3>Change Password</h3>
-                <p>Update your password regularly to keep your account secure.</p>
-              </div>
-              <button className="settings-outline-btn" type="button">Update</button>
-            </div>
+            {isEditingPassword ? (
+              <form onSubmit={handlePasswordSubmit} className="settings-form animate-fade-in">
+                <div className="settings-input-group">
+                  <label className="settings-input-label">New Password</label>
+                  <input
+                    type="password"
+                    className="settings-input"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="Enter new password (min 6 characters)"
+                    minLength={6}
+                    required
+                  />
+                </div>
 
-            <div className="settings-divider" />
+                <div className="settings-input-group">
+                  <label className="settings-input-label">Verification Code (Sent to current email)</label>
+                  <div className="settings-input-with-button">
+                    <input
+                      type="text"
+                      maxLength={6}
+                      className="settings-input code-input"
+                      value={verificationCodePassword}
+                      onChange={(e) => setVerificationCodePassword(e.target.value)}
+                      placeholder="Enter 6-digit code"
+                      required
+                    />
+                    <button
+                      type="button"
+                      className="settings-outline-btn"
+                      onClick={handleSendPasswordCode}
+                      disabled={countdownPassword > 0}
+                    >
+                      {countdownPassword > 0 ? `Resend (${countdownPassword}s)` : "Send Code"}
+                    </button>
+                  </div>
+                </div>
 
-            <div className="settings-action-row">
-              <div>
-                <h3>Two-Factor Authentication (2FA)</h3>
-                <p>Add an extra layer of security to your account.</p>
+                {passwordError && <p className="settings-error-msg">{passwordError}</p>}
+                {passwordSuccess && <p className="settings-success-msg">{passwordSuccess}</p>}
+
+                <div className="settings-form-actions">
+                  <button
+                    type="button"
+                    className="settings-outline-btn"
+                    onClick={() => {
+                      setIsEditingPassword(false);
+                      setNewPassword("");
+                      setVerificationCodePassword("");
+                      setPasswordError("");
+                      setPasswordSuccess("");
+                    }}
+                    disabled={isPasswordSubmitting}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="settings-primary-btn"
+                    disabled={isPasswordSubmitting}
+                  >
+                    {isPasswordSubmitting ? "Updating..." : "Update Password"}
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <div className="settings-action-row">
+                <div>
+                  <h3>Change Password</h3>
+                  <p>Update your password regularly to keep your account secure.</p>
+                </div>
+                <button
+                  className="settings-outline-btn"
+                  type="button"
+                  onClick={() => setIsEditingPassword(true)}
+                >
+                  Update
+                </button>
               </div>
-              <button
-                className={`settings-toggle ${isTwoFactorEnabled ? "active" : ""}`}
-                type="button"
-                onClick={() => setIsTwoFactorEnabled((value) => !value)}
-                aria-pressed={isTwoFactorEnabled}
-              >
-                <span />
-              </button>
-            </div>
+            )}
           </div>
 
           <div className="settings-card">
@@ -292,6 +612,12 @@ const SettingPage = ({ isOpen, onClose, user, role = "Client", onLogout, onSwitc
           color: #ffffff;
         }
 
+        .settings-outline-btn:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+          border-color: rgba(148, 163, 184, 0.1);
+        }
+
         .settings-divider {
           height: 1px;
           background: rgba(148, 163, 184, 0.18);
@@ -353,6 +679,100 @@ const SettingPage = ({ isOpen, onClose, user, role = "Client", onLogout, onSwitc
           cursor: pointer;
         }
 
+        /* Settings Forms & Inputs */
+        .settings-form {
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+          width: 100%;
+        }
+
+        .settings-input-group {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+          width: 100%;
+        }
+
+        .settings-input-label {
+          font-size: 0.75rem;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          color: #bfdbfe;
+        }
+
+        .settings-input {
+          background: rgba(15, 23, 42, 0.6);
+          border: 1px solid rgba(148, 163, 184, 0.22);
+          border-radius: 8px;
+          padding: 10px 14px;
+          color: #ffffff;
+          font-size: 0.86rem;
+          width: 100%;
+          box-sizing: border-box;
+          transition: border-color 0.2s ease;
+        }
+
+        .settings-input:focus {
+          outline: none;
+          border-color: rgba(96, 165, 250, 0.5);
+        }
+
+        .settings-input-with-button {
+          display: flex;
+          gap: 10px;
+          width: 100%;
+        }
+
+        .settings-input-with-button .settings-input {
+          flex-grow: 1;
+        }
+
+        .settings-input-with-button button {
+          flex-shrink: 0;
+        }
+
+        .settings-error-msg {
+          color: #ff4d4f;
+          font-size: 0.78rem;
+          margin: 0;
+        }
+
+        .settings-success-msg {
+          color: #52c41a;
+          font-size: 0.78rem;
+          margin: 0;
+        }
+
+        .settings-form-actions {
+          display: flex;
+          justify-content: flex-end;
+          gap: 10px;
+          margin-top: 10px;
+        }
+
+        .code-input {
+          letter-spacing: 0.2em;
+          font-weight: 700;
+          text-align: center;
+        }
+
+        .animate-fade-in {
+          animation: settingsFadeIn 0.3s ease-out forwards;
+        }
+
+        @keyframes settingsFadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(5px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
         @media (max-width: 640px) {
           .settings-modal-backdrop {
             align-items: flex-start;
@@ -373,6 +793,10 @@ const SettingPage = ({ isOpen, onClose, user, role = "Client", onLogout, onSwitc
           .settings-primary-btn,
           .settings-outline-btn {
             width: 100%;
+          }
+
+          .settings-input-with-button {
+            flex-direction: column;
           }
         }
       `}</style>

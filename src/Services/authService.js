@@ -140,6 +140,81 @@ export const verifyCode = async (email, code) => {
 }
 
 export const logout = () => {
-  localStorage.removeItem('token')
-  localStorage.removeItem('user')
-}
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
+};
+
+export const updateFullname = async (fullName) => {
+  try {
+    const token = localStorage.getItem('token');
+    if (!token) throw new Error('No authentication token found');
+
+    const response = await fetch(`${API_BASE_URL}/users/update-fullname`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ fullName })
+    });
+
+    const result = await response.json();
+    if (!response.ok) {
+      throw new Error(result.message || 'Failed to update full name');
+    }
+    return result;
+  } catch (error) {
+    console.error('Update fullname error:', error);
+    throw error;
+  }
+};
+
+export const updateEmail = async (newEmail, code) => {
+  try {
+    const token = localStorage.getItem('token');
+    if (!token) throw new Error('No authentication token found');
+
+    const response = await fetch(`${API_BASE_URL}/users/update-email`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ newEmail, code })
+    });
+
+    const result = await response.json();
+    if (!response.ok) {
+      throw new Error(result.message || 'Failed to update email');
+    }
+    return result;
+  } catch (error) {
+    console.error('Update email error:', error);
+    throw error;
+  }
+};
+
+export const updatePassword = async (newPassword, code) => {
+  try {
+    const token = localStorage.getItem('token');
+    if (!token) throw new Error('No authentication token found');
+
+    const response = await fetch(`${API_BASE_URL}/users/update-password`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ newPassword, code })
+    });
+
+    const result = await response.json();
+    if (!response.ok) {
+      throw new Error(result.message || 'Failed to update password');
+    }
+    return result;
+  } catch (error) {
+    console.error('Update password error:', error);
+    throw error;
+  }
+};
