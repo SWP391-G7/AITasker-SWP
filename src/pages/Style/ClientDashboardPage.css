@@ -1,0 +1,571 @@
+.client-dashboard-layout {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  background: #061326;
+  color: #dbeafe;
+}
+
+.client-main-panel {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  margin-left: 280px;
+  max-width: calc(100% - 280px);
+  min-height: 100vh;
+  padding: 2.5rem 3rem;
+  overflow-x: hidden;
+  border-left: 1px solid rgba(148, 163, 184, 0.22);
+}
+
+.client-dashboard-layout .admin-profile-container {
+  position: relative;
+}
+
+.client-dashboard-layout .admin-profile-widget {
+  cursor: pointer;
+  padding: 0.4rem 0.8rem 0.4rem 1rem;
+  transition: all 0.2s ease;
+}
+
+.client-dashboard-layout .admin-profile-widget:hover,
+.client-dashboard-layout .admin-profile-widget.active {
+  background-color: rgba(30, 41, 59, 0.8);
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+.client-dashboard-layout .profile-chevron {
+  color: #64748b;
+  transition: transform 0.3s ease;
+}
+
+.client-dashboard-layout .profile-chevron.rotate {
+  transform: rotate(180deg);
+}
+
+.client-dashboard-layout .admin-profile-avatar-wrapper {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.client-dashboard-layout .profile-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  width: 220px;
+  background: #0f172a;
+  border: 1px solid rgba(226, 232, 240, 0.1);
+  border-radius: 12px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
+  z-index: 1000;
+  overflow: hidden;
+}
+
+.client-dashboard-layout .dropdown-header {
+  padding: 1rem;
+  background-color: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.client-dashboard-layout .user-email {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.client-dashboard-layout .dropdown-list {
+  list-style: none;
+  padding: 0.5rem;
+  margin: 0;
+}
+
+.client-dashboard-layout .dropdown-item {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: #cbd5e1;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.client-dashboard-layout .dropdown-item:hover {
+  background-color: rgba(255, 255, 255, 0.06);
+  color: #ffffff;
+}
+
+.client-dashboard-layout .dropdown-divider {
+  height: 1px;
+  background-color: rgba(255, 255, 255, 0.08);
+  margin: 0.5rem 0;
+}
+
+.client-dashboard-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) 360px;
+  gap: 28px;
+  margin-top: 0;
+}
+
+.client-left-column,
+.client-right-column {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.client-panel {
+  background: rgba(15, 30, 53, 0.72);
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  border-radius: 14px;
+  padding: 1.5rem;
+}
+
+.client-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 28px;
+}
+
+.client-panel-header h2,
+.recent-activity-panel h2,
+.talent-cta-card h2 {
+  margin: 0;
+  color: #dbeafe;
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.client-panel-header button,
+.view-all-btn {
+  border: none;
+  background: transparent;
+  color: #b8c7e6;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.spending-panel {
+  height: 360px;
+}
+
+.spending-chart {
+  height: 260px;
+  display: flex;
+  gap: 24px;
+}
+
+.chart-y-labels {
+  width: 52px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  color: rgba(148, 163, 184, 0.45);
+  font-size: 13px;
+}
+
+.chart-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.chart-empty-space {
+  flex: 1;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.28);
+}
+
+.chart-months {
+  display: flex;
+  justify-content: space-around;
+  color: #b8c7e6;
+  font-size: 13px;
+  padding-top: 12px;
+}
+
+.active-projects-panel {
+  min-height: 330px;
+}
+
+.client-projects-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.client-projects-table th {
+  text-align: left;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #aab6cf;
+  font-size: 13px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.28);
+}
+
+.client-projects-table td {
+  padding: 20px 0;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.15);
+  vertical-align: middle;
+  cursor: pointer;
+}
+
+.client-projects-table tr:last-child td {
+  border-bottom: none;
+}
+
+.client-projects-table strong {
+  display: block;
+  color: #dbeafe;
+  font-size: 17px;
+  font-weight: 500;
+}
+
+.client-projects-table p {
+  margin: 6px 0 0;
+  color: #aab6cf;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 280px;
+}
+
+.expert-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #dbeafe;
+}
+
+.expert-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #23385c;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #c7d2fe;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.client-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-size: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+}
+
+.client-status.in-progress {
+  background: rgba(96, 165, 250, 0.13);
+  color: #bfdbfe;
+}
+
+.client-status.under-review {
+  background: rgba(148, 163, 184, 0.14);
+  color: #dbeafe;
+}
+
+.client-status.completed {
+  background: rgba(20, 184, 166, 0.14);
+  color: #2dd4bf;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.budget-cell {
+  color: #dbeafe;
+  font-size: 17px;
+  text-align: right;
+}
+
+.recent-activity-panel {
+  min-height: 420px;
+}
+
+.activity-timeline {
+  margin-top: 24px;
+  padding-left: 16px;
+  border-left: 2px solid rgba(148, 163, 184, 0.25);
+  display: flex;
+  flex-direction: column;
+  gap: 34px;
+}
+
+.activity-item {
+  position: relative;
+  padding-left: 20px;
+}
+
+.activity-dot {
+  position: absolute;
+  left: -27px;
+  top: 4px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 3px solid #a8c5ff;
+  background: #061326;
+}
+
+.activity-dot.success {
+  border-color: #2dd4bf;
+}
+
+.activity-content h3 {
+  margin: 0;
+  color: #dbeafe;
+  font-size: 16px;
+  line-height: 1.45;
+}
+
+.activity-content p {
+  margin: 8px 0 0;
+  color: #b8c7e6;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.activity-content span {
+  display: block;
+  margin-top: 6px;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.history-btn {
+  width: 100%;
+  height: 52px;
+  margin-top: 28px;
+  border-radius: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: transparent;
+  color: #dbeafe;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.talent-cta-card {
+  min-height: 310px;
+  border-radius: 16px;
+  padding: 30px;
+  background: linear-gradient(135deg, rgba(47, 128, 255, 0.45), rgba(15, 30, 53, 0.92));
+  border: 1px solid rgba(147, 197, 253, 0.32);
+}
+
+.talent-icon-box {
+  width: 52px;
+  height: 52px;
+  border-radius: 10px;
+  background: rgba(219, 234, 254, 0.14);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #dbeafe;
+  margin-bottom: 26px;
+}
+
+.talent-cta-card h2 {
+  max-width: 250px;
+  line-height: 1.4;
+}
+
+.talent-cta-card p {
+  color: #cbd5e1;
+  line-height: 1.55;
+  font-size: 16px;
+  margin: 14px 0 26px;
+}
+
+.talent-cta-card button {
+  height: 48px;
+  padding: 0 22px;
+  border-radius: 9px;
+  border: none;
+  background: #bfdbfe;
+  color: #0f2f6b;
+  font-weight: 800;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.client-dashboard-footer {
+  margin-top: 40px;
+  min-height: 88px;
+  border-top: 1px solid rgba(148, 163, 184, 0.22);
+  display: flex;
+  align-items: center;
+  gap: 42px;
+  color: #aab6cf;
+}
+
+.client-dashboard-footer strong {
+  color: #dbeafe;
+  font-size: 20px;
+}
+
+.client-dashboard-footer .footer-links {
+  display: flex;
+  gap: 32px;
+  flex: 1;
+}
+
+.client-dashboard-footer p {
+  margin: 0;
+}
+
+@media (max-width: 1200px) {
+  .client-dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .client-right-column {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 991px) {
+  .client-dashboard-layout {
+    flex-direction: column;
+  }
+
+  .client-main-panel {
+    margin-left: 0;
+    max-width: 100%;
+    border-left: none;
+    padding: 28px 22px;
+  }
+
+  .client-dashboard-layout .site-footer-dashboard {
+    margin: auto -22px -28px;
+    width: calc(100% + 44px);
+  }
+
+  .client-right-column {
+    grid-template-columns: 1fr;
+  }
+
+  .client-dashboard-footer {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 28px 0;
+  }
+
+  .client-dashboard-footer .footer-links {
+    flex-direction: column;
+    gap: 12px;
+  }
+}
+
+.client-dashboard-layout .admin-stats-grid {
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.client-dashboard-layout .site-footer-dashboard {
+  margin-top: auto;
+}
+
+/* Client dashboard: match LandingPages visual system. */
+.client-dashboard-layout {
+  background-color: var(--bg-primary);
+  background-image: var(--bg-glow);
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  color: var(--text-main);
+  font-family: var(--font-family);
+}
+
+.client-main-panel {
+  border-left: 1px solid var(--border-color);
+  color: var(--text-main);
+}
+
+.client-panel,
+.recent-activity-panel,
+.talent-cta-card {
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.76), rgba(8, 13, 26, 0.72));
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  box-shadow: var(--shadow-card);
+}
+
+.client-panel-header h2,
+.recent-activity-panel h2,
+.talent-cta-card h2,
+.client-projects-table strong,
+.activity-content h3,
+.budget-cell {
+  color: var(--text-main);
+}
+
+.client-panel-header button,
+.view-all-btn,
+.client-projects-table th,
+.client-projects-table p,
+.activity-content p,
+.activity-content span,
+.client-dashboard-footer,
+.client-dashboard-footer .footer-links {
+  color: var(--text-dark);
+}
+
+.client-projects-table th,
+.client-projects-table td,
+.chart-empty-space,
+.client-dashboard-footer {
+  border-color: var(--border-color);
+}
+
+.client-status.in-progress {
+  background: rgba(59, 130, 246, 0.14);
+  color: #bfdbfe;
+}
+
+.client-status.completed {
+  background: rgba(52, 211, 153, 0.14);
+  color: var(--accent-green);
+}
+
+.activity-dot {
+  background: var(--bg-primary);
+  border-color: var(--accent-sky);
+  box-shadow: 0 0 12px rgba(96, 165, 250, 0.22);
+}
+
+.talent-cta-card {
+  background:
+    linear-gradient(135deg, rgba(59, 130, 246, 0.24), rgba(8, 13, 26, 0.82)),
+    linear-gradient(180deg, rgba(15, 23, 42, 0.76), rgba(8, 13, 26, 0.72));
+}
+
+.talent-icon-box {
+  background: rgba(59, 130, 246, 0.12);
+  color: var(--accent-sky);
+}
+
+.talent-cta-card button {
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+  color: #ffffff;
+  box-shadow: 0 12px 28px rgba(37, 99, 235, 0.2);
+}

@@ -1,20 +1,34 @@
 import { useState, useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import AuthLayout from '../components/auth/AuthLayout'
-import EmailVerification from '../components/Auth/EmailVerificationForm'
+import AuthLayout from '../Components/Auth/AuthLayout'
+import EmailVerification from '../Components/Auth/EmailVerificationForm'
 
-import '../components/Auth/Auth.css'
+import '../Components/Auth/Auth.css'
+
+/** Pull email from localStorage-stored user when no state email is passed. */
+function getStoredEmail() {
+  try {
+    const raw = localStorage.getItem('user')
+    if (!raw) return ''
+    const parsed = JSON.parse(raw)
+    // The stored object may be the full getMe response { user: { email } }
+    // or a flat user object { email } depending on where it was saved.
+    return parsed?.user?.email || parsed?.email || ''
+  } catch {
+    return ''
+  }
+}
 
 const EmailVerificationPage = () => {
   const location = useLocation()
   const navigate = useNavigate()
-  const [userEmail, setUserEmail] = useState(location.state?.email || '')
+  const [userEmail] = useState(location.state?.email || getStoredEmail())
   const [showSuccess, setShowSuccess] = useState(false)
 
   useEffect(() => {
     // Email is passed from registration form via location.state
     if (!location.state?.email) {
-      console.warn('No email provided for verification')
+      console.warn('No email in location state — falling back to stored user email')
     }
   }, [location.state])
 
