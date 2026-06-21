@@ -1,7 +1,22 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import {
+  Award,
+  BadgeCheck,
+  Briefcase,
+  Building2,
+  GraduationCap,
+  Mail,
+  MapPin,
+  Send,
+  Star,
+} from "lucide-react";
+import HeaderCom from "../Components/Navbar/HeaderCom";
+import Footer from "../Components/Footer/Footer";
 import { getUserProfile } from "../Services/profileService";
 import { getStoredUser } from "../Services/checkLogin";
+import { expertServices } from "../Components/Profile/Expert/ExpertService";
+import { clientProjects } from "../Components/Profile/Client/ClientProject";
 import "./ProfilePage.css";
 
 function ProfilePage() {
@@ -12,7 +27,7 @@ function ProfilePage() {
   const [profileData, setProfileData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [activeTab, setActiveTab] = useState(""); // "client" or "expert"
+  const [activeTab, setActiveTab] = useState("");
 
   const isOwnProfile = currentUser && currentUser.id === userId;
 
@@ -24,16 +39,13 @@ function ProfilePage() {
         const data = await getUserProfile(userId);
         setProfileData(data);
 
-        // Decide which tab to display first
         if (data.hasExpertProfile && data.hasClientProfile) {
-          // Both profiles exist: default to the registered role or expert
           setActiveTab(data.user.role === "expert" ? "expert" : "client");
         } else if (data.hasExpertProfile) {
           setActiveTab("expert");
         } else if (data.hasClientProfile) {
           setActiveTab("client");
         } else {
-          // Neither profile is completed yet: default to registered role
           setActiveTab(data.user.role === "expert" ? "expert" : "client");
         }
       } catch (err) {
@@ -48,53 +60,39 @@ function ProfilePage() {
     }
   }, [userId]);
 
+  const getRoleDashboardPath = (role) => {
+    const normalizedRole = String(role || "").toLowerCase();
+
+    if (normalizedRole.includes("admin")) {
+      return "/admin-dashboard";
+    }
+
+    if (normalizedRole.includes("expert")) {
+      return "/expert/dashboard";
+    }
+
+    return "/client/dashboard";
+  };
+
+  const getMessagesPath = () => {
+    const normalizedRole = String(currentUser?.role || "").toLowerCase();
+    return normalizedRole.includes("expert") ? "/expert/messages" : "/client/messages";
+  };
+
   const handleBack = () => {
-    // Navigate back to dashboard based on role
     if (currentUser) {
-      let x = currentUser.role;
-      console.log(x);
-      navigate("/"+x+"/dashboard");
+      navigate(getRoleDashboardPath(currentUser.role));
     } else {
       navigate("/");
     }
   };
 
-  if (loading) {
-    return (
-      <div className="profile-container loading-container">
-        <div className="spinner"></div>
-        <p>Retrieving secure profile...</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="profile-container error-container">
-        <div className="error-card">
-          <h2>Oops! Profile Not Found</h2>
-          <p>{error}</p>
-          <button className="primary-btn" onClick={handleBack}>
-            Return to Dashboard
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  const { user, clientProfile, expertProfile, hasClientProfile, hasExpertProfile } = profileData;
-
-  const renderStars = (rating) => {
-    const stars = [];
-    const r = rating || 0;
-    for (let i = 1; i <= 5; i++) {
-      stars.push(
-        <span key={i} className={i <= r ? "star filled" : "star"}>
-          ★
-        </span>
-      );
+  const handleContact = () => {
+    if (currentUser) {
+      navigate(getMessagesPath());
+    } else {
+      navigate("/login");
     }
-    return <div className="stars-wrapper">{stars}</div>;
   };
 
   const getExperienceLabel = (exp) => {
@@ -112,138 +110,309 @@ function ProfilePage() {
     }
   };
 
+  const getSkills = (skills) => {
+    if (!skills) {
+      return [];
+    }
+
+    return skills
+      .split(",")
+      .map((skill) => skill.trim())
+      .filter(Boolean);
+  };
+
+  const formatDate = (date) => {
+    if (!date) {
+      return "Recently";
+    }
+
+    return new Date(date).toLocaleDateString(undefined, {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  };
+
+  const renderStat = (value, label) => (
+    <div className="profile-stat-card">
+      <strong>{value}</strong>
+      <span>{label}</span>
+    </div>
+  );
+
+  const renderServiceCard = (item) => (
+    <article className="profile-side-item" key={item.id}>
+      <div className={`profile-side-visual ${item.imageClass}`} />
+      <div className="profile-side-item-body">
+        <h4>{item.title}</h4>
+        <div className="profile-side-meta">
+          <span>
+            <Star size={12} />
+            {item.rating || item.status}
+          </span>
+          <strong>From {item.price || item.budget}</strong>
+        </div>
+      </div>
+    </article>
+  );
+
+  const renderProjectCard = (item) => (
+    <article className="profile-side-item" key={item.id}>
+      <div className={`profile-side-visual ${item.imageClass}`} />
+      <div className="profile-side-item-body">
+        <h4>{item.title}</h4>
+        <div className="profile-side-meta">
+          <span>
+            <Briefcase size={12} />
+            {item.status}
+          </span>
+          <strong>{item.proposals} proposals</strong>
+        </div>
+        <p className="project-budget">{item.budget} budget</p>
+      </div>
+    </article>
+  );
+
+  if (loading) {
+    return (
+      <div className="profile-shell">
+        <HeaderCom />
+        <main className="profile-container loading-container">
+          <div className="spinner"></div>
+          <p>Retrieving secure profile...</p>
+        </main>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="profile-shell">
+        <HeaderCom />
+        <main className="profile-container error-container">
+          <div className="error-card">
+            <h2>Oops! Profile Not Found</h2>
+            <p>{error}</p>
+            <button className="primary-btn" onClick={handleBack}>
+              Return to Dashboard
+            </button>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  const { user, clientProfile, expertProfile, hasClientProfile, hasExpertProfile } = profileData;
+  const isExpertView = activeTab === "expert";
+  const activeProfile = isExpertView ? expertProfile : clientProfile;
+  const skills = isExpertView ? getSkills(expertProfile?.skills) : [];
+  const displayTitle = isExpertView
+    ? expertProfile?.professionalTitle || "AI Expert"
+    : clientProfile?.companyName || "Client";
+  const locationText = isExpertView
+    ? expertProfile?.location || "San Francisco, CA"
+    : clientProfile?.industry || "AI Solution Buyer";
+  const aboutText = isExpertView
+    ? expertProfile?.bio
+    : clientProfile?.bio;
+
   return (
-    <div className="profile-page-wrapper">
-      <div className="profile-container">
-        {/* Navigation Header */}
+    <div className="profile-shell">
+      <HeaderCom />
+
+      <main className="profile-container">
         <header className="profile-nav-header">
           <button className="back-link-btn" onClick={handleBack}>
-            ← Back to Dashboard
+            Back to Dashboard
           </button>
         </header>
 
-        {/* User Card */}
-        <section className="profile-hero-card">
-          <div className="avatar-large">
-            {user.fullName ? user.fullName.charAt(0).toUpperCase() : "?"}
-          </div>
-          <div className="hero-details">
-            <span className="role-tag">{user.role === "expert" ? "Expert" : user.role === "client" ? "Client" : "User"}</span>
-            <h1>{user.fullName}</h1>
-            <p className="hero-email">{user.email}</p>
-            <p className="joined-date">
-              Member since {new Date(user.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}
-            </p>
-          </div>
-        </section>
-
-        {/* Mini Dashboard Tabs */}
         {(hasClientProfile || hasExpertProfile) ? (
-          <section className="mini-dashboard">
-            <div className="tabs-header">
-              <h2>Select Profile View</h2>
-              <div className="tabs-buttons">
-                {hasClientProfile && (
-                  <button
-                    className={`tab-btn ${activeTab === "client" ? "active" : ""}`}
-                    onClick={() => setActiveTab("client")}
-                  >
-                    💼 Client Profile
-                  </button>
-                )}
-                {hasExpertProfile && (
-                  <button
-                    className={`tab-btn ${activeTab === "expert" ? "active" : ""}`}
-                    onClick={() => setActiveTab("expert")}
-                  >
-                    💡 Expert Profile
-                  </button>
-                )}
-              </div>
-            </div>
+          <>
+            {hasClientProfile && hasExpertProfile && (
+              <section className="profile-view-switch" aria-label="Select profile view">
+                <button
+                  className={`profile-switch-btn ${activeTab === "client" ? "active" : ""}`}
+                  onClick={() => setActiveTab("client")}
+                >
+                  Client Profile
+                </button>
+                <button
+                  className={`profile-switch-btn ${activeTab === "expert" ? "active" : ""}`}
+                  onClick={() => setActiveTab("expert")}
+                >
+                  Expert Profile
+                </button>
+              </section>
+            )}
 
-            {/* Profile Content Body */}
-            <div className="profile-content-body">
-              {activeTab === "client" && clientProfile && (
-                <div className="tab-pane client-pane animate-fade-in">
-                  <div className="info-group">
-                    <label>Company Name</label>
-                    <p className="info-value">{clientProfile.companyName}</p>
-                  </div>
-                  <div className="info-group">
-                    <label>Industry</label>
-                    <p className="info-value">{clientProfile.industry}</p>
-                  </div>
-                  {clientProfile.bio && (
-                    <div className="info-group">
-                      <label>About Company</label>
-                      <p className="info-value text-block">{clientProfile.bio}</p>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {activeTab === "expert" && expertProfile && (
-                <div className="tab-pane expert-pane animate-fade-in">
-                  <div className="expert-header-row">
-                    <div className="info-group">
-                      <label>Professional Title</label>
-                      <p className="info-value title-value">{expertProfile.professionalTitle}</p>
-                    </div>
-                    <div className="info-group rating-group">
-                      <label>Rating</label>
-                      {renderStars(expertProfile.avgRating)}
-                    </div>
+            <div className="profile-layout">
+              <section className="profile-main-column">
+                <article className="profile-hero-card">
+                  <div className="avatar-large">
+                    {user.fullName ? user.fullName.charAt(0).toUpperCase() : "?"}
+                    <span className="avatar-status" />
                   </div>
 
-                  <div className="info-grid">
-                    <div className="info-group">
-                      <label>Hourly Rate</label>
-                      <p className="info-value highlight-value">${expertProfile.hourlyRate} / hr</p>
-                    </div>
-                    <div className="info-group">
-                      <label>Experience Level</label>
-                      <p className="info-value">{getExperienceLabel(expertProfile.experience)}</p>
-                    </div>
-                  </div>
-
-                  {expertProfile.portfolioUrl && (
-                    <div className="info-group">
-                      <label>Portfolio</label>
-                      <p className="info-value">
-                        <a
-                          href={expertProfile.portfolioUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="portfolio-link"
-                        >
-                          {expertProfile.portfolioUrl} ↗
-                        </a>
-                      </p>
-                    </div>
-                  )}
-
-                  <div className="info-group">
-                    <label>Skills & Specializations</label>
-                    <div className="skills-container">
-                      {expertProfile.skills.split(",").map((skill, index) => (
-                        <span key={index} className="skill-pill">
-                          {skill.trim()}
+                  <div className="hero-details">
+                    <div className="hero-title-row">
+                      <div>
+                        <h1>{user.fullName}</h1>
+                        <p className="hero-title">{displayTitle}</p>
+                      </div>
+                      {isExpertView && (
+                        <span className="top-rated-badge">
+                          <BadgeCheck size={13} />
+                          Top Rated
                         </span>
-                      ))}
+                      )}
+                    </div>
+
+                    <p className="hero-location">
+                      {isExpertView ? <MapPin size={14} /> : <Building2 size={14} />}
+                      {locationText}
+                    </p>
+
+                    <div className="profile-stats-grid">
+                      {isExpertView ? (
+                        <>
+                          {renderStat((expertProfile?.avgRating || 5).toFixed ? (expertProfile?.avgRating || 5).toFixed(1) : expertProfile?.avgRating || "5.0", "Rating")}
+                          {renderStat("98%", "Job Success")}
+                          {renderStat("45+", "Projects Done")}
+                        </>
+                      ) : (
+                        <>
+                          {renderStat("12", "Projects Posted")}
+                          {renderStat("8", "Hired Experts")}
+                          {renderStat("96%", "Payment Rate")}
+                        </>
+                      )}
                     </div>
                   </div>
+                </article>
 
-                  {expertProfile.bio && (
-                    <div className="info-group">
-                      <label>Biography</label>
-                      <p className="info-value text-block">{expertProfile.bio}</p>
+                <article className="profile-info-card about-card">
+                  <h2>{isExpertView ? "About Me" : "About Company"}</h2>
+                  <p>
+                    {aboutText ||
+                      (isExpertView
+                        ? "This expert has not added a short bio yet."
+                        : "This client has not added a company overview yet.")}
+                  </p>
+
+                  {isExpertView && skills.length > 0 && (
+                    <div className="skills-block">
+                      <h3>Technical Skills</h3>
+                      <div className="skills-container">
+                        {skills.map((skill, index) => (
+                          <span key={`${skill}-${index}`} className="skill-pill">
+                            {skill}
+                          </span>
+                        ))}
+                      </div>
                     </div>
                   )}
+                </article>
+
+                <div className="profile-detail-grid">
+                  <article className="profile-info-card compact-card">
+                    <h2>
+                      {isExpertView ? <GraduationCap size={17} /> : <Building2 size={17} />}
+                      {isExpertView ? "Education" : "Company"}
+                    </h2>
+                    {isExpertView ? (
+                      <>
+                        <p>M.S. in Computer Science</p>
+                        <span>Stanford University, 2018</span>
+                        <p>B.S. in Software Engineering</p>
+                        <span>UC Berkeley, 2016</span>
+                      </>
+                    ) : (
+                      <>
+                        <p>{clientProfile?.companyName || user.fullName}</p>
+                        <span>{clientProfile?.industry || "AI and technology operations"}</span>
+                        <p>Member since</p>
+                        <span>{formatDate(user.createdAt)}</span>
+                      </>
+                    )}
+                  </article>
+
+                  <article className="profile-info-card compact-card">
+                    <h2>
+                      {isExpertView ? <Award size={17} /> : <Briefcase size={17} />}
+                      {isExpertView ? "Certifications" : "Hiring Details"}
+                    </h2>
+                    {isExpertView ? (
+                      <>
+                        <p>AWS Certified Machine Learning</p>
+                        <span>Specialty, 2023</span>
+                        <p>Google Cloud Professional ML</p>
+                        <span>Cloud Engineer, 2022</span>
+                      </>
+                    ) : (
+                      <>
+                        <p>Project Collaboration</p>
+                        <span>Open to AI automation, NLP, and analytics work</span>
+                        <p>Client Profile</p>
+                        <span>{activeProfile ? "Onboarded" : "Pending details"}</span>
+                      </>
+                    )}
+                  </article>
                 </div>
-              )}
+              </section>
+
+              <aside className="profile-side-column">
+                <article className="profile-contact-card">
+                  <div className="availability-row">
+                    <span>
+                      <i />
+                      Available Now
+                    </span>
+                    <small>Responds in &lt; 1hr</small>
+                  </div>
+
+                  <button className="contact-btn" onClick={handleContact}>
+                    <Mail size={16} />
+                    Contact Me
+                  </button>
+
+                  <button className="secondary-action-btn" type="button">
+                    <Send size={15} />
+                    {isExpertView ? "Invite to Job" : "Apply to Project"}
+                  </button>
+
+                  <div className="rate-list">
+                    <div>
+                      <span>{isExpertView ? "Hourly Rate" : "Average Budget"}</span>
+                      <strong>{isExpertView ? `$${expertProfile?.hourlyRate || 150}/hr` : "$2,500+"}</strong>
+                    </div>
+                    <div>
+                      <span>{isExpertView ? "Total Earned" : "Total Spent"}</span>
+                      <strong>{isExpertView ? "$200k+" : "$75k+"}</strong>
+                    </div>
+                    {isExpertView && (
+                      <div>
+                        <span>Experience</span>
+                        <strong>{getExperienceLabel(expertProfile?.experience)}</strong>
+                      </div>
+                    )}
+                  </div>
+                </article>
+
+                <article className="profile-side-list-card">
+                  <h2>{isExpertView ? "My Services" : "My Projects"}</h2>
+                  <div className="profile-side-list">
+                    {isExpertView
+                      ? expertServices.map(renderServiceCard)
+                      : clientProjects.map(renderProjectCard)}
+                  </div>
+                  <button className="view-all-btn" type="button">
+                    {isExpertView ? "View All Services" : "View All Projects"}
+                  </button>
+                </article>
+              </aside>
             </div>
-          </section>
+          </>
         ) : (
           <section className="no-profile-card">
             <div className="no-profile-content">
@@ -254,17 +423,16 @@ function ProfilePage() {
                   : "This user hasn't filled out their profile details yet."}
               </p>
               {isOwnProfile && (
-                <button
-                  className="primary-btn complete-btn"
-                  onClick={() => navigate("/onboarding")}
-                >
+                <button className="primary-btn complete-btn" onClick={() => navigate("/onboarding")}>
                   Complete Onboarding Now
                 </button>
               )}
             </div>
           </section>
         )}
-      </div>
+      </main>
+
+      <Footer />
     </div>
   );
 }
