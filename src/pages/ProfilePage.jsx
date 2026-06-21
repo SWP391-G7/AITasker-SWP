@@ -1,65 +1,65 @@
-import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { getUserProfile } from "../Services/profileService";
-import { getStoredUser } from "../Services/checkLogin";
-import "./ProfilePage.css";
+import { useEffect, useState } from "react"
+import { useParams, useNavigate } from "react-router-dom"
+import { getUserProfile } from "../Services/profileService"
+import { getStoredUser } from "../Services/checkLogin"
+import "./ProfilePage.css"
 
 function ProfilePage() {
-  const { userId } = useParams();
-  const navigate = useNavigate();
-  const currentUser = getStoredUser();
+  const { userId } = useParams()
+  const navigate = useNavigate()
+  const currentUser = getStoredUser()
 
-  const [profileData, setProfileData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [activeTab, setActiveTab] = useState(""); // "client" or "expert"
+  const [profileData, setProfileData] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState("")
+  const [activeTab, setActiveTab] = useState("") // "client" or "expert"
 
-  const isOwnProfile = currentUser && currentUser.id === userId;
+  const isOwnProfile = currentUser && currentUser.id === userId
 
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        setLoading(true);
-        setError("");
-        const data = await getUserProfile(userId);
-        setProfileData(data);
+        setLoading(true)
+        setError("")
+        const data = await getUserProfile(userId)
+        setProfileData(data)
 
         // Decide which tab to display first
         if (data.hasExpertProfile && data.hasClientProfile) {
           // Both profiles exist: default to the registered role or expert
-          setActiveTab(data.user.role === "expert" ? "expert" : "client");
+          setActiveTab(data.user.role === "expert" ? "expert" : "client")
         } else if (data.hasExpertProfile) {
-          setActiveTab("expert");
+          setActiveTab("expert")
         } else if (data.hasClientProfile) {
-          setActiveTab("client");
+          setActiveTab("client")
         } else {
           // Neither profile is completed yet: default to registered role
-          setActiveTab(data.user.role === "expert" ? "expert" : "client");
+          setActiveTab(data.user.role === "expert" ? "expert" : "client")
         }
       } catch (err) {
-        setError(err.message || "Failed to load profile details.");
+        setError(err.message || "Failed to load profile details.")
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
     if (userId) {
-      fetchProfile();
+      fetchProfile()
     }
-  }, [userId]);
+  }, [userId])
 
   const handleBack = () => {
     // Navigate back to dashboard based on role
     if (currentUser) {
       if (currentUser.role === "client") {
-        navigate("/client/dashboard");
+        navigate("/client/dashboard")
       } else {
-        navigate("/dashboard");
+        navigate("/dashboard")
       }
     } else {
-      navigate("/");
+      navigate("/")
     }
-  };
+  }
 
   if (loading) {
     return (
@@ -67,7 +67,7 @@ function ProfilePage() {
         <div className="spinner"></div>
         <p>Retrieving secure profile...</p>
       </div>
-    );
+    )
   }
 
   if (error) {
@@ -81,38 +81,38 @@ function ProfilePage() {
           </button>
         </div>
       </div>
-    );
+    )
   }
 
-  const { user, clientProfile, expertProfile, hasClientProfile, hasExpertProfile } = profileData;
+  const { user, clientProfile, expertProfile, hasClientProfile, hasExpertProfile } = profileData
 
   const renderStars = (rating) => {
-    const stars = [];
-    const r = rating || 0;
+    const stars = []
+    const r = rating || 0
     for (let i = 1; i <= 5; i++) {
       stars.push(
         <span key={i} className={i <= r ? "star filled" : "star"}>
           ★
         </span>
-      );
+      )
     }
-    return <div className="stars-wrapper">{stars}</div>;
-  };
+    return <div className="stars-wrapper">{stars}</div>
+  }
 
   const getExperienceLabel = (exp) => {
     switch (exp) {
       case "0-1":
-        return "0 - 1 year";
+        return "0 - 1 year"
       case "1-3":
-        return "1 - 3 years";
+        return "1 - 3 years"
       case "3-5":
-        return "3 - 5 years";
+        return "3 - 5 years"
       case "over-5":
-        return "Over 5 years";
+        return "Over 5 years"
       default:
-        return exp || "Not specified";
+        return exp || "Not specified"
     }
-  };
+  }
 
   return (
     <div className="profile-page-wrapper">
@@ -268,7 +268,7 @@ function ProfilePage() {
         )}
       </div>
     </div>
-  );
+  )
 }
 
-export default ProfilePage;
+export default ProfilePage
