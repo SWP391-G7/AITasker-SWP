@@ -149,7 +149,7 @@ const SettingPage = ({ isOpen, onClose, user, role = "Client", onLogout, onSwitc
           localStorage.setItem("token", updatedToken);
         }
         setProfileSuccess("Account information updated successfully!");
-        
+
         setTimeout(() => {
           setIsEditingProfile(false);
           setIsProfileSubmitting(false);
@@ -201,7 +201,7 @@ const SettingPage = ({ isOpen, onClose, user, role = "Client", onLogout, onSwitc
     try {
       await updatePassword(newPassword, verificationCodePassword);
       setPasswordSuccess("Password updated successfully!");
-      
+
       setTimeout(() => {
         setIsEditingPassword(false);
         setNewPassword("");
@@ -328,7 +328,7 @@ const SettingPage = ({ isOpen, onClose, user, role = "Client", onLogout, onSwitc
                   type="button"
                   onClick={() => setIsEditingProfile(true)}
                 >
-                  Edit Profile
+                  Edit Account Info
                 </button>
               </div>
             )}
