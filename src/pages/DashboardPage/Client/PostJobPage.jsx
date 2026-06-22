@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
@@ -137,15 +137,10 @@ function PostJobPage() {
 
       await createJobPost({
         title: formData.title.trim(),
-        category: formData.category,
-        description: `${formData.description.trim()}
-
-Tech Stack:
-${formData.techStack.trim()}
-
-Requirements:
-${formData.requirements.trim()}`,
-        budget: Number(formData.budget),
+        description: `${formData.description.trim()}\n\nCategory:\n${formData.category}\n\nTech Stack:\n${formData.techStack.trim()}\n\nRequirements:\n${formData.requirements.trim()}`,
+        budgetMin: Number(formData.budget),
+        budgetMax: Number(formData.budget),
+        requiredSkill: formData.techStack.trim() || formData.category,
         deadline: formData.deadline,
       });
 
@@ -197,16 +192,12 @@ ${formData.requirements.trim()}`,
             <span>1</span>
             <strong>BASICS</strong>
           </div>
-
           <div className="step-line"></div>
-
           <div className={`step ${step >= 2 ? "active" : ""}`}>
             <span>2</span>
             <strong>DETAILS</strong>
           </div>
-
           <div className="step-line"></div>
-
           <div className={`step ${step >= 3 ? "active" : ""}`}>
             <span>3</span>
             <strong>BUDGET</strong>
@@ -234,14 +225,11 @@ ${formData.requirements.trim()}`,
 
                 <div className="form-group">
                   <label>SERVICE CATEGORY</label>
-
                   <div className="category-grid">
                     {categories.map(({ id, title, icon: Icon }) => (
                       <button
                         type="button"
-                        className={`category-card ${
-                          formData.category === id ? "selected" : ""
-                        }`}
+                        className={`category-card ${formData.category === id ? "selected" : ""}`}
                         key={id}
                         onClick={() => handleCategorySelect(id)}
                       >
@@ -291,63 +279,46 @@ ${formData.requirements.trim()}`,
             )}
 
             {step === 3 && (
-              <>
-                <div className="form-row two-cols">
-                  <div className="form-field">
-                    <label>BUDGET</label>
-                    <input
-                      type="number"
-                      name="budget"
-                      min="1"
-                      value={formData.budget}
-                      onChange={handleChange}
-                      placeholder="e.g., 500"
-                    />
-                  </div>
-
-                  <div className="form-field">
-                    <label>DEADLINE</label>
-                    <input
-                      type="date"
-                      name="deadline"
-                      min={minDeadline}
-                      value={formData.deadline}
-                      onChange={handleChange}
-                    />
-                  </div>
+              <div className="form-row two-cols">
+                <div className="form-field">
+                  <label>BUDGET</label>
+                  <input
+                    type="number"
+                    name="budget"
+                    min="1"
+                    value={formData.budget}
+                    onChange={handleChange}
+                    placeholder="e.g., 500"
+                  />
                 </div>
-              </>
+
+                <div className="form-field">
+                  <label>DEADLINE</label>
+                  <input
+                    type="date"
+                    name="deadline"
+                    min={minDeadline}
+                    value={formData.deadline}
+                    onChange={handleChange}
+                  />
+                </div>
+              </div>
             )}
           </section>
 
           <section className="post-actions">
             {step === 1 ? (
-              <button
-                type="button"
-                className="draft-btn"
-                onClick={() => navigate("/client/dashboard")}
-                disabled={submitting}
-              >
+              <button type="button" className="draft-btn" onClick={() => navigate("/client/dashboard")} disabled={submitting}>
                 Cancel
               </button>
             ) : (
-              <button
-                type="button"
-                className="draft-btn"
-                onClick={handleBack}
-                disabled={submitting}
-              >
+              <button type="button" className="draft-btn" onClick={handleBack} disabled={submitting}>
                 Back
               </button>
             )}
 
             {step < 3 ? (
-              <button
-                type="button"
-                className="next-btn"
-                onClick={handleNext}
-                disabled={submitting}
-              >
+              <button type="button" className="next-btn" onClick={handleNext} disabled={submitting}>
                 {step === 1 ? "Next: Details" : "Next: Budget"}
               </button>
             ) : (

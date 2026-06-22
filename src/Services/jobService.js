@@ -85,6 +85,39 @@ export const getJobById = async (jobId) => {
   } catch (error) {
     console.error('Get job error:', error)
     throw error
+   }
+}
+
+export const getJobProposals = async (jobId) => {
+  try {
+    const token = localStorage.getItem('token')
+
+    if (!token) {
+      throw new Error('No authentication token found')
+    }
+
+    const response = await fetch(`${API_BASE_URL}/jobs/${jobId}/proposals`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      }
+    })
+
+    const result = await response.json()
+    
+    if (response.status === 404) {
+      return { success: true, proposals: [], data: [] }
+    }
+
+    if (!response.ok) {
+      throw new Error(result.message || 'Failed to fetch proposals')
+    }
+
+    return result
+  } catch (error) {
+    console.error('Get job proposals error:', error)
+    throw error
   }
 }
 
