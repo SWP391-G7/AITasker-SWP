@@ -218,3 +218,27 @@ export const updatePassword = async (newPassword, code) => {
     throw error;
   }
 };
+
+export const switchRole = async () => {
+  try {
+    const token = localStorage.getItem('token');
+    if (!token) throw new Error('No authentication token found');
+
+    const response = await fetch(`${API_BASE_URL}/users/switch-role`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      }
+    });
+
+    const result = await response.json();
+    if (!response.ok) {
+      throw new Error(result.message || 'Failed to switch role');
+    }
+    return result;
+  } catch (error) {
+    console.error('Switch role error:', error);
+    throw error;
+  }
+};

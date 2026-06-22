@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from "react"
 import { Link, useNavigate, NavLink } from "react-router-dom"
-import { Bell, LayoutDashboard, LogOut, Mail, Settings, User } from "lucide-react"
+import { Bell, LayoutDashboard, LogOut, Mail, Settings, User, RefreshCw } from "lucide-react"
 import { getStoredUser, isLoggedIn, logout } from "../../Services/checkLogin"
+import { switchRole } from "../../Services/authService"
+import { updateUserRole } from "../../Services/onboardingService"
 import SettingPage from "../../pages/SettingPage"
 import "./HeaderCom.css"
 
@@ -67,6 +69,43 @@ export default function HeaderCom() {
   const handleSettings = () => {
     setShowDropdown(false)
     setIsSettingsOpen(true)
+  }
+
+  const [showVerificationModal, setShowVerificationModal] = useState(false)
+
+  const handleSwitchRole = async () => {
+    setShowDropdown(false)
+    try {
+      const result = await switchRole()
+      if (result.success) {
+        if (result.roleSwitched) {
+          localStorage.setItem('token', result.token)
+          localStorage.setItem('user', JSON.stringify(result.user))
+          navigate(getDashboardPathByRole(result.user.role))
+          window.location.reload()
+        } else {
+          setShowVerificationModal(true)
+        }
+      }
+    } catch (err) {
+      console.error("Switch role failed:", err)
+      alert(err.message || "Failed to switch role.")
+    }
+  }
+
+  const handleBecomeExpert = async () => {
+    setShowVerificationModal(false)
+    try {
+      const result = await updateUserRole('expert')
+      if (result.token) {
+        localStorage.setItem('token', result.token)
+        localStorage.setItem('user', JSON.stringify(result.user))
+      }
+      navigate('/onboarding?role=expert')
+    } catch (err) {
+      console.error("Become expert failed:", err)
+      alert(err.message || "Failed to update role to expert.")
+    }
   }
 
   const currentUser = getStoredUser()
@@ -177,6 +216,13 @@ export default function HeaderCom() {
                       </button>
                       <button
                         className="dropdown-item"
+                        onClick={handleSwitchRole}
+                      >
+                        <RefreshCw size={16} />
+                        <span>Switch Role</span>
+                      </button>
+                      <button
+                        className="dropdown-item"
                         onClick={handleSettings}
                       >
                         <Settings size={16} />
@@ -213,6 +259,29 @@ export default function HeaderCom() {
         onLogout={handleLogout}
         onSwitchRole={handleDashboard}
       />
+
+      {showVerificationModal && (
+        <div className="verification-modal-backdrop">
+          <div className="verification-modal-card">
+            <h3 className="modal-title">Become an AI Expert</h3>
+            <p className="modal-text">You are not verified to be an AI Expert. Do you want to become an AI Expert?</p>
+            <div className="verification-modal-actions">
+              <button
+                className="btn-yes"
+                onClick={handleBecomeExpert}
+              >
+                Yes
+              </button>
+              <button
+                className="btn-no"
+                onClick={() => setShowVerificationModal(false)}
+              >
+                No
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   )
 }

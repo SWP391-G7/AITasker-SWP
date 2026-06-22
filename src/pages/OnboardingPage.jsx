@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import RoleSelection from "../Components/onboarding/RoleSelection";
 import ClientOnboardingForm from "../Components/onboarding/ClientOnboardingForm";
 import ExpertOnboardingForm from "../Components/onboarding/ExpertOnboardingForm";
@@ -9,7 +9,12 @@ import "../Components/onboarding/Onboarding.css";
 
 function OnboardingPage() {
   const navigate = useNavigate();
-  const [selectedRole, setSelectedRole] = useState("");
+  const location = useLocation();
+  const [selectedRole, setSelectedRole] = useState(() => {
+    const stateRole = location.state?.role;
+    const paramsRole = new URLSearchParams(location.search).get("role");
+    return stateRole || paramsRole || "";
+  });
   const [error, setError] = useState("");
 
   useEffect(() => {
