@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   AlertCircle,
@@ -66,7 +66,7 @@ const MarketplaceTaskDetailPage = () => {
   const requiredSkill = task?.required_skill || task?.requiredSkill || task?.category || 'AI Task';
 
   return (
-    <div style={{ backgroundColor: '#060b18', minHeight: '100vh', color: '#f8fafc' }}>
+    <div className="service-detail-page-wrapper">
       <div className="service-detail-container">
         <button className="back-btn" type="button" onClick={() => navigate('/marketplace')}>
           <ArrowLeft size={16} /> Back to Marketplace
@@ -93,7 +93,11 @@ const MarketplaceTaskDetailPage = () => {
               <h1 className="detail-title">{task.title || 'Untitled Client Task'}</h1>
 
               <div className="expert-bar">
-                <div className="expert-avatar-large task-client-avatar"></div>
+                <img 
+                  src="https://images.unsplash.com/photo-1556157382-97eda2d62296?w=200&h=200&fit=crop" 
+                  alt={clientName} 
+                  className="expert-avatar-large" 
+                />
                 <div className="expert-meta">
                   <div className="expert-bar-name">{clientName}</div>
                   <div className="expert-bar-rating">

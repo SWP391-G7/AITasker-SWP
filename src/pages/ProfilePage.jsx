@@ -258,7 +258,7 @@ function ProfilePage() {
                     <div className="hero-title-row">
                       <div>
                         <h1>{user.fullName}</h1>
-                        <p className="hero-title">{displayTitle}</p>
+                        <p className="profile-hero-title">{displayTitle}</p>
                       </div>
                       {isExpertView && (
                         <span className="top-rated-badge">

@@ -2,11 +2,12 @@
 .admin-dashboard-layout {
   display: flex;
   min-height: 100vh;
-  background-color: #030712;
-  background-image: radial-gradient(circle at 20% 0%, rgba(59, 130, 246, 0.15), transparent 30%),
-    radial-gradient(circle at 90% 12%, rgba(34, 211, 238, 0.1), transparent 32%);
-  color: #f8fafc;
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  background-color: var(--bg-primary);
+  background-image: var(--bg-glow);
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  color: var(--text-main);
+  font-family: var(--font-family);
 }
 
 /* Sidebar Styling */
