@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import { Navigate, Route, Routes, useLocation } from "react-router-dom"
 import LoginPage from "../pages/LoginPage"
 import RegisterPage from "../pages/RegisterPage"
@@ -156,7 +156,7 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
-      <Route path="/clients&experts" element={<Navigate to="/clients-experts" replace />} />
+
 
       <Route path="/login" element={<GuestOnly><LoginPage /></GuestOnly>} />
       <Route path="/register" element={<GuestOnly><RegisterPage /></GuestOnly>} />

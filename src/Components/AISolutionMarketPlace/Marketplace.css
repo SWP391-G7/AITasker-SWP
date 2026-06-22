@@ -1,19 +1,29 @@
 /* AISolutionMarketPlace CSS */
 :root {
-  --bg-deep: #060b18;
-  --bg-card: #0f1626;
-  --border-subtle: #1e293b;
-  --primary-blue: #3b82f6;
-  --success-mint: #10b981;
-  --text-muted: #94a3b8;
-  --text-bright: #f8fafc;
+  --bg-deep: var(--bg-primary);
+  --bg-card: rgba(15, 23, 42, 0.66);
+  --border-subtle: var(--border-color);
+  --primary-blue: var(--accent-blue);
+  --success-mint: var(--accent-green);
+  --text-muted: var(--text-muted);
+  --text-bright: var(--text-main);
+}
+
+.marketplace-page-wrapper {
+  background-color: var(--bg-primary);
+  background-image: var(--bg-glow);
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  color: var(--text-main);
+  font-family: var(--font-family);
+  min-height: 100vh;
 }
 
 .marketplace-container {
-  background-color: var(--bg-deep);
+  background: transparent;
   min-height: 100vh;
   color: var(--text-bright);
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: inherit;
   padding-bottom: 4rem;
 }
 

@@ -5,7 +5,7 @@ import AISolutionMarketPlace from "../Components/AISolutionMarketPlace/AISolutio
 
 const AISolutionMarketplacePage = () => {
   return (
-    <div style={{ backgroundColor: '#060b18', minHeight: '100vh' }}>
+    <div className="marketplace-page-wrapper">
       <HeaderCom />
       <AISolutionMarketPlace />
       <Footer />
