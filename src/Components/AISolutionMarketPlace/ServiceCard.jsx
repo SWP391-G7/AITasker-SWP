@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Star, Heart } from 'lucide-react';
 import './Marketplace.css';
 
-const ServiceCard = ({ tag, expert, rating, title, price, image }) => {
+const ServiceCard = ({ id, tag, expert, rating, title, price, image }) => {
+  const navigate = useNavigate();
   const [isWishlisted, setIsWishlisted] = useState(false);
 
   return (
@@ -48,7 +50,12 @@ const ServiceCard = ({ tag, expert, rating, title, price, image }) => {
           <span className="starting-price">STARTING AT</span>
           <span className="price-value">{price}</span>
         </div>
-        <button className="view-details-btn">View Details</button>
+        <button 
+          className="view-details-btn" 
+          onClick={() => navigate(`/marketplace/service/${id}`)}
+        >
+          View Details
+        </button>
       </div>
     </div>
   );

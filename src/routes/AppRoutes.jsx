@@ -24,6 +24,7 @@ import ExpertMessagesPage from "../pages/DashboardPage/Expert/MessagesPage";
 import ExpertSettingsPage from "../pages/DashboardPage/Expert/SettingsPage";
 import PostServicePage from "../pages/DashboardPage/Expert/PostServicePage";
 import AISolutionMarketplacePage from "../pages/AISolutionMarketplacePage";
+import ServiceDetailPage from "../pages/ServiceDetailPage";
 import { isLoggedIn } from "../Services/checkLogin";
 
 function RequireAuth({ children }) {
@@ -88,6 +89,14 @@ function AppRoutes() {
       <Route
         path="/marketplace"
         element={<AISolutionMarketplacePage />}
+      />
+      <Route
+        path="/marketplace/service/:id"
+        element={
+          <ProtectedRoute>
+            <ServiceDetailPage />
+          </ProtectedRoute>
+        }
       />
       <Route
         path="/verify-email"

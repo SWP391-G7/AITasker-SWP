@@ -23,6 +23,7 @@ const MarketplaceGrid = () => {
         const services = await getMarketplaceServices();
         // Transform backend data to match UI expectations
         const formatted = services.map(s => ({
+          id: s.id,
           tag: s.tags?.toUpperCase() || "AI",
           expert: s.expert_name,
           rating: s.avg_rating?.toString() || "5.0",
@@ -42,7 +43,11 @@ const MarketplaceGrid = () => {
 
   // Combine Mock and Real data (Real data first)
   const combinedServices = useMemo(() => {
-    return [...realServices, ...mockServices];
+    const mockWithIds = mockServices.map((s, idx) => ({
+      ...s,
+      id: `mock-${idx}`
+    }));
+    return [...realServices, ...mockWithIds];
   }, [realServices]);
 
   // Filter Logic
