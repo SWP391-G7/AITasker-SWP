@@ -416,3 +416,55 @@
     justify-content: flex-start;
   }
 }
+
+/* User management: align with shared dashboard theme. */
+.user-management-header h1,
+.user-stat-card strong,
+.user-cell strong {
+  color: var(--text-main);
+  letter-spacing: 0;
+}
+
+.user-management-header p,
+.growth-rate-card span,
+.user-stat-label,
+.user-management-table th,
+.user-management-table td,
+.user-cell small,
+.user-table-footer {
+  color: var(--text-dark);
+}
+
+.growth-rate-card,
+.user-stat-card,
+.user-table-panel {
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.76), rgba(8, 13, 26, 0.72));
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  box-shadow: var(--shadow-card);
+}
+
+.user-table-toolbar,
+.user-table-footer,
+.user-management-table td {
+  border-color: var(--border-color);
+}
+
+.user-table-search,
+.ghost-tool-button,
+.pagination-controls button {
+  background: rgba(15, 23, 42, 0.66);
+  border-color: var(--border-color);
+  color: var(--text-muted);
+}
+
+.user-table-search:focus-within {
+  border-color: rgba(96, 165, 250, 0.56);
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12);
+}
+
+.primary-tool-button {
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+  border-color: rgba(96, 165, 250, 0.35);
+  color: #ffffff;
+}

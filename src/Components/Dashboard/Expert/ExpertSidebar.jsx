@@ -42,9 +42,9 @@ const ExpertSidebar = ({ activeTab, onTabChange, onLogout }) => (
     </ul>
 
     <div className="mt-auto pt-4 border-top border-secondary border-opacity-25 d-flex flex-column gap-3">
-      <Link to="/expert/post-task" className="sidebar-post-task-btn">
+      <Link to="/expert/post-service" className="sidebar-post-task-btn">
         <PlusCircle size={18} />
-        <span>Post a New Task</span>
+        <span>Post a New Service</span>
       </Link>
       <div className="sidebar-item-link py-2 px-3 text-danger" style={{ cursor: 'pointer' }} onClick={onLogout}>
         <LogOut size={18} />

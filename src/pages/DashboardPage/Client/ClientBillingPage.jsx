@@ -1,3 +1,5 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   CreditCard,
   Download,
@@ -8,7 +10,11 @@ import {
   HelpCircle,
 } from "lucide-react";
 import ClientSidebar from "../../../Components/Dashboard/Client/ClientSidebar";
+import ClientHeader from "../../../Components/Dashboard/Client/ClientHeader";
 import Footer from "../../../Components/Footer/Footer";
+import { useClientUser } from "../../../Components/Dashboard/Client/user";
+import { logout } from "../../../Services/authService";
+import "../../Style/AdminDashboardPage.css";
 import "./ClientMarketplace.css";
 
 const transactions = [
@@ -47,22 +53,38 @@ const transactions = [
 ];
 
 function ClientBillingPage() {
+  const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [notifications, setNotifications] = useState(2);
+  const user = useClientUser();
+  const clientName = user?.fullName || user?.name || "Client User";
+
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+  };
+
   return (
     <div className="market-client-layout">
       <ClientSidebar activeTab="billing" />
 
       <main className="billing-main">
-        <header className="billing-header">
-          <div>
-            <h1>Billing & Payments</h1>
-            <p>Manage payment methods, escrow funds, and transaction history.</p>
-          </div>
-
-          <button className="billing-download-btn">
-            <Download size={18} />
-            Download Report
-          </button>
-        </header>
+        <ClientHeader
+          title="Billing & Payments"
+          subtitle="Manage payment methods, escrow funds, and transaction history."
+          headerActions={
+            <button className="billing-download-btn">
+              <Download size={18} />
+              Download Report
+            </button>
+          }
+          notifications={notifications}
+          onClearNotifications={() => setNotifications(0)}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          user={user}
+          onLogout={handleLogout}
+        />
 
         <section className="billing-stats">
           <div className="billing-stat-card">
@@ -127,7 +149,7 @@ function ClientBillingPage() {
                 <p>Expires 08/2028</p>
 
                 <div className="payment-card-footer">
-                  <strong>Andy Client</strong>
+                  <strong>{clientName}</strong>
                   <button>Edit</button>
                 </div>
               </div>

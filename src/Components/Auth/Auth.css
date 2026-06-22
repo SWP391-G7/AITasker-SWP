@@ -4,6 +4,25 @@
   --bg-dark-blue: #0D1C32;
 }
 
+.auth-page {
+  background-color: var(--bg-primary);
+  background-image: var(--bg-glow);
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.auth-card {
+  border: 1px solid var(--border-color);
+  border-radius: 18px;
+  box-shadow: var(--shadow-card);
+  background-color: var(--bg-card);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
 
 
 .otp-input {
@@ -46,6 +65,34 @@
 
 .auth-link:hover {
   text-decoration: underline;
+}
+
+.auth-home-link {
+  position: fixed;
+  top: 1.25rem;
+  left: 1.25rem;
+  z-index: 10;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 1.05rem;
+  border: 1px solid rgba(148, 163, 184, 0.08);
+  border-radius: 9px;
+  background: rgba(15, 30, 53, 0.72);
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 800;
+  text-decoration: none;
+  backdrop-filter: blur(14px);
+  transition: all 0.2s ease;
+}
+
+.auth-home-link:hover {
+  border-color: rgba(96, 165, 250, 0.18);
+  background: rgba(15, 42, 69, 0.92);
+  color: #ffffff;
+  text-decoration: none;
 }
 
 .bg-light-blue {

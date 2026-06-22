@@ -1,9 +1,9 @@
 import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { logout } from '../../../Services/authService'
 import ExpertSidebar from '../../../Components/Dashboard/Expert/ExpertSidebar'
 import ExpertHeader from '../../../Components/Dashboard/Expert/ExpertHeader'
 import Footer from '../../../Components/Footer/Footer'
+import { createHandleLogout } from './handleLogout'
 import '../../Style/AdminDashboardPage.css'
 import '../../Style/ExpertDashboardPage.css'
 
@@ -21,10 +21,7 @@ const SettingsPage = () => {
     }
   }, [])
 
-  const handleLogout = () => {
-    logout()
-    navigate('/')
-  }
+  const handleLogout = createHandleLogout(navigate)
 
   const handleTabChange = (id) => {
     if (id === 'dashboard') navigate('/expert/dashboard')
@@ -37,6 +34,8 @@ const SettingsPage = () => {
 
       <main className="admin-main-panel expert-main-panel">
         <ExpertHeader
+          title="Settings"
+          subtitle="Manage account, notification, and security preferences."
           notifications={notifications}
           onClearNotifications={() => setNotifications(0)}
           searchQuery={searchQuery}
@@ -46,9 +45,6 @@ const SettingsPage = () => {
         />
 
         <section className="admin-panel-card">
-          <div className="panel-header">
-            <h2 className="panel-title">Settings</h2>
-          </div>
           <div style={{ padding: '2rem', textAlign: 'center', color: '#94a3b8' }}>
             <p>Cài đặt tài khoản, thông báo và bảo mật thông tin cá nhân.</p>
           </div>
