@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { logout } from '../../../Services/authService'
 import ContractsPanel from '../../../Components/Dashboard/Expert/ContractsPanel'
 import Footer from '../../../Components/Footer/Footer'
 import ExpertHeader from '../../../Components/Dashboard/Expert/ExpertHeader'
@@ -10,6 +9,7 @@ import FinancialPerformancePanel from '../../../Components/Dashboard/Expert/Fina
 import InvitationsPanel from '../../../Components/Dashboard/Expert/InvitationsPanel'
 import TechnicalStackCard from '../../../Components/Dashboard/Expert/TechnicalStackCard'
 import { contracts, invitations, skills } from '../../../Components/Dashboard/Expert/expertDashboardData'
+import { createHandleLogout } from './handleLogout'
 import '../../Style/AdminDashboardPage.css'
 import '../../Style/ExpertDashboardPage.css'
 
@@ -28,10 +28,7 @@ const ExpertDashboardPage = ({ onLogout }) => {
     }
   }, [])
 
-  const handleLogout = onLogout || (() => {
-    logout()
-    navigate('/')
-  })
+  const handleLogout = onLogout || createHandleLogout(navigate)
 
   const handleTabChange = (id) => {
     setActiveTab(id)
