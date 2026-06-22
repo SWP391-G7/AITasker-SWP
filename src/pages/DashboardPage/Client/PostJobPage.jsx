@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import ClientSidebar from "../../../Components/Dashboard/Client/ClientSidebar";
 import Footer from "../../../Components/Footer/Footer";
-import { createJobPost } from "../../../services/jobService";
+import { createJobPost } from "../../../Services/jobService";
 import "./ClientMarketplace.css";
 
 const categories = [
@@ -130,15 +130,19 @@ function PostJobPage() {
 
       await createJobPost({
         title: formData.title.trim(),
-        category: formData.category,
         description: `${formData.description.trim()}
+
+Category:
+${formData.category}
 
 Tech Stack:
 ${formData.techStack.trim()}
 
 Requirements:
 ${formData.requirements.trim()}`,
-        budget: Number(formData.budget),
+        budgetMin: Number(formData.budget),
+        budgetMax: Number(formData.budget),
+        requiredSkill: formData.techStack.trim() || formData.category,
         deadline: formData.deadline,
       });
 

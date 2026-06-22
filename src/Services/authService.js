@@ -139,6 +139,34 @@ export const verifyCode = async (email, code) => {
   }
 }
 
+export const googleLogin = async (credentials) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/auth/google`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(credentials)
+    })
+
+    const result = await response.json()
+
+    if (!response.ok) {
+      throw new Error(result.message || 'Google Login failed')
+    }
+
+    if (result.token) {
+      localStorage.setItem('token', result.token)
+      localStorage.setItem('user', JSON.stringify(result.user))
+    }
+
+    return result
+  } catch (error) {
+    console.error('Google Login error:', error)
+    throw error
+  }
+}
+
 export const logout = () => {
   localStorage.removeItem('token')
   localStorage.removeItem('user')
