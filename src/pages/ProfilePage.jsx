@@ -20,45 +20,47 @@ import { clientProjects } from "../Components/Profile/Client/ClientProject";
 import "./ProfilePage.css";
 
 function ProfilePage() {
-  const { userId } = useParams();
-  const navigate = useNavigate();
-  const currentUser = getStoredUser();
+  const { userId } = useParams()
+  const navigate = useNavigate()
+  const currentUser = getStoredUser()
 
-  const [profileData, setProfileData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [activeTab, setActiveTab] = useState("");
+  const [profileData, setProfileData] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState("")
+  const [activeTab, setActiveTab] = useState("") // "client" or "expert"
 
-  const isOwnProfile = currentUser && currentUser.id === userId;
+  const isOwnProfile = currentUser && currentUser.id === userId
 
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        setLoading(true);
-        setError("");
-        const data = await getUserProfile(userId);
-        setProfileData(data);
+        setLoading(true)
+        setError("")
+        const data = await getUserProfile(userId)
+        setProfileData(data)
 
         if (data.hasExpertProfile && data.hasClientProfile) {
-          setActiveTab(data.user.role === "expert" ? "expert" : "client");
+          // Both profiles exist: default to the registered role or expert
+          setActiveTab(data.user.role === "expert" ? "expert" : "client")
         } else if (data.hasExpertProfile) {
-          setActiveTab("expert");
+          setActiveTab("expert")
         } else if (data.hasClientProfile) {
-          setActiveTab("client");
+          setActiveTab("client")
         } else {
-          setActiveTab(data.user.role === "expert" ? "expert" : "client");
+          // Neither profile is completed yet: default to registered role
+          setActiveTab(data.user.role === "expert" ? "expert" : "client")
         }
       } catch (err) {
-        setError(err.message || "Failed to load profile details.");
+        setError(err.message || "Failed to load profile details.")
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
     if (userId) {
-      fetchProfile();
+      fetchProfile()
     }
-  }, [userId]);
+  }, [userId])
 
   const getRoleDashboardPath = (role) => {
     const normalizedRole = String(role || "").toLowerCase();
@@ -83,32 +85,62 @@ function ProfilePage() {
     if (currentUser) {
       navigate(getRoleDashboardPath(currentUser.role));
     } else {
-      navigate("/");
+      navigate("/")
     }
-  };
+  }
 
-  const handleContact = () => {
-    if (currentUser) {
-      navigate(getMessagesPath());
-    } else {
-      navigate("/login");
+  if (loading) {
+    return (
+      <div className="profile-container loading-container">
+        <div className="spinner"></div>
+        <p>Retrieving secure profile...</p>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="profile-container error-container">
+        <div className="error-card">
+          <h2>Oops! Profile Not Found</h2>
+          <p>{error}</p>
+          <button className="primary-btn" onClick={handleBack}>
+            Return to Dashboard
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  const { user, clientProfile, expertProfile, hasClientProfile, hasExpertProfile } = profileData
+
+  const renderStars = (rating) => {
+    const stars = []
+    const r = rating || 0
+    for (let i = 1; i <= 5; i++) {
+      stars.push(
+        <span key={i} className={i <= r ? "star filled" : "star"}>
+          ★
+        </span>
+      )
     }
-  };
+    return <div className="stars-wrapper">{stars}</div>
+  }
 
   const getExperienceLabel = (exp) => {
     switch (exp) {
       case "0-1":
-        return "0 - 1 year";
+        return "0 - 1 year"
       case "1-3":
-        return "1 - 3 years";
+        return "1 - 3 years"
       case "3-5":
-        return "3 - 5 years";
+        return "3 - 5 years"
       case "over-5":
-        return "Over 5 years";
+        return "Over 5 years"
       default:
-        return exp || "Not specified";
+        return exp || "Not specified"
     }
-  };
+  }
 
   const getSkills = (skills) => {
     if (!skills) {
@@ -434,7 +466,7 @@ function ProfilePage() {
 
       <Footer />
     </div>
-  );
+  )
 }
 
-export default ProfilePage;
+export default ProfilePage
