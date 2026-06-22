@@ -2,8 +2,11 @@
   width: 100%;
   min-height: 100vh;
   display: flex;
-  background: #061326;
-  color: #dbeafe;
+  background-color: var(--bg-primary);
+  background-image: var(--bg-glow);
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  color: var(--text-main);
 }
 
 .client-main-panel {
@@ -324,7 +327,7 @@
   height: 18px;
   border-radius: 50%;
   border: 3px solid #a8c5ff;
-  background: #061326;
+  background: var(--bg-primary);
 }
 
 .activity-dot.success {
