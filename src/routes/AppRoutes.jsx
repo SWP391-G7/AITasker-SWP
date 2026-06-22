@@ -25,6 +25,8 @@ import ExpertSettingsPage from "../pages/DashboardPage/Expert/SettingsPage";
 import PostServicePage from "../pages/DashboardPage/Expert/PostServicePage";
 import AISolutionMarketplacePage from "../pages/AISolutionMarketplacePage";
 import ServiceDetailPage from "../pages/ServiceDetailPage";
+import SearchResultsPage from "../pages/SearchResultsPage";
+import ClientsAndExpertsPage from "../pages/ClientsAndExpertsPage";
 import { isLoggedIn } from "../Services/checkLogin";
 
 function RequireAuth({ children }) {
@@ -94,7 +96,10 @@ function AppRoutes() {
         path="/marketplace/service/:id"
         element={
           <ProtectedRoute>
-            <ServiceDetailPage />
+            <>
+              <HeaderCom />
+              <ServiceDetailPage />
+            </>
           </ProtectedRoute>
         }
       />
@@ -268,6 +273,25 @@ function AppRoutes() {
           <ProtectedRoute>
             <ExpertSettingsPage />
           </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/search-results"
+        element={
+          <>
+            <HeaderCom />
+            <SearchResultsPage />
+          </>
+        }
+      />
+      <Route
+        path="/clients&experts"
+        element={
+          <>
+            <HeaderCom />
+            <ClientsAndExpertsPage />
+          </>
         }
       />
 

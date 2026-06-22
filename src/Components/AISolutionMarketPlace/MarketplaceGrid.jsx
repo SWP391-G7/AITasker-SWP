@@ -14,7 +14,7 @@ const MarketplaceGrid = () => {
   const [budget, setBudget] = useState('Any Price');
   const [realServices, setRealServices] = useState([]);
   const [loading, setLoading] = useState(true);
-  const itemsPerPage = 8;
+  const itemsPerPage = 9;
 
   // Fetch real services from DB
   useEffect(() => {
@@ -98,8 +98,8 @@ const MarketplaceGrid = () => {
       <aside className="marketplace-sidebar">
         <div className="sidebar-filter-section">
           <h3 className="sidebar-title">Filters</h3>
-          <div className="search-input-wrapper mb-4">
-            <SearchIcon size={20} className="search-icon-styled" />
+          <div className="search-input-wrapper">
+            <SearchIcon size={16} className="search-icon-styled" />
             <input 
               type="text" 
               placeholder="Search services..." 

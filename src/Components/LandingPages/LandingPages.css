@@ -61,9 +61,43 @@
   margin-right: auto;
 }
 
+/* ── Search Category Tabs ── */
+.search-category-tabs {
+  flex-wrap: wrap;
+}
+
+.category-tab-btn {
+  background: rgba(15, 23, 42, 0.5);
+  border: 1px solid rgba(226, 232, 240, 0.12);
+  color: var(--text-muted);
+  border-radius: 30px;
+  padding: 6px 18px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+
+.category-tab-btn:hover {
+  color: var(--text-main);
+  border-color: rgba(96, 165, 250, 0.3);
+}
+
+.category-tab-btn.active {
+  background: linear-gradient(135deg, var(--accent-blue), #06b6d4);
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(59, 130, 246, 0.3);
+}
+
+/* ── Hero Search Form (wraps pill row + filter panel) ── */
+.hero-search-form {
+  max-width: 680px;
+  width: 100%;
+}
+
 /* Glassmorphic Search Bar with Bootstrap input */
 .search-box-wrapper {
-  max-width: 640px;
   width: 100%;
   background: rgba(15, 23, 42, 0.68);
   backdrop-filter: blur(22px);
@@ -102,18 +136,92 @@
   opacity: 0.9;
 }
 
+/* Filter toggle button (SlidersHorizontal icon) */
+.filter-toggle-btn {
+  background: transparent;
+  border: 1px solid rgba(226, 232, 240, 0.15);
+  color: var(--text-muted);
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 0;
+  transition: var(--transition-smooth);
+}
+
+.filter-toggle-btn:hover,
+.filter-toggle-btn.active {
+  color: var(--accent-sky);
+  border-color: rgba(96, 165, 250, 0.4);
+  background: rgba(59, 130, 246, 0.1);
+}
+
 .search-button {
   background: linear-gradient(135deg, var(--accent-blue), #06b6d4) !important;
   border: none !important;
   color: #ffffff !important;
   transition: var(--transition-smooth) !important;
   box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+  flex-shrink: 0;
 }
 
 .search-button:hover {
   background: var(--accent-blue-hover) !important;
   box-shadow: 0 4px 20px rgba(59, 130, 246, 0.45);
   transform: translateY(-1px);
+}
+
+/* ── Advanced Filters Panel ── */
+.advanced-filters-panel {
+  background: rgba(15, 23, 42, 0.8);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  border: 1px solid rgba(226, 232, 240, 0.1);
+  border-radius: 16px;
+  padding: 20px 24px;
+  animation: fadeInUp 0.25s ease-out;
+}
+
+.filters-panel-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.filter-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+  display: block;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.filter-input {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(226, 232, 240, 0.12) !important;
+  color: var(--text-main) !important;
+  border-radius: 10px !important;
+  font-size: 0.875rem !important;
+  transition: var(--transition-smooth);
+}
+
+.filter-input:focus {
+  border-color: rgba(59, 130, 246, 0.5) !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12) !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  outline: none;
+}
+
+.filter-input option {
+  background: #0f172a;
+  color: var(--text-main);
 }
 
 /* Button CTA CSS using Bootstrap overrides */

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Star, Clock, Check, MessageSquare, ArrowLeft, AlertCircle, Loader2 } from 'lucide-react';
-import HeaderCom from '../Components/Navbar/HeaderCom';
 import Footer from '../Components/Footer/Footer';
 import { getServiceById } from '../Services/serviceService';
 import './Style/ServiceDetail.css';
@@ -31,8 +30,6 @@ const ServiceDetailPage = () => {
 
   return (
     <div style={{ backgroundColor: '#060b18', minHeight: '100vh', color: '#f8fafc' }}>
-      <HeaderCom />
-      
       <div className="service-detail-container">
         <button className="back-btn" onClick={() => navigate('/marketplace')}>
           <ArrowLeft size={16} /> Back to Marketplace
