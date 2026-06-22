@@ -29,7 +29,7 @@ const ServiceDetailPage = () => {
   }, [id]);
 
   return (
-    <div style={{ backgroundColor: '#060b18', minHeight: '100vh', color: '#f8fafc' }}>
+    <div className="service-detail-page-wrapper">
       <div className="service-detail-container">
         <button className="back-btn" onClick={() => navigate('/marketplace')}>
           <ArrowLeft size={16} /> Back to Marketplace
@@ -58,7 +58,11 @@ const ServiceDetailPage = () => {
               
               {/* Expert Bar */}
               <div className="expert-bar">
-                <div className="expert-avatar-large"></div>
+                <img 
+                  src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&h=200&fit=crop" 
+                  alt={service.expert_name || 'AI Expert'} 
+                  className="expert-avatar-large" 
+                />
                 <div className="expert-meta">
                   <div className="expert-bar-name">{service.expert_name || 'AI Expert'}</div>
                   <div className="expert-bar-rating">

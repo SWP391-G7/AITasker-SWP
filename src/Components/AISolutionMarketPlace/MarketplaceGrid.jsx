@@ -1,7 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Grid, List, Search as SearchIcon, Loader2, ChevronDown, ChevronLeft, ChevronRight, SlidersHorizontal } from 'lucide-react';
 import ServiceCard from './ServiceCard';
-import { allServices as mockServices } from './servicesData';
 import { getMarketplaceJobs, getMarketplaceServices } from '../../Services/serviceService';
 import '../../pages/DashboardPage/Client/ExpertSearchPage.css';
 import './Marketplace.css';
@@ -104,18 +103,8 @@ const MarketplaceGrid = () => {
   }, [isExpert]);
 
   const combinedItems = useMemo(() => {
-    if (isExpert) return marketplaceItems;
-
-    const mockWithIds = mockServices.map((s, idx) => ({
-      ...s,
-      id: `mock-${idx}`,
-      type: 'service',
-      budgetValue: parseMoney(s.price),
-      description: '',
-    }));
-
-    return [...marketplaceItems, ...mockWithIds];
-  }, [isExpert, marketplaceItems]);
+    return marketplaceItems;
+  }, [marketplaceItems]);
 
   const filteredItems = useMemo(() => {
     return combinedItems.filter((item) => {
@@ -189,13 +178,6 @@ const MarketplaceGrid = () => {
               </p>
             </div>
 
-            <button
-              className="advanced-filter-btn"
-              type="button"
-            >
-              <SlidersHorizontal size={22} />
-              Apply Filters
-            </button>
           </section>
 
           <div className="expert-search-box">

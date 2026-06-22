@@ -21,43 +21,7 @@ const defaultExpertAvatar =
 const defaultClientAvatar =
   "https://images.unsplash.com/photo-1556157382-97eda2d62296?w=200&h=200&fit=crop";
 
-const fallbackExperts = [
-  {
-    id: 1,
-    name: "Dr. Sarah Chen",
-    title: "Senior ML Engineer & PhD in Neural Networks",
-    avatar: defaultExpertAvatar,
-    rating: 4.9,
-    reviews: 128,
-    rate: 180,
-    tags: ["LLM TUNING", "PYTORCH", "RAG SYSTEMS"],
-    description:
-      "Expert in building and deploying large-scale retrieval augmented generation systems and fine-tuned LLM products.",
-    projects: 84,
-    success: 100,
-    available: true,
-    stack: ["Python", "PyTorch", "OpenAI API", "NLP"],
-    mode: "expert",
-  },
-  {
-    id: 2,
-    name: "Marcus Holloway",
-    title: "Lead AI Architect & Infrastructure Specialist",
-    avatar:
-      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop",
-    rating: 5.0,
-    reviews: 92,
-    rate: 225,
-    tags: ["TENSORFLOW", "AWS SAGEMAKER", "KUBERNETES"],
-    description:
-      "Specializing in MLOps and scaling AI workloads across hybrid-cloud environments. Proven track record.",
-    projects: 52,
-    success: 98,
-    available: true,
-    stack: ["TensorFlow", "AI Integration", "Automation"],
-    mode: "expert",
-  },
-];
+
 
 const stackFilters = [
   "Python",
@@ -150,7 +114,7 @@ function ExpertSearchPage() {
   const isExpertMode = getCurrentRole() === "expert";
   const currentFilters = isExpertMode ? clientFilters : stackFilters;
 
-  const [people, setPeople] = useState(isExpertMode ? [] : fallbackExperts);
+  const [people, setPeople] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
@@ -202,7 +166,7 @@ function ExpertSearchPage() {
         err.message ||
           `Failed to load ${isExpertMode ? "clients" : "experts"}.`
       );
-      setPeople(isExpertMode ? [] : fallbackExperts);
+      setPeople([]);
     } finally {
       setLoading(false);
     }
@@ -287,14 +251,6 @@ function ExpertSearchPage() {
               </p>
             </div>
 
-            <button
-              className="advanced-filter-btn"
-              type="button"
-              onClick={fetchPeople}
-            >
-              <SlidersHorizontal size={22} />
-              Apply Filters
-            </button>
           </section>
 
           <div className="expert-search-box">
