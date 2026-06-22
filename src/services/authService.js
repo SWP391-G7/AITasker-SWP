@@ -50,7 +50,38 @@ export const login = async (data) => {
 
     if (result.token) {
       localStorage.setItem('token', result.token);
-      localStorage.setItem('user', JSON.stringify(result.user));
+      
+      // Determine onboarding status dynamically using profile API (since backend role is original)
+      let isOnboarded = false;
+      const user = result.user;
+      
+      if (user.role === 'admin') {
+        isOnboarded = true;
+      } else {
+        try {
+          const profileResponse = await fetch(`${API_BASE_URL}/profile/${user.id}`, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${result.token}`
+            }
+          });
+          if (profileResponse.ok) {
+            const profileData = await profileResponse.json();
+            if (user.role === 'client') {
+              isOnboarded = !!profileData.hasClientProfile;
+            } else if (user.role === 'expert') {
+              isOnboarded = !!profileData.hasExpertProfile;
+            }
+          }
+        } catch (profileErr) {
+          console.error('Failed to check onboarding profile:', profileErr);
+        }
+      }
+      
+      user.isOnboarded = isOnboarded;
+      localStorage.setItem('user', JSON.stringify(user));
+      result.user = user;
     }
 
     return result;
@@ -80,6 +111,37 @@ export const getMe = async () => {
 
     if (!response.ok) {
       throw new Error(result.message || 'Failed to fetch user profile');
+    }
+
+    if (result.user) {
+      const user = result.user;
+      let isOnboarded = false;
+      if (user.role === 'admin') {
+        isOnboarded = true;
+      } else {
+        try {
+          const profileResponse = await fetch(`${API_BASE_URL}/profile/${user.id}`, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          if (profileResponse.ok) {
+            const profileData = await profileResponse.json();
+            if (user.role === 'client') {
+              isOnboarded = !!profileData.hasClientProfile;
+            } else if (user.role === 'expert') {
+              isOnboarded = !!profileData.hasExpertProfile;
+            }
+          }
+        } catch (profileErr) {
+          console.error('Failed to check onboarding profile:', profileErr);
+        }
+      }
+      user.isOnboarded = isOnboarded;
+      localStorage.setItem('user', JSON.stringify(user));
+      result.user = user;
     }
 
     return result;

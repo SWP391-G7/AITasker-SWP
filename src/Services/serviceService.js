@@ -1,44 +1,57 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
 /**
- * Publish a new service listing
+ * Publish a new service listing (Mocked via localStorage as backend is locked)
  */
 export const publishService = async (serviceData) => {
-  const token = localStorage.getItem('token');
-  const response = await fetch(`${API_BASE_URL}/services`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`
-    },
-    body: JSON.stringify(serviceData)
-  });
+  // Simulate network delay
+  await new Promise((resolve) => setTimeout(resolve, 800));
 
-  const result = await response.json();
-
-  if (!response.ok) {
-    throw new Error(result.message || 'Failed to publish service');
+  let expertName = 'AI Expert';
+  try {
+    const userJson = localStorage.getItem('user');
+    if (userJson) {
+      const user = JSON.parse(userJson);
+      expertName = user.fullName || user.full_name || 'AI Expert';
+    }
+  } catch (e) {
+    console.error('Error fetching expert name for custom service:', e);
   }
 
-  return result;
+  const newService = {
+    id: `local-${Date.now()}`,
+    expert_name: expertName,
+    avg_rating: 5.0,
+    title: serviceData.title,
+    price: serviceData.price || 0,
+    pricing_type: 'fixed',
+    delivery_days: serviceData.deliveryDays || 3,
+    tags: serviceData.category || 'NLP',
+    description: serviceData.description || '',
+    tiers: serviceData.tiers || null,
+    faqs: serviceData.faqs || [],
+    images: serviceData.images || [],
+    videoLink: serviceData.videoLink || ""
+  };
+
+  const existing = JSON.parse(localStorage.getItem('custom_services') || '[]');
+  existing.push(newService);
+  localStorage.setItem('custom_services', JSON.stringify(existing));
+
+  return {
+    success: true,
+    data: newService
+  };
 };
 
 /**
- * Get all services from the database
+ * Get all services from the database (Mocked via localStorage as backend is locked)
  */
 export const getMarketplaceServices = async () => {
-  const response = await fetch(`${API_BASE_URL}/services`, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json'
-    }
-  });
+  // Simulate network delay
+  await new Promise((resolve) => setTimeout(resolve, 500));
 
-  const result = await response.json();
-
-  if (!response.ok) {
-    throw new Error(result.message || 'Failed to fetch services');
-  }
-
-  return result.data;
+  const custom = JSON.parse(localStorage.getItem('custom_services') || '[]');
+  return custom;
 };
+
