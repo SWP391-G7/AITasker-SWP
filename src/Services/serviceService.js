@@ -1,57 +1,57 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
 /**
- * Publish a new service listing (Mocked via localStorage as backend is locked)
+ * Publish a new service listing to the backend API
  */
 export const publishService = async (serviceData) => {
-  // Simulate network delay
-  await new Promise((resolve) => setTimeout(resolve, 800));
-
-  let expertName = 'AI Expert';
-  try {
-    const userJson = localStorage.getItem('user');
-    if (userJson) {
-      const user = JSON.parse(userJson);
-      expertName = user.fullName || user.full_name || 'AI Expert';
-    }
-  } catch (e) {
-    console.error('Error fetching expert name for custom service:', e);
+  const token = localStorage.getItem('token');
+  if (!token) {
+    throw new Error('No authentication token found. Please log in first.');
   }
 
-  const newService = {
-    id: `local-${Date.now()}`,
-    expert_name: expertName,
-    avg_rating: 5.0,
-    title: serviceData.title,
-    price: serviceData.price || 0,
-    pricing_type: 'fixed',
-    delivery_days: serviceData.deliveryDays || 3,
-    tags: serviceData.category || 'NLP',
-    description: serviceData.description || '',
-    tiers: serviceData.tiers || null,
-    faqs: serviceData.faqs || [],
-    images: serviceData.images || [],
-    videoLink: serviceData.videoLink || ""
-  };
+  const response = await fetch(`${API_BASE_URL}/services`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    body: JSON.stringify({
+      title: serviceData.title,
+      description: serviceData.description || '',
+      price: serviceData.price || 0,
+      pricing_type: 'fixed',
+      delivery_days: serviceData.deliveryDays ? parseInt(serviceData.deliveryDays, 10) : 3,
+      tags: serviceData.category || ''
+    })
+  });
 
-  const existing = JSON.parse(localStorage.getItem('custom_services') || '[]');
-  existing.push(newService);
-  localStorage.setItem('custom_services', JSON.stringify(existing));
+  const result = await response.json();
 
-  return {
-    success: true,
-    data: newService
-  };
+  if (!response.ok) {
+    throw new Error(result.message || 'Failed to publish service');
+  }
+
+  return result;
 };
 
 /**
- * Get all services from the database (Mocked via localStorage as backend is locked)
+ * Get all services from the backend API (via public search endpoint)
  */
 export const getMarketplaceServices = async () => {
-  // Simulate network delay
-  await new Promise((resolve) => setTimeout(resolve, 500));
+  const response = await fetch(`${API_BASE_URL}/search?target=services`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
 
-  const custom = JSON.parse(localStorage.getItem('custom_services') || '[]');
-  return custom;
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(result.message || 'Failed to fetch services');
+  }
+
+  return result.results || [];
 };
+
 
