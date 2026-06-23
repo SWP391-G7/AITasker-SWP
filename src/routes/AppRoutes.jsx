@@ -210,14 +210,6 @@ function AppRoutes() {
         }
       />
       <Route
-        path="/expert/post-service"
-        element={
-          <ProtectedRoute>
-            <PostServicePage />
-          </ProtectedRoute>
-        }
-      />
-      <Route
         path="/expert/projects"
         element={
           <ProtectedRoute>

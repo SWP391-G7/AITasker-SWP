@@ -1,10 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { submitExpertOnboarding, updateRole } from "../../Services/onboardingService";
-import { getStoredUser } from "../../Services/checkLogin";
+import { submitExpertOnboarding } from "../../Services/onboardingService";
 import "./Onboarding.css";
 
-function ExpertOnboardingForm({ selectedRole, onBack }) {
+function ExpertOnboardingForm({ onBack }) {
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
@@ -64,20 +63,13 @@ function ExpertOnboardingForm({ selectedRole, onBack }) {
     try {
       setError("");
 
-      // 1. Cập nhật role nếu khác với role hiện tại
-      const currentUser = getStoredUser();
-      if (currentUser?.role !== selectedRole) {
-          await updateRole(selectedRole);
-      }
-
-      // 2. Gửi thông tin profile
       const result = await submitExpertOnboarding(formData);
 
       console.log("Expert onboarding success:", result);
 
-      navigate("/expert/dashboard");
+      navigate("/dashboard");
     } catch (error) {
-      setError(error.message || "Submit failed. Please try again.");
+      setError("Submit failed. Please try again.");
     }
   };
 

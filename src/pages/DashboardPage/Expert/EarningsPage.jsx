@@ -43,8 +43,6 @@ const EarningsPage = () => {
 
       <main className="admin-main-panel expert-main-panel">
         <ExpertHeader
-          title="Earnings"
-          subtitle="Monitor your revenue and manage your payouts."
           notifications={notifications}
           onClearNotifications={() => setNotifications(0)}
           searchQuery={searchQuery}
@@ -54,7 +52,11 @@ const EarningsPage = () => {
         />
 
         <div className="earnings-container">
-          <div className="page-title-section justify-content-end">
+          <div className="page-title-section">
+            <div>
+              <h1>Earnings</h1>
+              <p>Monitor your revenue and manage your payouts.</p>
+            </div>
             <div className="header-actions">
               <button className="btn-export">Export Statement</button>
               <button className="btn-withdraw">

@@ -19,11 +19,11 @@ function OnboardingPage() {
         )}
 
         {selectedRole === "client" && (
-          <ClientOnboardingForm selectedRole={selectedRole} onBack={handleBackToRoleSelection} />
+          <ClientOnboardingForm onBack={handleBackToRoleSelection} />
         )}
 
         {selectedRole === "expert" && (
-          <ExpertOnboardingForm selectedRole={selectedRole} onBack={handleBackToRoleSelection} />
+          <ExpertOnboardingForm onBack={handleBackToRoleSelection} />
         )}
       </div>
     </div>

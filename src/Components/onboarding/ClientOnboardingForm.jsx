@@ -1,16 +1,15 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { submitClientOnboarding, updateRole } from "../../Services/onboardingService";
-import { getStoredUser } from "../../Services/checkLogin";
+import { submitClientOnboarding } from "../../Services/onboardingService";
 import "./Onboarding.css";
 
-function ClientOnboardingForm({ selectedRole, onBack }) {
+function ClientOnboardingForm({ onBack }) {
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     companyName: "",
     industry: "",
-    bio: "",
+    
   });
 
   const [error, setError] = useState("");
@@ -49,20 +48,13 @@ function ClientOnboardingForm({ selectedRole, onBack }) {
     try {
       setError("");
 
-      // 1. Cập nhật role nếu khác với role hiện tại
-      const currentUser = getStoredUser();
-      if (currentUser?.role !== selectedRole) {
-          await updateRole(selectedRole);
-      }
-
-      // 2. Gửi thông tin profile
       const result = await submitClientOnboarding(formData);
 
       console.log("Client onboarding success:", result);
 
       navigate("/client/dashboard")
     } catch (error) {
-      setError(error.message || "Submit failed. Please try again.");
+      setError("Submit failed. Please try again.");
     }
   };
 

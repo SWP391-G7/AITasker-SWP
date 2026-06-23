@@ -46,8 +46,6 @@ const MyProjectsPage = () => {
 
       <main className="admin-main-panel expert-main-panel">
         <ExpertHeader
-          title="My Projects"
-          subtitle="Manage your active AI contracts and deliverables."
           notifications={notifications}
           onClearNotifications={() => setNotifications(0)}
           searchQuery={searchQuery}
@@ -57,7 +55,11 @@ const MyProjectsPage = () => {
         />
 
         <div className="expert-content-container">
-          <div className="page-title-section justify-content-end">
+          <div className="page-title-section">
+            <div>
+              <h1>My Projects</h1>
+              <p>Manage your active AI contracts and deliverables.</p>
+            </div>
             <div className="expert-rating-widget">
               <span>Expert Rating</span>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', color: '#fbbf24' }}>
