@@ -89,30 +89,9 @@ function ProfilePage() {
     }
   }
 
-  if (loading) {
-    return (
-      <div className="profile-container loading-container">
-        <div className="spinner"></div>
-        <p>Retrieving secure profile...</p>
-      </div>
-    )
+  const handleContact = () => {
+    navigate(getMessagesPath());
   }
-
-  if (error) {
-    return (
-      <div className="profile-container error-container">
-        <div className="error-card">
-          <h2>Oops! Profile Not Found</h2>
-          <p>{error}</p>
-          <button className="primary-btn" onClick={handleBack}>
-            Return to Dashboard
-          </button>
-        </div>
-      </div>
-    )
-  }
-
-  const { user, clientProfile, expertProfile, hasClientProfile, hasExpertProfile } = profileData
 
   const renderStars = (rating) => {
     const stars = []
