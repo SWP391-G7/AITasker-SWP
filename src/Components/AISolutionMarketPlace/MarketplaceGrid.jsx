@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Grid, List, Search as SearchIcon, Loader2, ChevronDown, ChevronLeft, ChevronRight, SlidersHorizontal } from 'lucide-react';
 import ServiceCard from './ServiceCard';
-import { getMarketplaceJobs, getMarketplaceServices } from '../../Services/serviceService';
+import { search as searchApi } from '../../Services/searchService';
 import '../../pages/DashboardPage/Client/ExpertSearchPage.css';
 import './Marketplace.css';
 
@@ -57,6 +57,7 @@ const formatJob = (job) => ({
 
 const MarketplaceGrid = () => {
   const [currentPage, setCurrentPage] = useState(1);
+  const [searchDraft, setSearchDraft] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [category, setCategory] = useState('All Categories');
   const [budget, setBudget] = useState('Any Price');
@@ -68,73 +69,79 @@ const MarketplaceGrid = () => {
   const isExpert = role === 'expert';
 
   useEffect(() => {
-    const fetchMarketplaceItems = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true);
-        const services = await getMarketplaceServices();
-        setMarketplaceItems(services.map(formatService));
+        const searchParams = {
+          target: isExpert ? 'jobs' : 'services',
+          query: searchQuery.trim(),
+        };
+
+        // Category filter
+        if (category !== 'All Categories') {
+          if (isExpert) {
+            searchParams.requiredSkill = category;
+          } else {
+            searchParams.tags = category;
+          }
+        }
+
+        // Budget filter mapping
+        if (budget === '$0 - $500') {
+          if (isExpert) {
+            searchParams.budgetMin = 0;
+            searchParams.budgetMax = 500;
+          } else {
+            searchParams.priceMin = 0;
+            searchParams.priceMax = 500;
+          }
+        } else if (budget === '$500 - $2,000') {
+          if (isExpert) {
+            searchParams.budgetMin = 500;
+            searchParams.budgetMax = 2000;
+          } else {
+            searchParams.priceMin = 500;
+            searchParams.priceMax = 2000;
+          }
+        } else if (budget === '$2,000+') {
+          if (isExpert) {
+            searchParams.budgetMin = 2000;
+          } else {
+            searchParams.priceMin = 2000;
+          }
+        }
+
+        // Delivery time filter mapping
+        if (deliveryTime !== 'Anytime') {
+          let days = 999;
+          if (deliveryTime === 'Within 24 hours') days = 1;
+          else if (deliveryTime === '3 Days') days = 3;
+          else if (deliveryTime === '7 Days') days = 7;
+
+          if (isExpert) {
+            searchParams.duration = days;
+          } else {
+            searchParams.deliveryDays = days;
+          }
+        }
+
+        const response = await searchApi(searchParams);
+        const results = response.results || [];
+        setMarketplaceItems(results.map(isExpert ? formatJob : formatService));
       } catch (err) {
-        console.error('Failed to fetch services:', err);
+        console.error('Failed to fetch marketplace items:', err);
         setMarketplaceItems([]);
       } finally {
         setLoading(false);
       }
     };
 
-    const fetchClientTasks = async () => {
-      try {
-        setLoading(true);
-        const jobs = await getMarketplaceJobs();
-        setMarketplaceItems(jobs.map(formatJob));
-      } catch (err) {
-        console.error('Failed to fetch client tasks:', err);
-        setMarketplaceItems([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (isExpert) {
-      fetchClientTasks();
-      return;
-    }
-
-    fetchMarketplaceItems();
-  }, [isExpert]);
-
-  const combinedItems = useMemo(() => {
-    return marketplaceItems;
-  }, [marketplaceItems]);
+    fetchData();
+  }, [isExpert, searchQuery, category, budget, deliveryTime]);
 
   const filteredItems = useMemo(() => {
-    return combinedItems.filter((item) => {
-      const keyword = searchQuery.toLowerCase();
-
-      const matchesSearch =
-        item.title.toLowerCase().includes(keyword) ||
-        item.expert.toLowerCase().includes(keyword) ||
-        (item.description || '').toLowerCase().includes(keyword);
-
-      const matchesCategory =
-        category === 'All Categories' ||
-        item.tag.toUpperCase().includes(category.toUpperCase());
-
-      let matchesBudget = true;
-
-      if (budget === '$0 - $500') {
-        const price = item.budgetValue || parseMoney(item.price);
-        matchesBudget = price <= 500;
-      } else if (budget === '$500 - $2,000') {
-        const price = item.budgetValue || parseMoney(item.price);
-        matchesBudget = price > 500 && price <= 2000;
-      } else if (budget === '$2,000+') {
-        const price = item.budgetValue || parseMoney(item.price);
-        matchesBudget = price > 2000;
-      }
-
-      return matchesSearch && matchesCategory && matchesBudget;
-    });
-  }, [searchQuery, category, budget, combinedItems]);
+    return marketplaceItems;
+  }, [marketplaceItems]);
 
   const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
   const indexOfLastItem = currentPage * itemsPerPage;
@@ -181,17 +188,26 @@ const MarketplaceGrid = () => {
           </section>
 
           <div className="expert-search-box">
-            <SearchIcon size={22} />
+            <SearchIcon size={22} style={{ cursor: 'pointer' }} onClick={() => {
+              setSearchQuery(searchDraft);
+              setCurrentPage(1);
+            }} />
             <input
               type="text"
               placeholder={isExpert ? 'Search client tasks...' : 'Search services...'}
-              value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                setCurrentPage(1);
+              value={searchDraft}
+              onChange={(e) => setSearchDraft(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  setSearchQuery(searchDraft);
+                  setCurrentPage(1);
+                }
               }}
             />
-            <span>Enter</span>
+            <span style={{ cursor: 'pointer' }} onClick={() => {
+              setSearchQuery(searchDraft);
+              setCurrentPage(1);
+            }}>Enter</span>
           </div>
 
           <section className="expert-content">

@@ -118,6 +118,7 @@ function ExpertSearchPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
   const [selectedFilters, setSelectedFilters] = useState([]);
   const [rating, setRating] = useState("");
   const [availability, setAvailability] = useState("available");
@@ -144,15 +145,17 @@ function ExpertSearchPage() {
 
       const result = await searchApi({
         target: isExpertMode ? "client" : "expert",
-        query: search.trim(),
+        query: searchQuery.trim(),
         skill:
-          !isExpertMode && selectedFilters.length === 1
-            ? selectedFilters[0]
+          !isExpertMode && selectedFilters.length > 0
+            ? selectedFilters.join(",")
             : "",
         industry:
-          isExpertMode && selectedFilters.length === 1
-            ? selectedFilters[0]
+          isExpertMode && selectedFilters.length > 0
+            ? selectedFilters.join(",")
             : "",
+        ratingMin: !isExpertMode && rating ? rating : "",
+        hourlyRateMax: !isExpertMode && availability === "part-time" ? 180 : "",
       });
 
       const mapped = (result.results || []).map(
@@ -175,11 +178,11 @@ function ExpertSearchPage() {
   useEffect(() => {
     fetchPeople();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [isExpertMode, selectedFilters, rating, availability, searchQuery]);
 
   const filteredPeople = useMemo(() => {
     let result = people.filter((person) => {
-      const keyword = search.toLowerCase().trim();
+      const keyword = searchQuery.toLowerCase().trim();
 
       const matchSearch =
         !keyword ||
@@ -226,12 +229,18 @@ function ExpertSearchPage() {
     isExpertMode,
     people,
     rating,
-    search,
+    searchQuery,
     selectedFilters,
     sortBy,
   ]);
 
   const resultLabel = isExpertMode ? "clients" : "experts";
+
+  const itemsPerPage = 6;
+  const totalPages = Math.ceil(filteredPeople.length / itemsPerPage);
+  const indexOfLastItem = page * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentPeople = filteredPeople.slice(indexOfFirstItem, indexOfLastItem);
 
   return (
     <div className="expert-search-page">
@@ -254,20 +263,20 @@ function ExpertSearchPage() {
           </section>
 
           <div className="expert-search-box">
-            <Search size={22} />
+            <Search size={22} style={{ cursor: "pointer" }} onClick={() => setSearchQuery(search)} />
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
-                  fetchPeople();
+                  setSearchQuery(search);
                 }
               }}
               placeholder={
                 isExpertMode ? "Search clients..." : "Search specialists..."
               }
             />
-            <span>Enter</span>
+            <span style={{ cursor: "pointer" }} onClick={() => setSearchQuery(search)}>Enter</span>
           </div>
 
           <section className="expert-content">
@@ -376,7 +385,10 @@ function ExpertSearchPage() {
                   <span>Sort by:</span>
                   <select
                     value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value)}
+                    onChange={(e) => {
+                      setSortBy(e.target.value);
+                      setPage(1);
+                    }}
                   >
                     <option value="relevance">Relevance</option>
                     <option value="rating">Rating</option>
@@ -403,7 +415,7 @@ function ExpertSearchPage() {
                 </div>
               ) : (
                 <div className="expert-grid">
-                  {filteredPeople.map((person) => (
+                  {currentPeople.map((person) => (
                     <article className="expert-card" key={person.id}>
                       <div className="expert-card-top">
                         <div className="expert-avatar-wrap">
@@ -472,35 +484,45 @@ function ExpertSearchPage() {
                 </div>
               )}
 
-              <div className="pagination">
-                <button
-                  type="button"
-                  onClick={() => setPage(Math.max(1, page - 1))}
-                >
-                  <ChevronLeft size={22} />
-                </button>
-
-                {[1, 2, 3].map((item) => (
+              {totalPages > 1 && (
+                <div className="pagination">
                   <button
                     type="button"
-                    key={item}
-                    className={page === item ? "active" : ""}
-                    onClick={() => setPage(item)}
+                    disabled={page === 1}
+                    onClick={() => {
+                      setPage(Math.max(1, page - 1));
+                      window.scrollTo({ top: 300, behavior: 'smooth' });
+                    }}
                   >
-                    {item}
+                    <ChevronLeft size={22} />
                   </button>
-                ))}
 
-                <span>...</span>
+                  {Array.from({ length: totalPages }, (_, idx) => idx + 1).map((item) => (
+                    <button
+                      type="button"
+                      key={item}
+                      className={page === item ? "active" : ""}
+                      onClick={() => {
+                        setPage(item);
+                        window.scrollTo({ top: 300, behavior: 'smooth' });
+                      }}
+                    >
+                      {item}
+                    </button>
+                  ))}
 
-                <button type="button" onClick={() => setPage(24)}>
-                  24
-                </button>
-
-                <button type="button" onClick={() => setPage(page + 1)}>
-                  <ChevronRight size={22} />
-                </button>
-              </div>
+                  <button
+                    type="button"
+                    disabled={page === totalPages}
+                    onClick={() => {
+                      setPage(Math.min(totalPages, page + 1));
+                      window.scrollTo({ top: 300, behavior: 'smooth' });
+                    }}
+                  >
+                    <ChevronRight size={22} />
+                  </button>
+                </div>
+              )}
             </section>
           </section>
         </section>
