@@ -1,26 +1,26 @@
-import React, { useState, useMemo, useEffect } from 'react';
-import { Grid, List, Search as SearchIcon, Loader2 } from 'lucide-react';
-import ServiceCard from './ServiceCard';
-import MarketplacePagination from './MarketplacePagination';
-import { allServices as mockServices } from './servicesData';
-import { getMarketplaceServices } from '../../Services/serviceService';
-import './Marketplace.css';
+import React, { useState, useMemo, useEffect } from 'react'
+import { Grid, List, Search as SearchIcon, Loader2 } from 'lucide-react'
+import ServiceCard from './ServiceCard'
+import MarketplacePagination from './MarketplacePagination'
+import { allServices as mockServices } from './servicesData'
+import { getMarketplaceServices } from '../../Services/serviceService'
+import './Marketplace.css'
 
 const MarketplaceGrid = () => {
-  const [view, setView] = useState('grid');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [category, setCategory] = useState('All Categories');
-  const [budget, setBudget] = useState('Any Price');
-  const [realServices, setRealServices] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const itemsPerPage = 8;
+  const [view, setView] = useState('grid')
+  const [currentPage, setCurrentPage] = useState(1)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [category, setCategory] = useState('All Categories')
+  const [budget, setBudget] = useState('Any Price')
+  const [realServices, setRealServices] = useState([])
+  const [loading, setLoading] = useState(true)
+  const itemsPerPage = 8
 
   // Fetch real services from DB
   useEffect(() => {
     const fetchServices = async () => {
       try {
-        const services = await getMarketplaceServices();
+        const services = await getMarketplaceServices()
         // Transform backend data to match UI expectations
         const formatted = services.map(s => ({
           tag: s.tags?.toUpperCase() || "AI",
@@ -29,55 +29,55 @@ const MarketplaceGrid = () => {
           title: s.title,
           price: `$${parseFloat(s.price).toLocaleString()}`,
           image: null // Real image logic would go here
-        }));
-        setRealServices(formatted);
+        }))
+        setRealServices(formatted)
       } catch (err) {
-        console.error("Failed to fetch services:", err);
+        console.error("Failed to fetch services:", err)
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
-    fetchServices();
-  }, []);
+    }
+    fetchServices()
+  }, [])
 
   // Combine Mock and Real data (Real data first)
   const combinedServices = useMemo(() => {
-    return [...realServices, ...mockServices];
-  }, [realServices]);
+    return [...realServices, ...mockServices]
+  }, [realServices])
 
   // Filter Logic
   const filteredServices = useMemo(() => {
     return combinedServices.filter(svc => {
-      const matchesSearch = svc.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                           svc.expert.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesCategory = category === 'All Categories' || svc.tag.toUpperCase() === category.toUpperCase();
-      
-      let matchesBudget = true;
+      const matchesSearch = svc.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        svc.expert.toLowerCase().includes(searchQuery.toLowerCase())
+      const matchesCategory = category === 'All Categories' || svc.tag.toUpperCase() === category.toUpperCase()
+
+      let matchesBudget = true
       if (budget === '$0 - $500') {
-        const price = parseInt(svc.price.replace('$', '').replace(',', ''));
-        matchesBudget = price <= 500;
+        const price = parseInt(svc.price.replace('$', '').replace(',', ''))
+        matchesBudget = price <= 500
       } else if (budget === '$500 - $2,000') {
-        const price = parseInt(svc.price.replace('$', '').replace(',', ''));
-        matchesBudget = price > 500 && price <= 2000;
+        const price = parseInt(svc.price.replace('$', '').replace(',', ''))
+        matchesBudget = price > 500 && price <= 2000
       } else if (budget === '$2,000+') {
-        const price = parseInt(svc.price.replace('$', '').replace(',', ''));
-        matchesBudget = price > 2000;
+        const price = parseInt(svc.price.replace('$', '').replace(',', ''))
+        matchesBudget = price > 2000
       }
 
-      return matchesSearch && matchesCategory && matchesBudget;
-    });
-  }, [searchQuery, category, budget, combinedServices]);
+      return matchesSearch && matchesCategory && matchesBudget
+    })
+  }, [searchQuery, category, budget, combinedServices])
 
   // Pagination Logic
-  const totalPages = Math.ceil(filteredServices.length / itemsPerPage);
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentServices = filteredServices.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredServices.length / itemsPerPage)
+  const indexOfLastItem = currentPage * itemsPerPage
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage
+  const currentServices = filteredServices.slice(indexOfFirstItem, indexOfLastItem)
 
   const handlePageChange = (pageNumber) => {
-    setCurrentPage(pageNumber);
-    window.scrollTo({ top: 300, behavior: 'smooth' });
-  };
+    setCurrentPage(pageNumber)
+    window.scrollTo({ top: 300, behavior: 'smooth' })
+  }
 
   if (loading) {
     return (
@@ -85,7 +85,7 @@ const MarketplaceGrid = () => {
         <Loader2 className="animate-spin text-primary mb-3" size={48} />
         <p className="text-muted">Loading AI Marketplace...</p>
       </div>
-    );
+    )
   }
 
   return (
@@ -94,22 +94,22 @@ const MarketplaceGrid = () => {
         <div className="search-box-card">
           <div className="search-input-wrapper">
             <SearchIcon size={22} className="search-icon-styled" />
-            <input 
-              type="text" 
-              placeholder="Search for AI services (e.g., 'LLM Fine-tuning')..." 
+            <input
+              type="text"
+              placeholder="Search for AI services (e.g., 'LLM Fine-tuning')..."
               value={searchQuery}
-              onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
+              onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1) }}
             />
             <span className="search-shortcut">⌘K</span>
           </div>
-          
+
           <div className="filter-row">
             <div className="filter-item">
               <label className="filter-label">Category</label>
-              <select 
-                className="filter-select" 
+              <select
+                className="filter-select"
                 value={category}
-                onChange={(e) => { setCategory(e.target.value); setCurrentPage(1); }}
+                onChange={(e) => { setCategory(e.target.value); setCurrentPage(1) }}
               >
                 <option>All Categories</option>
                 <option>NLP</option>
@@ -119,13 +119,13 @@ const MarketplaceGrid = () => {
                 <option>MLOPS</option>
               </select>
             </div>
-            
+
             <div className="filter-item">
               <label className="filter-label">Budget Range</label>
-              <select 
+              <select
                 className="filter-select"
                 value={budget}
-                onChange={(e) => { setBudget(e.target.value); setCurrentPage(1); }}
+                onChange={(e) => { setBudget(e.target.value); setCurrentPage(1) }}
               >
                 <option>Any Price</option>
                 <option>$0 - $500</option>
@@ -133,7 +133,7 @@ const MarketplaceGrid = () => {
                 <option>$2,000+</option>
               </select>
             </div>
-            
+
             <div className="filter-item">
               <label className="filter-label">Delivery Time</label>
               <select className="filter-select">
@@ -175,10 +175,10 @@ const MarketplaceGrid = () => {
               </div>
               <h3>No services found</h3>
               <p>Try adjusting your filters or search terms to find what you're looking for.</p>
-              <button 
-                className="view-all-link mt-4" 
+              <button
+                className="view-all-link mt-4"
                 style={{ background: 'none', border: 'none', color: '#3b82f6', fontWeight: 'bold', cursor: 'pointer' }}
-                onClick={() => { setSearchQuery(''); setCategory('All Categories'); setBudget('Any Price'); }}
+                onClick={() => { setSearchQuery(''); setCategory('All Categories'); setBudget('Any Price') }}
               >
                 Clear all filters
               </button>
@@ -187,15 +187,15 @@ const MarketplaceGrid = () => {
         </div>
 
         {totalPages > 1 && (
-          <MarketplacePagination 
-            currentPage={currentPage} 
-            totalPages={totalPages} 
-            onPageChange={handlePageChange} 
+          <MarketplacePagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
           />
         )}
       </section>
     </>
-  );
-};
+  )
+}
 
-export default MarketplaceGrid;
+export default MarketplaceGrid
