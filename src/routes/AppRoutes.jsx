@@ -25,6 +25,7 @@ import FindWorkPage from "../pages/DashboardPage/Expert/FindWorkPage"
 import EarningsPage from "../pages/DashboardPage/Expert/EarningsPage"
 import ExpertMessagesPage from "../pages/DashboardPage/Expert/MessagesPage"
 import ExpertSettingsPage from "../pages/DashboardPage/Expert/SettingsPage"
+import PostServicePage from "../pages/DashboardPage/Expert/PostServicePage"
 import ExpertSearchPage from "../pages/DashboardPage/Client/ExpertSearchPage"
 import ProfilePage from "../pages/ProfilePage"
 import AISolutionMarketplacePage from "../pages/AISolutionMarketplacePage"
@@ -182,6 +183,7 @@ function AppRoutes() {
 
       <Route path="/expert-dashboard" element={<Navigate to="/expert/dashboard" replace />} />
       <Route path="/expert/dashboard" element={<ProtectedRoute><ExpertDashboardPage /></ProtectedRoute>} />
+      <Route path="/expert/post-service" element={<ProtectedRoute><PostServicePage /></ProtectedRoute>} />
       <Route path="/expert/projects" element={<ProtectedRoute><MyProjectsPage /></ProtectedRoute>} />
       <Route path="/expert/work" element={<ProtectedRoute><FindWorkPage /></ProtectedRoute>} />
       <Route path="/expert/earnings" element={<ProtectedRoute><EarningsPage /></ProtectedRoute>} />

@@ -5,11 +5,13 @@ import {
   Home,
   LayoutDashboard,
   MessageSquare,
+  PlusCircle,
 } from "lucide-react";
 
 const clientMenuItems = [
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
   { id: "projects", label: "My Projects", icon: BriefcaseBusiness },
+  { id: "post-job", label: "Post a Job", icon: PlusCircle },
   { id: "messages", label: "Messages", icon: MessageSquare },
   { id: "billing", label: "Billing", icon: CreditCard },
   // Settings is temporarily disabled here because it now opens from the avatar popup.
@@ -28,6 +30,7 @@ const ClientSidebar = ({ activeTab = "dashboard", onTabChange }) => {
 
     if (id === "dashboard") navigate("/client/dashboard");
     if (id === "projects") navigate("/client/projects");
+    if (id === "post-job") navigate("/client/post-job");
     if (id === "messages") navigate("/client/messages");
     if (id === "billing") navigate("/client/billing");
     // Settings now opens from the avatar popup instead of sidebar navigation.
