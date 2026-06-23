@@ -1,8 +1,13 @@
-import React, { Component } from 'react'
+import { Component } from 'react'
 import "../../../../pages/DashboardPage/Client/ClientMarketplace.css"
+import { getStoredUser } from '../../../../Services/checkLogin'
 
 export default class Header extends Component {
   render() {
+    const currentUser = getStoredUser()
+    const currentUserName = currentUser?.fullName || currentUser?.name || "@"
+    const userAvatar = currentUserName.charAt(0).toUpperCase()
+
     return (
       <header className="messages-header">
           <div>
@@ -12,7 +17,7 @@ export default class Header extends Component {
 
           <div className="messages-header-actions">
             <button>New Message</button>
-            <span className="market-avatar">A</span>
+            <span className="market-avatar">{userAvatar}</span>
           </div>
         </header>
     )

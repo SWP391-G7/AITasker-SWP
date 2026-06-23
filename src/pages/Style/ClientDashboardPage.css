@@ -2,8 +2,11 @@
   width: 100%;
   min-height: 100vh;
   display: flex;
-  background: #061326;
-  color: #dbeafe;
+  background-color: var(--bg-primary);
+  background-image: var(--bg-glow);
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  color: var(--text-main);
 }
 
 .client-main-panel {
@@ -17,6 +20,96 @@
   padding: 2.5rem 3rem;
   overflow-x: hidden;
   border-left: 1px solid rgba(148, 163, 184, 0.22);
+}
+
+.client-dashboard-layout .admin-profile-container {
+  position: relative;
+}
+
+.client-dashboard-layout .admin-profile-widget {
+  cursor: pointer;
+  padding: 0.4rem 0.8rem 0.4rem 1rem;
+  transition: all 0.2s ease;
+}
+
+.client-dashboard-layout .admin-profile-widget:hover,
+.client-dashboard-layout .admin-profile-widget.active {
+  background-color: rgba(30, 41, 59, 0.8);
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+.client-dashboard-layout .profile-chevron {
+  color: #64748b;
+  transition: transform 0.3s ease;
+}
+
+.client-dashboard-layout .profile-chevron.rotate {
+  transform: rotate(180deg);
+}
+
+.client-dashboard-layout .admin-profile-avatar-wrapper {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.client-dashboard-layout .profile-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  width: 220px;
+  background: #0f172a;
+  border: 1px solid rgba(226, 232, 240, 0.1);
+  border-radius: 12px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
+  z-index: 1000;
+  overflow: hidden;
+}
+
+.client-dashboard-layout .dropdown-header {
+  padding: 1rem;
+  background-color: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.client-dashboard-layout .user-email {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.client-dashboard-layout .dropdown-list {
+  list-style: none;
+  padding: 0.5rem;
+  margin: 0;
+}
+
+.client-dashboard-layout .dropdown-item {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: #cbd5e1;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.client-dashboard-layout .dropdown-item:hover {
+  background-color: rgba(255, 255, 255, 0.06);
+  color: #ffffff;
+}
+
+.client-dashboard-layout .dropdown-divider {
+  height: 1px;
+  background-color: rgba(255, 255, 255, 0.08);
+  margin: 0.5rem 0;
 }
 
 .client-dashboard-grid {
@@ -234,7 +327,7 @@
   height: 18px;
   border-radius: 50%;
   border: 3px solid #a8c5ff;
-  background: #061326;
+  background: var(--bg-primary);
 }
 
 .activity-dot.success {
@@ -394,4 +487,88 @@
 
 .client-dashboard-layout .site-footer-dashboard {
   margin-top: auto;
+}
+
+/* Client dashboard: match LandingPages visual system. */
+.client-dashboard-layout {
+  background-color: var(--bg-primary);
+  background-image: var(--bg-glow);
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  color: var(--text-main);
+  font-family: var(--font-family);
+}
+
+.client-main-panel {
+  border-left: 1px solid var(--border-color);
+  color: var(--text-main);
+}
+
+.client-panel,
+.recent-activity-panel,
+.talent-cta-card {
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.76), rgba(8, 13, 26, 0.72));
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  box-shadow: var(--shadow-card);
+}
+
+.client-panel-header h2,
+.recent-activity-panel h2,
+.talent-cta-card h2,
+.client-projects-table strong,
+.activity-content h3,
+.budget-cell {
+  color: var(--text-main);
+}
+
+.client-panel-header button,
+.view-all-btn,
+.client-projects-table th,
+.client-projects-table p,
+.activity-content p,
+.activity-content span,
+.client-dashboard-footer,
+.client-dashboard-footer .footer-links {
+  color: var(--text-dark);
+}
+
+.client-projects-table th,
+.client-projects-table td,
+.chart-empty-space,
+.client-dashboard-footer {
+  border-color: var(--border-color);
+}
+
+.client-status.in-progress {
+  background: rgba(59, 130, 246, 0.14);
+  color: #bfdbfe;
+}
+
+.client-status.completed {
+  background: rgba(52, 211, 153, 0.14);
+  color: var(--accent-green);
+}
+
+.activity-dot {
+  background: var(--bg-primary);
+  border-color: var(--accent-sky);
+  box-shadow: 0 0 12px rgba(96, 165, 250, 0.22);
+}
+
+.talent-cta-card {
+  background:
+    linear-gradient(135deg, rgba(59, 130, 246, 0.24), rgba(8, 13, 26, 0.82)),
+    linear-gradient(180deg, rgba(15, 23, 42, 0.76), rgba(8, 13, 26, 0.72));
+}
+
+.talent-icon-box {
+  background: rgba(59, 130, 246, 0.12);
+  color: var(--accent-sky);
+}
+
+.talent-cta-card button {
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+  color: #ffffff;
+  box-shadow: 0 12px 28px rgba(37, 99, 235, 0.2);
 }

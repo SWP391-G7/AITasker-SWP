@@ -4,7 +4,7 @@
   height: 100vh;
   min-height: 0;
   overflow: hidden;
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-family: var(--font-family);
 }
 
 .expert-messages-header {
@@ -18,7 +18,7 @@
 
 .expert-messages-header h1 {
   color: #ffffff;
-  font-size: 1.45rem;
+  font-size: 2rem;
   font-weight: 800;
   line-height: 1.15;
   margin: 0;
@@ -26,8 +26,8 @@
 
 .expert-messages-header p {
   color: #94a3b8;
-  font-size: 0.82rem;
-  margin: 0.25rem 0 0;
+  font-size: 0.9rem;
+  margin: 4px 0 0;
 }
 
 .messages-layout-container {

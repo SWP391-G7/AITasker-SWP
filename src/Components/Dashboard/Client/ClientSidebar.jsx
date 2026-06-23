@@ -4,22 +4,21 @@ import {
   CreditCard,
   Home,
   LayoutDashboard,
-  LogOut,
   MessageSquare,
-  PlusCircle,
-  Settings,
 } from "lucide-react";
 
 const clientMenuItems = [
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
   { id: "projects", label: "My Projects", icon: BriefcaseBusiness },
-  { id: "post-job", label: "Post a Job", icon: PlusCircle },
   { id: "messages", label: "Messages", icon: MessageSquare },
   { id: "billing", label: "Billing", icon: CreditCard },
-  { id: "settings", label: "Settings", icon: Settings },
+  // Settings is temporarily disabled here because it now opens from the avatar popup.
 ];
 
-const ClientSidebar = ({ activeTab = "dashboard", onTabChange, onLogout }) => {
+// Defensive filter: keep Settings hidden even if the menu array is changed later.
+const visibleClientMenuItems = clientMenuItems.filter((item) => item.id !== "settings");
+
+const ClientSidebar = ({ activeTab = "dashboard", onTabChange }) => {
   const navigate = useNavigate();
 
   const handleMenuClick = (id) => {
@@ -29,34 +28,23 @@ const ClientSidebar = ({ activeTab = "dashboard", onTabChange, onLogout }) => {
 
     if (id === "dashboard") navigate("/client/dashboard");
     if (id === "projects") navigate("/client/projects");
-    if (id === "post-job") navigate("/client/post-job");
     if (id === "messages") navigate("/client/messages");
     if (id === "billing") navigate("/client/billing");
-    if (id === "settings") navigate("/client/settings");
-  };
-
-  const handleLogout = () => {
-    if (onLogout) {
-      onLogout();
-      return;
-    }
-
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    navigate("/login");
+    // Settings now opens from the avatar popup instead of sidebar navigation.
+    // if (id === "settings") navigate("/client/settings");
   };
 
   return (
     <aside className="admin-sidebar">
       <div className="sidebar-header">
-        <Link to="/client/dashboard" className="sidebar-brand mb-0">
+        <Link to="/" className="sidebar-brand mb-0">
           AITasker
         </Link>
         <span className="sidebar-subtitle">Client Workspace</span>
       </div>
 
       <ul className="sidebar-menu">
-        {clientMenuItems.map(({ id, label, icon: Icon }) => (
+        {visibleClientMenuItems.map(({ id, label, icon: Icon }) => (
           <li key={id}>
             <div
               className={`sidebar-item-link ${activeTab === id ? "active" : ""}`}
@@ -77,18 +65,10 @@ const ClientSidebar = ({ activeTab = "dashboard", onTabChange, onLogout }) => {
           Post a New Task
         </button>
 
-        <Link to="/client/dashboard" className="sidebar-item-link py-2 px-3">
+        <Link to="/" className="sidebar-item-link py-2 px-3">
           <Home size={18} />
-          <span>Return to Dashboard</span>
+          <span>Return to Homepage</span>
         </Link>
-
-        <div
-          className="sidebar-item-link py-2 px-3 text-danger"
-          onClick={handleLogout}
-        >
-          <LogOut size={18} />
-          <span>Log out</span>
-        </div>
       </div>
     </aside>
   );

@@ -1,78 +1,145 @@
-import React, { useState, useMemo, useEffect } from 'react'
-import { Grid, List, Search as SearchIcon, Loader2 } from 'lucide-react'
+import { useState, useMemo, useEffect } from 'react'
+import { Grid, List, Search as SearchIcon, Loader2, ChevronDown, ChevronLeft, ChevronRight, SlidersHorizontal } from 'lucide-react'
 import ServiceCard from './ServiceCard'
-import MarketplacePagination from './MarketplacePagination'
-import { allServices as mockServices } from './servicesData'
-import { getMarketplaceServices } from '../../Services/serviceService'
+import { getMarketplaceJobs, getMarketplaceServices } from '../../Services/serviceService'
+import '../../pages/DashboardPage/Client/ExpertSearchPage.css'
 import './Marketplace.css'
 
+const getCurrentRole = () => {
+  try {
+    return JSON.parse(localStorage.getItem('user') || '{}')?.role || 'client'
+  } catch {
+    return 'client'
+  }
+}
+
+const parseMoney = (value) => {
+  const parsed = Number(String(value || '0').replace(/[^0-9.]/g, ''))
+  return Number.isFinite(parsed) ? parsed : 0
+}
+
+const formatMoney = (value) => `$${parseMoney(value).toLocaleString()}`
+
+const formatBudget = (job) => {
+  const min = parseMoney(job.budget_min)
+  const max = parseMoney(job.budget_max)
+
+  if (min && max) return `${formatMoney(min)} - ${formatMoney(max)}`
+  if (max) return `Up to ${formatMoney(max)}`
+  if (min) return `From ${formatMoney(min)}`
+  return 'Budget TBD'
+}
+
+const formatService = (service) => ({
+  id: service.id,
+  type: 'service',
+  tag: service.tags?.toUpperCase() || 'AI',
+  expert: service.expert_name || 'AI Expert',
+  rating: service.avg_rating?.toString() || '5.0',
+  title: service.title || 'AI Service',
+  price: formatMoney(service.price),
+  budgetValue: parseMoney(service.price),
+  image: service.image_url || null,
+})
+
+const formatJob = (job) => ({
+  id: job.id,
+  type: 'job',
+  tag: job.required_skill?.toUpperCase() || 'CLIENT TASK',
+  expert: job.client_name || job.company_name || 'Client',
+  rating: job.duration_days ? `${job.duration_days} days` : 'Open task',
+  title: job.title || 'Untitled client task',
+  price: formatBudget(job),
+  budgetValue: parseMoney(job.budget_max) || parseMoney(job.budget_min),
+  image: null,
+  description: job.description || 'No task description provided yet.',
+})
+
 const MarketplaceGrid = () => {
-  const [view, setView] = useState('grid')
   const [currentPage, setCurrentPage] = useState(1)
   const [searchQuery, setSearchQuery] = useState('')
   const [category, setCategory] = useState('All Categories')
   const [budget, setBudget] = useState('Any Price')
-  const [realServices, setRealServices] = useState([])
+  const [deliveryTime, setDeliveryTime] = useState('Anytime')
+  const [marketplaceItems, setMarketplaceItems] = useState([])
   const [loading, setLoading] = useState(true)
-  const itemsPerPage = 8
+  const itemsPerPage = 9
+  const role = getCurrentRole()
+  const isExpert = role === 'expert'
 
-  // Fetch real services from DB
   useEffect(() => {
-    const fetchServices = async () => {
+    const fetchMarketplaceItems = async () => {
       try {
+        setLoading(true)
         const services = await getMarketplaceServices()
-        // Transform backend data to match UI expectations
-        const formatted = services.map(s => ({
-          tag: s.tags?.toUpperCase() || "AI",
-          expert: s.expert_name,
-          rating: s.avg_rating?.toString() || "5.0",
-          title: s.title,
-          price: `$${parseFloat(s.price).toLocaleString()}`,
-          image: null // Real image logic would go here
-        }))
-        setRealServices(formatted)
+        setMarketplaceItems(services.map(formatService))
       } catch (err) {
-        console.error("Failed to fetch services:", err)
+        console.error('Failed to fetch services:', err)
+        setMarketplaceItems([])
       } finally {
         setLoading(false)
       }
     }
-    fetchServices()
-  }, [])
 
-  // Combine Mock and Real data (Real data first)
-  const combinedServices = useMemo(() => {
-    return [...realServices, ...mockServices]
-  }, [realServices])
+    const fetchClientTasks = async () => {
+      try {
+        setLoading(true)
+        const jobs = await getMarketplaceJobs()
+        setMarketplaceItems(jobs.map(formatJob))
+      } catch (err) {
+        console.error('Failed to fetch client tasks:', err)
+        setMarketplaceItems([])
+      } finally {
+        setLoading(false)
+      }
+    }
 
-  // Filter Logic
-  const filteredServices = useMemo(() => {
-    return combinedServices.filter(svc => {
-      const matchesSearch = svc.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        svc.expert.toLowerCase().includes(searchQuery.toLowerCase())
-      const matchesCategory = category === 'All Categories' || svc.tag.toUpperCase() === category.toUpperCase()
+    if (isExpert) {
+      fetchClientTasks()
+      return
+    }
+
+    fetchMarketplaceItems()
+  }, [isExpert])
+
+  const combinedItems = useMemo(() => {
+    return marketplaceItems
+  }, [marketplaceItems])
+
+  const filteredItems = useMemo(() => {
+    return combinedItems.filter((item) => {
+      const keyword = searchQuery.toLowerCase()
+
+      const matchesSearch =
+        item.title.toLowerCase().includes(keyword) ||
+        item.expert.toLowerCase().includes(keyword) ||
+        (item.description || '').toLowerCase().includes(keyword)
+
+      const matchesCategory =
+        category === 'All Categories' ||
+        item.tag.toUpperCase().includes(category.toUpperCase())
 
       let matchesBudget = true
+
       if (budget === '$0 - $500') {
-        const price = parseInt(svc.price.replace('$', '').replace(',', ''))
+        const price = item.budgetValue || parseMoney(item.price)
         matchesBudget = price <= 500
       } else if (budget === '$500 - $2,000') {
-        const price = parseInt(svc.price.replace('$', '').replace(',', ''))
+        const price = item.budgetValue || parseMoney(item.price)
         matchesBudget = price > 500 && price <= 2000
       } else if (budget === '$2,000+') {
-        const price = parseInt(svc.price.replace('$', '').replace(',', ''))
+        const price = item.budgetValue || parseMoney(item.price)
         matchesBudget = price > 2000
       }
 
       return matchesSearch && matchesCategory && matchesBudget
     })
-  }, [searchQuery, category, budget, combinedServices])
+  }, [searchQuery, category, budget, combinedItems])
 
-  // Pagination Logic
-  const totalPages = Math.ceil(filteredServices.length / itemsPerPage)
+  const totalPages = Math.ceil(filteredItems.length / itemsPerPage)
   const indexOfLastItem = currentPage * itemsPerPage
   const indexOfFirstItem = indexOfLastItem - itemsPerPage
-  const currentServices = filteredServices.slice(indexOfFirstItem, indexOfLastItem)
+  const currentItems = filteredItems.slice(indexOfFirstItem, indexOfLastItem)
 
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber)
@@ -83,118 +150,178 @@ const MarketplaceGrid = () => {
     return (
       <div className="d-flex flex-column align-items-center justify-content-center py-5" style={{ minHeight: '400px' }}>
         <Loader2 className="animate-spin text-primary mb-3" size={48} />
-        <p className="text-muted">Loading AI Marketplace...</p>
+        <p className="text-muted">
+          {isExpert ? 'Loading client tasks...' : 'Loading AI Marketplace...'}
+        </p>
       </div>
     )
   }
 
   return (
-    <>
-      <div className="search-filter-container">
-        <div className="search-box-card">
-          <div className="search-input-wrapper">
-            <SearchIcon size={22} className="search-icon-styled" />
+    <div className="expert-search-page">
+      <main className="expert-search-page">
+        <section className="expert-main">
+          <section className="expert-hero">
+            <div>
+              <h2>
+                {isExpert ? 'Browse Client ' : 'Explore the '}
+                <span style={{
+                  background: 'linear-gradient(to right, #60a5fa, #a855f7)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent'
+                }}>{isExpert ? 'AI Tasks' : 'AI Solutions'}</span>
+              </h2>
+              <p>
+                {isExpert
+                  ? 'Find client projects that need AI expertise, review the task scope, and choose work that matches your skills.'
+                  : 'Discover high-performance AI services from vetted experts to accelerate your product development and automate complex workflows.'}
+              </p>
+            </div>
+
+          </section>
+
+          <div className="expert-search-box">
+            <SearchIcon size={22} />
             <input
               type="text"
-              placeholder="Search for AI services (e.g., 'LLM Fine-tuning')..."
+              placeholder={isExpert ? 'Search client tasks...' : 'Search services...'}
               value={searchQuery}
-              onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1) }}
+              onChange={(e) => {
+                setSearchQuery(e.target.value)
+                setCurrentPage(1)
+              }}
             />
-            <span className="search-shortcut">⌘K</span>
+            <span>Enter</span>
           </div>
 
-          <div className="filter-row">
-            <div className="filter-item">
-              <label className="filter-label">Category</label>
-              <select
-                className="filter-select"
-                value={category}
-                onChange={(e) => { setCategory(e.target.value); setCurrentPage(1) }}
-              >
-                <option>All Categories</option>
-                <option>NLP</option>
-                <option>VISION</option>
-                <option>DATA</option>
-                <option>GEN AI</option>
-                <option>MLOPS</option>
-              </select>
-            </div>
-
-            <div className="filter-item">
-              <label className="filter-label">Budget Range</label>
-              <select
-                className="filter-select"
-                value={budget}
-                onChange={(e) => { setBudget(e.target.value); setCurrentPage(1) }}
-              >
-                <option>Any Price</option>
-                <option>$0 - $500</option>
-                <option>$500 - $2,000</option>
-                <option>$2,000+</option>
-              </select>
-            </div>
-
-            <div className="filter-item">
-              <label className="filter-label">Delivery Time</label>
-              <select className="filter-select">
-                <option>Anytime</option>
-                <option>Within 24 hours</option>
-                <option>3 Days</option>
-                <option>7 Days</option>
-              </select>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <section className="marketplace-content">
-        <div className="content-header">
-          <div>
-            <h2 className="section-title">Recommended Services</h2>
-            <span className="results-count">Showing {filteredServices.length} results for your criteria</span>
-          </div>
-          <div className="view-toggles">
-            <button className={`toggle-btn ${view === 'grid' ? 'active' : ''}`} onClick={() => setView('grid')}>
-              <Grid size={18} />
-            </button>
-            <button className={`toggle-btn ${view === 'list' ? 'active' : ''}`} onClick={() => setView('list')}>
-              <List size={18} />
-            </button>
-          </div>
-        </div>
-
-        <div className="service-grid">
-          {currentServices.length > 0 ? (
-            currentServices.map((svc, index) => (
-              <ServiceCard key={index} {...svc} />
-            ))
-          ) : (
-            <div className="empty-state">
-              <div className="empty-state-icon">
-                <SearchIcon size={48} />
+          <section className="expert-content">
+            <aside className="expert-filters">
+              <div className="filter-group">
+                <h3>Category</h3>
+                <div className="filter-tags">
+                  {['All Categories', ...(isExpert ? ['AI', 'NLP', 'Computer Vision', 'Automation', 'Data'] : ['NLP', 'VISION', 'DATA', 'GEN AI', 'MLOPS'])].map((cat) => (
+                    <button
+                      type="button"
+                      key={cat}
+                      className={category === cat ? "active" : ""}
+                      onClick={() => {
+                        setCategory(cat)
+                        setCurrentPage(1)
+                      }}
+                    >
+                      {cat.toUpperCase()}
+                    </button>
+                  ))}
+                </div>
               </div>
-              <h3>No services found</h3>
-              <p>Try adjusting your filters or search terms to find what you're looking for.</p>
-              <button
-                className="view-all-link mt-4"
-                style={{ background: 'none', border: 'none', color: '#3b82f6', fontWeight: 'bold', cursor: 'pointer' }}
-                onClick={() => { setSearchQuery(''); setCategory('All Categories'); setBudget('Any Price') }}
-              >
-                Clear all filters
-              </button>
-            </div>
-          )}
-        </div>
 
-        {totalPages > 1 && (
-          <MarketplacePagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={handlePageChange}
-          />
-        )}
-      </section>
-    </>
+              <div className="filter-group">
+                <h3>Budget Range</h3>
+                {[
+                  ['Any Price', 'Any Price'],
+                  ['$0 - $500', '$0 - $500'],
+                  ['$500 - $2,000', '$500 - $2,000'],
+                  ['$2,000+', '$2,000+']
+                ].map(([value, label]) => (
+                  <button
+                    key={value}
+                    type="button"
+                    className={`availability-btn ${budget === value ? "active" : ""}`}
+                    onClick={() => {
+                      setBudget(value)
+                      setCurrentPage(1)
+                    }}
+                  >
+                    {label}
+                    <span></span>
+                  </button>
+                ))}
+              </div>
+
+              <div className="filter-group">
+                <h3>Delivery Time</h3>
+                {[
+                  ['Anytime', 'Anytime'],
+                  ['Within 24 hours', 'Within 24 hours'],
+                  ['3 Days', '3 Days'],
+                  ['7 Days', '7 Days']
+                ].map(([value, label]) => (
+                  <button
+                    key={value}
+                    type="button"
+                    className={`availability-btn ${deliveryTime === value ? "active" : ""}`}
+                    onClick={() => setDeliveryTime(value)}
+                  >
+                    {label}
+                    <span></span>
+                  </button>
+                ))}
+              </div>
+            </aside>
+
+            <section className="expert-results">
+              <div className="results-header">
+                <strong>
+                  Showing {filteredItems.length} {isExpert ? 'client tasks' : 'services'} matching criteria
+                </strong>
+
+                <div className="sort-box">
+                  <span>Sort by:</span>
+                  <select>
+                    <option value="relevance">Relevance</option>
+                    <option value="rating">Rating</option>
+                  </select>
+                  <ChevronDown size={18} />
+                </div>
+              </div>
+
+              <div className="expert-grid">
+                {currentItems.length > 0 ? (
+                  currentItems.map((svc, index) => (
+                    <ServiceCard key={index} {...svc} />
+                  ))
+                ) : (
+                  <div className="no-expert-result">
+                    No results found. Try changing filters.
+                  </div>
+                )}
+              </div>
+
+              {totalPages > 1 && (
+                <div className="pagination">
+                  <button
+                    type="button"
+                    disabled={currentPage === 1}
+                    onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
+                  >
+                    <ChevronLeft size={22} />
+                  </button>
+
+                  {Array.from({ length: totalPages }, (_, idx) => idx + 1).map((item) => (
+                    <button
+                      type="button"
+                      key={item}
+                      className={currentPage === item ? "active" : ""}
+                      onClick={() => handlePageChange(item)}
+                    >
+                      {item}
+                    </button>
+                  ))}
+
+                  <button
+                    type="button"
+                    disabled={currentPage === totalPages}
+                    onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
+                  >
+                    <ChevronRight size={22} />
+                  </button>
+                </div>
+              )}
+            </section>
+          </section>
+        </section>
+      </main>
+    </div>
   )
 }
 

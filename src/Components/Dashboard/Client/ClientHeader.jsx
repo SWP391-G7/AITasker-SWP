@@ -1,42 +1,122 @@
-import { Bell, Search } from 'lucide-react'
-import clientAvatar from '../../LandingPages/image/user_avatar.png'
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { Bell, ChevronDown, LogOut, Search, Settings, User } from 'lucide-react'
+import { getStoredUser } from '../../../Services/checkLogin'
+import SettingPage from '../../../pages/SettingPage'
+import useHandleClickOutside from '../HandleClickOutside'
+import '../../Navbar/HeaderCom.css'
 
-const ClientHeader = ({ notifications, onClearNotifications, searchQuery, onSearchChange }) => (
-  <header className="admin-header-section">
-    <div className="admin-header-title">
-      <h1>Client Overview</h1>
-      <p>Welcome back. Here is what is happening with your projects today.</p>
-    </div>
+const ClientHeader = ({ title, subtitle, headerActions, notifications, onClearNotifications, searchQuery, onSearchChange, user, onLogout }) => {
+  const { isProfileOpen, setIsProfileOpen, dropdownRef } = useHandleClickOutside()
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false)
+  const navigate = useNavigate()
+  const currentUser = user || getStoredUser()
+  const currentUserName = currentUser?.fullName || currentUser?.name || 'Client User'
+  const userAvatar = currentUserName.charAt(0).toUpperCase()
 
-    <div className="admin-search-box">
-      <Search size={16} className="admin-search-icon" />
-      <input
-        type="text"
-        placeholder="Search projects, experts, or tasks..."
-        value={searchQuery}
-        onChange={(event) => onSearchChange(event.target.value)}
-      />
-    </div>
+  // Open settings as a modal so the current dashboard stays in the background.
+  const handleOpenSettings = () => {
+    setIsProfileOpen(false)
+    setIsSettingsOpen(true)
+  }
 
-    <div className="d-flex align-items-center gap-3">
-      <button
-        className="icon-button position-relative"
-        aria-label="Client Notifications"
-        onClick={onClearNotifications}
-      >
-        <Bell size={20} />
-        {notifications > 0 && <span className="icon-badge bg-sky"></span>}
-      </button>
+  const handleProfile = () => {
+    setIsProfileOpen(false)
+    if (currentUser && (currentUser.id || currentUser._id)) {
+      navigate(`/profile/${currentUser.id || currentUser._id}`)
+    }
+  }
 
-      <div className="admin-profile-widget">
-        <div className="admin-profile-info">
-          <span className="admin-profile-name">Andy</span>
-          <span className="admin-profile-role">Client User</span>
+  return (
+    <>
+      <header className="admin-header-section">
+        <div className="admin-header-title">
+          {title && <h1>{title}</h1>}
+          {subtitle && <p>{subtitle}</p>}
         </div>
-        <img src={clientAvatar} alt="Client Profile" className="admin-profile-avatar" />
-      </div>
-    </div>
-  </header>
-)
+
+        <div className="admin-header-controls">
+          {headerActions && <div className="admin-header-extra">{headerActions}</div>}
+
+          <div className="admin-search-box">
+            <Search size={16} className="admin-search-icon" />
+            <input
+              type="text"
+              placeholder="Search projects, experts..."
+              value={searchQuery}
+              onChange={(event) => onSearchChange(event.target.value)}
+            />
+          </div>
+
+          <button
+            className="icon-button position-relative"
+            aria-label="Client Notifications"
+            onClick={onClearNotifications}
+          >
+            <Bell size={20} />
+            {notifications > 0 && <span className="icon-badge bg-sky"></span>}
+          </button>
+
+          <div className="admin-profile-container" ref={dropdownRef}>
+            <div
+              className={`admin-profile-widget ${isProfileOpen ? 'active' : ''}`}
+              onClick={() => setIsProfileOpen(!isProfileOpen)}
+            >
+              <div className="admin-profile-info">
+                <span className="admin-profile-name">{currentUserName}</span>
+                <span className="admin-profile-role">Client</span>
+              </div>
+              <div className="admin-profile-avatar-wrapper">
+                <div className="avatar">{userAvatar}</div>
+              </div>
+              <ChevronDown size={14} className={`profile-chevron ${isProfileOpen ? 'rotate' : ''}`} />
+            </div>
+
+            {isProfileOpen && (
+              <div className="avatar-dropdown">
+                <button
+                  className="dropdown-item"
+                  type="button"
+                  onClick={handleProfile}
+                >
+                  <User size={16} />
+                  <span>My Profile</span>
+                </button>
+                <button
+                  className="dropdown-item"
+                  type="button"
+                  onMouseDown={(event) => {
+                    event.preventDefault()
+                    handleOpenSettings()
+                  }}
+                >
+                  <Settings size={16} />
+                  <span>Settings</span>
+                </button>
+                <hr className="dropdown-divider my-1" />
+                <button
+                  className="dropdown-item logout-item"
+                  type="button"
+                  onClick={onLogout}
+                >
+                  <LogOut size={16} />
+                  <span>Log out</span>
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </header>
+
+      <SettingPage
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        user={currentUser}
+        role="Client"
+        onLogout={onLogout}
+      />
+    </>
+  )
+}
 
 export default ClientHeader

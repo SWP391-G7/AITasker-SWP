@@ -29,7 +29,6 @@
   border-right-color: rgba(226, 232, 240, 0.1);
 }
 
-/* Custom scrollbar for sidebar */
 .expert-dashboard-layout .admin-sidebar::-webkit-scrollbar {
   width: 4px;
 }
@@ -43,33 +42,19 @@
   border-radius: 10px;
 }
 
-.expert-main-panel {
+.expert-dashboard-layout .admin-main-panel.expert-main-panel {
+  margin-left: 280px;
+  width: calc(100% - 280px);
+  max-width: calc(100% - 280px);
+  min-height: 100vh;
+  padding: 2.5rem 3rem;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   gap: 1.35rem;
-  margin-left: 280px;
-  max-width: calc(100% - 280px);
-  padding: 2.5rem 3rem;
   flex-grow: 1;
   min-width: 0;
-}
-
-@media (max-width: 991px) {
-  .expert-dashboard-layout {
-    flex-direction: column;
-  }
-
-  .expert-dashboard-layout .admin-sidebar {
-    position: static;
-    height: auto;
-    width: 100%;
-  }
-
-  .expert-main-panel {
-    margin-left: 0;
-    max-width: 100%;
-    padding: 1.5rem;
-  }
+  overflow-x: hidden;
 }
 
 .expert-main-panel .admin-header-section {
@@ -314,50 +299,6 @@
   gap: 1.25rem;
 }
 
-@media (max-width: 1200px) {
-  .expert-overview-grid,
-  .expert-work-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .expert-bottom-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 991px) {
-  .expert-dashboard-footer {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 576px) {
-  .expert-money-grid,
-  .expert-contract-table-head,
-  .expert-contract-list .list-item-row {
-    grid-template-columns: 1fr;
-  }
-
-  .expert-contract-table-head {
-    display: none;
-  }
-
-  .expert-performance-header,
-  .expert-performance-actions {
-    align-items: stretch;
-    flex-direction: column;
-  }
-
-  .expert-dashboard-layout .item-actions {
-    width: 100%;
-  }
-
-  .expert-dashboard-layout .item-actions button {
-    flex: 1;
-  }
-}
-
-/* User Profile Dropdown & Custom Header Styles */
 .expert-dashboard-layout .admin-profile-widget {
   cursor: pointer;
   transition: all 0.2s ease;
@@ -420,6 +361,7 @@
     opacity: 0;
     transform: translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -491,4 +433,61 @@
   color: #082145 !important;
   box-shadow: 0 12px 28px rgba(96, 165, 250, 0.22);
   transform: translateY(-1px);
+}
+
+@media (max-width: 1200px) {
+  .expert-overview-grid,
+  .expert-work-grid,
+  .expert-bottom-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 991px) {
+  .expert-dashboard-layout {
+    flex-direction: column;
+  }
+
+  .expert-dashboard-layout .admin-sidebar {
+    position: static;
+    width: 100%;
+    height: auto;
+  }
+
+  .expert-dashboard-layout .admin-main-panel.expert-main-panel {
+    margin-left: 0;
+    width: 100%;
+    max-width: 100%;
+    padding: 1.5rem;
+  }
+
+  .expert-dashboard-footer {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 576px) {
+  .expert-money-grid,
+  .expert-contract-table-head,
+  .expert-contract-list .list-item-row {
+    grid-template-columns: 1fr;
+  }
+
+  .expert-contract-table-head {
+    display: none;
+  }
+
+  .expert-performance-header,
+  .expert-performance-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .expert-dashboard-layout .item-actions {
+    width: 100%;
+  }
+
+  .expert-dashboard-layout .item-actions button {
+    flex: 1;
+  }
 }

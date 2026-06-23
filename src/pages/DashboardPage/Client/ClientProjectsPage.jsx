@@ -1,208 +1,216 @@
+﻿import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  BriefcaseBusiness,
+  CalendarDays,
+  DollarSign,
+  RefreshCcw,
+  Trash2,
+} from "lucide-react";
 import ClientSidebar from "../../../Components/Dashboard/Client/ClientSidebar";
+import ClientHeader from "../../../Components/Dashboard/Client/ClientHeader";
 import Footer from "../../../Components/Footer/Footer";
+import { useClientUser } from "../../../Components/Dashboard/Client/user";
+import { logout } from "../../../Services/authService";
+import { getMyJobs, deleteJobPost } from "../../../Services/jobService";
+import "../../Style/AdminDashboardPage.css";
 import "./ClientMarketplace.css";
 
-const projects = [
-  {
-    id: "#AI-9021",
-    priority: "CRITICAL",
-    title: "Enterprise LLM Fine-tuning for Legal Analysis",
-    expert: "Dr. Julian V.",
-    milestone: "Validation Dataset Export",
-    deadline: "Oct 24, 2024",
-    progress: 75,
-  },
-  {
-    id: "#AI-4432",
-    priority: "STANDARD",
-    title: "Auto-documentation for Legacy Codebase",
-    expert: "Nexus Dev Labs",
-    milestone: "Function Mapping",
-    deadline: "Oct 30, 2024",
-    progress: 45,
-  },
-];
-
 function ClientProjectsPage() {
+  const navigate = useNavigate();
+
+  const [jobs, setJobs] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [notifications, setNotifications] = useState(2);
+  const [loading, setLoading] = useState(true);
+  const [deletingId, setDeletingId] = useState(null);
+  const [error, setError] = useState("");
+  const user = useClientUser();
+
+  const fetchJobs = async () => {
+    try {
+      setLoading(true);
+      setError("");
+
+      const result = await getMyJobs();
+      const list =
+        result.jobPosts ||
+        result.jobs ||
+        result.data ||
+        result.projects ||
+        result.myJobs ||
+        [];
+
+      setJobs(Array.isArray(list) ? list : []);
+    } catch (err) {
+      setError(err.message || "Failed to load your projects.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const timer = setTimeout(fetchJobs, 0);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const formatDate = (dateValue) => {
+    if (!dateValue) return "No deadline";
+    return new Date(dateValue).toLocaleDateString();
+  };
+
+  const formatBudget = (job) => {
+    const min = job.budget_min ?? job.budgetMin;
+    const max = job.budget_max ?? job.budgetMax ?? job.budget;
+
+    if (min && max && min !== max) return `$${min} - $${max}`;
+    if (max) return `$${max}`;
+    if (min) return `$${min}`;
+    return "No budget";
+  };
+
+  const handleDelete = async (e, jobId) => {
+    e.stopPropagation();
+
+    if (!jobId) {
+      setError("Cannot delete this task because job ID is missing.");
+      return;
+    }
+
+    const ok = window.confirm("Are you sure you want to delete this task?");
+    if (!ok) return;
+
+    try {
+      setDeletingId(jobId);
+      setError("");
+
+      await deleteJobPost(jobId);
+      await fetchJobs();
+    } catch (err) {
+      setError(err.message || "Failed to delete task.");
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+  };
+
+  const filteredJobs = jobs.filter((job) => {
+    const query = searchQuery.toLowerCase();
+    return (
+      (job.title || job.jobTitle || "").toLowerCase().includes(query) ||
+      (job.required_skill || job.requiredSkill || job.category || job.serviceCategory || "").toLowerCase().includes(query) ||
+      (job.status || "open").toLowerCase().includes(query)
+    );
+  });
+
   return (
     <div className="market-client-layout">
       <ClientSidebar activeTab="projects" />
 
-      <main className="market-main">
-        <header className="market-topbar">
-          <div>
-            <h1>My Projects</h1>
-          </div>
+      <main className="post-job-main">
+        <ClientHeader
+          title="My Projects"
+          subtitle="Track all tasks you have posted for AI experts."
+          notifications={notifications}
+          onClearNotifications={() => setNotifications(0)}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          user={user}
+          onLogout={handleLogout}
+        />
 
-          <input
-            className="market-search"
-            placeholder="Filter projects..."
-          />
-
-          <div className="market-icons">
-            <span>🔔</span>
-            <span>✉️</span>
-            <span className="market-avatar">A</span>
-          </div>
-        </header>
-
-        <section className="project-stats">
-          <div className="project-stat-card">
-            <span>ACTIVE TASKS</span>
-            <strong>12</strong>
-            <em>↗ +2</em>
-          </div>
-
-          <div className="project-stat-card">
-            <span>IN REVIEW</span>
-            <strong>04</strong>
-            <em>Pending</em>
-          </div>
-
-          <div className="project-stat-card">
-            <span>COMPLETED</span>
-            <strong>89</strong>
-            <em>98% Success</em>
-          </div>
-
-          <div className="project-stat-card">
-            <span>TOTAL SPEND</span>
-            <strong>$14.2k</strong>
-            <em>USD</em>
-          </div>
-        </section>
-
-        <nav className="project-tabs">
-          <button className="active">Active Projects (4)</button>
-          <button>Past Projects</button>
-          <button>Drafts</button>
-          <button>Archived</button>
-        </nav>
-
-        <section className="project-grid">
-          <article className="project-large-card">
-            <div className="project-card-head">
-              <span className="badge critical">CRITICAL</span>
-              <span>ID: {projects[0].id}</span>
-              <button>⋮</button>
-            </div>
-
-            <h2>{projects[0].title}</h2>
-
-            <div className="project-info-row">
-              <div>
-                <span>Assigned Expert</span>
-                <strong>{projects[0].expert}</strong>
-              </div>
-
-              <div>
-                <span>Next Milestone</span>
-                <strong className="green">{projects[0].milestone}</strong>
-              </div>
-
-              <div>
-                <span>Deadline</span>
-                <strong>{projects[0].deadline}</strong>
-              </div>
-            </div>
-
-            <div className="progress-block">
-              <div>
-                <span>Overall Progress</span>
-                <strong>{projects[0].progress}%</strong>
-              </div>
-
-              <div className="progress-line">
-                <div style={{ width: `${projects[0].progress}%` }}></div>
-              </div>
-            </div>
-
-            <div className="project-actions">
-              <div className="tiny-avatars">
-                <span>👩</span>
-                <span>👨</span>
-                <span>+2</span>
-              </div>
-
-              <button className="ghost-btn">View Details</button>
-              <button className="blue-btn">Chat with Expert</button>
-            </div>
-          </article>
-
-          <article className="project-small-card">
-            <span className="badge green-badge">ON TRACK</span>
-            <h2>Neural Voice Synthesis for App UI</h2>
-            <p>Creating a custom emotional voice model for our mobile...</p>
-
-            <div className="progress-line small">
-              <div style={{ width: "42%" }}></div>
-            </div>
-
-            <div className="small-card-footer">
-              <span>Sarah K.</span>
-              <span>Due in 4d</span>
-            </div>
-          </article>
-
-          <article className="project-small-card">
-            <span className="badge">QA PHASE</span>
-            <h2>Predictive Churn Model v2</h2>
-            <p>Optimizing the existing churn prediction algorithm with new...</p>
-
-            <div className="progress-line small">
-              <div style={{ width: "85%" }}></div>
-            </div>
-
-            <div className="small-card-footer">
-              <span>Marcus T.</span>
-              <span>Due Today</span>
-            </div>
-          </article>
-
-          <article className="project-wide-card">
+        <section className="post-form-card">
+          <div className="projects-toolbar">
             <div>
-              <span className="badge">STANDARD</span>
-              <span>ID: {projects[1].id}</span>
+              <h2 className="projects-title">Posted Tasks</h2>
+              <p className="projects-subtitle">
+                {filteredJobs.length} task{filteredJobs.length !== 1 ? "s" : ""} found
+              </p>
             </div>
 
-            <h2>{projects[1].title}</h2>
+            <button className="draft-btn" type="button" onClick={fetchJobs} disabled={loading}>
+              <RefreshCcw size={16} />
+              Refresh
+            </button>
+          </div>
 
-            <div className="project-tags">
-              <span>AI-Verified Code</span>
-              <span>NDA Active</span>
+          {loading && <div className="alert alert-success">Loading projects...</div>}
+          {error && <div className="alert alert-danger">{error}</div>}
+
+          {!loading && !error && filteredJobs.length === 0 && (
+            <div className="empty-projects">
+              <BriefcaseBusiness size={42} />
+              <h3>No projects yet</h3>
+              <p>You have not posted any tasks. Start by creating a new task.</p>
+              <button className="next-btn" type="button" onClick={() => navigate("/client/post-job")}>
+                Post a New Task
+              </button>
             </div>
+          )}
 
-            <div className="progress-block">
-              <div>
-                <span>Milestone 2/5: Function Mapping</span>
-                <strong>{projects[1].progress}%</strong>
-              </div>
+          {!loading && !error && filteredJobs.length > 0 && (
+            <div className="project-list">
+              {filteredJobs.map((job) => {
+                const jobId = job._id || job.id || job.jobId || job.job_id;
 
-              <div className="progress-line">
-                <div style={{ width: `${projects[1].progress}%` }}></div>
-              </div>
+                return (
+                  <article
+                    className="project-card"
+                    key={jobId || job.title}
+                    onClick={() => (jobId ? navigate(`/client/projects/${jobId}`) : null)}
+                  >
+                    <div className="project-card-header">
+                      <div>
+                        <h3>{job.title || job.jobTitle || "Untitled Task"}</h3>
+                        <span>
+                          {job.required_skill ||
+                            job.requiredSkill ||
+                            job.category ||
+                            job.serviceCategory ||
+                            "AI Task"}
+                        </span>
+                      </div>
+
+                      <div className="project-card-actions">
+                        <span className="project-status">{job.status || "open"}</span>
+
+                        <button
+                          type="button"
+                          className="delete-project-btn"
+                          disabled={deletingId === jobId}
+                          onClick={(e) => handleDelete(e, jobId)}
+                        >
+                          <Trash2 size={14} />
+                          {deletingId === jobId ? "Deleting..." : "Delete"}
+                        </button>
+                      </div>
+                    </div>
+
+                    <p className="project-description">{job.description || "No description provided."}</p>
+
+                    <div className="project-meta">
+                      <span>
+                        <DollarSign size={16} />
+                        {formatBudget(job)}
+                      </span>
+
+                      <span>
+                        <CalendarDays size={16} />
+                        {formatDate(job.deadline)}
+                      </span>
+                    </div>
+                  </article>
+                );
+              })}
             </div>
-
-            <button className="review-btn">REVIEW FILES</button>
-          </article>
+          )}
         </section>
 
         <Footer variant="dashboard" />
-        {/*
-        <footer className="market-footer">
-          <div>
-            <strong>AITasker</strong>
-            <p>© 2024 AITasker. All rights reserved.</p>
-          </div>
-
-          <div>
-            <span>Privacy Policy</span>
-            <span>Terms of Service</span>
-            <span>Help Center</span>
-            <span>API Documentation</span>
-          </div>
-        </footer>
-        */}
       </main>
     </div>
   );

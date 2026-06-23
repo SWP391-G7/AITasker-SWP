@@ -1,12 +1,12 @@
 import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { logout } from '../../../Services/authService'
 import ExpertSidebar from '../../../Components/Dashboard/Expert/ExpertSidebar'
 import ExpertHeader from '../../../Components/Dashboard/Expert/ExpertHeader'
 import Footer from '../../../Components/Footer/Footer'
 import JobFilters from '../../../Components/Dashboard/Expert/FindWork/JobFilters'
 import JobCard from '../../../Components/Dashboard/Expert/FindWork/JobCard'
 import { jobListings } from '../../../Components/Dashboard/Expert/FindWork/jobsData'
+import { createHandleLogout } from './handleLogout'
 import '../../Style/AdminDashboardPage.css'
 import '../../Style/ExpertDashboardPage.css'
 import '../../../Components/Dashboard/Expert/FindWork/FindWorkPage.css'
@@ -25,10 +25,7 @@ const FindWorkPage = () => {
     }
   }, [])
 
-  const handleLogout = () => {
-    logout()
-    navigate('/')
-  }
+  const handleLogout = createHandleLogout(navigate)
 
   const handleTabChange = (id) => {
     if (id === 'dashboard') navigate('/expert/dashboard')
@@ -48,6 +45,13 @@ const FindWorkPage = () => {
 
       <main className="admin-main-panel expert-main-panel">
         <ExpertHeader
+          title="Find Work"
+          subtitle="Browse high-value AI opportunities from global companies."
+          headerActions={
+            <div className="jobs-count-badge">
+              428 New Jobs Today
+            </div>
+          }
           notifications={notifications}
           onClearNotifications={() => setNotifications(0)}
           searchQuery={searchQuery}
@@ -57,20 +61,10 @@ const FindWorkPage = () => {
         />
 
         <div className="expert-content-container">
-          <div className="page-header-row">
-            <div>
-              <h1>Find Work</h1>
-              <p>Browse high-value AI opportunities from global companies.</p>
-            </div>
-            <div className="jobs-count-badge">
-              428 New Jobs Today
-            </div>
-          </div>
-
           <JobFilters />
           
           <div className="job-list-stack">
-            {jobListings.map((job) => (
+            {filteredJobs.map((job) => (
               <JobCard key={job.id} job={job} />
             ))}
           </div>
