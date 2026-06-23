@@ -13,6 +13,7 @@ import {
 
 const expertMenuItems = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { id: 'post-service', label: 'Post a Service', icon: PlusCircle },
   { id: 'projects', label: 'My Projects', icon: Briefcase },
   { id: 'work', label: 'Find Work', icon: Search },
   { id: 'earnings', label: 'Earnings', icon: DollarSign },

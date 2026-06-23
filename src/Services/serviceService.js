@@ -20,7 +20,7 @@ export const publishService = async (serviceData) => {
     body: JSON.stringify({
       title: serviceData.title,
       description: serviceData.description || '',
-      price: serviceData.price || 0,
+      price: parseFloat(serviceData.price) || 0,
       pricing_type: 'fixed',
       delivery_days: serviceData.deliveryDays ? parseInt(serviceData.deliveryDays, 10) : 3,
       tags: serviceData.category || ''
@@ -30,7 +30,13 @@ export const publishService = async (serviceData) => {
   const result = await response.json();
 
   if (!response.ok) {
-    throw new Error(result.message || 'Failed to publish service');
+    const fieldErrors = result.errors
+      ? Object.entries(result.errors).map(([field, msg]) => `- ${field}: ${msg}`).join('\n')
+      : '';
+    const message = fieldErrors
+      ? `${result.message}\n${fieldErrors}`
+      : (result.message || 'Failed to publish service');
+    throw new Error(message);
   }
 
   return result;
@@ -159,5 +165,82 @@ export const getServiceById = async (id) => {
   return result.data || result.service;
 };
 
+/**
+ * Get all services created by the current expert
+ */
+export const getMyServices = async () => {
+  const token = localStorage.getItem('token');
+  if (!token) {
+    throw new Error('No authentication token found');
+  }
 
+  const response = await fetch(`${API_BASE_URL}/services/my`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    }
+  });
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(result.message || 'Failed to fetch your services');
+  }
+
+  return result.services || result.data || [];
+};
+
+/**
+ * Update an existing service listing
+ */
+export const updateService = async (id, data) => {
+  const token = localStorage.getItem('token');
+  if (!token) {
+    throw new Error('No authentication token found');
+  }
+
+  const response = await fetch(`${API_BASE_URL}/services/${id}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    body: JSON.stringify(data)
+  });
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(result.message || 'Failed to update service');
+  }
+
+  return result;
+};
+
+/**
+ * Delete a service listing
+ */
+export const deleteService = async (id) => {
+  const token = localStorage.getItem('token');
+  if (!token) {
+    throw new Error('No authentication token found');
+  }
+
+  const response = await fetch(`${API_BASE_URL}/services/${id}`, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    }
+  });
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(result.message || 'Failed to delete service');
+  }
+
+  return result;
+};
 
