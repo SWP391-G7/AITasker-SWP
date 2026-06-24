@@ -439,7 +439,10 @@ const SettingPage = ({ isOpen, onClose, user, role = "Client", onLogout, onSwitc
               </div>
               <p className="settings-muted">Currently browsing as <strong>{role}</strong>.</p>
             </div>
-            <button className="settings-outline-btn" type="button" onClick={onSwitchRole}>
+            <button className="settings-outline-btn" type="button" onClick={() => {
+              onClose?.();
+              onSwitchRole?.();
+            }}>
               Switch to {targetRole} View
             </button>
           </div>

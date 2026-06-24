@@ -5,6 +5,7 @@ import { getStoredUser, isLoggedIn, logout } from "../../Services/checkLogin"
 import { switchRole } from "../../Services/authService"
 import { updateUserRole } from "../../Services/onboardingService"
 import SettingPage from "../../pages/SettingPage"
+import ExpertOnboardingForm from "../onboarding/ExpertOnboardingForm"
 import "./HeaderCom.css"
 
 // ROLE ROUTING: Map role trong localStorage.user sang dashboard tương ứng.
@@ -72,6 +73,7 @@ export default function HeaderCom() {
   }
 
   const [showVerificationModal, setShowVerificationModal] = useState(false)
+  const [showExpertOnboarding, setShowExpertOnboarding] = useState(false)
 
   const handleSwitchRole = async () => {
     setShowDropdown(false)
@@ -96,16 +98,22 @@ export default function HeaderCom() {
   const handleBecomeExpert = async () => {
     setShowVerificationModal(false)
     try {
+      // Update user role to expert and set is_expert = true in database
       const result = await updateUserRole('expert')
       if (result.token) {
         localStorage.setItem('token', result.token)
         localStorage.setItem('user', JSON.stringify(result.user))
       }
-      navigate('/onboarding?role=expert')
+      // Show the expert onboarding form as a modal
+      setShowExpertOnboarding(true)
     } catch (err) {
       console.error("Become expert failed:", err)
       alert(err.message || "Failed to update role to expert.")
     }
+  }
+
+  const handleExpertOnboardingBack = () => {
+    setShowExpertOnboarding(false)
   }
 
   const currentUser = getStoredUser()
@@ -257,7 +265,7 @@ export default function HeaderCom() {
         user={currentUser}
         role={currentRole}
         onLogout={handleLogout}
-        onSwitchRole={handleDashboard}
+        onSwitchRole={handleSwitchRole}
       />
 
       {showVerificationModal && (
@@ -279,6 +287,14 @@ export default function HeaderCom() {
                 No
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {showExpertOnboarding && (
+        <div className="expert-onboarding-modal-backdrop">
+          <div className="expert-onboarding-modal-content">
+            <ExpertOnboardingForm onBack={handleExpertOnboardingBack} />
           </div>
         </div>
       )}
