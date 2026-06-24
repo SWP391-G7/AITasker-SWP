@@ -202,6 +202,13 @@
   font-size: 0.95rem;
   line-height: 1.6;
   margin: 0;
+  max-height: 4.8em;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.job-listing-description::-webkit-scrollbar {
+  display: none;
 }
 
 .job-listing-tags {

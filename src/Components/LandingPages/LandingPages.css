@@ -235,6 +235,13 @@
 .service-card-desc {
   font-size: 0.9rem;
   line-height: 1.5;
+  max-height: 4.5em;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.service-card-desc::-webkit-scrollbar {
+  display: none;
 }
 
 .service-tag {

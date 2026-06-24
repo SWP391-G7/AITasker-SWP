@@ -370,6 +370,10 @@
   font-size: 1.25rem;
   font-weight: 700;
   margin-bottom: 4px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .expert-card h4 {
@@ -377,6 +381,9 @@
   font-size: 0.9rem;
   font-weight: 500;
   margin-bottom: 16px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .expert-tags {
@@ -384,6 +391,8 @@
   flex-wrap: wrap;
   gap: 6px;
   margin-bottom: 16px;
+  max-height: 3.2em;
+  overflow: hidden;
 }
 
 .expert-tags span {
@@ -403,6 +412,13 @@
   line-height: 1.5;
   margin-bottom: 20px;
   flex-grow: 1;
+  max-height: 5.4em;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.expert-card p::-webkit-scrollbar {
+  display: none;
 }
 
 .expert-stats {

@@ -398,10 +398,13 @@
   font-size: 0.85rem;
   line-height: 1.5;
   margin: 0 0 1rem;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  max-height: 4.25em;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.card-description::-webkit-scrollbar {
+  display: none;
 }
 
 .card-footer {

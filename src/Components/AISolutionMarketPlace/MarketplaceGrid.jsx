@@ -64,9 +64,15 @@ const MarketplaceGrid = () => {
   const [deliveryTime, setDeliveryTime] = useState('Anytime');
   const [marketplaceItems, setMarketplaceItems] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [viewMode, setViewMode] = useState(getCurrentRole());
+  const [viewMode, setViewMode] = useState(() => {
+    return localStorage.getItem('marketplaceViewMode') || getCurrentRole();
+  });
   const itemsPerPage = 9;
   const isExpert = viewMode === 'expert';
+
+  useEffect(() => {
+    localStorage.setItem('marketplaceViewMode', viewMode);
+  }, [viewMode]);
 
   useEffect(() => {
     const fetchData = async () => {
