@@ -54,7 +54,37 @@ export const login = async (data) => {
 
     if (result.token) {
       localStorage.setItem('token', result.token)
-      localStorage.setItem('user', JSON.stringify(result.user))
+
+      let isOnboarded = false
+      const user = result.user
+
+      if (user.role === 'admin') {
+        isOnboarded = true
+      } else {
+        try {
+          const profileResponse = await fetch(`${API_BASE_URL}/profile/${user.id}`, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${result.token}`
+            }
+          })
+          if (profileResponse.ok) {
+            const profileData = await profileResponse.json()
+            if (user.role === 'client') {
+              isOnboarded = !!profileData.hasClientProfile
+            } else if (user.role === 'expert') {
+              isOnboarded = !!profileData.hasExpertProfile
+            }
+          }
+        } catch (profileErr) {
+          console.error('Failed to check onboarding profile:', profileErr)
+        }
+      }
+
+      user.isOnboarded = isOnboarded
+      localStorage.setItem('user', JSON.stringify(user))
+      result.user = user
     }
 
     return result
@@ -84,6 +114,39 @@ export const getMe = async () => {
 
     if (!response.ok) {
       throw new Error(result.message || 'Failed to fetch user profile')
+    }
+
+    if (result.user) {
+      const user = result.user
+      let isOnboarded = false
+
+      if (user.role === 'admin') {
+        isOnboarded = true
+      } else {
+        try {
+          const profileResponse = await fetch(`${API_BASE_URL}/profile/${user.id}`, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            }
+          })
+          if (profileResponse.ok) {
+            const profileData = await profileResponse.json()
+            if (user.role === 'client') {
+              isOnboarded = !!profileData.hasClientProfile
+            } else if (user.role === 'expert') {
+              isOnboarded = !!profileData.hasExpertProfile
+            }
+          }
+        } catch (profileErr) {
+          console.error('Failed to check onboarding profile:', profileErr)
+        }
+      }
+
+      user.isOnboarded = isOnboarded
+      localStorage.setItem('user', JSON.stringify(user))
+      result.user = user
     }
 
     return result
@@ -135,6 +198,64 @@ export const verifyCode = async (email, code) => {
     return result
   } catch (error) {
     console.error('Verify code error:', error)
+    throw error
+  }
+}
+
+export const googleLogin = async (credentials) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/auth/google`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(credentials)
+    })
+
+    const result = await response.json()
+
+    if (!response.ok) {
+      throw new Error(result.message || 'Google Login failed')
+    }
+
+    if (result.token) {
+      localStorage.setItem('token', result.token)
+
+      let isOnboarded = false
+      const user = result.user
+
+      if (user.role === 'admin') {
+        isOnboarded = true
+      } else {
+        try {
+          const profileResponse = await fetch(`${API_BASE_URL}/profile/${user.id}`, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${result.token}`
+            }
+          })
+          if (profileResponse.ok) {
+            const profileData = await profileResponse.json()
+            if (user.role === 'client') {
+              isOnboarded = !!profileData.hasClientProfile
+            } else if (user.role === 'expert') {
+              isOnboarded = !!profileData.hasExpertProfile
+            }
+          }
+        } catch (profileErr) {
+          console.error('Failed to check onboarding profile:', profileErr)
+        }
+      }
+
+      user.isOnboarded = isOnboarded
+      localStorage.setItem('user', JSON.stringify(user))
+      result.user = user
+    }
+
+    return result
+  } catch (error) {
+    console.error('Google Login error:', error)
     throw error
   }
 }

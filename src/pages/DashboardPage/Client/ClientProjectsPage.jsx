@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   BriefcaseBusiness,
@@ -33,8 +33,8 @@ function ClientProjectsPage() {
       setError("");
 
       const result = await getMyJobs();
-
       const list =
+        result.jobPosts ||
         result.jobs ||
         result.data ||
         result.projects ||
@@ -57,6 +57,16 @@ function ClientProjectsPage() {
   const formatDate = (dateValue) => {
     if (!dateValue) return "No deadline";
     return new Date(dateValue).toLocaleDateString();
+  };
+
+  const formatBudget = (job) => {
+    const min = job.budget_min ?? job.budgetMin;
+    const max = job.budget_max ?? job.budgetMax ?? job.budget;
+
+    if (min && max && min !== max) return `$${min} - $${max}`;
+    if (max) return `$${max}`;
+    if (min) return `$${min}`;
+    return "No budget";
   };
 
   const handleDelete = async (e, jobId) => {
@@ -92,7 +102,7 @@ function ClientProjectsPage() {
     const query = searchQuery.toLowerCase();
     return (
       (job.title || job.jobTitle || "").toLowerCase().includes(query) ||
-      (job.category || job.serviceCategory || "").toLowerCase().includes(query) ||
+      (job.required_skill || job.requiredSkill || job.category || job.serviceCategory || "").toLowerCase().includes(query) ||
       (job.status || "open").toLowerCase().includes(query)
     );
   });
@@ -122,21 +132,13 @@ function ClientProjectsPage() {
               </p>
             </div>
 
-            <button
-              className="draft-btn"
-              type="button"
-              onClick={fetchJobs}
-              disabled={loading}
-            >
+            <button className="draft-btn" type="button" onClick={fetchJobs} disabled={loading}>
               <RefreshCcw size={16} />
               Refresh
             </button>
           </div>
 
-          {loading && (
-            <div className="alert alert-success">Loading projects...</div>
-          )}
-
+          {loading && <div className="alert alert-success">Loading projects...</div>}
           {error && <div className="alert alert-danger">{error}</div>}
 
           {!loading && !error && filteredJobs.length === 0 && (
@@ -144,12 +146,7 @@ function ClientProjectsPage() {
               <BriefcaseBusiness size={42} />
               <h3>No projects yet</h3>
               <p>You have not posted any tasks. Start by creating a new task.</p>
-
-              <button
-                className="next-btn"
-                type="button"
-                onClick={() => navigate("/client/post-job")}
-              >
+              <button className="next-btn" type="button" onClick={() => navigate("/client/post-job")}>
                 Post a New Task
               </button>
             </div>
@@ -158,28 +155,28 @@ function ClientProjectsPage() {
           {!loading && !error && filteredJobs.length > 0 && (
             <div className="project-list">
               {filteredJobs.map((job) => {
-                const jobId = job.id || job.job_id;
+                const jobId = job._id || job.id || job.jobId || job.job_id;
 
                 return (
                   <article
                     className="project-card"
                     key={jobId || job.title}
-                    onClick={() =>
-                      jobId ? navigate(`/client/projects/${jobId}`) : null
-                    }
+                    onClick={() => (jobId ? navigate(`/client/projects/${jobId}`) : null)}
                   >
                     <div className="project-card-header">
                       <div>
                         <h3>{job.title || job.jobTitle || "Untitled Task"}</h3>
                         <span>
-                          {job.category || job.serviceCategory || "AI Task"}
+                          {job.required_skill ||
+                            job.requiredSkill ||
+                            job.category ||
+                            job.serviceCategory ||
+                            "AI Task"}
                         </span>
                       </div>
 
                       <div className="project-card-actions">
-                        <span className="project-status">
-                          {job.status || "open"}
-                        </span>
+                        <span className="project-status">{job.status || "open"}</span>
 
                         <button
                           type="button"
@@ -193,14 +190,12 @@ function ClientProjectsPage() {
                       </div>
                     </div>
 
-                    <p className="project-description">
-                      {job.description || "No description provided."}
-                    </p>
+                    <p className="project-description">{job.description || "No description provided."}</p>
 
                     <div className="project-meta">
                       <span>
                         <DollarSign size={16} />
-                        {job.budget ? `$${job.budget}` : "No budget"}
+                        {formatBudget(job)}
                       </span>
 
                       <span>

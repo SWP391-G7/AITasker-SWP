@@ -26,6 +26,10 @@ export const submitClientOnboarding = async (data) => {
       throw new Error(result.message || 'Client onboarding failed')
     }
 
+    const user = JSON.parse(localStorage.getItem('user') || '{}')
+    user.isOnboarded = true
+    localStorage.setItem('user', JSON.stringify(user))
+
     return result
   } catch (error) {
     console.error('Client onboarding error:', error)
@@ -61,6 +65,11 @@ export const submitExpertOnboarding = async (data) => {
     if (!response.ok) {
       throw new Error(result.message || 'Expert onboarding failed')
     }
+
+    const user = JSON.parse(localStorage.getItem('user') || '{}')
+    user.isOnboarded = true
+    localStorage.setItem('user', JSON.stringify(user))
+
     return result
   } catch (error) {
     console.error('Expert onboarding error:', error)
@@ -91,6 +100,10 @@ export const updateUserRole = async (role) => {
 
     if (result.token) {
       localStorage.setItem('token', result.token)
+      localStorage.setItem('user', JSON.stringify(result.user))
+    }
+
+    if (result.user) {
       localStorage.setItem('user', JSON.stringify(result.user))
     }
 

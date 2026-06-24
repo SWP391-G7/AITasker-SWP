@@ -4,31 +4,32 @@ import {
   DollarSign,
   Home,
   LayoutDashboard,
+  LogOut,
   MessageSquare,
-  Search
+  PlusCircle,
+  Search,
+  Settings
 } from 'lucide-react'
 
 const expertMenuItems = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { id: 'post-service', label: 'Post a Service', icon: PlusCircle },
   { id: 'projects', label: 'My Projects', icon: Briefcase },
   { id: 'work', label: 'Find Work', icon: Search },
   { id: 'earnings', label: 'Earnings', icon: DollarSign },
   { id: 'messages', label: 'Messages', icon: MessageSquare },
-  // Settings is temporarily disabled here because it now opens from the avatar popup.
+  { id: 'settings', label: 'Settings', icon: Settings }
 ]
 
-// Defensive filter: keep Settings hidden even if the menu array is changed later.
-const visibleExpertMenuItems = expertMenuItems.filter((item) => item.id !== 'settings')
-
-const ExpertSidebar = ({ activeTab, onTabChange }) => (
+const ExpertSidebar = ({ activeTab, onTabChange, onLogout }) => (
   <aside className="admin-sidebar">
     <div className="sidebar-header">
       <Link to="/" className="sidebar-brand mb-0">AITasker</Link>
-      <span className="sidebar-subtitle">Expert Workspace</span>
+      <span className="sidebar-subtitle">AI Services Marketplace</span>
     </div>
 
     <ul className="sidebar-menu">
-      {visibleExpertMenuItems.map(({ id, label, icon: Icon }) => (
+      {expertMenuItems.map(({ id, label, icon: Icon }) => (
         <li key={id}>
           <div
             className={`sidebar-item-link ${activeTab === id ? 'active' : ''}`}
@@ -41,14 +42,15 @@ const ExpertSidebar = ({ activeTab, onTabChange }) => (
       ))}
     </ul>
 
-    <div className="mt-auto pt-4 border-top border-secondary border-opacity-25 d-flex flex-column gap-2">
-      <Link to="/expert/post-task" className="btn btn-primary btn-sm fw-semibold">
-        Post a New Task
+    <div className="mt-auto pt-4 border-top border-secondary border-opacity-25 d-flex flex-column gap-3">
+      <Link to="/expert/post-service" className="sidebar-post-task-btn">
+        <PlusCircle size={18} />
+        <span>Post a New Service</span>
       </Link>
-      <Link to="/" className="sidebar-item-link py-2 px-3">
-        <Home size={18} />
-        <span>Return to Homepage</span>
-      </Link>
+      <div className="sidebar-item-link py-2 px-3 text-danger" style={{ cursor: 'pointer' }} onClick={onLogout}>
+        <LogOut size={18} />
+        <span>Log out</span>
+      </div>
     </div>
   </aside>
 )

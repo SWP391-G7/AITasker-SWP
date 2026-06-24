@@ -1,7 +1,5 @@
-import React from 'react'
+﻿import AISolutionMarketplacePage from './AISolutionMarketplacePage'
 
 export default function MarketplacePage() {
-  return (
-    <div>MarketplacePage</div>
-  )
+  return <AISolutionMarketplacePage />
 }

@@ -1,19 +1,29 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Bell, ChevronDown, LogOut, Search, Settings, User } from 'lucide-react'
 import adminAvatar from '../../LandingPages/image/user_avatar.png'
 import { getStoredUser } from '../../../Services/checkLogin'
 import SettingPage from '../../../pages/SettingPage'
 import useHandleClickOutside from '../HandleClickOutside'
+import '../../Navbar/HeaderCom.css'
 
 const AdminHeader = ({ notifications, onClearNotifications, searchQuery, onSearchChange, onLogout }) => {
   const { isProfileOpen, setIsProfileOpen, dropdownRef } = useHandleClickOutside()
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
+  const navigate = useNavigate()
   const currentUser = getStoredUser()
 
   // Open settings as a modal and keep the current admin screen blurred behind it.
   const handleOpenSettings = () => {
     setIsProfileOpen(false)
     setIsSettingsOpen(true)
+  }
+
+  const handleProfile = () => {
+    setIsProfileOpen(false)
+    if (currentUser && (currentUser.id || currentUser._id)) {
+      navigate(`/profile/${currentUser.id || currentUser._id}`)
+    }
   }
 
   return (
@@ -55,31 +65,32 @@ const AdminHeader = ({ notifications, onClearNotifications, searchQuery, onSearc
             </button>
 
             {isProfileOpen && (
-              <div className="profile-dropdown-menu">
-                <div className="dropdown-header">
-                  <p className="user-email">{currentUser?.email || 'admin@example.com'}</p>
-                </div>
-                <ul className="dropdown-list">
-                  <li>
-                    <button className="dropdown-item" type="button">
-                      <User size={16} />
-                      <span>My Profile</span>
-                    </button>
-                  </li>
-                  <li>
-                    <button className="dropdown-item" type="button" onClick={handleOpenSettings}>
-                      <Settings size={16} />
-                      <span>Settings</span>
-                    </button>
-                  </li>
-                  <li className="dropdown-divider"></li>
-                  <li>
-                    <button className="dropdown-item text-danger" type="button" onClick={onLogout}>
-                      <LogOut size={16} />
-                      <span>Log out</span>
-                    </button>
-                  </li>
-                </ul>
+              <div className="avatar-dropdown">
+                <button
+                  className="dropdown-item"
+                  type="button"
+                  onClick={handleProfile}
+                >
+                  <User size={16} />
+                  <span>My Profile</span>
+                </button>
+                <button
+                  className="dropdown-item"
+                  type="button"
+                  onClick={handleOpenSettings}
+                >
+                  <Settings size={16} />
+                  <span>Settings</span>
+                </button>
+                <hr className="dropdown-divider my-1" />
+                <button
+                  className="dropdown-item logout-item"
+                  type="button"
+                  onClick={onLogout}
+                >
+                  <LogOut size={16} />
+                  <span>Log out</span>
+                </button>
               </div>
             )}
           </div>

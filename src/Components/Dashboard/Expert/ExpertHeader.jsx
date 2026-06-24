@@ -1,115 +1,91 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Bell, Search, User, Settings, LogOut, ChevronDown } from 'lucide-react'
-import { getStoredUser } from '../../../Services/checkLogin'
-import SettingPage from '../../../pages/SettingPage'
-import useHandleClickOutside from '../HandleClickOutside'
+import expertAvatar from '../../LandingPages/image/expert_sarah.png'
 
-const ExpertHeader = ({ title, subtitle, headerActions, notifications, onClearNotifications, searchQuery, onSearchChange, user, onLogout }) => {
-  const { isProfileOpen, setIsProfileOpen, dropdownRef } = useHandleClickOutside()
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false)
+const ExpertHeader = ({ title, subtitle, notifications, onClearNotifications, searchQuery, onSearchChange, user, onLogout }) => {
+  const [isProfileOpen, setIsProfileOpen] = useState(false)
+  const dropdownRef = useRef(null)
 
-  const currentUser = user || getStoredUser()
-
-  const avatarLetter = () => {
-    const currentUserName = currentUser?.fullName || currentUser?.name || "Expert"
-    return currentUserName.trim().charAt(0).toUpperCase() || "E"
-  }
-  const userAvatar = avatarLetter()
-
-  // Open settings as a modal so the active expert page remains visible behind it.
-  const handleOpenSettings = () => {
-    setIsProfileOpen(false)
-    setIsSettingsOpen(true)
-  }
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsProfileOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
   return (
-    <>
-      <header className="admin-header-section">
-        <div className="admin-header-title">
-          {title && <h1>{title}</h1>}
-          {subtitle && <p>{subtitle}</p>}
-        </div>
+    <header className="admin-header-section">
+      <div className="admin-header-title">
+        {title && <h1>{title}</h1>}
+        {subtitle && <p>{subtitle}</p>}
+      </div>
 
-        <div className="admin-header-controls">
-          {headerActions && <div className="admin-header-extra">{headerActions}</div>}
+      <div className="admin-search-box">
+        <Search size={16} className="admin-search-icon" />
+        <input
+          type="text"
+          placeholder="Search projects, tasks..."
+          value={searchQuery}
+          onChange={(event) => onSearchChange(event.target.value)}
+        />
+      </div>
 
-          <div className="admin-search-box">
-            <Search size={16} className="admin-search-icon" />
-            <input
-              type="text"
-              placeholder="Search projects, tasks..."
-              value={searchQuery}
-              onChange={(event) => onSearchChange(event.target.value)}
-            />
-          </div>
+      <div className="d-flex align-items-center gap-3">
+        <button className="icon-button position-relative" aria-label="Expert Notifications" onClick={onClearNotifications}>
+          <Bell size={20} />
+          {notifications > 0 && <span className="icon-badge bg-sky"></span>}
+        </button>
 
-          <button className="icon-button position-relative" aria-label="Expert Notifications" onClick={onClearNotifications}>
-            <Bell size={20} />
-            {notifications > 0 && <span className="icon-badge bg-sky"></span>}
-          </button>
-
-          <div className="admin-profile-container" ref={dropdownRef}>
-            <div
-              className={`admin-profile-widget ${isProfileOpen ? 'active' : ''}`}
-              onClick={() => setIsProfileOpen(!isProfileOpen)}
-            >
-              <div className="admin-profile-info">
-                <span className="admin-profile-name">{currentUser?.fullName || currentUser?.name || "Expert User"}</span>
-                <span className="admin-profile-role">AI Expert</span>
-              </div>
-              <div className="admin-profile-avatar-wrapper">
-                <div className="avatar">{userAvatar}</div>
-              </div>
-              <ChevronDown size={14} className={`profile-chevron ${isProfileOpen ? 'rotate' : ''}`} />
+        <div className="admin-profile-container" ref={dropdownRef}>
+          <div 
+            className={`admin-profile-widget ${isProfileOpen ? 'active' : ''}`} 
+            onClick={() => setIsProfileOpen(!isProfileOpen)}
+          >
+            <div className="admin-profile-info">
+              <span className="admin-profile-name">{user?.name || user?.username || 'Sarah Kim'}</span>
+              <span className="admin-profile-role">AI Expert</span>
             </div>
-
-            {isProfileOpen && (
-              <div className="profile-dropdown-menu">
-                <div className="dropdown-header">
-                  <p className="user-email">{currentUser?.email || 'sarah.kim@example.com'}</p>
-                </div>
-                <ul className="dropdown-list">
-                  <li>
-                    <button className="dropdown-item" type="button">
-                      <User size={16} />
-                      <span>My Profile</span>
-                    </button>
-                  </li>
-                  <li>
-                    <button
-                      className="dropdown-item"
-                      type="button"
-                      onMouseDown={(event) => {
-                        event.preventDefault()
-                        handleOpenSettings()
-                      }}
-                    >
-                      <Settings size={16} />
-                      <span>Settings</span>
-                    </button>
-                  </li>
-                  <li className="dropdown-divider"></li>
-                  <li>
-                    <button className="dropdown-item text-danger" type="button" onClick={onLogout}>
-                      <LogOut size={16} />
-                      <span>Log out</span>
-                    </button>
-                  </li>
-                </ul>
-              </div>
-            )}
+            <div className="admin-profile-avatar-wrapper">
+              <img src={user?.avatar || expertAvatar} alt="Expert Profile" className="admin-profile-avatar" />
+              <div className="avatar-status-indicator"></div>
+            </div>
+            <ChevronDown size={14} className={`profile-chevron ${isProfileOpen ? 'rotate' : ''}`} />
           </div>
-        </div>
-      </header>
 
-      <SettingPage
-        isOpen={isSettingsOpen}
-        onClose={() => setIsSettingsOpen(false)}
-        user={currentUser}
-        role="Expert"
-        onLogout={onLogout}
-      />
-    </>
+          {isProfileOpen && (
+            <div className="profile-dropdown-menu">
+              <div className="dropdown-header">
+                <p className="user-email">{user?.email || 'sarah.kim@example.com'}</p>
+              </div>
+              <ul className="dropdown-list">
+                <li>
+                  <button className="dropdown-item">
+                    <User size={16} />
+                    <span>My Profile</span>
+                  </button>
+                </li>
+                <li>
+                  <button className="dropdown-item">
+                    <Settings size={16} />
+                    <span>Settings</span>
+                  </button>
+                </li>
+                <li className="dropdown-divider"></li>
+                <li>
+                  <button className="dropdown-item text-danger" onClick={onLogout}>
+                    <LogOut size={16} />
+                    <span>Log out</span>
+                  </button>
+                </li>
+              </ul>
+            </div>
+          )}
+        </div>
+      </div>
+    </header>
   )
 }
 

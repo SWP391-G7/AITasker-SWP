@@ -103,8 +103,8 @@
 
 .project-card-item {
   display: flex;
-  background-color: #121829;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
   border-radius: 16px;
   padding: 1.5rem;
   gap: 1.5rem;

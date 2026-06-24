@@ -29,7 +29,6 @@
   border-right-color: rgba(226, 232, 240, 0.1);
 }
 
-/* Custom scrollbar for sidebar */
 .expert-dashboard-layout .admin-sidebar::-webkit-scrollbar {
   width: 4px;
 }
@@ -43,33 +42,19 @@
   border-radius: 10px;
 }
 
-.expert-main-panel {
+.expert-dashboard-layout .admin-main-panel.expert-main-panel {
+  margin-left: 280px;
+  width: calc(100% - 280px);
+  max-width: calc(100% - 280px);
+  min-height: 100vh;
+  padding: 2.5rem 3rem;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   gap: 1.35rem;
-  margin-left: 280px;
-  max-width: calc(100% - 280px);
-  padding: 2.5rem 3rem;
   flex-grow: 1;
   min-width: 0;
-}
-
-@media (max-width: 991px) {
-  .expert-dashboard-layout {
-    flex-direction: column;
-  }
-
-  .expert-dashboard-layout .admin-sidebar {
-    position: static;
-    height: auto;
-    width: 100%;
-  }
-
-  .expert-main-panel {
-    margin-left: 0;
-    max-width: 100%;
-    padding: 1.5rem;
-  }
+  overflow-x: hidden;
 }
 
 .expert-main-panel .admin-header-section {
@@ -314,50 +299,6 @@
   gap: 1.25rem;
 }
 
-@media (max-width: 1200px) {
-  .expert-overview-grid,
-  .expert-work-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .expert-bottom-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 991px) {
-  .expert-dashboard-footer {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 576px) {
-  .expert-money-grid,
-  .expert-contract-table-head,
-  .expert-contract-list .list-item-row {
-    grid-template-columns: 1fr;
-  }
-
-  .expert-contract-table-head {
-    display: none;
-  }
-
-  .expert-performance-header,
-  .expert-performance-actions {
-    align-items: stretch;
-    flex-direction: column;
-  }
-
-  .expert-dashboard-layout .item-actions {
-    width: 100%;
-  }
-
-  .expert-dashboard-layout .item-actions button {
-    flex: 1;
-  }
-}
-
-/* User Profile Dropdown & Custom Header Styles */
 .expert-dashboard-layout .admin-profile-widget {
   cursor: pointer;
   transition: all 0.2s ease;
@@ -420,6 +361,7 @@
     opacity: 0;
     transform: translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -493,169 +435,59 @@
   transform: translateY(-1px);
 }
 
-/* Expert dashboard and subpages: share LandingPages theme tokens. */
-.expert-dashboard-layout,
-.expert-main-panel,
-.expert-content-container,
-.earnings-container {
-  color: var(--text-main);
-  font-family: var(--font-family);
+@media (max-width: 1200px) {
+  .expert-overview-grid,
+  .expert-work-grid,
+  .expert-bottom-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
-.expert-performance-panel,
-.expert-rating-panel,
-.expert-stack-card,
-.expert-contracts-panel,
-.expert-invitations-panel,
-.horizontal-filter-bar,
-.job-listing-card,
-.project-card-item,
-.earnings-stat-card,
-.income-chart-card,
-.summary-card,
-.transactions-card,
-.messages-layout-container,
-.project-brief-card,
-.payment-card,
-.file-attachment-card {
-  background: linear-gradient(180deg, rgba(15, 23, 42, 0.76), rgba(8, 13, 26, 0.72));
-  border: 1px solid var(--border-color);
-  border-radius: 14px;
-  box-shadow: var(--shadow-card);
+@media (max-width: 991px) {
+  .expert-dashboard-layout {
+    flex-direction: column;
+  }
+
+  .expert-dashboard-layout .admin-sidebar {
+    position: static;
+    width: 100%;
+    height: auto;
+  }
+
+  .expert-dashboard-layout .admin-main-panel.expert-main-panel {
+    margin-left: 0;
+    width: 100%;
+    max-width: 100%;
+    padding: 1.5rem;
+  }
+
+  .expert-dashboard-footer {
+    grid-template-columns: 1fr;
+  }
 }
 
-.page-header-row h1,
-.page-title-section h1,
-.section-title,
-.job-listing-title,
-.project-name,
-.card-title,
-.project-name-text,
-.amount-text,
-.expert-messages-header h1,
-.chat-name,
-.header-user-info h4,
-.project-brief-title,
-.file-name,
-.payment-amount {
-  color: var(--text-main);
-  letter-spacing: 0;
-}
+@media (max-width: 576px) {
+  .expert-money-grid,
+  .expert-contract-table-head,
+  .expert-contract-list .list-item-row {
+    grid-template-columns: 1fr;
+  }
 
-.page-header-row p,
-.page-title-section p,
-.job-listing-company,
-.job-listing-description,
-.job-listing-tag,
-.project-client,
-.progress-info,
-.summary-item label,
-.summary-footer,
-.project-id-text,
-.transactions-table th,
-.transactions-table td,
-.expert-messages-header p,
-.chat-time,
-.chat-subtext,
-.chat-last-msg,
-.sidebar-section-title,
-.milestone-text,
-.shared-file-date,
-.file-meta,
-.date-divider {
-  color: var(--text-dark);
-}
+  .expert-contract-table-head {
+    display: none;
+  }
 
-.expert-skill-chip,
-.jobs-count-badge,
-.expert-rating-widget {
-  background: rgba(59, 130, 246, 0.12);
-  border: 1px solid rgba(96, 165, 250, 0.22);
-  color: #bfdbfe;
-}
+  .expert-performance-header,
+  .expert-performance-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
 
-.filter-select-wrapper label,
-.list-section-label,
-.featured-badge,
-.meta-duration {
-  color: var(--text-dark);
-  letter-spacing: 0;
-}
+  .expert-dashboard-layout .item-actions {
+    width: 100%;
+  }
 
-.filter-apply-btn,
-.btn-solid,
-.btn-withdraw,
-.btn-send-msg {
-  background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
-  border: 1px solid rgba(96, 165, 250, 0.35);
-  color: #ffffff;
-  box-shadow: 0 12px 28px rgba(37, 99, 235, 0.2);
-}
-
-.btn-outline,
-.btn-export,
-.filter-btn,
-.chart-period-badge,
-.chat-header .icon-button {
-  background: transparent;
-  border-color: rgba(226, 232, 240, 0.12);
-  color: var(--text-muted);
-}
-
-.btn-outline:hover,
-.btn-export:hover,
-.filter-btn:hover,
-.chat-header .icon-button:hover {
-  border-color: rgba(96, 165, 250, 0.3);
-  color: #ffffff;
-  background: rgba(59, 130, 246, 0.09);
-}
-
-.job-listing-card:hover,
-.project-card-item:hover,
-.conversation-item:hover,
-.conversation-item.active {
-  border-color: rgba(96, 165, 250, 0.3);
-  box-shadow: 0 18px 44px rgba(37, 99, 235, 0.14);
-}
-
-.chat-search-box,
-.chat-input-wrapper input,
-.search-input-wrapper input,
-.input-actions-row {
-  background: rgba(2, 6, 23, 0.42);
-  border: 1px solid var(--border-color);
-  color: var(--text-main);
-}
-
-.chat-search-box:focus-within,
-.chat-input-wrapper input:focus,
-.search-input-wrapper input:focus,
-.input-actions-row:focus-within {
-  border-color: rgba(96, 165, 250, 0.56);
-  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12);
-  background: rgba(15, 23, 42, 0.72);
-}
-
-.chat-list-sidebar,
-.chat-window-main,
-.project-overview-sidebar {
-  background: rgba(15, 23, 42, 0.34);
-  border-color: var(--border-color);
-}
-
-.chat-messages-area {
-  background:
-    radial-gradient(circle at top right, rgba(59, 130, 246, 0.1), transparent 35%),
-    rgba(2, 6, 23, 0.24);
-}
-
-.msg-client {
-  background: rgba(15, 23, 42, 0.9);
-  color: var(--text-main);
-}
-
-.msg-expert {
-  background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
-  color: #ffffff;
+  .expert-dashboard-layout .item-actions button {
+    flex: 1;
+  }
 }
