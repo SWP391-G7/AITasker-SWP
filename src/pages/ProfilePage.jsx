@@ -2,12 +2,10 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   Award,
-  BadgeCheck,
   Briefcase,
   Building2,
   GraduationCap,
   Mail,
-  MapPin,
   Send,
   Star,
 } from "lucide-react";
@@ -89,19 +87,6 @@ function ProfilePage() {
 
   const handleContact = () => {
     navigate(getMessagesPath());
-  }
-
-  const renderStars = (rating) => {
-    const stars = []
-    const r = rating || 0
-    for (let i = 1; i <= 5; i++) {
-      stars.push(
-        <span key={i} className={i <= r ? "star filled" : "star"}>
-          ★
-        </span>
-      )
-    }
-    return <div className="stars-wrapper">{stars}</div>
   }
 
   const getExperienceLabel = (exp) => {
@@ -230,7 +215,6 @@ function ProfilePage() {
 
   const { user, clientProfile, expertProfile, hasClientProfile, hasExpertProfile } = profileData;
   const isExpertView = activeTab === "expert";
-  const activeProfile = isExpertView ? expertProfile : clientProfile;
   const skills = isExpertView ? getSkills(expertProfile?.skills) : [];
   const displayTitle = isExpertView
     ? expertProfile?.professionalTitle || "AI Expert"
@@ -286,16 +270,11 @@ function ProfilePage() {
                         <h1>{user.fullName}</h1>
                         <p className="profile-hero-title">{displayTitle}</p>
                       </div>
-                      {isExpertView && (
-                        <span className="top-rated-badge">
-                          <BadgeCheck size={13} />
-                          Top Rated
-                        </span>
-                      )}
+
                     </div>
 
                     <p className="hero-location">
-                      {isExpertView ? <MapPin size={14} /> : <Building2 size={14} />}
+                      {isExpertView ? <Briefcase size={14} /> : <Building2 size={14} />}
                       {locationText}
                     </p>
 
@@ -395,14 +374,6 @@ function ProfilePage() {
                 <article className="profile-contact-card">
                   {!isOwnProfile && (
                     <>
-                      <div className="availability-row">
-                        <span>
-                          <i />
-                          Available Now
-                        </span>
-                        <small>Responds in &lt; 1hr</small>
-                      </div>
-
                       <button className="contact-btn" onClick={handleContact}>
                         <Mail size={16} />
                         Contact Me
