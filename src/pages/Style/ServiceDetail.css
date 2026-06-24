@@ -99,6 +99,17 @@
   border: 2px solid rgba(255, 255, 255, 0.1);
 }
 
+.initials-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-sky));
+  color: white;
+  font-weight: 700;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
 .expert-meta {
   display: flex;
   flex-direction: column;
