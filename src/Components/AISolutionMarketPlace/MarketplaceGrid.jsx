@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { Grid, List, Search as SearchIcon, Loader2, ChevronDown, ChevronLeft, ChevronRight, SlidersHorizontal } from 'lucide-react';
 import ServiceCard from './ServiceCard';
 import { search as searchApi } from '../../Services/searchService';
-import '../../pages/DashboardPage/Client/ExpertSearchPage.css';
+import '../../pages/ClientExpertSearchPage.css';
 import './Marketplace.css';
 
 const getCurrentRole = () => {
@@ -64,9 +64,9 @@ const MarketplaceGrid = () => {
   const [deliveryTime, setDeliveryTime] = useState('Anytime');
   const [marketplaceItems, setMarketplaceItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [viewMode, setViewMode] = useState(getCurrentRole());
   const itemsPerPage = 9;
-  const role = getCurrentRole();
-  const isExpert = role === 'expert';
+  const isExpert = viewMode === 'expert';
 
   useEffect(() => {
     const fetchData = async () => {
@@ -187,27 +187,46 @@ const MarketplaceGrid = () => {
 
           </section>
 
-          <div className="expert-search-box">
-            <SearchIcon size={22} style={{ cursor: 'pointer' }} onClick={() => {
-              setSearchQuery(searchDraft);
-              setCurrentPage(1);
-            }} />
-            <input
-              type="text"
-              placeholder={isExpert ? 'Search client tasks...' : 'Search services...'}
-              value={searchDraft}
-              onChange={(e) => setSearchDraft(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  setSearchQuery(searchDraft);
-                  setCurrentPage(1);
-                }
-              }}
-            />
-            <span style={{ cursor: 'pointer' }} onClick={() => {
-              setSearchQuery(searchDraft);
-              setCurrentPage(1);
-            }}>Enter</span>
+          <div className="expert-search-row">
+            <div className="expert-search-box">
+              <SearchIcon size={22} style={{ cursor: 'pointer' }} onClick={() => {
+                setSearchQuery(searchDraft);
+                setCurrentPage(1);
+              }} />
+              <input
+                type="text"
+                placeholder={isExpert ? 'Search client tasks...' : 'Search services...'}
+                value={searchDraft}
+                onChange={(e) => setSearchDraft(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    setSearchQuery(searchDraft);
+                    setCurrentPage(1);
+                  }
+                }}
+              />
+              <span style={{ cursor: 'pointer' }} onClick={() => {
+                setSearchQuery(searchDraft);
+                setCurrentPage(1);
+              }}>Enter</span>
+            </div>
+
+            <div className="view-toggle-group">
+              <button
+                type="button"
+                className={`view-toggle-btn ${!isExpert ? "active" : ""}`}
+                onClick={() => setViewMode("client")}
+              >
+                AI Solutions
+              </button>
+              <button
+                type="button"
+                className={`view-toggle-btn ${isExpert ? "active" : ""}`}
+                onClick={() => setViewMode("expert")}
+              >
+                Client Tasks
+              </button>
+            </div>
           </div>
 
           <section className="expert-content">

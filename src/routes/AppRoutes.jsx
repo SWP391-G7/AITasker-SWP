@@ -26,7 +26,7 @@ import EarningsPage from "../pages/DashboardPage/Expert/EarningsPage"
 import ExpertMessagesPage from "../pages/DashboardPage/Expert/MessagesPage"
 import ExpertSettingsPage from "../pages/DashboardPage/Expert/SettingsPage"
 import PostServicePage from "../pages/DashboardPage/Expert/PostServicePage"
-import ExpertSearchPage from "../pages/DashboardPage/Client/ExpertSearchPage"
+import ClientExpertSearchPage from "../pages/ClientExpertSearchPage"
 import ProfilePage from "../pages/ProfilePage"
 import AISolutionMarketplacePage from "../pages/AISolutionMarketplacePage"
 import ServiceDetailPage from "../pages/ServiceDetailPage"
@@ -152,8 +152,7 @@ function AppRoutes() {
         path="/clients-experts"
         element={
           <ProtectedRoute>
-            <HeaderCom />
-            <ExpertSearchPage />
+            <ClientExpertSearchPage />
           </ProtectedRoute>
         }
       />

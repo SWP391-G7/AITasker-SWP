@@ -20,7 +20,10 @@ export const createJobPost = async (data) => {
     const result = await response.json()
 
     if (!response.ok) {
-      throw new Error(result.message || 'Failed to create job post')
+      const detailMsg = result.errors
+        ? Object.values(result.errors).join('; ')
+        : result.message
+      throw new Error(detailMsg || 'Failed to create job post')
     }
 
     return result
