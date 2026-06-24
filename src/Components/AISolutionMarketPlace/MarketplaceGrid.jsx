@@ -40,6 +40,7 @@ const formatService = (service) => ({
   price: formatMoney(service.price),
   budgetValue: parseMoney(service.price),
   image: service.image_url || null,
+  deliveryDays: service.delivery_days || 0,
 });
 
 const formatJob = (job) => ({
@@ -83,13 +84,9 @@ const MarketplaceGrid = () => {
           query: searchQuery.trim(),
         };
 
-        // Category filter
-        if (category !== 'All Categories') {
-          if (isExpert) {
-            searchParams.requiredSkill = category;
-          } else {
-            searchParams.tags = category;
-          }
+        // Category filter (backend only supports requiredSkill for jobs)
+        if (isExpert && category !== 'All Categories') {
+          searchParams.requiredSkill = category;
         }
 
         // Budget filter mapping
@@ -117,18 +114,13 @@ const MarketplaceGrid = () => {
           }
         }
 
-        // Delivery time filter mapping
-        if (deliveryTime !== 'Anytime') {
+        // Delivery time filter (backend only supports duration for jobs)
+        if (isExpert && deliveryTime !== 'Anytime') {
           let days = 999;
           if (deliveryTime === 'Within 24 hours') days = 1;
           else if (deliveryTime === '3 Days') days = 3;
           else if (deliveryTime === '7 Days') days = 7;
-
-          if (isExpert) {
-            searchParams.duration = days;
-          } else {
-            searchParams.deliveryDays = days;
-          }
+          searchParams.duration = days;
         }
 
         const response = await searchApi(searchParams);
@@ -146,8 +138,28 @@ const MarketplaceGrid = () => {
   }, [isExpert, searchQuery, category, budget, deliveryTime]);
 
   const filteredItems = useMemo(() => {
-    return marketplaceItems;
-  }, [marketplaceItems]);
+    let result = marketplaceItems;
+
+    // Client-side category filter for services
+    if (!isExpert && category !== 'All Categories') {
+      const cat = category.toLowerCase();
+      result = result.filter((item) => item.tag?.toLowerCase().includes(cat));
+    }
+
+    // Client-side delivery time filter for services
+    if (!isExpert && deliveryTime !== 'Anytime') {
+      let maxDays = 999;
+      if (deliveryTime === 'Within 24 hours') maxDays = 1;
+      else if (deliveryTime === '3 Days') maxDays = 3;
+      else if (deliveryTime === '7 Days') maxDays = 7;
+      result = result.filter((item) => {
+        const days = item.deliveryDays || 999;
+        return days <= maxDays;
+      });
+    }
+
+    return result;
+  }, [marketplaceItems, isExpert, category, deliveryTime]);
 
   const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
   const indexOfLastItem = currentPage * itemsPerPage;
