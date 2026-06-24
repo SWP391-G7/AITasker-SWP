@@ -189,6 +189,8 @@ function AppRoutes() {
       <Route path="/expert/messages" element={<ProtectedRoute><ExpertMessagesPage /></ProtectedRoute>} />
       <Route path="/expert/settings" element={<ProtectedRoute><ExpertSettingsPage /></ProtectedRoute>} />
       <Route path="/profile/:userId" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+      <Route path="/client/experts/:userId" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+      <Route path="/client/clients/:userId" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
 
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

@@ -49,7 +49,7 @@ const ClientExpertCard = ({ person, isExpertMode }) => {
         <button
           type="button"
           onClick={() =>
-            navigate(isExpertMode ? "/expert/work" : `/client/experts/${person.id}`)
+            navigate(isExpertMode ? `/client/clients/${person.id}` : `/client/experts/${person.id}`)
           }
         >
           {isExpertMode ? "View Client" : "View Profile"}

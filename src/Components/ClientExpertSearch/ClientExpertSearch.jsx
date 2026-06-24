@@ -78,8 +78,14 @@ const mapClientFromApi = (client) => {
 };
 
 const ClientExpertSearch = () => {
-  const [viewMode, setViewMode] = useState(getCurrentRole());
+  const [viewMode, setViewMode] = useState(() => {
+    return localStorage.getItem('expertSearchViewMode') || getCurrentRole();
+  });
   const isExpertMode = viewMode === "expert";
+
+  useEffect(() => {
+    localStorage.setItem('expertSearchViewMode', viewMode);
+  }, [viewMode]);
 
   const [people, setPeople] = useState([]);
   const [loading, setLoading] = useState(false);
