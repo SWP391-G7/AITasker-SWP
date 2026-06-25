@@ -609,3 +609,28 @@
     grid-template-columns: 1fr;
   }
 }
+
+.proposal-status-message {
+  border-radius: 1rem;
+  font-weight: 700;
+  line-height: 1.5;
+  padding: 0.9rem 1rem;
+  white-space: pre-line;
+}
+
+.proposal-status-message.success {
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.28);
+  color: #6ee7b7;
+}
+
+.proposal-status-message.error {
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.28);
+  color: #fecaca;
+}
+
+.proposal-actions-row button:disabled {
+  cursor: not-allowed;
+  opacity: 0.68;
+}

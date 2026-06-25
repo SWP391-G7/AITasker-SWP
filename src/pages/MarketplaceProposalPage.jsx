@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import Footer from '../Components/Footer/Footer';
 import { getMarketplaceJobById } from '../Services/serviceService';
+import { createProposal } from '../Services/proposalService';
 import './Style/ServiceDetail.css';
 
 const parseMoney = (value) => {
@@ -44,6 +45,9 @@ const MarketplaceProposalPage = () => {
   const [task, setTask] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitMessage, setSubmitMessage] = useState('');
+  const [submitError, setSubmitError] = useState('');
 
   useEffect(() => {
     const fetchTask = async () => {
@@ -67,6 +71,43 @@ const MarketplaceProposalPage = () => {
     fetchTask();
   }, [id]);
 
+  const handleSubmitProposal = async (event) => {
+    event.preventDefault();
+
+    const formData = new FormData(event.currentTarget);
+    const coverLetter = String(formData.get('coverLetter') || '').trim();
+    const implementationApproach = String(formData.get('implementationApproach') || '').trim();
+    const portfolioUrl = String(formData.get('portfolioUrl') || '').trim();
+    const bidAmount = formData.get('bidAmount');
+    const deliveryDays = formData.get('deliveryDays');
+
+    const combinedCoverLetter = [
+      coverLetter,
+      implementationApproach ? `Implementation Approach:\n${implementationApproach}` : '',
+      portfolioUrl ? `Portfolio / Reference:\n${portfolioUrl}` : '',
+    ].filter(Boolean).join('\n\n');
+
+    try {
+      setSubmitting(true);
+      setSubmitError('');
+      setSubmitMessage('');
+
+      await createProposal({
+        jobId: id,
+        coverLetter: combinedCoverLetter,
+        bidAmount,
+        deliveryDays,
+      });
+
+      setSubmitMessage('Proposal submitted successfully. The client can now review it from their task detail.');
+      event.currentTarget.reset();
+    } catch (err) {
+      setSubmitError(err.message || 'Failed to submit proposal.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   const requiredSkill = task?.required_skill || task?.requiredSkill || 'AI Task';
 
   const proposalDefaults = useMemo(
@@ -88,7 +129,7 @@ const MarketplaceProposalPage = () => {
           <span className="detail-tag">Expert Proposal</span>
           <h1 className="detail-title">Create a Proposal</h1>
           <p>
-            Prepare your offer for the client task. This page is UI-ready and can be connected to the proposal API later.
+            Prepare your offer for the client task. Your proposal will be sent to the client for review.
           </p>
         </div>
 
@@ -114,11 +155,13 @@ const MarketplaceProposalPage = () => {
                 </div>
               </div>
 
-              <form className="proposal-form">
+              <form className="proposal-form" onSubmit={handleSubmitProposal}>
                 <label className="proposal-field">
                   <span>Cover Letter</span>
                   <textarea
+                    name="coverLetter"
                     rows="8"
+                    required
                     placeholder="Introduce yourself, explain your approach, and tell the client why you are a good fit for this task."
                   />
                 </label>
@@ -128,7 +171,7 @@ const MarketplaceProposalPage = () => {
                     <span>Bid Amount</span>
                     <div className="proposal-input-with-icon">
                       <DollarSign size={18} />
-                      <input type="number" min="0" defaultValue={proposalDefaults.bidAmount} placeholder="1200" />
+                      <input name="bidAmount" type="number" min="1" step="0.01" defaultValue={proposalDefaults.bidAmount} placeholder="1200" required />
                     </div>
                   </label>
 
@@ -136,7 +179,7 @@ const MarketplaceProposalPage = () => {
                     <span>Delivery Days</span>
                     <div className="proposal-input-with-icon">
                       <Clock size={18} />
-                      <input type="number" min="1" defaultValue={proposalDefaults.deliveryDays} placeholder="14" />
+                      <input name="deliveryDays" type="number" min="1" defaultValue={proposalDefaults.deliveryDays} placeholder="14" required />
                     </div>
                   </label>
                 </div>
@@ -144,6 +187,7 @@ const MarketplaceProposalPage = () => {
                 <label className="proposal-field">
                   <span>Implementation Approach</span>
                   <textarea
+                    name="implementationApproach"
                     rows="5"
                     placeholder="Describe milestones, tools, model strategy, testing plan, and expected deliverables."
                   />
@@ -151,15 +195,19 @@ const MarketplaceProposalPage = () => {
 
                 <label className="proposal-field">
                   <span>Portfolio or Reference Link</span>
-                  <input type="url" placeholder="https://your-portfolio.com/project" />
+                  <input name="portfolioUrl" type="url" placeholder="https://your-portfolio.com/project" />
                 </label>
 
+                {submitError && <div className="proposal-status-message error">{submitError}</div>}
+                {submitMessage && <div className="proposal-status-message success">{submitMessage}</div>}
+
                 <div className="proposal-actions-row">
-                  <button className="contact-btn" type="button">
-                    Save Draft
+                  <button className="contact-btn" type="reset" disabled={submitting}>
+                    Clear Form
                   </button>
-                  <button className="order-btn" type="button">
-                    <Send size={18} /> Submit Proposal
+                  <button className="order-btn" type="submit" disabled={submitting}>
+                    {submitting ? <Loader2 className="animate-spin" size={18} /> : <Send size={18} />}
+                    {submitting ? 'Submitting...' : 'Submit Proposal'}
                   </button>
                 </div>
               </form>
