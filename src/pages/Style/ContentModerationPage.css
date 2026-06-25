@@ -241,6 +241,13 @@
   font-size: 0.82rem;
   line-height: 1.55;
   margin: 0 0 0.8rem;
+  max-height: 4.65em;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.moderation-card-description::-webkit-scrollbar {
+  display: none;
 }
 
 .moderation-tags {

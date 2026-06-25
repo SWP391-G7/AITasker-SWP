@@ -398,10 +398,13 @@
   font-size: 0.85rem;
   line-height: 1.5;
   margin: 0 0 1rem;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  max-height: 4.25em;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.card-description::-webkit-scrollbar {
+  display: none;
 }
 
 .card-footer {
@@ -491,4 +494,33 @@
   .marketplace-hero h1 {
     font-size: 2.5rem;
   }
+}
+
+/* Job status badge on marketplace cards */
+.expert-stats .status-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 999px;
+  text-transform: capitalize;
+}
+
+.expert-stats .status-badge.active {
+  background: rgba(59, 130, 246, 0.15);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  color: #93c5fd;
+}
+
+.expert-stats .status-badge.completed {
+  background: rgba(34, 197, 94, 0.12);
+  border: 1px solid rgba(34, 197, 94, 0.25);
+  color: #86efac;
+}
+
+.expert-stats .status-badge.cancelled {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  color: #fca5a5;
 }

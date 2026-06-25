@@ -25,11 +25,12 @@ import EarningsPage from "../pages/DashboardPage/Expert/EarningsPage"
 import ExpertMessagesPage from "../pages/DashboardPage/Expert/MessagesPage"
 import ExpertSettingsPage from "../pages/DashboardPage/Expert/SettingsPage"
 import PostServicePage from "../pages/DashboardPage/Expert/PostServicePage"
-import ExpertSearchPage from "../pages/DashboardPage/Client/ExpertSearchPage"
+import ClientExpertSearchPage from "../pages/ClientExpertSearchPage"
 import ProfilePage from "../pages/ProfilePage"
 import AISolutionMarketplacePage from "../pages/AISolutionMarketplacePage"
 import ServiceDetailPage from "../pages/ServiceDetailPage"
 import MarketplaceTaskDetailPage from "../pages/MarketplaceTaskDetailPage"
+import MarketplaceProposalPage from "../pages/MarketplaceProposalPage"
 
 function useAuthStatus() {
   const [status, setStatus] = useState({ isLoggedIn: null, isVerified: null, role: null })
@@ -183,11 +184,19 @@ function AppRoutes() {
         }
       />
       <Route
-        path="/clients-experts"
+        path="/marketplace/task/:id/proposal"
         element={
           <ProtectedRoute>
             <HeaderCom />
-            <ExpertSearchPage />
+            <MarketplaceProposalPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/clients-experts"
+        element={
+          <ProtectedRoute>
+            <ClientExpertSearchPage />
           </ProtectedRoute>
         }
       />
@@ -223,6 +232,8 @@ function AppRoutes() {
       <Route path="/expert/messages" element={<ProtectedRoute allowedRoles={["expert"]}><ExpertMessagesPage /></ProtectedRoute>} />
       <Route path="/expert/settings" element={<ProtectedRoute allowedRoles={["expert"]}><ExpertSettingsPage /></ProtectedRoute>} />
       <Route path="/profile/:userId" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+      <Route path="/client/experts/:userId" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+      <Route path="/client/clients/:userId" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
 
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
