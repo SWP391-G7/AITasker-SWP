@@ -24,3 +24,34 @@ export const expertServices = [
     imageClass: "service-visual-network",
   },
 ];
+
+const serviceVisualClasses = [
+  "service-visual-automation",
+  "service-visual-analytics",
+  "service-visual-network",
+];
+
+const formatServicePrice = (value) => {
+  const amount = Number(value);
+
+  if (!Number.isFinite(amount)) {
+    return value ? String(value) : "Not specified";
+  }
+
+  return amount.toLocaleString(undefined, {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 0,
+  });
+};
+
+// API data: convert services from GET /api/profile/:userId into the profile service list shape.
+export const getExpertServicesFromApi = (services = []) =>
+  services.map((service, index) => ({
+    id: service.id,
+    title: service.title || "Untitled service",
+    category: service.tags || "AI Service",
+    rating: service.avgRating ? Number(service.avgRating).toFixed(1) : "New",
+    price: formatServicePrice(service.price),
+    imageClass: serviceVisualClasses[index % serviceVisualClasses.length],
+  }));

@@ -465,10 +465,7 @@ function ExpertSearchPage() {
                         <button
                           type="button"
                           onClick={() =>
-                            navigate(
-                              isExpertMode
-                                ? "/expert/work"
-                                : `/client/experts/${person.id}`
+                            navigate(`/profile/${person.id}`
                             )
                           }
                         >

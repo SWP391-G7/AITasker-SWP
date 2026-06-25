@@ -15,12 +15,18 @@ const earningsBars = [
   { label: 'Dec', height: '78%', highlighted: true }
 ]
 
-const FinancialPerformancePanel = () => (
+const FinancialPerformancePanel = ({
+  totalLifetime = '$24,850.00',
+  availableNow = '$8,240.00',
+  pendingClearance = '$4,120.00',
+  inEscrow = '$12,490.00',
+}) => (
   <section className="chart-panel-card expert-performance-panel">
     <div className="expert-performance-header">
       <div>
         <div className="stat-title">Financial Performance</div>
-        <div className="stat-value">$24,850.00</div>
+        {/* API data: values can be supplied by dashboard page from service data. */}
+        <div className="stat-value">{totalLifetime}</div>
         <div className="stat-trend text-muted">
           <span>Total Lifetime Earning</span>
         </div>
@@ -36,15 +42,15 @@ const FinancialPerformancePanel = () => (
     <div className="expert-money-grid">
       <div className="admin-stat-card expert-money-card">
         <div className="stat-title">Available Now</div>
-        <div className="item-name">$8,240.00</div>
+        <div className="item-name">{availableNow}</div>
       </div>
       <div className="admin-stat-card expert-money-card">
         <div className="stat-title">Pending Clearance</div>
-        <div className="item-name">$4,120.00</div>
+        <div className="item-name">{pendingClearance}</div>
       </div>
       <div className="admin-stat-card expert-money-card">
         <div className="stat-title">In Escrow</div>
-        <div className="item-name">$12,490.00</div>
+        <div className="item-name">{inEscrow}</div>
       </div>
     </div>
 

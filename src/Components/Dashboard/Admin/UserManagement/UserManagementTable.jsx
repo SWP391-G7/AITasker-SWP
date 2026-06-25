@@ -1,4 +1,4 @@
-import { BadgeCheck, ChevronLeft, ChevronRight, Search, SlidersHorizontal, UserPlus } from 'lucide-react'
+import { BadgeCheck, ChevronLeft, ChevronRight, SlidersHorizontal, UserPlus } from 'lucide-react'
 import { managedUsers } from './userManagementData'
 
 const statusClass = {
@@ -12,14 +12,20 @@ const roleClass = {
   Client: 'role-client'
 }
 
-const UserManagementTable = () => (
+const UserManagementTable = ({ users = managedUsers, searchQuery = '' }) => {
+  const filteredUsers = users.filter((user) => {
+    const query = searchQuery.toLowerCase()
+    return (
+      user.name.toLowerCase().includes(query) ||
+      user.email.toLowerCase().includes(query) ||
+      user.role.toLowerCase().includes(query) ||
+      user.status.toLowerCase().includes(query)
+    )
+  })
+
+  return (
   <section className="user-table-panel">
     <div className="user-table-toolbar">
-      <div className="user-table-search">
-        <Search size={16} />
-        <input type="text" placeholder="Search experts, clients, or emails..." />
-      </div>
-
       <div className="user-table-actions">
         <button type="button" className="ghost-tool-button">
           <SlidersHorizontal size={14} />
@@ -45,7 +51,7 @@ const UserManagementTable = () => (
           </tr>
         </thead>
         <tbody>
-          {managedUsers.map((user) => (
+          {filteredUsers.map((user) => (
             <tr key={user.id}>
               <td>
                 <div className="user-cell">
@@ -85,7 +91,7 @@ const UserManagementTable = () => (
     </div>
 
     <footer className="user-table-footer">
-      <span>Showing 1 to 10 of 12,482 users</span>
+      <span>Showing {filteredUsers.length} user{filteredUsers.length !== 1 ? 's' : ''}</span>
       <div className="pagination-controls">
         <button type="button" aria-label="Previous page">
           <ChevronLeft size={16} />
@@ -96,6 +102,7 @@ const UserManagementTable = () => (
       </div>
     </footer>
   </section>
-)
+  )
+}
 
 export default UserManagementTable

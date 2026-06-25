@@ -1,7 +1,12 @@
 import React from 'react';
 import { Briefcase, DollarSign, Clock, TrendingUp } from 'lucide-react';
 
-const ProjectOverviewCards = () => {
+const ProjectOverviewCards = ({
+  activeContracts = 12,
+  totalRevenue = '$24,850',
+  projectedRevenue = '$31,200',
+  upcomingMilestones = '03',
+}) => {
   return (
     <div className="expert-money-grid project-overview-cards">
       <div className="admin-stat-card expert-money-card">
@@ -16,7 +21,8 @@ const ProjectOverviewCards = () => {
         </div>
         <div className="stat-content">
           <h3 className="stat-title">ACTIVE CONTRACTS</h3>
-          <p className="stat-value">12</p>
+          {/* API data: counters can be supplied by MyProjectsPage from marketplace jobs. */}
+          <p className="stat-value">{activeContracts}</p>
         </div>
       </div>
 
@@ -26,12 +32,12 @@ const ProjectOverviewCards = () => {
             <DollarSign size={20} />
           </div>
           <span className="stat-trend" style={{ color: '#94a3b8' }}>
-            Projected: $31,200
+            Projected: {projectedRevenue}
           </span>
         </div>
         <div className="stat-content">
           <h3 className="stat-title">TOTAL REVENUE EARNED</h3>
-          <p className="stat-value">$24,850</p>
+          <p className="stat-value">{totalRevenue}</p>
         </div>
       </div>
 
@@ -46,7 +52,7 @@ const ProjectOverviewCards = () => {
         </div>
         <div className="stat-content">
           <h3 className="stat-title">UPCOMING MILESTONES</h3>
-          <p className="stat-value">03</p>
+          <p className="stat-value">{upcomingMilestones}</p>
         </div>
       </div>
     </div>

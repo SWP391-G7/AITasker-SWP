@@ -25,7 +25,7 @@ const AdminSidebar = ({ activeTab, onTabChange, onLogout }) => (
   <aside className="admin-sidebar">
     <div className="sidebar-header">
       <Link to="/" className="sidebar-brand mb-0">AITasker</Link>
-      <span className="sidebar-subtitle">AI Services Marketplace</span>
+      <span className="sidebar-subtitle">Admin Workspace</span>
     </div>
 
     <ul className="sidebar-menu">
@@ -52,9 +52,9 @@ const AdminSidebar = ({ activeTab, onTabChange, onLogout }) => (
         <span>Log out</span>
       </div>
       {/* ADMIN SIDEBAR: Quick action nằm dưới Log out giống nút Post a New Task ở client sidebar. */}
-      <Link to="/dashboard" className="admin-post-task-button">
+      <Link to="/admin-moderation" className="admin-post-task-button">
         <PlusCircle size={15} />
-        <span>Post a New Task</span>
+        <span>Review Queue</span>
       </Link>
     </div>
   </aside>
