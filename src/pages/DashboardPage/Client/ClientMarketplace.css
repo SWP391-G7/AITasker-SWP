@@ -2331,3 +2331,93 @@
   }
 }
 
+
+.client-project-progress {
+  margin-top: 18px;
+}
+
+.client-project-progress > div:first-child {
+  align-items: center;
+  color: #94a3b8;
+  display: flex;
+  font-size: 0.85rem;
+  font-weight: 700;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.client-project-progress strong {
+  color: #dbeafe;
+}
+
+/* My Projects card overflow guard. */
+.market-client-layout .post-form-card {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.market-client-layout .project-list,
+.market-client-layout .project-card,
+.market-client-layout .project-card-header,
+.market-client-layout .project-card-header > div:first-child,
+.market-client-layout .project-description,
+.market-client-layout .project-meta,
+.market-client-layout .client-project-progress {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.market-client-layout .project-card {
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.market-client-layout .project-card-header > div:first-child {
+  flex: 1 1 auto;
+}
+
+.market-client-layout .project-card-actions {
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.market-client-layout .project-card-header h3,
+.market-client-layout .project-card-header span,
+.market-client-layout .project-description,
+.market-client-layout .project-meta span {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.market-client-layout .project-description {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+.market-client-layout .client-project-progress {
+  overflow: hidden;
+}
+
+.market-client-layout .client-project-progress .progress-line {
+  width: 100%;
+  max-width: 100%;
+}
+
+.expert-projects-client-style {
+  overflow-x: hidden;
+}
+
+@media (max-width: 1100px) {
+  .market-client-layout .project-card-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .market-client-layout .project-card-actions {
+    justify-content: flex-start;
+    width: 100%;
+  }
+}
