@@ -77,7 +77,7 @@ function ViewAllProjectPage() {
 
   const projects = getClientProjectsFromApi(profileData?.projects || []);
   const rawProjects = profileData?.projects || [];
-  const actionLabel = isSameRole ? "View Detail" : "Apply to Project";
+  const actionLabel = "View Detail";
 
   return (
     <div className="view-all-modal-backdrop" role="dialog" aria-modal="true">
