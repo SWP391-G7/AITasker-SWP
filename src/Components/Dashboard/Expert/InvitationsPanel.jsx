@@ -8,23 +8,29 @@ const InvitationsPanel = ({ invitations }) => (
     </div>
 
     <div className="panel-list">
-      {invitations.map((item) => (
-        <div key={item.id} className="list-item-row">
-          <div className="item-left">
-            <div className="item-icon-box">
-              <Send size={18} />
+      {invitations && invitations.length > 0 ? (
+        invitations.map((item) => (
+          <div key={item.id} className="list-item-row">
+            <div className="item-left">
+              <div className="item-icon-box">
+                <Send size={18} />
+              </div>
+              <div className="item-details">
+                <span className="item-name">{item.role}</span>
+                <span className="item-reason">Budget: {item.budget} | Duration: {item.duration}</span>
+              </div>
             </div>
-            <div className="item-details">
-              <span className="item-name">{item.role}</span>
-              <span className="item-reason">Budget: {item.budget} | Duration: {item.duration}</span>
+            <div className="item-actions">
+              <button className="btn-approve">Accept</button>
+              <button className="btn-reject">Decline</button>
             </div>
           </div>
-          <div className="item-actions">
-            <button className="btn-approve">Accept</button>
-            <button className="btn-reject">Decline</button>
-          </div>
+        ))
+      ) : (
+        <div className="empty-panel-list text-muted py-5 text-center" style={{ textAlign: 'center', width: '100%' }}>
+          No new invitations.
         </div>
-      ))}
+      )}
     </div>
 
     <span className="panel-link expert-invitations-link">View Past Invitations</span>
