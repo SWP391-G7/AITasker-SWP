@@ -15,8 +15,12 @@ import HeaderCom from "../Components/Navbar/HeaderCom";
 import Footer from "../Components/Footer/Footer";
 import { getUserProfile } from "../Services/profileService";
 import { getStoredUser } from "../Services/checkLogin";
+<<<<<<< Updated upstream
 import { getExpertServicesFromApi } from "../Components/Profile/Expert/ExpertService";
 import { getClientProjectsFromApi } from "../Components/Profile/Client/ClientProject";
+=======
+import { getOrCreateConversation } from "../Services/messageService";
+>>>>>>> Stashed changes
 import "./ProfilePage.css";
 
 function ProfilePage() {
@@ -90,8 +94,21 @@ function ProfilePage() {
     }
   }
 
-  const handleContact = () => {
-    navigate(getMessagesPath());
+  const handleContact = async () => {
+    try {
+      if (!currentUser) {
+        navigate("/login");
+        return;
+      }
+      const conv = await getOrCreateConversation(userId);
+      const messagesPath = String(currentUser?.role || "").toLowerCase().includes("expert") 
+        ? "/expert/messages" 
+        : "/client/messages";
+      navigate(messagesPath, { state: { activeConversationId: conv.id } });
+    } catch (err) {
+      console.error("Failed to start conversation:", err);
+      navigate(getMessagesPath());
+    }
   }
 
   const handleViewAllProfileItems = () => {
