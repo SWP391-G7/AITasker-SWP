@@ -2,12 +2,10 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import {
   Award,
-  BadgeCheck,
   Briefcase,
   Building2,
   GraduationCap,
   Mail,
-  MapPin,
   Send,
   Star,
 } from "lucide-react";
@@ -245,8 +243,7 @@ function ProfilePage() {
           </span>
           <strong>{item.proposalsLabel}</strong>
         </div>
-        <p className="project-budget">{item.budget} budget</p>
-      </div>
+      </div>  
     </article>
   );
 
@@ -366,7 +363,7 @@ function ProfilePage() {
                     </div>
 
                     <p className="hero-location">
-                      {isExpertView ? <MapPin size={14} /> : <Building2 size={14} />}
+                      {isExpertView ? <Briefcase size={14} /> : <Building2 size={14} />}
                       {locationText}
                     </p>
 
