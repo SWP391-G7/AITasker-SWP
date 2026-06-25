@@ -209,15 +209,15 @@ function ProfilePage() {
 
   const renderServiceCard = (item) => (
     <article className="profile-side-item" key={item.id}>
-      <div className={`profile-side-visual ${getImageClass(item.id)}`} />
+      <div className={`profile-side-visual ${item.imageClass}`} />
       <div className="profile-side-item-body">
         <h4>{item.title}</h4>
         <div className="profile-side-meta">
           <span>
             <Star size={12} />
-            {item.avgRating ? Number(item.avgRating).toFixed(1) : "N/A"}
+            {item.rating || item.status}
           </span>
-          <strong>{formatPrice(item.price)}</strong>
+          <strong>From {item.price || item.budget}</strong>
         </div>
       </div>
     </article>
