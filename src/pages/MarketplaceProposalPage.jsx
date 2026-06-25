@@ -75,7 +75,8 @@ const MarketplaceProposalPage = () => {
   const handleSubmitProposal = async (event) => {
     event.preventDefault();
 
-    const formData = new FormData(event.currentTarget);
+    const form = event.currentTarget;
+    const formData = new FormData(form);
     const coverLetter = String(formData.get('coverLetter') || '').trim();
     const implementationApproach = String(formData.get('implementationApproach') || '').trim();
     const portfolioUrl = String(formData.get('portfolioUrl') || '').trim();
@@ -101,8 +102,8 @@ const MarketplaceProposalPage = () => {
       });
 
       setSubmitMessage('Proposal submitted successfully. The client can now review it from their task detail.');
-      event.currentTarget.reset();
-      event.currentTarget.querySelectorAll('input, textarea').forEach((el) => {
+      form.reset();
+      form.querySelectorAll('input, textarea').forEach((el) => {
         if (el.type !== 'hidden' && el.type !== 'submit' && el.type !== 'reset') el.value = '';
       });
     } catch (err) {
