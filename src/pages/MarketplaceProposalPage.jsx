@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   AlertCircle,
+  ArrowLeft,
   BriefcaseBusiness,
   CalendarDays,
   CheckCircle2,
@@ -10,8 +11,8 @@ import {
   FileText,
   Loader2,
   Send,
-  X,
 } from 'lucide-react';
+import Footer from '../Components/Footer/Footer';
 import { getMarketplaceJobById } from '../Services/serviceService';
 import { createProposal } from '../Services/proposalService';
 import './Style/ServiceDetail.css';
@@ -119,23 +120,20 @@ const MarketplaceProposalPage = () => {
 
   return (
     <div className="service-detail-page-wrapper proposal-page-wrapper">
-      <div className="proposal-modal-overlay">
-        <section className="proposal-modal-shell" role="dialog" aria-modal="true" aria-labelledby="proposal-title">
-          <div className="proposal-modal-header">
-            <div className="proposal-hero">
-              <span className="detail-tag">Expert Proposal</span>
-              <h1 className="detail-title" id="proposal-title">Create a Proposal</h1>
-              <p>
-                Prepare your offer for the client task. Your proposal will be sent to the client for review.
-              </p>
-            </div>
+      <div className="service-detail-container proposal-page-container">
+        <button className="back-btn" type="button" onClick={() => navigate(-1)}>
+          <ArrowLeft size={16} /> Back
+        </button>
 
-            <button className="proposal-close-btn" type="button" onClick={() => navigate(-1)} aria-label="Close proposal popup">
-              <X size={20} />
-            </button>
-          </div>
+        <div className="proposal-hero">
+          <span className="detail-tag">Expert Proposal</span>
+          <h1 className="detail-title">Create a Proposal</h1>
+          <p>
+            Prepare your offer for the client task. Your proposal will be sent to the client for review.
+          </p>
+        </div>
 
-          {loading ? (
+        {loading ? (
           <div className="loading-spinner">
             <Loader2 className="animate-spin text-primary" size={48} />
             <p className="mt-3 text-muted">Loading task summary...</p>
@@ -251,9 +249,10 @@ const MarketplaceProposalPage = () => {
               </section>
             </aside>
           </div>
-          )}
-        </section>
+        )}
       </div>
+
+      <Footer />
     </div>
   );
 };
