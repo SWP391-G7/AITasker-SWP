@@ -21,7 +21,6 @@ import DisputeResolutionPage from "../pages/DashboardPage/Admin/DisputeResolutio
 import AnalyticsPage from "../pages/DashboardPage/Admin/AnalyticsPage"
 import ExpertDashboardPage from "../pages/DashboardPage/Expert/ExpertDashboardPage"
 import MyProjectsPage from "../pages/DashboardPage/Expert/MyProjectsPage"
-import FindWorkPage from "../pages/DashboardPage/Expert/FindWorkPage"
 import EarningsPage from "../pages/DashboardPage/Expert/EarningsPage"
 import ExpertMessagesPage from "../pages/DashboardPage/Expert/MessagesPage"
 import ExpertSettingsPage from "../pages/DashboardPage/Expert/SettingsPage"
@@ -220,7 +219,6 @@ function AppRoutes() {
       <Route path="/expert/dashboard" element={<ProtectedRoute allowedRoles={["expert"]}><ExpertDashboardPage /></ProtectedRoute>} />
       <Route path="/expert/post-service" element={<ProtectedRoute allowedRoles={["expert"]}><PostServicePage /></ProtectedRoute>} />
       <Route path="/expert/projects" element={<ProtectedRoute allowedRoles={["expert"]}><MyProjectsPage /></ProtectedRoute>} />
-      <Route path="/expert/work" element={<ProtectedRoute allowedRoles={["expert"]}><FindWorkPage /></ProtectedRoute>} />
       <Route path="/expert/earnings" element={<ProtectedRoute allowedRoles={["expert"]}><EarningsPage /></ProtectedRoute>} />
       <Route path="/expert/messages" element={<ProtectedRoute allowedRoles={["expert"]}><ExpertMessagesPage /></ProtectedRoute>} />
       <Route path="/expert/settings" element={<ProtectedRoute allowedRoles={["expert"]}><ExpertSettingsPage /></ProtectedRoute>} />

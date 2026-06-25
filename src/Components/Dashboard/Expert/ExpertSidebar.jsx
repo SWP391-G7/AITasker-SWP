@@ -11,7 +11,7 @@ import {
 const expertMenuItems = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { id: 'projects', label: 'My Projects', icon: Briefcase },
-  { id: 'work', label: 'Find Work', icon: Search },
+  // { id: 'work', label: 'Find Work', icon: Search },
   { id: 'earnings', label: 'Earnings', icon: DollarSign },
   { id: 'messages', label: 'Messages', icon: MessageSquare },
   // Settings is temporarily disabled here because it now opens from the avatar popup.
@@ -42,8 +42,8 @@ const ExpertSidebar = ({ activeTab, onTabChange }) => (
     </ul>
 
     <div className="mt-auto pt-4 border-top border-secondary border-opacity-25 d-flex flex-column gap-2">
-      <Link to="/expert/post-task" className="btn btn-primary btn-sm fw-semibold">
-        Post a New Task
+      <Link to="/expert/post-service" className="btn btn-primary btn-sm fw-semibold">
+        Post a New Service
       </Link>
       <Link to="/" className="sidebar-item-link py-2 px-3">
         <Home size={18} />
