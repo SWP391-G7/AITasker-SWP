@@ -1,11 +1,11 @@
 import { Scale, ShieldAlert, TrendingUp, Users } from 'lucide-react'
 
-const AdminStats = ({ moderationCount, disputeCount }) => (
+const AdminStats = ({ userCount = 0, moderationCount, disputeCount }) => (
   <section className="admin-stats-grid">
     <div className="admin-stat-card">
       <div>
         <div className="stat-title">Total Active Users</div>
-        <div className="stat-value">12,842</div>
+        <div className="stat-value">{userCount.toLocaleString()}</div>
         <div className="stat-trend trend-up">
           <TrendingUp size={14} />
           <span>+4.2% from last week</span>

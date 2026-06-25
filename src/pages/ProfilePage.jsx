@@ -13,6 +13,8 @@ import HeaderCom from "../Components/Navbar/HeaderCom";
 import Footer from "../Components/Footer/Footer";
 import { getUserProfile } from "../Services/profileService";
 import { getStoredUser } from "../Services/checkLogin";
+import { getExpertServicesFromApi } from "../Components/Profile/Expert/ExpertService";
+import { getClientProjectsFromApi } from "../Components/Profile/Client/ClientProject";
 import "./ProfilePage.css";
 
 function ProfilePage() {
@@ -32,6 +34,7 @@ function ProfilePage() {
       try {
         setLoading(true)
         setError("")
+        // API call: lấy toàn bộ profile, services, projects của đúng userId trên URL.
         const data = await getUserProfile(userId)
         setProfileData(data)
 
@@ -89,6 +92,23 @@ function ProfilePage() {
     navigate(getMessagesPath());
   }
 
+  const handleViewAllProfileItems = () => {
+    navigate(activeTab === "expert" ? "/expert/projects" : "/client/projects");
+  }
+
+  const renderStars = (rating) => {
+    const stars = []
+    const r = rating || 0
+    for (let i = 1; i <= 5; i++) {
+      stars.push(
+        <span key={i} className={i <= r ? "star filled" : "star"}>
+          ★
+        </span>
+      )
+    }
+    return <div className="stars-wrapper">{stars}</div>
+  }
+
   const getExperienceLabel = (exp) => {
     switch (exp) {
       case "0-1":
@@ -127,15 +147,58 @@ function ProfilePage() {
     });
   };
 
-  const getImageClass = (id) => {
-    const classes = ["service-visual-automation", "service-visual-analytics", "service-visual-network"];
-    return classes[String(id).length % classes.length];
+  const formatCurrency = (value) => {
+    const amount = Number(value);
+
+    if (!Number.isFinite(amount)) {
+      return "Not specified";
+    }
+
+    return amount.toLocaleString(undefined, {
+      style: "currency",
+      currency: "USD",
+      maximumFractionDigits: 0,
+    });
   };
 
-  const formatPrice = (value) => {
-    const num = Number(value);
-    return Number.isFinite(num) ? "$" + num.toLocaleString() : "N/A";
+  const formatHourlyRate = (value) => {
+    if (!value) {
+      return "Not specified";
+    }
+
+    const amount = Number(String(value).replace(/[^0-9.]/g, ""));
+
+    if (!Number.isFinite(amount)) {
+      return String(value);
+    }
+
+    return `${formatCurrency(amount)}/hr`;
   };
+
+  const getAverageProjectBudget = (project) => {
+    const min = Number(project.budgetMin);
+    const max = Number(project.budgetMax);
+
+    if (Number.isFinite(min) && Number.isFinite(max)) {
+      return (min + max) / 2;
+    }
+
+    if (Number.isFinite(min)) {
+      return min;
+    }
+
+    if (Number.isFinite(max)) {
+      return max;
+    }
+
+    return null;
+  };
+
+  const sumNumbers = (items, getValue) =>
+    items.reduce((total, item) => {
+      const value = getValue(item);
+      return Number.isFinite(value) ? total + value : total;
+    }, 0);
 
   const renderStat = (value, label) => (
     <div className="profile-stat-card">
@@ -160,29 +223,21 @@ function ProfilePage() {
     </article>
   );
 
-  const renderProjectCard = (item) => {
-    const budget = item.budgetMin && item.budgetMax
-      ? `${formatPrice(item.budgetMin)} - ${formatPrice(item.budgetMax)}`
-      : item.budgetMax
-        ? `Up to ${formatPrice(item.budgetMax)}`
-        : "Budget TBD";
-    return (
-      <article className="profile-side-item" key={item.id}>
-        <div className={`profile-side-visual ${getImageClass(item.id)}`} />
-        <div className="profile-side-item-body">
-          <h4>{item.title}</h4>
-          <div className="profile-side-meta">
-            <span>
-              <Briefcase size={12} />
-              {item.status || "Open"}
-            </span>
-            <strong>{budget}</strong>
-          </div>
-          <p className="project-budget">{item.requiredSkill || "General"}</p>
+  const renderProjectCard = (item) => (
+    <article className="profile-side-item" key={item.id}>
+      <div className={`profile-side-visual ${item.imageClass}`} />
+      <div className="profile-side-item-body">
+        <h4>{item.title}</h4>
+        <div className="profile-side-meta">
+          <span>
+            <Briefcase size={12} />
+            {item.status}
+          </span>
+          <strong>{item.proposalsLabel}</strong>
         </div>
-      </article>
-    );
-  };
+      </div>  
+    </article>
+  );
 
   if (loading) {
     return (
@@ -215,13 +270,31 @@ function ProfilePage() {
 
   const { user, clientProfile, expertProfile, hasClientProfile, hasExpertProfile } = profileData;
   const isExpertView = activeTab === "expert";
+  const activeProfile = isExpertView ? expertProfile : clientProfile;
+  // API data: profile page calls API once, then pushes response lists through Profile helpers.
+  const profileServices = getExpertServicesFromApi(profileData.services || []);
+  const profileProjects = getClientProjectsFromApi(profileData.projects || []);
   const skills = isExpertView ? getSkills(expertProfile?.skills) : [];
+  const expertRating = Number(expertProfile?.avgRating);
+  const displayRating = Number.isFinite(expertRating) ? expertRating.toFixed(1) : "Not rated";
+  const isTopRated = Number.isFinite(expertRating) && expertRating >= 4.8;
+  const serviceTotal = sumNumbers(profileData.services || [], (service) => Number(service.price));
+  const projectBudgetTotal = sumNumbers(profileData.projects || [], getAverageProjectBudget);
+  const averageProjectBudget = profileData.projects?.length
+    ? projectBudgetTotal / profileData.projects.length
+    : null;
+  const openProjectCount = (profileData.projects || []).filter((project) =>
+    String(project.status || "").toLowerCase().includes("open")
+  ).length;
+  const requiredSkills = [
+    ...new Set((profileData.projects || []).map((project) => project.requiredSkill).filter(Boolean)),
+  ];
   const displayTitle = isExpertView
-    ? expertProfile?.professionalTitle || "AI Expert"
-    : clientProfile?.companyName || "Client";
+    ? expertProfile?.professionalTitle || "Professional title not specified"
+    : clientProfile?.companyName || "Company not specified";
   const locationText = isExpertView
-    ? getExperienceLabel(expertProfile?.experience) || "AI Expert"
-    : clientProfile?.industry || "Client";
+    ? expertProfile?.portfolioUrl || "Portfolio not specified"
+    : clientProfile?.industry || "Industry not specified";
   const aboutText = isExpertView
     ? expertProfile?.bio
     : clientProfile?.bio;
@@ -231,12 +304,12 @@ function ProfilePage() {
       <HeaderCom />
 
       <main className="profile-container">
-        <header className="profile-nav-header">
+        {/* <header className="profile-nav-header">
           <button className="back-link-btn" onClick={handleBack}>
             Back to Dashboard
           </button>
-        </header>
-
+        </header> */}
+        <br /> <br />
         {(hasClientProfile || hasExpertProfile) ? (
           <>
             {hasClientProfile && hasExpertProfile && (
@@ -270,7 +343,12 @@ function ProfilePage() {
                         <h1>{user.fullName}</h1>
                         <p className="profile-hero-title">{displayTitle}</p>
                       </div>
-
+                      {isExpertView && isTopRated && (
+                        <span className="top-rated-badge">
+                          <BadgeCheck size={13} />
+                          Top Rated
+                        </span>
+                      )}
                     </div>
 
                     <p className="hero-location">
@@ -281,15 +359,15 @@ function ProfilePage() {
                     <div className="profile-stats-grid">
                       {isExpertView ? (
                         <>
-                          {renderStat((expertProfile?.avgRating || 0).toFixed(1), "Rating")}
-                          {renderStat(profileData.services?.length || 0, "Services")}
-                          {renderStat(getExperienceLabel(expertProfile?.experience), "Experience")}
+                          {renderStat(displayRating, "Rating")}
+                          {renderStat(profileServices.length, "Services")}
+                          {renderStat(skills.length, "Skills")}
                         </>
                       ) : (
                         <>
-                          {renderStat(profileData.projects?.length || 0, "Projects Posted")}
-                          {renderStat(clientProfile?.industry || "General", "Industry")}
-                          {renderStat(formatDate(user.createdAt), "Member Since")}
+                          {renderStat(profileProjects.length, "Projects Posted")}
+                          {renderStat(openProjectCount, "Open Projects")}
+                          {renderStat(requiredSkills.length, "Required Skills")}
                         </>
                       )}
                     </div>
@@ -323,14 +401,14 @@ function ProfilePage() {
                   <article className="profile-info-card compact-card">
                     <h2>
                       {isExpertView ? <GraduationCap size={17} /> : <Building2 size={17} />}
-                      {isExpertView ? "Skills & Experience" : "Company"}
+                      {isExpertView ? "Expert Details" : "Company"}
                     </h2>
                     {isExpertView ? (
                       <>
-                        <p>Experience Level</p>
-                        <span>{getExperienceLabel(expertProfile?.experience)}</span>
-                        <p>Skills</p>
-                        <span>{skills.length ? skills.join(", ") : "Not specified"}</span>
+                        <p>Professional Title</p>
+                        <span>{expertProfile?.professionalTitle || "Not specified"}</span>
+                        <p>Portfolio</p>
+                        <span>{expertProfile?.portfolioUrl || "Not specified"}</span>
                         <p>Member since</p>
                         <span>{formatDate(user.createdAt)}</span>
                       </>
@@ -347,23 +425,21 @@ function ProfilePage() {
                   <article className="profile-info-card compact-card">
                     <h2>
                       {isExpertView ? <Award size={17} /> : <Briefcase size={17} />}
-                      {isExpertView ? "Portfolio & Rating" : "Hiring Details"}
+                      {isExpertView ? "Skills & Rating" : "Hiring Details"}
                     </h2>
                     {isExpertView ? (
                       <>
-                        <p>Rating</p>
-                        <span>{expertProfile?.avgRating ? Number(expertProfile.avgRating).toFixed(1) + " / 5.0" : "No ratings yet"}</span>
-                        <p>Portfolio</p>
-                        <span>{expertProfile?.portfolioUrl || "Not provided"}</span>
-                        <p>Services Posted</p>
-                        <span>{profileData.services?.length || 0} service(s)</span>
+                        <p>Listed Skills</p>
+                        <span>{skills.length ? skills.join(", ") : "Not specified"}</span>
+                        <p>Profile Rating</p>
+                        <span>{displayRating}</span>
                       </>
                     ) : (
                       <>
-                        <p>{clientProfile?.companyName || user.fullName}</p>
-                        <span>{clientProfile?.industry || "Not specified"}</span>
-                        <p>Bio</p>
-                        <span>{clientProfile?.bio || "No bio provided"}</span>
+                        <p>Project Focus</p>
+                        <span>{requiredSkills.length ? requiredSkills.join(", ") : "Not specified"}</span>
+                        <p>Client Profile</p>
+                        <span>{activeProfile ? "Onboarded" : "Pending details"}</span>
                       </>
                     )}
                   </article>
@@ -372,32 +448,41 @@ function ProfilePage() {
 
               <aside className="profile-side-column">
                 <article className="profile-contact-card">
-                  {!isOwnProfile && (
-                    <>
-                      <button className="contact-btn" onClick={handleContact}>
-                        <Mail size={16} />
-                        Contact Me
-                      </button>
+                  <div className="availability-row">
+                    <span>
+                      <i />
+                      {user.isVerified ? "Verified Account" : "Unverified Account"}
+                    </span>
+                    <small>{user.role}</small>
+                  </div>
+                  
+                  {!isOwnProfile && (  
+                  <button className="contact-btn" onClick={handleContact}>
+                    <Mail size={16} />
+                    Contact Me
+                  </button>)}
 
-                      <button className="secondary-action-btn" type="button">
-                        <Send size={15} />
-                        {isExpertView ? "Invite to Job" : "Apply to Project"}
-                      </button>
-                    </>
-                  )}
+                  <button
+                    className="secondary-action-btn"
+                    type="button"
+                    onClick={isOwnProfile ? handleBack : undefined}
+                  >
+                    <Send size={15} />
+                    {isOwnProfile ? "Go to Dashboard" : (isExpertView ? "Invite to Job" : "Apply to Project")}
+                  </button>
 
                   <div className="rate-list">
                     <div>
                       <span>{isExpertView ? "Hourly Rate" : "Average Budget"}</span>
-                      <strong>{isExpertView
-                        ? (expertProfile?.hourlyRate ? `$${expertProfile.hourlyRate}/hr` : "Not set")
-                        : "Varies"}</strong>
+                      <strong>
+                        {isExpertView
+                          ? formatHourlyRate(expertProfile?.hourlyRate)
+                          : (Number.isFinite(averageProjectBudget) ? formatCurrency(averageProjectBudget) : "Not specified")}
+                      </strong>
                     </div>
                     <div>
-                      <span>{isExpertView ? "Total Services" : "Total Projects"}</span>
-                      <strong>{isExpertView
-                        ? profileData.services?.length || 0
-                        : profileData.projects?.length || 0}</strong>
+                      <span>{isExpertView ? "Listed Service Value" : "Posted Budget Total"}</span>
+                      <strong>{formatCurrency(isExpertView ? serviceTotal : projectBudgetTotal)}</strong>
                     </div>
                     {isExpertView && (
                       <div>
@@ -409,13 +494,19 @@ function ProfilePage() {
                 </article>
 
                 <article className="profile-side-list-card">
-                  <h2>{isExpertView ? "My Services" : "My Projects"}</h2>
+                  <h2>{isExpertView ? "Services" : "Projects"}</h2>
                   <div className="profile-side-list">
-                    {isExpertView
-                      ? (profileData.services || []).map(renderServiceCard)
-                      : (profileData.projects || []).map(renderProjectCard)}
+                    {/* API data: render only the services/projects owned by this profile user. */}
+                    {isExpertView && profileServices.length > 0 && profileServices.map(renderServiceCard)}
+                    {!isExpertView && profileProjects.length > 0 && profileProjects.map(renderProjectCard)}
+                    {isExpertView && profileServices.length === 0 && (
+                      <p>This expert has not published any services yet.</p>
+                    )}
+                    {!isExpertView && profileProjects.length === 0 && (
+                      <p>This client has not posted any projects yet.</p>
+                    )}
                   </div>
-                  <button className="view-all-btn" type="button">
+                  <button className="view-all-btn" type="button" onClick={handleViewAllProfileItems}>
                     {isExpertView ? "View All Services" : "View All Projects"}
                   </button>
                 </article>

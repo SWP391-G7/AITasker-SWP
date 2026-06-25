@@ -2,14 +2,13 @@ import { useMemo, useState } from 'react'
 import ChatSummaryPanel from './ChatSummaryPanel'
 import DisputeCaseFilters from './DisputeCaseFilters'
 import DisputeCaseList from './DisputeCaseList'
-import DisputeResolutionHeader from './DisputeResolutionHeader'
 import DisputeResolutionStats from './DisputeResolutionStats'
 import { disputeCases, disputeFilters, disputeStats, evidenceFiles } from './disputeResolutionData'
 import EvidencePreviewPanel from './EvidencePreviewPanel'
 
-const DisputeResolutionView = () => {
+const DisputeResolutionView = ({ searchQuery: externalSearchQuery }) => {
   const [activeFilter, setActiveFilter] = useState('All Cases')
-  const [searchQuery, setSearchQuery] = useState('')
+  const searchQuery = externalSearchQuery ?? ''
 
   const filteredCases = useMemo(() => {
     return disputeCases.filter((item) => {
@@ -26,7 +25,6 @@ const DisputeResolutionView = () => {
 
   return (
     <>
-      <DisputeResolutionHeader searchQuery={searchQuery} onSearchChange={setSearchQuery} />
       <DisputeResolutionStats stats={disputeStats} />
 
       <section className="dispute-workspace">
