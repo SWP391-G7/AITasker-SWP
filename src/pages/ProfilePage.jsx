@@ -285,6 +285,9 @@ function ProfilePage() {
   // API data: profile page calls API once, then pushes response lists through Profile helpers.
   const profileServices = getExpertServicesFromApi(profileData.services || []);
   const profileProjects = getClientProjectsFromApi(profileData.projects || []);
+  const visibleProfileServices = profileServices.slice(0, 2);
+  const visibleProfileProjects = profileProjects.slice(0, 2);
+  const hasMoreProfileItems = isExpertView ? profileServices.length > 2 : profileProjects.length > 2;
   const skills = isExpertView ? getSkills(expertProfile?.skills) : [];
   const expertRating = Number(expertProfile?.avgRating);
   const displayRating = Number.isFinite(expertRating) ? expertRating.toFixed(1) : "Not rated";
@@ -508,8 +511,9 @@ function ProfilePage() {
                   <h2>{isExpertView ? "Services" : "Projects"}</h2>
                   <div className="profile-side-list">
                     {/* API data: render only the services/projects owned by this profile user. */}
-                    {isExpertView && profileServices.length > 0 && profileServices.map(renderServiceCard)}
-                    {!isExpertView && profileProjects.length > 0 && profileProjects.map(renderProjectCard)}
+                    {isExpertView && visibleProfileServices.length > 0 && visibleProfileServices.map(renderServiceCard)}
+                    {!isExpertView && visibleProfileProjects.length > 0 && visibleProfileProjects.map(renderProjectCard)}
+                    {hasMoreProfileItems && <p className="profile-more-indicator">...</p>}
                     {isExpertView && profileServices.length === 0 && (
                       <p>This expert has not published any services yet.</p>
                     )}
