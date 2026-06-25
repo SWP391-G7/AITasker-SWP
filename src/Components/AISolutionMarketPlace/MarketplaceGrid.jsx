@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { Grid, List, Search as SearchIcon, Loader2, ChevronDown, ChevronLeft, ChevronRight, SlidersHorizontal } from 'lucide-react';
 import ServiceCard from './ServiceCard';
 import { search as searchApi } from '../../Services/searchService';
+import { useLocation } from 'react-router-dom';
 import '../../pages/ClientExpertSearchPage.css';
 import './Marketplace.css';
 
@@ -69,12 +70,32 @@ const MarketplaceGrid = () => {
   const [viewMode, setViewMode] = useState(() => {
     return localStorage.getItem('marketplaceViewMode') || getCurrentRole();
   });
+  const [showClosed, setShowClosed] = useState(false);
   const itemsPerPage = 9;
   const isExpert = viewMode === 'expert';
 
   useEffect(() => {
     localStorage.setItem('marketplaceViewMode', viewMode);
   }, [viewMode]);
+
+  const location = useLocation();
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const urlQuery = params.get('query') || '';
+    const urlTarget = params.get('target');
+
+    setSearchDraft(urlQuery);
+    setSearchQuery(urlQuery);
+
+    if (urlTarget) {
+      if (urlTarget === 'jobs') {
+        setViewMode('expert');
+      } else if (urlTarget === 'services') {
+        setViewMode('client');
+      }
+    }
+  }, [location.search]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -84,6 +105,10 @@ const MarketplaceGrid = () => {
           target: isExpert ? 'jobs' : 'services',
           query: searchQuery.trim(),
         };
+
+        if (isExpert) {
+          searchParams.includeClosed = showClosed;
+        }
 
         // Category filter (backend only supports requiredSkill for jobs)
         if (isExpert && category !== 'All Categories') {
@@ -136,7 +161,7 @@ const MarketplaceGrid = () => {
     };
 
     fetchData();
-  }, [isExpert, searchQuery, category, budget, deliveryTime]);
+  }, [isExpert, searchQuery, category, budget, deliveryTime, showClosed]);
 
   const filteredItems = useMemo(() => {
     let result = marketplaceItems;
@@ -311,6 +336,24 @@ const MarketplaceGrid = () => {
                   </button>
                 ))}
               </div>
+
+              {isExpert && (
+                <div className="filter-group">
+                  <h3>Status</h3>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#fff', cursor: 'pointer', userSelect: 'none', padding: '5px 0' }}>
+                    <input
+                      type="checkbox"
+                      checked={showClosed}
+                      onChange={(e) => {
+                        setShowClosed(e.target.checked);
+                        setCurrentPage(1);
+                      }}
+                      style={{ width: '16px', height: '16px', accentColor: '#3b82f6', cursor: 'pointer' }}
+                    />
+                    <span style={{ fontSize: '0.9rem' }}>Show Closed Tasks</span>
+                  </label>
+                </div>
+              )}
             </aside>
 
             <section className="expert-results">

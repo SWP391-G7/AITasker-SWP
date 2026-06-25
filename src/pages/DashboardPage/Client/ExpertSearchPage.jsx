@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   CheckCircle2,
   ChevronDown,
@@ -124,6 +124,15 @@ function ExpertSearchPage() {
   const [availability, setAvailability] = useState("available");
   const [sortBy, setSortBy] = useState("relevance");
   const [page, setPage] = useState(1);
+
+  const location = useLocation();
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const urlQuery = params.get("query") || "";
+    setSearch(urlQuery);
+    setSearchQuery(urlQuery);
+  }, [location.search]);
 
   const toggleFilter = (filter) => {
     if (filter === "SHOW ALL") {

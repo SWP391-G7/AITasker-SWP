@@ -53,6 +53,7 @@ function ClientTaskDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [actingProposal, setActingProposal] = useState(null);
+  const [selectedProposal, setSelectedProposal] = useState(null);
 
   const proposalCount = useMemo(() => proposals.length, [proposals]);
 
@@ -127,6 +128,8 @@ function ClientTaskDetailPage() {
       setProposals(prev => prev.map(p =>
         (p._id || p.id) === proposalId ? { ...p, status: 'accepted' } : p
       ));
+      setJob(prev => prev ? { ...prev, status: 'closed' } : null);
+      setSelectedProposal(prev => prev ? { ...prev, status: 'accepted' } : null);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -142,6 +145,7 @@ function ClientTaskDetailPage() {
       setProposals(prev => prev.map(p =>
         (p._id || p.id) === proposalId ? { ...p, status: 'rejected' } : p
       ));
+      setSelectedProposal(prev => prev ? { ...prev, status: 'rejected' } : null);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -241,109 +245,26 @@ function ClientTaskDetailPage() {
                   <p>Once experts send proposals, you will see them in this task detail.</p>
                 </div>
               ) : (
-                <div className="proposal-list">
+                <div className="proposal-list" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
                   {proposals.map((proposal, index) => {
                     const proposalId = proposal._id || proposal.id || index;
-                    const budget =
-                      proposal.proposedBudget ||
-                      proposal.bid_amount ||
-                      proposal.budget ||
-                      proposal.price ||
-                      proposal.rate;
-                    const duration =
-                      proposal.estimatedDuration ||
-                      proposal.delivery_days ||
-                      proposal.duration ||
-                      proposal.timeline;
-
                     return (
-                      <article className="proposal-card" key={proposalId}>
-                        <div className="proposal-card-header">
+                      <article
+                        className="proposal-card clickable-proposal-card"
+                        key={proposalId}
+                        style={{ cursor: 'pointer', transition: 'all 0.2s', padding: '20px', borderRadius: '12px' }}
+                        onClick={() => setSelectedProposal(proposal)}
+                      >
+                        <div className="proposal-card-header" style={{ marginBottom: 0, borderBottom: 'none' }}>
                           <div className="proposal-expert">
                             <div className="proposal-avatar">
                               <UserRound size={22} />
                             </div>
-
                             <div>
-                              <h3>{getExpertName(proposal)}</h3>
-                              <p>{proposal?.expert?.professionalTitle || proposal.professional_title || "AI Expert"}</p>
+                              <h3 style={{ margin: 0 }}>{getExpertName(proposal)}</h3>
+                              <p style={{ margin: '4px 0 0 0' }}>{proposal?.expert?.professionalTitle || proposal.professional_title || "AI Expert"}</p>
                             </div>
                           </div>
-
-                          <span className="project-status">
-                            {proposal.status || "pending"}
-                          </span>
-                        </div>
-
-                        <p className="proposal-cover">
-                          {proposal.coverLetter ||
-                            proposal.cover_letter ||
-                            proposal.message ||
-                            proposal.description ||
-                            "This expert has sent a proposal for your task."}
-                        </p>
-
-                        <div className="proposal-meta">
-                          <span>
-                            <DollarSign size={16} />
-                            {budget ? `$${budget}` : "Budget not specified"}
-                          </span>
-
-                          <span>
-                            <CalendarDays size={16} />
-                            {duration ? `${duration} days` : "Timeline not specified"}
-                          </span>
-                        </div>
-
-                        <div className="proposal-actions">
-                          {proposal.status === "accepted" ? (
-                            <span className="project-status accepted-status">
-                              <Check size={14} /> Accepted
-                            </span>
-                          ) : proposal.status === "rejected" ? (
-                            <span className="project-status rejected-status">
-                              <X size={14} /> Rejected
-                            </span>
-                          ) : (
-                            <>
-                              <button
-                                type="button"
-                                className="accept-btn"
-                                onClick={() => handleAcceptProposal(proposalId)}
-                                disabled={actingProposal === proposalId}
-                              >
-                                {actingProposal === proposalId ? (
-                                  <Loader2 className="animate-spin" size={16} />
-                                ) : (
-                                  <Check size={16} />
-                                )}
-                                Accept
-                              </button>
-
-                              <button
-                                type="button"
-                                className="reject-btn"
-                                onClick={() => handleRejectProposal(proposalId)}
-                                disabled={actingProposal === proposalId}
-                              >
-                                {actingProposal === proposalId ? (
-                                  <Loader2 className="animate-spin" size={16} />
-                                ) : (
-                                  <X size={16} />
-                                )}
-                                Reject
-                              </button>
-
-                              <button
-                                type="button"
-                                className="next-btn"
-                                onClick={() => handleContactExpert(proposal)}
-                              >
-                                <Mail size={16} />
-                                Contact
-                              </button>
-                            </>
-                          )}
                         </div>
                       </article>
                     );
@@ -351,6 +272,156 @@ function ClientTaskDetailPage() {
                 </div>
               )}
             </section>
+
+            {selectedProposal && (
+              <div className="modal-overlay" onClick={() => setSelectedProposal(null)}>
+                <div
+                  className="success-modal proposal-detail-modal"
+                  style={{
+                    background: '#0b1220',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    color: '#ffffff',
+                    maxWidth: '600px',
+                    width: '90%',
+                    textAlign: 'left',
+                    padding: '30px',
+                    borderRadius: '16px',
+                    boxShadow: '0 20px 40px rgba(0, 0, 0, 0.4)'
+                  }}
+                  onClick={(event) => event.stopPropagation()}
+                >
+                  <div className="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom border-secondary border-opacity-25">
+                    <h3 className="fw-bold mb-0 text-white" style={{ fontSize: '1.4rem' }}>Proposal Details</h3>
+                    <button
+                      className="btn-close btn-close-white"
+                      onClick={() => setSelectedProposal(null)}
+                      style={{ filter: 'invert(1)', background: 'none', border: 'none', color: '#fff', fontSize: '1.5rem', cursor: 'pointer' }}
+                    >
+                      <X size={24} />
+                    </button>
+                  </div>
+
+                  <div className="modal-body" style={{ fontSize: '0.95rem' }}>
+                    <div className="d-flex align-items-center mb-4">
+                      <div
+                        className="proposal-avatar"
+                        style={{
+                          width: '48px',
+                          height: '48px',
+                          borderRadius: '50%',
+                          background: 'rgba(255,255,255,0.05)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          marginRight: '15px',
+                          border: '1px solid rgba(255,255,255,0.1)'
+                        }}
+                      >
+                        <UserRound size={24} />
+                      </div>
+                      <div>
+                        <h4 className="m-0 text-white fw-semibold" style={{ fontSize: '1.15rem' }}>{getExpertName(selectedProposal)}</h4>
+                        <p className="m-0 text-muted small">{selectedProposal?.expert?.professionalTitle || selectedProposal.professional_title || "AI Expert"}</p>
+                      </div>
+                    </div>
+
+                    <div className="mb-4">
+                      <label className="text-muted small fw-bold d-block mb-1">COVER LETTER</label>
+                      <p className="p-3 rounded bg-dark bg-opacity-20 border border-secondary border-opacity-10 text-light" style={{ whiteSpace: 'pre-wrap', maxHeight: '200px', overflowY: 'auto' }}>
+                        {selectedProposal.coverLetter ||
+                          selectedProposal.cover_letter ||
+                          selectedProposal.message ||
+                          selectedProposal.description ||
+                          "This expert has sent a proposal for your task."}
+                      </p>
+                    </div>
+
+                    <div className="row mb-4">
+                      <div className="col-6">
+                        <span className="text-muted small fw-bold d-block mb-1">PROPOSED BUDGET</span>
+                        <strong className="text-white d-flex align-items-center" style={{ fontSize: '1.1rem' }}>
+                          <DollarSign size={18} className="text-primary me-1" />
+                          {selectedProposal.proposedBudget || selectedProposal.bid_amount || selectedProposal.budget || selectedProposal.price || selectedProposal.rate
+                            ? `$${selectedProposal.proposedBudget || selectedProposal.bid_amount || selectedProposal.budget || selectedProposal.price || selectedProposal.rate}`
+                            : "Budget not specified"}
+                        </strong>
+                      </div>
+                      <div className="col-6">
+                        <span className="text-muted small fw-bold d-block mb-1">ESTIMATED TIMELINE</span>
+                        <strong className="text-white d-flex align-items-center" style={{ fontSize: '1.1rem' }}>
+                          <CalendarDays size={18} className="text-primary me-1" />
+                          {selectedProposal.estimatedDuration || selectedProposal.delivery_days || selectedProposal.duration || selectedProposal.timeline
+                            ? `${selectedProposal.estimatedDuration || selectedProposal.delivery_days || selectedProposal.duration || selectedProposal.timeline} days`
+                            : "Timeline not specified"}
+                        </strong>
+                      </div>
+                    </div>
+
+                    <div className="mb-4">
+                      <span className="text-muted small fw-bold d-block mb-1">STATUS</span>
+                      <span className={`project-status d-inline-block mt-1 ${
+                        selectedProposal.status === 'accepted' ? 'accepted-status' : selectedProposal.status === 'rejected' ? 'rejected-status' : ''
+                      }`}>
+                        {selectedProposal.status || "pending"}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="d-flex gap-2 justify-content-end pt-3 border-top border-secondary border-opacity-25 mt-4">
+                    {selectedProposal.status === "accepted" ? (
+                      <span className="project-status accepted-status d-flex align-items-center py-2 px-3">
+                        <Check size={14} className="me-1" /> Accepted
+                      </span>
+                    ) : selectedProposal.status === "rejected" ? (
+                      <span className="project-status rejected-status d-flex align-items-center py-2 px-3">
+                        <X size={14} className="me-1" /> Rejected
+                      </span>
+                    ) : (
+                      <>
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-outline-danger px-3 py-2 fw-semibold"
+                          style={{ borderRadius: '8px' }}
+                          onClick={() => handleRejectProposal(selectedProposal._id || selectedProposal.id)}
+                          disabled={actingProposal !== null}
+                        >
+                          {actingProposal === (selectedProposal._id || selectedProposal.id) ? (
+                            <Loader2 className="animate-spin me-1 d-inline" size={14} />
+                          ) : null}
+                          Reject
+                        </button>
+
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-success px-3 py-2 fw-semibold"
+                          style={{ borderRadius: '8px' }}
+                          onClick={() => handleAcceptProposal(selectedProposal._id || selectedProposal.id)}
+                          disabled={actingProposal !== null}
+                        >
+                          {actingProposal === (selectedProposal._id || selectedProposal.id) ? (
+                            <Loader2 className="animate-spin me-1 d-inline" size={14} />
+                          ) : null}
+                          Approve
+                        </button>
+
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-primary px-3 py-2 fw-semibold"
+                          style={{ borderRadius: '8px' }}
+                          onClick={() => {
+                            setSelectedProposal(null);
+                            handleContactExpert(selectedProposal);
+                          }}
+                        >
+                          <Mail size={14} className="me-1" />
+                          Message
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
           </>
         )}
 

@@ -91,6 +91,8 @@ const ExpertDashboardPage = ({ onLogout }) => {
             id: service.id,
             name: service.title || 'Untitled Service',
             client: 'Marketplace Listing',
+            price: formatCurrency(service.price),
+            pricingType: service.pricing_type || service.pricingType || 'fixed',
             progress: `${service.delivery_days || service.deliveryDays || 0} days`,
             deadline: service.pricing_type || service.pricingType || 'fixed',
             status: 'ACTIVE',

@@ -84,7 +84,11 @@ const LandingPages = () => {
       if (filters.companyName) params.append('companyName', filters.companyName)
     }
 
-    navigate(`/search-results?${params.toString()}`)
+    if (target === 'expert' || target === 'client') {
+      navigate(`/clients-experts?${params.toString()}`)
+    } else {
+      navigate(`/marketplace?${params.toString()}`)
+    }
   }
 
   const requireLogin = () => { //Check if user is logged in before allowing access to protected features
