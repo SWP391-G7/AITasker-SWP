@@ -265,6 +265,13 @@
   color: var(--text-muted);
   font-size: 14px;
   line-height: 1.5;
+  max-height: 4.5em;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.card-bio::-webkit-scrollbar {
+  display: none;
 }
 
 .skills-row {

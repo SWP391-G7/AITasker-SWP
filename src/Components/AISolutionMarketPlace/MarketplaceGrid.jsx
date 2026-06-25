@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { Grid, List, Search as SearchIcon, Loader2, ChevronDown, ChevronLeft, ChevronRight, SlidersHorizontal } from 'lucide-react';
 import ServiceCard from './ServiceCard';
 import { search as searchApi } from '../../Services/searchService';
-import '../../pages/DashboardPage/Client/ExpertSearchPage.css';
+import '../../pages/ClientExpertSearchPage.css';
 import './Marketplace.css';
 
 const getCurrentRole = () => {
@@ -40,6 +40,7 @@ const formatService = (service) => ({
   price: formatMoney(service.price),
   budgetValue: parseMoney(service.price),
   image: service.image_url || null,
+  deliveryDays: service.delivery_days || 0,
 });
 
 const formatJob = (job) => ({
@@ -53,6 +54,7 @@ const formatJob = (job) => ({
   budgetValue: parseMoney(job.budget_max) || parseMoney(job.budget_min),
   image: null,
   description: job.description || 'No task description provided yet.',
+  status: job.status,
 });
 
 const MarketplaceGrid = () => {
@@ -64,9 +66,15 @@ const MarketplaceGrid = () => {
   const [deliveryTime, setDeliveryTime] = useState('Anytime');
   const [marketplaceItems, setMarketplaceItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [viewMode, setViewMode] = useState(() => {
+    return localStorage.getItem('marketplaceViewMode') || getCurrentRole();
+  });
   const itemsPerPage = 9;
-  const role = getCurrentRole();
-  const isExpert = role === 'expert';
+  const isExpert = viewMode === 'expert';
+
+  useEffect(() => {
+    localStorage.setItem('marketplaceViewMode', viewMode);
+  }, [viewMode]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -77,13 +85,9 @@ const MarketplaceGrid = () => {
           query: searchQuery.trim(),
         };
 
-        // Category filter
-        if (category !== 'All Categories') {
-          if (isExpert) {
-            searchParams.requiredSkill = category;
-          } else {
-            searchParams.tags = category;
-          }
+        // Category filter (backend only supports requiredSkill for jobs)
+        if (isExpert && category !== 'All Categories') {
+          searchParams.requiredSkill = category;
         }
 
         // Budget filter mapping
@@ -111,18 +115,13 @@ const MarketplaceGrid = () => {
           }
         }
 
-        // Delivery time filter mapping
-        if (deliveryTime !== 'Anytime') {
+        // Delivery time filter (backend only supports duration for jobs)
+        if (isExpert && deliveryTime !== 'Anytime') {
           let days = 999;
           if (deliveryTime === 'Within 24 hours') days = 1;
           else if (deliveryTime === '3 Days') days = 3;
           else if (deliveryTime === '7 Days') days = 7;
-
-          if (isExpert) {
-            searchParams.duration = days;
-          } else {
-            searchParams.deliveryDays = days;
-          }
+          searchParams.duration = days;
         }
 
         const response = await searchApi(searchParams);
@@ -140,8 +139,28 @@ const MarketplaceGrid = () => {
   }, [isExpert, searchQuery, category, budget, deliveryTime]);
 
   const filteredItems = useMemo(() => {
-    return marketplaceItems;
-  }, [marketplaceItems]);
+    let result = marketplaceItems;
+
+    // Client-side category filter for services
+    if (!isExpert && category !== 'All Categories') {
+      const cat = category.toLowerCase();
+      result = result.filter((item) => item.tag?.toLowerCase().includes(cat));
+    }
+
+    // Client-side delivery time filter for services
+    if (!isExpert && deliveryTime !== 'Anytime') {
+      let maxDays = 999;
+      if (deliveryTime === 'Within 24 hours') maxDays = 1;
+      else if (deliveryTime === '3 Days') maxDays = 3;
+      else if (deliveryTime === '7 Days') maxDays = 7;
+      result = result.filter((item) => {
+        const days = item.deliveryDays || 999;
+        return days <= maxDays;
+      });
+    }
+
+    return result;
+  }, [marketplaceItems, isExpert, category, deliveryTime]);
 
   const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
   const indexOfLastItem = currentPage * itemsPerPage;
@@ -187,27 +206,46 @@ const MarketplaceGrid = () => {
 
           </section>
 
-          <div className="expert-search-box">
-            <SearchIcon size={22} style={{ cursor: 'pointer' }} onClick={() => {
-              setSearchQuery(searchDraft);
-              setCurrentPage(1);
-            }} />
-            <input
-              type="text"
-              placeholder={isExpert ? 'Search client tasks...' : 'Search services...'}
-              value={searchDraft}
-              onChange={(e) => setSearchDraft(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  setSearchQuery(searchDraft);
-                  setCurrentPage(1);
-                }
-              }}
-            />
-            <span style={{ cursor: 'pointer' }} onClick={() => {
-              setSearchQuery(searchDraft);
-              setCurrentPage(1);
-            }}>Enter</span>
+          <div className="expert-search-row">
+            <div className="expert-search-box">
+              <SearchIcon size={22} style={{ cursor: 'pointer' }} onClick={() => {
+                setSearchQuery(searchDraft);
+                setCurrentPage(1);
+              }} />
+              <input
+                type="text"
+                placeholder={isExpert ? 'Search client tasks...' : 'Search services...'}
+                value={searchDraft}
+                onChange={(e) => setSearchDraft(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    setSearchQuery(searchDraft);
+                    setCurrentPage(1);
+                  }
+                }}
+              />
+              <span style={{ cursor: 'pointer' }} onClick={() => {
+                setSearchQuery(searchDraft);
+                setCurrentPage(1);
+              }}>Enter</span>
+            </div>
+
+            <div className="view-toggle-group">
+              <button
+                type="button"
+                className={`view-toggle-btn ${!isExpert ? "active" : ""}`}
+                onClick={() => setViewMode("client")}
+              >
+                AI Solutions
+              </button>
+              <button
+                type="button"
+                className={`view-toggle-btn ${isExpert ? "active" : ""}`}
+                onClick={() => setViewMode("expert")}
+              >
+                Client Tasks
+              </button>
+            </div>
           </div>
 
           <section className="expert-content">

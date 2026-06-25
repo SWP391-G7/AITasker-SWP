@@ -20,7 +20,10 @@ export const createJobPost = async (data) => {
     const result = await response.json()
 
     if (!response.ok) {
-      throw new Error(result.message || 'Failed to create job post')
+      const detailMsg = result.errors
+        ? Object.values(result.errors).join('; ')
+        : result.message
+      throw new Error(detailMsg || 'Failed to create job post')
     }
 
     return result
@@ -96,7 +99,7 @@ export const getJobProposals = async (jobId) => {
       throw new Error('No authentication token found')
     }
 
-    const response = await fetch(`${API_BASE_URL}/jobs/${jobId}/proposals`, {
+    const response = await fetch(`${API_BASE_URL}/proposals/job/${jobId}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

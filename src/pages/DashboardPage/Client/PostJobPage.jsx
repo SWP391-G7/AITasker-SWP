@@ -99,7 +99,8 @@ function PostJobPage() {
     }
 
     if (step === 3) {
-      if (!formData.budget || Number(formData.budget) <= 0) {
+      const budgetNum = Number(formData.budget)
+      if (!formData.budget || isNaN(budgetNum) || budgetNum <= 0) {
         setError("Please enter a valid budget.");
         return false;
       }

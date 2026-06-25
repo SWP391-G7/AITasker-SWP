@@ -227,6 +227,13 @@
   line-height: 1.8;
   margin: 0;
   white-space: pre-line;
+  max-height: 7.2em;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.about-card p::-webkit-scrollbar {
+  display: none;
 }
 
 .skills-block {

@@ -3,15 +3,19 @@ import { useNavigate, useParams } from "react-router-dom";
 import {
   ArrowLeft,
   CalendarDays,
+  Check,
   DollarSign,
+  Loader2,
   Mail,
   MessageSquare,
   RefreshCcw,
   UserRound,
+  X,
 } from "lucide-react";
 import ClientSidebar from "../../../Components/Dashboard/Client/ClientSidebar";
 import Footer from "../../../Components/Footer/Footer";
 import { getJobById, getJobProposals } from "../../../Services/jobService";
+import { updateProposalStatus } from "../../../Services/proposalService";
 import "./ClientMarketplace.css";
 
 const getFirstArray = (result, keys) => {
@@ -36,6 +40,7 @@ const getExpertName = (proposal) =>
   proposal?.expert?.fullName ||
   proposal?.expert?.name ||
   proposal?.expertName ||
+  proposal?.expert_name ||
   proposal?.user?.fullName ||
   "AI Expert";
 
@@ -47,6 +52,7 @@ function ClientTaskDetailPage() {
   const [proposals, setProposals] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [actingProposal, setActingProposal] = useState(null);
 
   const proposalCount = useMemo(() => proposals.length, [proposals]);
 
@@ -111,6 +117,36 @@ function ClientTaskDetailPage() {
       proposal?.user?.id;
 
     navigate(expertId ? `/client/messages?expertId=${expertId}` : "/client/messages");
+  };
+
+  const handleAcceptProposal = async (proposalId) => {
+    if (actingProposal) return;
+    setActingProposal(proposalId);
+    try {
+      await updateProposalStatus({ proposalId, status: 'accepted' });
+      setProposals(prev => prev.map(p =>
+        (p._id || p.id) === proposalId ? { ...p, status: 'accepted' } : p
+      ));
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setActingProposal(null);
+    }
+  };
+
+  const handleRejectProposal = async (proposalId) => {
+    if (actingProposal) return;
+    setActingProposal(proposalId);
+    try {
+      await updateProposalStatus({ proposalId, status: 'rejected' });
+      setProposals(prev => prev.map(p =>
+        (p._id || p.id) === proposalId ? { ...p, status: 'rejected' } : p
+      ));
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setActingProposal(null);
+    }
   };
   
     return (
@@ -210,11 +246,13 @@ function ClientTaskDetailPage() {
                     const proposalId = proposal._id || proposal.id || index;
                     const budget =
                       proposal.proposedBudget ||
+                      proposal.bid_amount ||
                       proposal.budget ||
                       proposal.price ||
                       proposal.rate;
                     const duration =
                       proposal.estimatedDuration ||
+                      proposal.delivery_days ||
                       proposal.duration ||
                       proposal.timeline;
 
@@ -228,7 +266,7 @@ function ClientTaskDetailPage() {
 
                             <div>
                               <h3>{getExpertName(proposal)}</h3>
-                              <p>{proposal?.expert?.professionalTitle || "AI Expert"}</p>
+                              <p>{proposal?.expert?.professionalTitle || proposal.professional_title || "AI Expert"}</p>
                             </div>
                           </div>
 
@@ -239,6 +277,7 @@ function ClientTaskDetailPage() {
 
                         <p className="proposal-cover">
                           {proposal.coverLetter ||
+                            proposal.cover_letter ||
                             proposal.message ||
                             proposal.description ||
                             "This expert has sent a proposal for your task."}
@@ -252,23 +291,59 @@ function ClientTaskDetailPage() {
 
                           <span>
                             <CalendarDays size={16} />
-                            {duration || "Timeline not specified"}
+                            {duration ? `${duration} days` : "Timeline not specified"}
                           </span>
                         </div>
 
                         <div className="proposal-actions">
-                          <button
-                            type="button"
-                            className="next-btn"
-                            onClick={() => handleContactExpert(proposal)}
-                          >
-                            <Mail size={16} />
-                            Contact Expert
-                          </button>
+                          {proposal.status === "accepted" ? (
+                            <span className="project-status accepted-status">
+                              <Check size={14} /> Accepted
+                            </span>
+                          ) : proposal.status === "rejected" ? (
+                            <span className="project-status rejected-status">
+                              <X size={14} /> Rejected
+                            </span>
+                          ) : (
+                            <>
+                              <button
+                                type="button"
+                                className="accept-btn"
+                                onClick={() => handleAcceptProposal(proposalId)}
+                                disabled={actingProposal === proposalId}
+                              >
+                                {actingProposal === proposalId ? (
+                                  <Loader2 className="animate-spin" size={16} />
+                                ) : (
+                                  <Check size={16} />
+                                )}
+                                Accept
+                              </button>
 
-                          <button type="button" className="draft-btn">
-                            Review Later
-                          </button>
+                              <button
+                                type="button"
+                                className="reject-btn"
+                                onClick={() => handleRejectProposal(proposalId)}
+                                disabled={actingProposal === proposalId}
+                              >
+                                {actingProposal === proposalId ? (
+                                  <Loader2 className="animate-spin" size={16} />
+                                ) : (
+                                  <X size={16} />
+                                )}
+                                Reject
+                              </button>
+
+                              <button
+                                type="button"
+                                className="next-btn"
+                                onClick={() => handleContactExpert(proposal)}
+                              >
+                                <Mail size={16} />
+                                Contact
+                              </button>
+                            </>
+                          )}
                         </div>
                       </article>
                     );
