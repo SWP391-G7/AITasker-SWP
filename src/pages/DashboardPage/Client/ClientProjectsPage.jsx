@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   BriefcaseBusiness,
@@ -16,9 +16,31 @@ import { getMyJobs, deleteJobPost } from "../../../Services/jobService";
 import "../../Style/AdminDashboardPage.css";
 import "./ClientMarketplace.css";
 
+const getJobId = (job) => job?._id || job?.id || job?.jobId || job?.job_id;
+
+const formatDate = (dateValue) => {
+  if (!dateValue) return "No deadline";
+  return new Date(dateValue).toLocaleDateString();
+};
+
+const formatBudget = (job) => {
+  const min = job.budget_min ?? job.budgetMin;
+  const max = job.budget_max ?? job.budgetMax ?? job.budget;
+
+  if (min && max && min !== max) return `$${min} - $${max}`;
+  if (max) return `$${max}`;
+  if (min) return `$${min}`;
+  return "No budget";
+};
+
+const getProgress = (item) => {
+  if (typeof item.progress === "number") return item.progress;
+  if (item.status === "completed") return 100;
+  return 0;
+};
+
 function ClientProjectsPage() {
   const navigate = useNavigate();
-
   const [jobs, setJobs] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [notifications, setNotifications] = useState(2);
@@ -31,16 +53,8 @@ function ClientProjectsPage() {
     try {
       setLoading(true);
       setError("");
-
       const result = await getMyJobs();
-      const list =
-        result.jobPosts ||
-        result.jobs ||
-        result.data ||
-        result.projects ||
-        result.myJobs ||
-        [];
-
+      const list = result.jobPosts || result.jobs || result.data || result.projects || result.myJobs || [];
       setJobs(Array.isArray(list) ? list : []);
     } catch (err) {
       setError(err.message || "Failed to load your projects.");
@@ -50,27 +64,20 @@ function ClientProjectsPage() {
   };
 
   useEffect(() => {
-    const timer = setTimeout(fetchJobs, 0);
-    return () => clearTimeout(timer);
+    fetchJobs();
   }, []);
 
-  const formatDate = (dateValue) => {
-    if (!dateValue) return "No deadline";
-    return new Date(dateValue).toLocaleDateString();
-  };
+  const filteredJobs = useMemo(() => {
+    const query = searchQuery.toLowerCase();
+    return jobs.filter((job) =>
+      (job.title || job.jobTitle || "").toLowerCase().includes(query) ||
+      (job.required_skill || job.requiredSkill || job.category || job.serviceCategory || "").toLowerCase().includes(query) ||
+      (job.status || "open").toLowerCase().includes(query)
+    );
+  }, [jobs, searchQuery]);
 
-  const formatBudget = (job) => {
-    const min = job.budget_min ?? job.budgetMin;
-    const max = job.budget_max ?? job.budgetMax ?? job.budget;
-
-    if (min && max && min !== max) return `$${min} - $${max}`;
-    if (max) return `$${max}`;
-    if (min) return `$${min}`;
-    return "No budget";
-  };
-
-  const handleDelete = async (e, jobId) => {
-    e.stopPropagation();
+  const handleDelete = async (event, jobId) => {
+    event.stopPropagation();
 
     if (!jobId) {
       setError("Cannot delete this task because job ID is missing.");
@@ -83,7 +90,6 @@ function ClientProjectsPage() {
     try {
       setDeletingId(jobId);
       setError("");
-
       await deleteJobPost(jobId);
       await fetchJobs();
     } catch (err) {
@@ -97,15 +103,6 @@ function ClientProjectsPage() {
     logout();
     navigate("/");
   };
-
-  const filteredJobs = jobs.filter((job) => {
-    const query = searchQuery.toLowerCase();
-    return (
-      (job.title || job.jobTitle || "").toLowerCase().includes(query) ||
-      (job.required_skill || job.requiredSkill || job.category || job.serviceCategory || "").toLowerCase().includes(query) ||
-      (job.status || "open").toLowerCase().includes(query)
-    );
-  });
 
   return (
     <div className="market-client-layout">
@@ -155,7 +152,8 @@ function ClientProjectsPage() {
           {!loading && !error && filteredJobs.length > 0 && (
             <div className="project-list">
               {filteredJobs.map((job) => {
-                const jobId = job._id || job.id || job.jobId || job.job_id;
+                const jobId = getJobId(job);
+                const progress = getProgress(job);
 
                 return (
                   <article
@@ -167,11 +165,7 @@ function ClientProjectsPage() {
                       <div>
                         <h3>{job.title || job.jobTitle || "Untitled Task"}</h3>
                         <span>
-                          {job.required_skill ||
-                            job.requiredSkill ||
-                            job.category ||
-                            job.serviceCategory ||
-                            "AI Task"}
+                          {job.required_skill || job.requiredSkill || job.category || job.serviceCategory || "AI Task"}
                         </span>
                       </div>
 
@@ -182,7 +176,7 @@ function ClientProjectsPage() {
                           type="button"
                           className="delete-project-btn"
                           disabled={deletingId === jobId}
-                          onClick={(e) => handleDelete(e, jobId)}
+                          onClick={(event) => handleDelete(event, jobId)}
                         >
                           <Trash2 size={14} />
                           {deletingId === jobId ? "Deleting..." : "Delete"}
@@ -202,6 +196,16 @@ function ClientProjectsPage() {
                         <CalendarDays size={16} />
                         {formatDate(job.deadline)}
                       </span>
+                    </div>
+
+                    <div className="client-project-progress">
+                      <div>
+                        <span>Progress</span>
+                        <strong>{progress}%</strong>
+                      </div>
+                      <div className="progress-line">
+                        <div style={{ width: `${progress}%` }}></div>
+                      </div>
                     </div>
                   </article>
                 );
