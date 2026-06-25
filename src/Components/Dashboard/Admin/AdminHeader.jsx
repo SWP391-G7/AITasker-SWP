@@ -1,17 +1,28 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Bell, ChevronDown, LogOut, Search, Settings, User } from 'lucide-react'
-import adminAvatar from '../../LandingPages/image/user_avatar.png'
 import { getStoredUser } from '../../../Services/checkLogin'
 import SettingPage from '../../../pages/SettingPage'
 import useHandleClickOutside from '../HandleClickOutside'
 import '../../Navbar/HeaderCom.css'
 
-const AdminHeader = ({ notifications, onClearNotifications, searchQuery, onSearchChange, onLogout }) => {
+const AdminHeader = ({
+  title = 'Admin Command Center',
+  subtitle = 'System oversight and marketplace operations',
+  headerActions,
+  notifications,
+  onClearNotifications,
+  searchQuery,
+  onSearchChange,
+  searchPlaceholder = 'Search users, tasks, or disputes...',
+  onLogout
+}) => {
   const { isProfileOpen, setIsProfileOpen, dropdownRef } = useHandleClickOutside()
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const navigate = useNavigate()
   const currentUser = getStoredUser()
+  const adminName = currentUser?.fullName || currentUser?.name || 'Admin'
+  const adminAvatar = adminName.charAt(0).toUpperCase()
 
   // Open settings as a modal and keep the current admin screen blurred behind it.
   const handleOpenSettings = () => {
@@ -30,21 +41,23 @@ const AdminHeader = ({ notifications, onClearNotifications, searchQuery, onSearc
     <>
       <header className="admin-header-section">
         <div className="admin-header-title">
-          <h1>Admin Command Center</h1>
-          <p>System oversight and marketplace operations</p>
+          <h1>{title}</h1>
+          <p>{subtitle}</p>
         </div>
 
-        <div className="admin-search-box">
-          <Search size={16} className="admin-search-icon" />
-          <input
-            type="text"
-            placeholder="Search users, tasks, or disputes..."
-            value={searchQuery}
-            onChange={(event) => onSearchChange(event.target.value)}
-          />
-        </div>
+        <div className="admin-header-controls">
+          {headerActions && <div className="admin-header-extra">{headerActions}</div>}
 
-        <div className="d-flex align-items-center gap-3">
+          <div className="admin-search-box">
+            <Search size={16} className="admin-search-icon" />
+            <input
+              type="text"
+              placeholder={searchPlaceholder}
+              value={searchQuery}
+              onChange={(event) => onSearchChange(event.target.value)}
+            />
+          </div>
+
           <button className="icon-button position-relative" aria-label="System Notifications" onClick={onClearNotifications}>
             <Bell size={20} />
             {notifications > 0 && <span className="icon-badge bg-sky"></span>}
@@ -57,10 +70,12 @@ const AdminHeader = ({ notifications, onClearNotifications, searchQuery, onSearc
               onClick={() => setIsProfileOpen((value) => !value)}
             >
               <div className="admin-profile-info">
-                <span className="admin-profile-name">Admin</span>
+                <span className="admin-profile-name">{adminName}</span>
                 <span className="admin-profile-role">Root Access</span>
               </div>
-              <img src={adminAvatar} alt="Admin Profile" className="admin-profile-avatar" />
+              <div className="admin-profile-avatar-wrapper">
+                <div className="avatar">{adminAvatar}</div>
+              </div>
               <ChevronDown size={14} className={`profile-chevron ${isProfileOpen ? 'rotate' : ''}`} />
             </button>
 

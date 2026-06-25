@@ -11,7 +11,7 @@ import {
 const clientMenuItems = [
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
   { id: "projects", label: "My Projects", icon: BriefcaseBusiness },
-  { id: "post-job", label: "Post a Job", icon: PlusCircle },
+  // { id: "post-job", label: "Post a Job", icon: PlusCircle },
   { id: "messages", label: "Messages", icon: MessageSquare },
   { id: "billing", label: "Billing", icon: CreditCard },
   // Settings is temporarily disabled here because it now opens from the avatar popup.

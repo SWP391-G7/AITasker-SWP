@@ -1,18 +1,17 @@
 import { useMemo, useState } from 'react'
 import ContentModerationFilters from './ContentModerationFilters'
-import ContentModerationHeader from './ContentModerationHeader'
 import ContentModerationPagination from './ContentModerationPagination'
 import ContentModerationStats from './ContentModerationStats'
 import { moderationFilters, moderationItems, moderationStats } from './contentModerationData'
 import ModerationQueueList from './ModerationQueueList'
 
-const ContentModerationView = () => {
+const ContentModerationView = ({ searchQuery: externalSearchQuery, items = moderationItems, stats = moderationStats }) => {
   const [activeFilter, setActiveFilter] = useState('All Types')
   const [severityFilter, setSeverityFilter] = useState('All Levels')
-  const [searchQuery, setSearchQuery] = useState('')
+  const searchQuery = externalSearchQuery ?? ''
 
   const filteredItems = useMemo(() => {
-    return moderationItems.filter((item) => {
+    return items.filter((item) => {
       const matchesType = activeFilter === 'All Types' || item.category === activeFilter
       const matchesSeverity =
         severityFilter === 'All Levels' || item.severityLabel === severityFilter
@@ -22,12 +21,11 @@ const ContentModerationView = () => {
 
       return matchesType && matchesSeverity && matchesSearch
     })
-  }, [activeFilter, searchQuery, severityFilter])
+  }, [activeFilter, items, searchQuery, severityFilter])
 
   return (
     <>
-      <ContentModerationHeader searchQuery={searchQuery} onSearchChange={setSearchQuery} />
-      <ContentModerationStats stats={moderationStats} />
+      <ContentModerationStats stats={stats} />
       <ContentModerationFilters
         activeFilter={activeFilter}
         filters={moderationFilters}

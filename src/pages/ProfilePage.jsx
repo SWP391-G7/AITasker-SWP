@@ -15,8 +15,8 @@ import HeaderCom from "../Components/Navbar/HeaderCom";
 import Footer from "../Components/Footer/Footer";
 import { getUserProfile } from "../Services/profileService";
 import { getStoredUser } from "../Services/checkLogin";
-import { expertServices } from "../Components/Profile/Expert/ExpertService";
-import { clientProjects } from "../Components/Profile/Client/ClientProject";
+import { getExpertServicesFromApi } from "../Components/Profile/Expert/ExpertService";
+import { getClientProjectsFromApi } from "../Components/Profile/Client/ClientProject";
 import "./ProfilePage.css";
 
 function ProfilePage() {
@@ -36,6 +36,7 @@ function ProfilePage() {
       try {
         setLoading(true)
         setError("")
+        // API call: lấy toàn bộ profile, services, projects của đúng userId trên URL.
         const data = await getUserProfile(userId)
         setProfileData(data)
 
@@ -93,6 +94,10 @@ function ProfilePage() {
     navigate(getMessagesPath());
   }
 
+  const handleViewAllProfileItems = () => {
+    navigate(activeTab === "expert" ? "/expert/projects" : "/client/projects");
+  }
+
   const renderStars = (rating) => {
     const stars = []
     const r = rating || 0
@@ -144,6 +149,59 @@ function ProfilePage() {
     });
   };
 
+  const formatCurrency = (value) => {
+    const amount = Number(value);
+
+    if (!Number.isFinite(amount)) {
+      return "Not specified";
+    }
+
+    return amount.toLocaleString(undefined, {
+      style: "currency",
+      currency: "USD",
+      maximumFractionDigits: 0,
+    });
+  };
+
+  const formatHourlyRate = (value) => {
+    if (!value) {
+      return "Not specified";
+    }
+
+    const amount = Number(String(value).replace(/[^0-9.]/g, ""));
+
+    if (!Number.isFinite(amount)) {
+      return String(value);
+    }
+
+    return `${formatCurrency(amount)}/hr`;
+  };
+
+  const getAverageProjectBudget = (project) => {
+    const min = Number(project.budgetMin);
+    const max = Number(project.budgetMax);
+
+    if (Number.isFinite(min) && Number.isFinite(max)) {
+      return (min + max) / 2;
+    }
+
+    if (Number.isFinite(min)) {
+      return min;
+    }
+
+    if (Number.isFinite(max)) {
+      return max;
+    }
+
+    return null;
+  };
+
+  const sumNumbers = (items, getValue) =>
+    items.reduce((total, item) => {
+      const value = getValue(item);
+      return Number.isFinite(value) ? total + value : total;
+    }, 0);
+
   const renderStat = (value, label) => (
     <div className="profile-stat-card">
       <strong>{value}</strong>
@@ -177,7 +235,7 @@ function ProfilePage() {
             <Briefcase size={12} />
             {item.status}
           </span>
-          <strong>{item.proposals} proposals</strong>
+          <strong>{item.proposalsLabel}</strong>
         </div>
         <p className="project-budget">{item.budget} budget</p>
       </div>
@@ -216,13 +274,30 @@ function ProfilePage() {
   const { user, clientProfile, expertProfile, hasClientProfile, hasExpertProfile } = profileData;
   const isExpertView = activeTab === "expert";
   const activeProfile = isExpertView ? expertProfile : clientProfile;
+  // API data: profile page calls API once, then pushes response lists through Profile helpers.
+  const profileServices = getExpertServicesFromApi(profileData.services || []);
+  const profileProjects = getClientProjectsFromApi(profileData.projects || []);
   const skills = isExpertView ? getSkills(expertProfile?.skills) : [];
+  const expertRating = Number(expertProfile?.avgRating);
+  const displayRating = Number.isFinite(expertRating) ? expertRating.toFixed(1) : "Not rated";
+  const isTopRated = Number.isFinite(expertRating) && expertRating >= 4.8;
+  const serviceTotal = sumNumbers(profileData.services || [], (service) => Number(service.price));
+  const projectBudgetTotal = sumNumbers(profileData.projects || [], getAverageProjectBudget);
+  const averageProjectBudget = profileData.projects?.length
+    ? projectBudgetTotal / profileData.projects.length
+    : null;
+  const openProjectCount = (profileData.projects || []).filter((project) =>
+    String(project.status || "").toLowerCase().includes("open")
+  ).length;
+  const requiredSkills = [
+    ...new Set((profileData.projects || []).map((project) => project.requiredSkill).filter(Boolean)),
+  ];
   const displayTitle = isExpertView
-    ? expertProfile?.professionalTitle || "AI Expert"
-    : clientProfile?.companyName || "Client";
+    ? expertProfile?.professionalTitle || "Professional title not specified"
+    : clientProfile?.companyName || "Company not specified";
   const locationText = isExpertView
-    ? expertProfile?.location || "San Francisco, CA"
-    : clientProfile?.industry || "AI Solution Buyer";
+    ? expertProfile?.portfolioUrl || "Portfolio not specified"
+    : clientProfile?.industry || "Industry not specified";
   const aboutText = isExpertView
     ? expertProfile?.bio
     : clientProfile?.bio;
@@ -232,12 +307,12 @@ function ProfilePage() {
       <HeaderCom />
 
       <main className="profile-container">
-        <header className="profile-nav-header">
+        {/* <header className="profile-nav-header">
           <button className="back-link-btn" onClick={handleBack}>
             Back to Dashboard
           </button>
-        </header>
-
+        </header> */}
+        <br /> <br />
         {(hasClientProfile || hasExpertProfile) ? (
           <>
             {hasClientProfile && hasExpertProfile && (
@@ -271,7 +346,7 @@ function ProfilePage() {
                         <h1>{user.fullName}</h1>
                         <p className="profile-hero-title">{displayTitle}</p>
                       </div>
-                      {isExpertView && (
+                      {isExpertView && isTopRated && (
                         <span className="top-rated-badge">
                           <BadgeCheck size={13} />
                           Top Rated
@@ -287,15 +362,15 @@ function ProfilePage() {
                     <div className="profile-stats-grid">
                       {isExpertView ? (
                         <>
-                          {renderStat((expertProfile?.avgRating || 5).toFixed ? (expertProfile?.avgRating || 5).toFixed(1) : expertProfile?.avgRating || "5.0", "Rating")}
-                          {renderStat("98%", "Job Success")}
-                          {renderStat("45+", "Projects Done")}
+                          {renderStat(displayRating, "Rating")}
+                          {renderStat(profileServices.length, "Services")}
+                          {renderStat(skills.length, "Skills")}
                         </>
                       ) : (
                         <>
-                          {renderStat("12", "Projects Posted")}
-                          {renderStat("8", "Hired Experts")}
-                          {renderStat("96%", "Payment Rate")}
+                          {renderStat(profileProjects.length, "Projects Posted")}
+                          {renderStat(openProjectCount, "Open Projects")}
+                          {renderStat(requiredSkills.length, "Required Skills")}
                         </>
                       )}
                     </div>
@@ -329,19 +404,21 @@ function ProfilePage() {
                   <article className="profile-info-card compact-card">
                     <h2>
                       {isExpertView ? <GraduationCap size={17} /> : <Building2 size={17} />}
-                      {isExpertView ? "Education" : "Company"}
+                      {isExpertView ? "Expert Details" : "Company"}
                     </h2>
                     {isExpertView ? (
                       <>
-                        <p>M.S. in Computer Science</p>
-                        <span>Stanford University, 2018</span>
-                        <p>B.S. in Software Engineering</p>
-                        <span>UC Berkeley, 2016</span>
+                        <p>Professional Title</p>
+                        <span>{expertProfile?.professionalTitle || "Not specified"}</span>
+                        <p>Portfolio</p>
+                        <span>{expertProfile?.portfolioUrl || "Not specified"}</span>
+                        <p>Member since</p>
+                        <span>{formatDate(user.createdAt)}</span>
                       </>
                     ) : (
                       <>
                         <p>{clientProfile?.companyName || user.fullName}</p>
-                        <span>{clientProfile?.industry || "AI and technology operations"}</span>
+                        <span>{clientProfile?.industry || "Not specified"}</span>
                         <p>Member since</p>
                         <span>{formatDate(user.createdAt)}</span>
                       </>
@@ -351,19 +428,19 @@ function ProfilePage() {
                   <article className="profile-info-card compact-card">
                     <h2>
                       {isExpertView ? <Award size={17} /> : <Briefcase size={17} />}
-                      {isExpertView ? "Certifications" : "Hiring Details"}
+                      {isExpertView ? "Skills & Rating" : "Hiring Details"}
                     </h2>
                     {isExpertView ? (
                       <>
-                        <p>AWS Certified Machine Learning</p>
-                        <span>Specialty, 2023</span>
-                        <p>Google Cloud Professional ML</p>
-                        <span>Cloud Engineer, 2022</span>
+                        <p>Listed Skills</p>
+                        <span>{skills.length ? skills.join(", ") : "Not specified"}</span>
+                        <p>Profile Rating</p>
+                        <span>{displayRating}</span>
                       </>
                     ) : (
                       <>
-                        <p>Project Collaboration</p>
-                        <span>Open to AI automation, NLP, and analytics work</span>
+                        <p>Project Focus</p>
+                        <span>{requiredSkills.length ? requiredSkills.join(", ") : "Not specified"}</span>
                         <p>Client Profile</p>
                         <span>{activeProfile ? "Onboarded" : "Pending details"}</span>
                       </>
@@ -377,29 +454,38 @@ function ProfilePage() {
                   <div className="availability-row">
                     <span>
                       <i />
-                      Available Now
+                      {user.isVerified ? "Verified Account" : "Unverified Account"}
                     </span>
-                    <small>Responds in &lt; 1hr</small>
+                    <small>{user.role}</small>
                   </div>
-
+                  
+                  {!isOwnProfile && (  
                   <button className="contact-btn" onClick={handleContact}>
                     <Mail size={16} />
                     Contact Me
-                  </button>
+                  </button>)}
 
-                  <button className="secondary-action-btn" type="button">
+                  <button
+                    className="secondary-action-btn"
+                    type="button"
+                    onClick={isOwnProfile ? handleBack : undefined}
+                  >
                     <Send size={15} />
-                    {isExpertView ? "Invite to Job" : "Apply to Project"}
+                    {isOwnProfile ? "Go to Dashboard" : (isExpertView ? "Invite to Job" : "Apply to Project")}
                   </button>
 
                   <div className="rate-list">
                     <div>
                       <span>{isExpertView ? "Hourly Rate" : "Average Budget"}</span>
-                      <strong>{isExpertView ? `$${expertProfile?.hourlyRate || 150}/hr` : "$2,500+"}</strong>
+                      <strong>
+                        {isExpertView
+                          ? formatHourlyRate(expertProfile?.hourlyRate)
+                          : (Number.isFinite(averageProjectBudget) ? formatCurrency(averageProjectBudget) : "Not specified")}
+                      </strong>
                     </div>
                     <div>
-                      <span>{isExpertView ? "Total Earned" : "Total Spent"}</span>
-                      <strong>{isExpertView ? "$200k+" : "$75k+"}</strong>
+                      <span>{isExpertView ? "Listed Service Value" : "Posted Budget Total"}</span>
+                      <strong>{formatCurrency(isExpertView ? serviceTotal : projectBudgetTotal)}</strong>
                     </div>
                     {isExpertView && (
                       <div>
@@ -411,13 +497,19 @@ function ProfilePage() {
                 </article>
 
                 <article className="profile-side-list-card">
-                  <h2>{isExpertView ? "My Services" : "My Projects"}</h2>
+                  <h2>{isExpertView ? "Services" : "Projects"}</h2>
                   <div className="profile-side-list">
-                    {isExpertView
-                      ? expertServices.map(renderServiceCard)
-                      : clientProjects.map(renderProjectCard)}
+                    {/* API data: render only the services/projects owned by this profile user. */}
+                    {isExpertView && profileServices.length > 0 && profileServices.map(renderServiceCard)}
+                    {!isExpertView && profileProjects.length > 0 && profileProjects.map(renderProjectCard)}
+                    {isExpertView && profileServices.length === 0 && (
+                      <p>This expert has not published any services yet.</p>
+                    )}
+                    {!isExpertView && profileProjects.length === 0 && (
+                      <p>This client has not posted any projects yet.</p>
+                    )}
                   </div>
-                  <button className="view-all-btn" type="button">
+                  <button className="view-all-btn" type="button" onClick={handleViewAllProfileItems}>
                     {isExpertView ? "View All Services" : "View All Projects"}
                   </button>
                 </article>

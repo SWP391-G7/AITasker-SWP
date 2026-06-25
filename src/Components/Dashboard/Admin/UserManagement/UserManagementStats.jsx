@@ -1,5 +1,4 @@
 import { BadgeCheck, BrainCircuit, UserCheck, Users } from 'lucide-react'
-import { userManagementStats } from './userManagementData'
 
 const statIcons = {
   'total-users': Users,
@@ -8,9 +7,9 @@ const statIcons = {
   pending: BadgeCheck
 }
 
-const UserManagementStats = () => (
+const UserManagementStats = ({ stats }) => (
   <section className="user-management-stats" aria-label="User management summary">
-    {userManagementStats.map(({ id, label, value, trend, tone }) => {
+    {stats.map(({ id, label, value, trend, tone }) => {
       const Icon = statIcons[id]
 
       return (

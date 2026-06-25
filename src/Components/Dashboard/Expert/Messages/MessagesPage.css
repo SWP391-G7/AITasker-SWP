@@ -4,7 +4,7 @@
   height: 100vh;
   min-height: 0;
   overflow: hidden;
-  font-family: var(--font-family);
+  font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
 .expert-messages-header {

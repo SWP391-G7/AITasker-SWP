@@ -1003,3 +1003,73 @@
   color: #ffffff;
   background: rgba(59, 130, 246, 0.09);
 }
+
+.admin-header-action-group {
+  align-items: center;
+  display: flex;
+  gap: 0.75rem;
+}
+
+.admin-header-action-button {
+  align-items: center;
+  display: inline-flex;
+  gap: 0.45rem;
+  min-height: 38px;
+  white-space: nowrap;
+}
+
+.admin-sidebar .admin-post-task-button {
+  border-radius: 8px;
+  min-height: 42px;
+}
+
+.content-moderation-main,
+.dispute-resolution-main,
+.analytics-main,
+.user-management-main {
+  gap: 1.5rem;
+}
+
+.moderation-stat-card,
+.moderation-queue-card,
+.dispute-stat-card,
+.dispute-case-card,
+.dispute-side-panel,
+.analytics-kpi-card,
+.analytics-panel,
+.analytics-experts-table-wrap,
+.user-stat-card,
+.user-table-panel {
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.76), rgba(8, 13, 26, 0.72)) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 14px !important;
+  box-shadow: var(--shadow-card);
+}
+
+.moderation-filter-button,
+.moderation-severity-filter select,
+.ghost-tool-button,
+.primary-tool-button,
+.analytics-date-button,
+.analytics-export-button {
+  border-radius: 8px !important;
+}
+
+.moderation-filter-button.active,
+.analytics-export-button,
+.primary-tool-button {
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan)) !important;
+  border-color: rgba(96, 165, 250, 0.35) !important;
+  color: #ffffff !important;
+}
+
+.user-table-toolbar {
+  justify-content: flex-end !important;
+}
+
+.moderation-stat-value,
+.dispute-stat-value,
+.analytics-kpi-icon,
+.analytics-kpi-card strong {
+  color: var(--text-main);
+}
