@@ -383,3 +383,229 @@
   vertical-align: -2px;
   margin-right: 0.4rem;
 }
+
+/* Proposal Page */
+.proposal-page-container {
+  max-width: 1240px;
+}
+
+.proposal-hero {
+  max-width: 760px;
+  margin-bottom: 2rem;
+}
+
+.proposal-hero .detail-title {
+  margin-bottom: 0.75rem;
+}
+
+.proposal-hero p {
+  color: var(--text-muted);
+  font-size: 1rem;
+  line-height: 1.7;
+  margin: 0;
+}
+
+.proposal-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 2rem;
+  align-items: start;
+}
+
+.proposal-form-card {
+  margin-bottom: 0;
+}
+
+.proposal-section-heading {
+  display: flex;
+  gap: 0.9rem;
+  align-items: flex-start;
+  padding-bottom: 1.4rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.proposal-section-heading svg {
+  color: var(--accent-sky);
+  flex-shrink: 0;
+  margin-top: 0.15rem;
+}
+
+.proposal-section-heading h2 {
+  color: var(--text-main);
+  font-size: 1.45rem;
+  font-weight: 800;
+  margin: 0 0 0.35rem;
+}
+
+.proposal-section-heading p {
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.proposal-form {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.proposal-field {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.proposal-field span {
+  color: var(--text-main);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.proposal-field input,
+.proposal-field textarea {
+  width: 100%;
+  border: 1px solid var(--border-color);
+  border-radius: 1rem;
+  background: rgba(2, 6, 23, 0.42);
+  color: var(--text-main);
+  font: inherit;
+  outline: none;
+  padding: 0.95rem 1rem;
+  transition: var(--transition-smooth);
+}
+
+.proposal-field textarea {
+  min-height: 140px;
+  resize: vertical;
+}
+
+.proposal-field input:focus,
+.proposal-field textarea:focus,
+.proposal-input-with-icon:focus-within {
+  border-color: rgba(96, 165, 250, 0.56);
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12);
+  background: rgba(15, 23, 42, 0.72);
+}
+
+.proposal-field-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.proposal-input-with-icon {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  border: 1px solid var(--border-color);
+  border-radius: 1rem;
+  background: rgba(2, 6, 23, 0.42);
+  padding: 0 0.95rem;
+  transition: var(--transition-smooth);
+}
+
+.proposal-input-with-icon svg {
+  color: var(--accent-sky);
+  flex-shrink: 0;
+}
+
+.proposal-input-with-icon input {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  padding-inline: 0;
+}
+
+.proposal-input-with-icon input:focus {
+  box-shadow: none;
+  background: transparent;
+}
+
+.proposal-actions-row {
+  display: grid;
+  grid-template-columns: 180px minmax(0, 1fr);
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.proposal-actions-row .order-btn,
+.proposal-actions-row .contact-btn {
+  margin-bottom: 0;
+}
+
+.proposal-summary-column {
+  display: grid;
+  gap: 1.25rem;
+  position: sticky;
+  top: 100px;
+}
+
+.proposal-task-card h2 {
+  color: var(--text-main);
+  font-size: 1.35rem;
+  line-height: 1.35;
+  margin: 0.85rem 0;
+}
+
+.proposal-task-card p {
+  color: var(--text-muted);
+  line-height: 1.6;
+  margin: 0 0 1.5rem;
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 5;
+}
+
+.proposal-task-meta {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.proposal-task-meta .metric {
+  align-items: flex-start;
+  color: var(--text-main);
+}
+
+.proposal-checklist-card {
+  margin-bottom: 0;
+}
+
+.proposal-checklist-card h3 {
+  color: var(--text-main);
+  font-size: 1.05rem;
+  margin: 0 0 1rem;
+}
+
+.proposal-checklist-card div {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.proposal-checklist-card span {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  color: var(--text-muted);
+  font-size: 0.92rem;
+}
+
+.proposal-checklist-card svg {
+  color: var(--accent-green);
+  flex-shrink: 0;
+}
+
+@media (max-width: 992px) {
+  .proposal-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .proposal-summary-column {
+    position: static;
+  }
+}
+
+@media (max-width: 640px) {
+  .proposal-field-grid,
+  .proposal-actions-row {
+    grid-template-columns: 1fr;
+  }
+}

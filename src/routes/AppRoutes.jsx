@@ -31,6 +31,7 @@ import ProfilePage from "../pages/ProfilePage"
 import AISolutionMarketplacePage from "../pages/AISolutionMarketplacePage"
 import ServiceDetailPage from "../pages/ServiceDetailPage"
 import MarketplaceTaskDetailPage from "../pages/MarketplaceTaskDetailPage"
+import MarketplaceProposalPage from "../pages/MarketplaceProposalPage"
 
 function useAuthStatus() {
   const [status, setStatus] = useState({ isLoggedIn: null, isVerified: null })
@@ -145,6 +146,15 @@ function AppRoutes() {
           <ProtectedRoute>
             <HeaderCom />
             <MarketplaceTaskDetailPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/marketplace/task/:id/proposal"
+        element={
+          <ProtectedRoute>
+            <HeaderCom />
+            <MarketplaceProposalPage />
           </ProtectedRoute>
         }
       />
