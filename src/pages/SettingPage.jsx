@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react"
 import {
   CreditCard,
   LogOut,
@@ -6,43 +6,43 @@ import {
   ShieldCheck,
   UserRound,
   X,
-} from "lucide-react";
+} from "lucide-react"
 
 const SettingPage = ({ isOpen, onClose, user, role = "Client", onLogout, onSwitchRole }) => {
-  const [isTwoFactorEnabled, setIsTwoFactorEnabled] = useState(false);
+  const [isTwoFactorEnabled, setIsTwoFactorEnabled] = useState(false)
 
   // Normalize stored user fields so every navbar can reuse this modal.
   const profile = useMemo(() => {
-    const displayName = user?.fullName || user?.name || (role === "Expert" ? "Expert User" : "Client User");
-    const email = user?.email || `${displayName.toLowerCase().replace(/\s+/g, ".")}@example.com`;
+    const displayName = user?.fullName || user?.name || (role === "Expert" ? "Expert User" : "Client User")
+    const email = user?.email || `${displayName.toLowerCase().replace(/\s+/g, ".")}@example.com`
 
     return {
       displayName,
       email,
       avatarLetter: displayName.trim().charAt(0).toUpperCase() || "U",
-    };
-  }, [role, user]);
+    }
+  }, [role, user])
 
   // Lock body scroll while the modal is open.
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) return
 
     const handleKeyDown = (event) => {
-      if (event.key === "Escape") onClose?.();
-    };
+      if (event.key === "Escape") onClose?.()
+    }
 
-    document.body.classList.add("settings-modal-open");
-    document.addEventListener("keydown", handleKeyDown);
+    document.body.classList.add("settings-modal-open")
+    document.addEventListener("keydown", handleKeyDown)
 
     return () => {
-      document.body.classList.remove("settings-modal-open");
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [isOpen, onClose]);
+      document.body.classList.remove("settings-modal-open")
+      document.removeEventListener("keydown", handleKeyDown)
+    }
+  }, [isOpen, onClose])
 
-  if (!isOpen) return null;
+  if (!isOpen) return null
 
-  const targetRole = role === "expert" ? "Client" : "Expert";
+  const targetRole = role === "expert" ? "Client" : "Expert"
 
   return (
     <div className="settings-modal-backdrop" role="dialog" aria-modal="true" aria-label="Account settings">
@@ -377,7 +377,7 @@ const SettingPage = ({ isOpen, onClose, user, role = "Client", onLogout, onSwitc
         }
       `}</style>
     </div>
-  );
-};
+  )
+}
 
-export default SettingPage;
+export default SettingPage
