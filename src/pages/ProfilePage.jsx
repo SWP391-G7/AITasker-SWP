@@ -8,6 +8,7 @@ import {
   Mail,
   Send,
   Star,
+  BadgeCheck,
 } from "lucide-react";
 import HeaderCom from "../Components/Navbar/HeaderCom";
 import Footer from "../Components/Footer/Footer";
