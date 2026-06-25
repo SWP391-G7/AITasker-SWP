@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import {
   Award,
   BadgeCheck,
@@ -22,6 +22,7 @@ import "./ProfilePage.css";
 function ProfilePage() {
   const { userId } = useParams()
   const navigate = useNavigate()
+  const location = useLocation()
   const currentUser = getStoredUser()
 
   const [profileData, setProfileData] = useState(null)
@@ -95,7 +96,14 @@ function ProfilePage() {
   }
 
   const handleViewAllProfileItems = () => {
-    navigate(activeTab === "expert" ? "/expert/projects" : "/client/projects");
+    if (isOwnProfile) {
+      navigate(activeTab === "expert" ? "/expert/projects" : "/client/projects");
+      return;
+    }
+
+    navigate(`/profile/${userId}/${activeTab === "expert" ? "services" : "projects"}`, {
+      state: { backgroundLocation: location },
+    });
   }
 
   const renderStars = (rating) => {

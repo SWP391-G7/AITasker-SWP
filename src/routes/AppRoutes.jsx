@@ -30,6 +30,8 @@ import ProfilePage from "../pages/ProfilePage"
 import AISolutionMarketplacePage from "../pages/AISolutionMarketplacePage"
 import ServiceDetailPage from "../pages/ServiceDetailPage"
 import MarketplaceTaskDetailPage from "../pages/MarketplaceTaskDetailPage"
+import ViewAllProjectPage from "../pages/ViewAllProjectPage"
+import ViewAllServicePage from "../pages/ViewAllServicePage"
 
 function useAuthStatus() {
   const [status, setStatus] = useState({ isLoggedIn: null, isVerified: null, role: null })
@@ -152,8 +154,12 @@ function DashboardRedirect() {
 }
 
 function AppRoutes() {
+  const location = useLocation()
+  const backgroundLocation = location.state?.backgroundLocation
+
   return (
-    <Routes>
+    <>
+    <Routes location={backgroundLocation || location}>
       <Route path="/" element={<><HeaderCom /><LandingPages /></>} />
 
       <Route
@@ -223,9 +229,18 @@ function AppRoutes() {
       <Route path="/expert/messages" element={<ProtectedRoute allowedRoles={["expert"]}><ExpertMessagesPage /></ProtectedRoute>} />
       <Route path="/expert/settings" element={<ProtectedRoute allowedRoles={["expert"]}><ExpertSettingsPage /></ProtectedRoute>} />
       <Route path="/profile/:userId" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+      <Route path="/profile/:userId/projects" element={<ProtectedRoute><ViewAllProjectPage /></ProtectedRoute>} />
+      <Route path="/profile/:userId/services" element={<ProtectedRoute><ViewAllServicePage /></ProtectedRoute>} />
 
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
+    {backgroundLocation && (
+      <Routes>
+        <Route path="/profile/:userId/projects" element={<ProtectedRoute><ViewAllProjectPage /></ProtectedRoute>} />
+        <Route path="/profile/:userId/services" element={<ProtectedRoute><ViewAllServicePage /></ProtectedRoute>} />
+      </Routes>
+    )}
+    </>
   )
 }
 
