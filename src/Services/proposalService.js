@@ -33,3 +33,28 @@ export const createProposal = async ({ jobId, coverLetter, bidAmount, deliveryDa
 
   return result.proposal || result.data || result;
 };
+
+export const updateProposalStatus = async ({ proposalId, status }) => {
+  const token = localStorage.getItem('token');
+
+  if (!token) {
+    throw new Error('No authentication token found. Please log in first.');
+  }
+
+  const response = await fetch(`${API_BASE_URL}/proposals/${proposalId}/status`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ status }),
+  });
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(result.message || `Failed to ${status} proposal.`);
+  }
+
+  return result.proposal || result.data || result;
+};

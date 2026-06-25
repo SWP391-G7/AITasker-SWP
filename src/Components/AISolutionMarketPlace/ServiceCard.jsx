@@ -13,6 +13,7 @@ const ServiceCard = ({
   image,
   type = 'service',
   description,
+  status,
 }) => {
   const navigate = useNavigate();
   const [isWishlisted, setIsWishlisted] = useState(false);
@@ -89,6 +90,12 @@ const ServiceCard = ({
           {isJob ? <Clock size={18} /> : <CheckCircle size={18} />}
           {isJob ? `Duration: ${rating}` : "Vetted Expert"}
         </span>
+
+        {isJob && status && status !== 'open' && (
+          <span className={`status-badge ${status}`}>
+            {status === 'active' ? 'In Progress' : status}
+          </span>
+        )}
       </div>
 
       <div className="expert-actions">

@@ -54,6 +54,7 @@ const formatJob = (job) => ({
   budgetValue: parseMoney(job.budget_max) || parseMoney(job.budget_min),
   image: null,
   description: job.description || 'No task description provided yet.',
+  status: job.status,
 });
 
 const MarketplaceGrid = () => {
