@@ -99,7 +99,7 @@ export const getJobProposals = async (jobId) => {
       throw new Error('No authentication token found')
     }
 
-    const response = await fetch(`${API_BASE_URL}/jobs/${jobId}/proposals`, {
+    const response = await fetch(`${API_BASE_URL}/proposals/job/${jobId}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

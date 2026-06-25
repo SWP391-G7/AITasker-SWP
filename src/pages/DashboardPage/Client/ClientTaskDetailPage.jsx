@@ -36,6 +36,7 @@ const getExpertName = (proposal) =>
   proposal?.expert?.fullName ||
   proposal?.expert?.name ||
   proposal?.expertName ||
+  proposal?.expert_name ||
   proposal?.user?.fullName ||
   "AI Expert";
 
@@ -210,11 +211,13 @@ function ClientTaskDetailPage() {
                     const proposalId = proposal._id || proposal.id || index;
                     const budget =
                       proposal.proposedBudget ||
+                      proposal.bid_amount ||
                       proposal.budget ||
                       proposal.price ||
                       proposal.rate;
                     const duration =
                       proposal.estimatedDuration ||
+                      proposal.delivery_days ||
                       proposal.duration ||
                       proposal.timeline;
 
@@ -228,7 +231,7 @@ function ClientTaskDetailPage() {
 
                             <div>
                               <h3>{getExpertName(proposal)}</h3>
-                              <p>{proposal?.expert?.professionalTitle || "AI Expert"}</p>
+                              <p>{proposal?.expert?.professionalTitle || proposal.professional_title || "AI Expert"}</p>
                             </div>
                           </div>
 
@@ -239,6 +242,7 @@ function ClientTaskDetailPage() {
 
                         <p className="proposal-cover">
                           {proposal.coverLetter ||
+                            proposal.cover_letter ||
                             proposal.message ||
                             proposal.description ||
                             "This expert has sent a proposal for your task."}
@@ -252,7 +256,7 @@ function ClientTaskDetailPage() {
 
                           <span>
                             <CalendarDays size={16} />
-                            {duration || "Timeline not specified"}
+                            {duration ? `${duration} days` : "Timeline not specified"}
                           </span>
                         </div>
 
