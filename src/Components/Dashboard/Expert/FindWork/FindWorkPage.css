@@ -45,8 +45,8 @@
 
 /* Filter Bar */
 .horizontal-filter-bar {
-  background-color: var(--bg-card);
-  border: 1px solid var(--border-color);
+  background-color: #121829;
+  border: 1px solid #1E293B;
   border-radius: 16px;
   padding: 1rem 1.5rem;
   display: flex;
@@ -118,8 +118,8 @@
 }
 
 .job-listing-card {
-  background-color: var(--bg-card);
-  border: 1px solid var(--border-color);
+  background-color: #121829;
+  border: 1px solid #1E293B;
   border-radius: 20px;
   padding: 1.75rem;
   position: relative;
@@ -137,7 +137,7 @@
 
 .featured-card {
   border: 1px solid rgba(59, 130, 246, 0.3);
-  background: linear-gradient(135deg, var(--bg-card) 0%, rgba(15, 23, 42, 0.8) 100%);
+  background: linear-gradient(135deg, #121829 0%, #161d31 100%);
 }
 
 .featured-badge {
