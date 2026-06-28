@@ -71,7 +71,7 @@ const AdminHeader = ({
             >
               <div className="admin-profile-info">
                 <span className="admin-profile-name">{adminName}</span>
-                <span className="admin-profile-role">Root Access</span>
+                <span className="admin-profile-role">Admin</span>
               </div>
               <div className="admin-profile-avatar-wrapper">
                 <div className="avatar">{adminAvatar}</div>
