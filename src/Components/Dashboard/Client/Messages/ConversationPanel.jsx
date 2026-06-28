@@ -1,22 +1,43 @@
 import React, { Component } from 'react'
 import { Search } from "lucide-react";
 import "../../../../pages/DashboardPage/Client/ClientMarketplace.css"
-import { conversations } from "./Conversations";
 
 export default class ConversationPanel extends Component {
     render() {
+        const {
+            conversations = [],
+            activeConversationId,
+            searchQuery = "",
+            onSearchChange,
+            onSelectConversation,
+            loading = false,
+        } = this.props;
+
         return (
             <aside className="conversation-panel">
                 <div className="conversation-search">
                     <Search size={18} />
-                    <input placeholder="Search conversations..." />
+                    <input
+                        placeholder="Search conversations..."
+                        value={searchQuery}
+                        onChange={(event) => onSearchChange?.(event.target.value)}
+                    />
                 </div>
 
                 <div className="conversation-list">
-                    {conversations.map((item) => (
+                    {loading && <div className="message-state">Loading conversations...</div>}
+
+                    {!loading && conversations.length === 0 && (
+                        <div className="message-state">
+                            No conversations yet.
+                        </div>
+                    )}
+
+                    {!loading && conversations.map((item) => (
                         <div
-                            className={`conversation-item ${item.active ? "active" : ""}`}
+                            className={`conversation-item ${activeConversationId === item.id ? "active" : ""}`}
                             key={item.id}
+                            onClick={() => onSelectConversation?.(item)}
                         >
                             <div className="conversation-avatar">
                                 {item.name
