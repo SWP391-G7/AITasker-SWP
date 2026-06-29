@@ -1,37 +1,42 @@
-import React from 'react';
-import { ChevronDown } from 'lucide-react';
-
-const EarningsCharts = ({ summary }) => {
-  const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN'];
-  const values = [40, 65, 45, 80, 55, 90]; // Percentage heights for bars
+const EarningsCharts = ({ summary, bars }) => {
+  const chartBars = Array.isArray(bars) && bars.length > 0
+    ? bars
+    : [
+        { label: 'JAN', value: '$0', height: '2%' },
+        { label: 'FEB', value: '$0', height: '2%' },
+        { label: 'MAR', value: '$0', height: '2%' },
+        { label: 'APR', value: '$0', height: '2%' },
+        { label: 'MAY', value: '$0', height: '2%' },
+        { label: 'JUN', value: '$0', height: '2%' },
+        { label: 'JUL', value: '$0', height: '2%' },
+        { label: 'AUG', value: '$0', height: '2%' },
+        { label: 'SEP', value: '$0', height: '2%' },
+        { label: 'OCT', value: '$0', height: '2%' },
+        { label: 'NOV', value: '$0', height: '2%' },
+        { label: 'DEC', value: '$0', height: '2%' },
+      ]
 
   return (
     <div className="earnings-middle-grid">
-      {/* Monthly Income Chart */}
       <div className="income-chart-card">
         <div className="card-header-row">
           <h4 className="card-title">Monthly Income Overview</h4>
           <div className="chart-period-badge">
-            Last 6 Months
-            <ChevronDown size={14} />
+            This Year
           </div>
         </div>
-        
+
         <div className="chart-placeholder">
           <div className="chart-y-axis">
-            <span>$5K</span>
-            <span>$2.5K</span>
-            <span>$0</span>
+            <span>&nbsp;</span>
+            <span>&nbsp;</span>
+            <span>&nbsp;</span>
           </div>
-          
-          <div className="chart-grid-line" style={{ bottom: '0%' }}></div>
-          <div className="chart-grid-line" style={{ bottom: '50%' }}></div>
-          <div className="chart-grid-line" style={{ bottom: '100%' }}></div>
 
-          {months.map((month, idx) => (
-            <div key={month} className="chart-bar-group">
-              <div className="chart-bar" style={{ height: `${values[idx]}%` }}></div>
-              <span className="chart-label">{month}</span>
+          {chartBars.map((bar) => (
+            <div key={bar.label} className="chart-bar-group">
+              <div className="chart-bar" style={{ height: bar.height }}></div>
+              <span className="chart-label">{bar.label}</span>
             </div>
           ))}
         </div>

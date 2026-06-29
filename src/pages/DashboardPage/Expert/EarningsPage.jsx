@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Wallet } from 'lucide-react'
 import ExpertSidebar from '../../../Components/Dashboard/Expert/ExpertSidebar'
@@ -16,7 +16,6 @@ import '../../../Components/Dashboard/Expert/Earnings/EarningsPage.css'
 const EarningsPage = () => {
   const navigate = useNavigate()
   const [searchQuery, setSearchQuery] = useState('')
-  const [notifications, setNotifications] = useState(2)
   const [earningsStats, setEarningsStats] = useState([])
   const [incomeSummary, setIncomeSummary] = useState({
     gross: '$0.00',
@@ -24,6 +23,7 @@ const EarningsPage = () => {
     net: '$0.00',
     nextPayout: 'Not scheduled',
   })
+  const [earningsBars, setEarningsBars] = useState([])
   const [transactions, setTransactions] = useState([])
   const [earningsError, setEarningsError] = useState('')
   const handleLogout = createHandleLogout(navigate)
@@ -48,12 +48,28 @@ const EarningsPage = () => {
       currency: 'USD',
     }).format(Number(value) || 0)
 
+  const buildMonthlyBars = useCallback((apiServices) => {
+    const monthNames = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
+    const monthlyTotals = Array(12).fill(0)
+    apiServices.forEach((s) => {
+      if (s.created_at || s.createdAt) {
+        const d = new Date(s.created_at || s.createdAt)
+        monthlyTotals[d.getMonth()] += Number(s.price) || 0
+      }
+    })
+    const maxVal = Math.max(...monthlyTotals, 1)
+    return monthlyTotals.map((total, i) => ({
+      label: monthNames[i],
+      value: formatCurrency(total),
+      height: `${Math.max(2, (total / maxVal) * 100)}%`,
+    }))
+  }, [])
+
   useEffect(() => {
     const fetchEarningsData = async () => {
       try {
         setEarningsError('')
 
-        // API data: derive earnings from the current expert's services via GET /api/services/my.
         const services = await getMyServices()
         const apiServices = Array.isArray(services) ? services : []
         const gross = apiServices.reduce((sum, service) => sum + (Number(service.price) || 0), 0)
@@ -65,7 +81,7 @@ const EarningsPage = () => {
             id: 'stat-api-1',
             label: 'Available for Withdrawal',
             value: formatCurrency(net),
-            trend: `${apiServices.length} SERVICES`,
+            trend: `${apiServices.length} SERVICE${apiServices.length !== 1 ? 'S' : ''}`,
             trendType: 'neutral',
             icon: 'bank',
           },
@@ -94,11 +110,13 @@ const EarningsPage = () => {
           nextPayout: 'Not scheduled',
         })
 
+        setEarningsBars(buildMonthlyBars(apiServices))
+
         setTransactions(
           apiServices.map((service) => ({
             id: `#svc-${service.id}`,
             project: service.title || 'Untitled Service',
-            date: service.created_at ? new Date(service.created_at).toLocaleDateString() : 'From API',
+            date: service.created_at ? new Date(service.created_at).toLocaleDateString() : '—',
             status: 'PUBLISHED',
             statusType: 'active',
             amount: `+${formatCurrency(service.price)}`,
@@ -113,7 +131,7 @@ const EarningsPage = () => {
     }
 
     fetchEarningsData()
-  }, [])
+  }, [buildMonthlyBars])
 
   return (
     <div className="admin-dashboard-layout expert-dashboard-layout">
@@ -132,8 +150,6 @@ const EarningsPage = () => {
               </button>
             </div>
           }
-          notifications={notifications}
-          onClearNotifications={() => setNotifications(0)}
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
           user={user}
@@ -144,9 +160,9 @@ const EarningsPage = () => {
           {earningsError && <div className="alert alert-danger">{earningsError}</div>}
 
           <EarningsOverviewCards stats={earningsStats} />
-          
-          <EarningsCharts summary={incomeSummary} />
-          
+
+          <EarningsCharts summary={incomeSummary} bars={earningsBars} />
+
           <TransactionTable transactions={transactions} />
         </div>
 

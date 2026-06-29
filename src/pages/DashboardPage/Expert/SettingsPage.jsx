@@ -11,7 +11,6 @@ import '../../Style/ExpertDashboardPage.css'
 const SettingsPage = () => {
   const navigate = useNavigate()
   const [searchQuery, setSearchQuery] = useState('')
-  const [notifications, setNotifications] = useState(2)
   const [profileData, setProfileData] = useState(null)
   const [profileError, setProfileError] = useState('')
 
@@ -57,8 +56,6 @@ const SettingsPage = () => {
         <ExpertHeader
           title="Settings"
           subtitle="Manage account, notification, and security preferences."
-          notifications={notifications}
-          onClearNotifications={() => setNotifications(0)}
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
           user={user}

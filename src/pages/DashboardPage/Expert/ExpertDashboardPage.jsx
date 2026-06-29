@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { logout } from '../../../Services/authService'
 import ContractsPanel from '../../../Components/Dashboard/Expert/ContractsPanel'
@@ -18,17 +18,16 @@ const ExpertDashboardPage = ({ onLogout }) => {
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState('dashboard')
   const [searchQuery, setSearchQuery] = useState('')
-  const [notifications, setNotifications] = useState(2)
   const [contracts, setContracts] = useState([])
   const [invitations, setInvitations] = useState([])
   const [skills, setSkills] = useState([])
-  const [rating, setRating] = useState(5)
+  const [rating, setRating] = useState(0)
   const [dashboardError, setDashboardError] = useState('')
   const [financialStats, setFinancialStats] = useState({
-    totalLifetime: '$0.00',
-    availableNow: '$0.00',
-    pendingClearance: '$0.00',
-    inEscrow: '$0.00',
+    totalValue: '$0.00',
+    serviceCount: 0,
+    avgPrice: '$0.00',
+    priceRange: '$0 — $0',
   })
 
   const user = useMemo(() => {
@@ -62,12 +61,28 @@ const ExpertDashboardPage = ({ onLogout }) => {
       ? String(value).split(',').map((item) => item.trim()).filter(Boolean)
       : []
 
+  const buildMonthlyEarnings = useCallback((apiServices) => {
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+    const monthlyTotals = Array(12).fill(0)
+    apiServices.forEach((s) => {
+      if (s.created_at || s.createdAt) {
+        const d = new Date(s.created_at || s.createdAt)
+        monthlyTotals[d.getMonth()] += Number(s.price) || 0
+      }
+    })
+    const maxVal = Math.max(...monthlyTotals, 1)
+    return monthNames.map((label, i) => ({
+      label,
+      height: `${Math.max(2, (monthlyTotals[i] / maxVal) * 100)}%`,
+      highlighted: i === new Date().getMonth(),
+    }))
+  }, [])
+
   useEffect(() => {
     const fetchExpertDashboardData = async () => {
       try {
         setDashboardError('')
 
-        // API data: load profile, own services, and marketplace jobs for expert dashboard.
         const [profileResult, services, jobs] = await Promise.all([
           user?.id ? getUserProfile(user.id) : Promise.resolve(null),
           getMyServices(),
@@ -75,28 +90,30 @@ const ExpertDashboardPage = ({ onLogout }) => {
         ])
 
         const apiServices = Array.isArray(services) ? services : []
-        const serviceTotal = apiServices.reduce((sum, service) => sum + (Number(service.price) || 0), 0)
+        const prices = apiServices.map((s) => Number(s.price) || 0)
+        const serviceTotal = prices.reduce((sum, p) => sum + p, 0)
+        const minPrice = prices.length ? Math.min(...prices) : 0
+        const maxPrice = prices.length ? Math.max(...prices) : 0
 
         setSkills(splitCsv(profileResult?.expertProfile?.skills))
-        setRating(profileResult?.expertProfile?.avgRating || 5)
+        setRating(profileResult?.expertProfile?.avgRating || 0)
+
         setFinancialStats({
-          totalLifetime: formatCurrency(serviceTotal),
-          availableNow: formatCurrency(serviceTotal * 0.6),
-          pendingClearance: formatCurrency(serviceTotal * 0.2),
-          inEscrow: formatCurrency(serviceTotal * 0.2),
+          totalValue: formatCurrency(serviceTotal),
+          serviceCount: apiServices.length,
+          avgPrice: formatCurrency(apiServices.length ? serviceTotal / apiServices.length : 0),
+          priceRange: `${formatCurrency(minPrice)} — ${formatCurrency(maxPrice)}`,
+          earningsBars: buildMonthlyEarnings(apiServices),
         })
 
         setContracts(
           apiServices.map((service) => ({
             id: service.id,
             name: service.title || 'Untitled Service',
-            client: 'Marketplace Listing',
             price: formatCurrency(service.price),
             pricingType: service.pricing_type || service.pricingType || 'fixed',
-            progress: `${service.delivery_days || service.deliveryDays || 0} days`,
-            deadline: service.pricing_type || service.pricingType || 'fixed',
-            status: 'ACTIVE',
-            tagClass: 'tag-review',
+            progress: `${service.delivery_days || service.deliveryDays || 0} days delivery`,
+            status: 'PUBLISHED',
           }))
         )
 
@@ -116,12 +133,11 @@ const ExpertDashboardPage = ({ onLogout }) => {
     }
 
     fetchExpertDashboardData()
-  }, [user?.id])
+  }, [user?.id, buildMonthlyEarnings])
 
   const filteredContracts = contracts.filter((item) =>
     item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    item.client.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    item.status.toLowerCase().includes(searchQuery.toLowerCase())
+    (item.price && item.price.toLowerCase().includes(searchQuery.toLowerCase()))
   )
 
   const filteredInvitations = invitations.filter((item) =>
@@ -137,9 +153,7 @@ const ExpertDashboardPage = ({ onLogout }) => {
       <main className="admin-main-panel expert-main-panel">
         <ExpertHeader
           title="Expert Overview"
-          subtitle={<>Your performance is up <span className="trend-up">+12.4%</span> this month.</>}
-          notifications={notifications}
-          onClearNotifications={() => setNotifications(0)}
+          subtitle="Overview of your services and marketplace opportunities."
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
           user={user}

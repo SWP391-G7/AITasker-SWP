@@ -12,7 +12,6 @@ import '../Client/ClientMarketplace.css'
 const MessagesPage = () => {
   const navigate = useNavigate()
   const [searchQuery, setSearchQuery] = useState('')
-  const [notifications, setNotifications] = useState(2)
 
   const user = useMemo(() => {
     try {
@@ -38,13 +37,6 @@ const MessagesPage = () => {
         <ExpertHeader
           title="Messages"
           subtitle="Connect and collaborate with your clients in real-time."
-          headerActions={
-            <div className="messages-header-actions">
-              <button type="button">New Message</button>
-            </div>
-          }
-          notifications={notifications}
-          onClearNotifications={() => setNotifications(0)}
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
           user={user}

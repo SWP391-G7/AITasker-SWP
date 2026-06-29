@@ -14,7 +14,6 @@ const PostServicePage = () => {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = React.useState(1);
   const [searchQuery, setSearchQuery] = React.useState('');
-  const [notifications, setNotifications] = React.useState(2);
 
   const user = React.useMemo(() => {
     try {
@@ -58,8 +57,6 @@ const PostServicePage = () => {
         <ExpertHeader
           title="Post a New Service"
           subtitle="Define your offering and start helping clients with AI."
-          notifications={notifications}
-          onClearNotifications={() => setNotifications(0)}
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
           user={user}

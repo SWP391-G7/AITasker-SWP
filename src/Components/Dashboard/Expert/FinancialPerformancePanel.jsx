@@ -1,66 +1,50 @@
-import { Download } from 'lucide-react'
-
-const earningsBars = [
-  { label: 'Jan', height: '18%' },
-  { label: 'Feb', height: '32%' },
-  { label: 'Mar', height: '28%' },
-  { label: 'Apr', height: '44%' },
-  { label: 'May', height: '40%' },
-  { label: 'Jun', height: '62%' },
-  { label: 'Jul', height: '74%' },
-  { label: 'Aug', height: '66%' },
-  { label: 'Sep', height: '48%' },
-  { label: 'Oct', height: '52%' },
-  { label: 'Nov', height: '64%' },
-  { label: 'Dec', height: '78%', highlighted: true }
-]
-
 const FinancialPerformancePanel = ({
-  totalLifetime = '$24,850.00',
-  availableNow = '$8,240.00',
-  pendingClearance = '$4,120.00',
-  inEscrow = '$12,490.00',
+  totalValue = '$0.00',
+  serviceCount = 0,
+  avgPrice = '$0.00',
+  priceRange = '$0 — $0',
+  earningsBars = [],
 }) => (
   <section className="chart-panel-card expert-performance-panel">
     <div className="expert-performance-header">
       <div>
-        <div className="stat-title">Financial Performance</div>
-        {/* API data: values can be supplied by dashboard page from service data. */}
-        <div className="stat-value">{totalLifetime}</div>
+        <div className="stat-title">Service Portfolio</div>
+        <div className="stat-value">{totalValue}</div>
         <div className="stat-trend text-muted">
-          <span>Total Lifetime Earning</span>
+          <span>Total Value of Published Services</span>
         </div>
-      </div>
-      <div className="expert-performance-actions">
-        <button className="icon-button" aria-label="Download report">
-          <Download size={17} />
-        </button>
-        <button className="btn-approve">Withdraw Funds</button>
       </div>
     </div>
 
     <div className="expert-money-grid">
       <div className="admin-stat-card expert-money-card">
-        <div className="stat-title">Available Now</div>
-        <div className="item-name">{availableNow}</div>
+        <div className="stat-title">Services Published</div>
+        <div className="item-name">{serviceCount}</div>
       </div>
       <div className="admin-stat-card expert-money-card">
-        <div className="stat-title">Pending Clearance</div>
-        <div className="item-name">{pendingClearance}</div>
+        <div className="stat-title">Average Price</div>
+        <div className="item-name">{avgPrice}</div>
       </div>
       <div className="admin-stat-card expert-money-card">
-        <div className="stat-title">In Escrow</div>
-        <div className="item-name">{inEscrow}</div>
+        <div className="stat-title">Price Range</div>
+        <div className="item-name">{priceRange}</div>
       </div>
     </div>
 
-    <div className="custom-bar-chart expert-performance-chart">
-      {earningsBars.map((bar) => (
-        <div key={bar.label} className="chart-bar-container">
-          <div className={`chart-bar ${bar.highlighted ? 'highlighted' : ''}`} style={{ height: bar.height }}></div>
-          <span className="chart-label">{bar.label}</span>
-        </div>
-      ))}
+    <div className="expert-performance-chart">
+      <div className="stat-title" style={{ marginBottom: '1rem' }}>Services Created by Month</div>
+      <div className="custom-bar-chart">
+      {earningsBars.length > 0 ? (
+        earningsBars.map((bar) => (
+          <div key={bar.label} className="chart-bar-container">
+            <div className={`chart-bar ${bar.highlighted ? 'highlighted' : ''}`} style={{ height: bar.height }}></div>
+            <span className="chart-label">{bar.label}</span>
+          </div>
+        ))
+      ) : (
+        <div className="text-muted small text-center py-3">No services published yet.</div>
+      )}
+      </div>
     </div>
   </section>
 )

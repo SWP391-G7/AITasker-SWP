@@ -33,7 +33,6 @@ const MyProjectsPage = () => {
   const navigate = useNavigate()
   const [services, setServices] = useState([])
   const [searchQuery, setSearchQuery] = useState('')
-  const [notifications, setNotifications] = useState(2)
   const [loading, setLoading] = useState(true)
   const [deletingId, setDeletingId] = useState(null)
   const [error, setError] = useState('')
@@ -111,8 +110,6 @@ const MyProjectsPage = () => {
         <ExpertHeader
           title="My Projects"
           subtitle="Track all AI services you have posted for clients."
-          notifications={notifications}
-          onClearNotifications={() => setNotifications(0)}
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
           user={user}

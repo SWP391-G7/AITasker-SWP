@@ -116,6 +116,10 @@
   margin-top: 1.75rem;
 }
 
+.expert-performance-chart .custom-bar-chart {
+  margin-top: 0;
+}
+
 .expert-dashboard-layout .chart-bar {
   overflow: hidden;
 }
@@ -233,20 +237,22 @@
 
 .expert-contract-table-head {
   display: grid;
-  grid-template-columns: minmax(180px, 1.5fr) minmax(100px, 0.7fr) minmax(90px, 0.55fr) minmax(110px, 0.7fr) minmax(72px, 0.45fr);
-  gap: 1rem;
+  grid-template-columns: minmax(160px, 2fr) minmax(60px, 0.4fr) minmax(100px, 0.5fr) minmax(80px, 0.4fr);
+  gap: 0.75rem;
   color: #64748b;
   font-size: 0.68rem;
   font-weight: 800;
   letter-spacing: 0.5px;
   margin-bottom: 0.85rem;
+  padding-right: 0.5rem;
   text-transform: uppercase;
 }
 
 .expert-contract-list .list-item-row {
   display: grid;
-  grid-template-columns: minmax(180px, 1.5fr) minmax(100px, 0.7fr) minmax(90px, 0.55fr) minmax(110px, 0.7fr) minmax(72px, 0.45fr);
-  gap: 1rem;
+  grid-template-columns: minmax(160px, 2fr) minmax(60px, 0.4fr) minmax(100px, 0.5fr) minmax(80px, 0.4fr);
+  gap: 0.75rem;
+  padding: 0.7rem 0.75rem;
 }
 
 .expert-contract-list .item-left {
@@ -267,6 +273,19 @@
 .expert-invitations-panel .item-actions {
   width: 100%;
   max-width: 100%;
+}
+
+.expert-invitations-panel .item-details {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.expert-invitations-panel .item-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+  width: 100%;
 }
 
 .expert-invitations-panel .item-actions button {
