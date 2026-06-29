@@ -1,141 +1,121 @@
-<<<<<<< Updated upstream
-import { useState, useMemo } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, useEffect, useMemo } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
 import ExpertHeader from '../../../Components/Dashboard/Expert/ExpertHeader'
 import ExpertSidebar from '../../../Components/Dashboard/Expert/ExpertSidebar'
-import ConversationPanel from '../../../Components/Dashboard/Client/Messages/ConversationPanel'
-import ChatPanel from '../../../Components/Dashboard/Client/Messages/ChatPanel'
+import ChatList from '../../../Components/Dashboard/Expert/Messages/ChatList'
+import ChatWindow from '../../../Components/Dashboard/Expert/Messages/ChatWindow'
+import ProjectOverviewSidebar from '../../../Components/Dashboard/Expert/Messages/ProjectOverviewSidebar'
+import { getConversations, getConversationMessages, sendMessage } from '../../../Services/messageService'
 import { createHandleLogout } from './handleLogout'
 import '../../Style/AdminDashboardPage.css'
 import '../../Style/ExpertDashboardPage.css'
-import '../Client/ClientMarketplace.css'
+import '../../../Components/Dashboard/Expert/Messages/MessagesPage.css'
 
 const MessagesPage = () => {
   const navigate = useNavigate()
+  const location = useLocation()
+  const [conversations, setConversations] = useState([])
+  const [activeChatId, setActiveChatId] = useState(null)
+  const [messages, setMessages] = useState([])
+  const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
-  const [notifications, setNotifications] = useState(2)
-=======
-import { useState, useEffect, useMemo } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import ExpertHeader from '../../../Components/Dashboard/Expert/ExpertHeader';
-import ExpertSidebar from '../../../Components/Dashboard/Expert/ExpertSidebar';
-import ChatList from '../../../Components/Dashboard/Expert/Messages/ChatList';
-import ChatWindow from '../../../Components/Dashboard/Expert/Messages/ChatWindow';
-import ProjectOverviewSidebar from '../../../Components/Dashboard/Expert/Messages/ProjectOverviewSidebar';
-import { getConversations, getConversationMessages, sendMessage } from '../../../Services/messageService';
-import { createHandleLogout } from './handleLogout';
-import '../../Style/AdminDashboardPage.css';
-import '../../Style/ExpertDashboardPage.css';
-import '../../../Components/Dashboard/Expert/Messages/MessagesPage.css';
-
-const MessagesPage = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const [conversations, setConversations] = useState([]);
-  const [activeChatId, setActiveChatId] = useState(null);
-  const [messages, setMessages] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [notifications, setNotifications] = useState(0);
->>>>>>> Stashed changes
+  const [notifications, setNotifications] = useState(0)
 
   const user = useMemo(() => {
     try {
-      const storedUser = localStorage.getItem('user');
-      return storedUser ? JSON.parse(storedUser) : null;
+      const storedUser = localStorage.getItem('user')
+      return storedUser ? JSON.parse(storedUser) : null
     } catch {
-      return null;
+      return null
     }
-  }, []);
+  }, [])
 
-  const handleLogout = createHandleLogout(navigate);
+  const handleLogout = createHandleLogout(navigate)
 
   const handleTabChange = (id) => {
-    if (id === 'dashboard') navigate('/expert/dashboard');
-    else navigate(`/expert/${id}`);
-  };
+    if (id === 'dashboard') navigate('/expert/dashboard')
+    else navigate(`/expert/${id}`)
+  }
 
-<<<<<<< Updated upstream
-=======
   // 1. Fetch conversations list
   useEffect(() => {
     const fetchConvs = async () => {
       try {
-        const data = await getConversations();
-        setConversations(data);
-        
-        const passedId = location.state?.activeConversationId;
+        const data = await getConversations()
+        setConversations(data)
+
+        const passedId = location.state?.activeConversationId
         if (passedId) {
-          setActiveChatId(passedId);
+          setActiveChatId(passedId)
         } else if (data.length > 0 && !activeChatId) {
-          setActiveChatId(data[0].id);
+          setActiveChatId(data[0].id)
         }
       } catch (err) {
-        console.error("Error fetching conversations:", err);
+        console.error("Error fetching conversations:", err)
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
-    fetchConvs();
+    fetchConvs()
 
-    const interval = setInterval(fetchConvs, 10000);
-    return () => clearInterval(interval);
-  }, [location.state?.activeConversationId]);
+    const interval = setInterval(fetchConvs, 10000)
+    return () => clearInterval(interval)
+  }, [location.state?.activeConversationId])
 
   // 2. Fetch messages for active conversation
   useEffect(() => {
-    if (!activeChatId) return;
+    if (!activeChatId) return
 
     const fetchMessages = async () => {
       try {
-        const data = await getConversationMessages(activeChatId);
-        setMessages(data);
-        
-        setConversations(prev => prev.map(c => 
+        const data = await getConversationMessages(activeChatId)
+        setMessages(data)
+
+        setConversations(prev => prev.map(c =>
           c.id === activeChatId ? { ...c, unread: 0 } : c
-        ));
+        ))
       } catch (err) {
-        console.error("Error fetching messages:", err);
+        console.error("Error fetching messages:", err)
       }
-    };
+    }
 
-    fetchMessages();
+    fetchMessages()
 
-    const interval = setInterval(fetchMessages, 3000);
-    return () => clearInterval(interval);
-  }, [activeChatId]);
+    const interval = setInterval(fetchMessages, 3000)
+    return () => clearInterval(interval)
+  }, [activeChatId])
 
   // 3. Handle sending a message
   const handleSendMessage = async (text) => {
-    if (!activeChatId || !text.trim()) return;
+    if (!activeChatId || !text.trim()) return
     try {
-      const newMsg = await sendMessage(activeChatId, text);
-      setMessages(prev => [...prev, newMsg]);
+      const newMsg = await sendMessage(activeChatId, text)
+      setMessages(prev => [...prev, newMsg])
 
-      setConversations(prev => prev.map(c => 
-        c.id === activeChatId 
-          ? { 
-              ...c, 
-              last_message: text, 
-              last_message_time: new Date().toISOString() 
-            } 
+      setConversations(prev => prev.map(c =>
+        c.id === activeChatId
+          ? {
+            ...c,
+            last_message: text,
+            last_message_time: new Date().toISOString()
+          }
           : c
-      ));
+      ))
     } catch (err) {
-      console.error("Error sending message:", err);
+      console.error("Error sending message:", err)
     }
-  };
+  }
 
   // Prepare UI conversations (renaming properties to match ChatList component expectations)
   const uiConversations = useMemo(() => {
     return conversations.map(c => {
-      const name = c.other_user_name || "Direct Chat";
-      const role = c.other_user_role === 'expert' 
-        ? (c.other_user_professional_title || "Expert") 
-        : (c.other_user_company_name || "Client");
-      
-      const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random&color=fff`;
+      const name = c.other_user_name || "Direct Chat"
+      const role = c.other_user_role === 'expert'
+        ? (c.other_user_professional_title || "Expert")
+        : (c.other_user_company_name || "Client")
+
+      const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random&color=fff`
 
       return {
         id: c.id,
@@ -144,8 +124,8 @@ const MessagesPage = () => {
         project: c.content || "Direct Chat",
         avatar: avatarUrl,
         lastMessage: c.last_message || "No messages yet",
-        time: c.last_message_time 
-          ? new Date(c.last_message_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
+        time: c.last_message_time
+          ? new Date(c.last_message_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
           : "",
         unread: c.unread,
         status: 'online',
@@ -153,13 +133,12 @@ const MessagesPage = () => {
         progress: 100,
         nextPayment: 'N/A',
         sharedFiles: []
-      };
-    });
-  }, [conversations]);
+      }
+    })
+  }, [conversations])
 
-  const activeConversation = uiConversations.find(c => c.id === activeChatId);
+  const activeConversation = uiConversations.find(c => c.id === activeChatId)
 
->>>>>>> Stashed changes
   return (
     <div className="admin-dashboard-layout expert-dashboard-layout">
       <ExpertSidebar activeTab="messages" onTabChange={handleTabChange} onLogout={handleLogout} />
@@ -181,12 +160,6 @@ const MessagesPage = () => {
           onLogout={handleLogout}
         />
 
-<<<<<<< Updated upstream
-        <section className="messages-layout">
-          <ConversationPanel />
-          <ChatPanel />
-        </section>
-=======
         {loading ? (
           <div style={{ flex: 1, display: "flex", justifyContent: "center", alignItems: "center", height: "400px", color: "#64748b" }}>
             <p>Loading conversations...</p>
@@ -199,18 +172,17 @@ const MessagesPage = () => {
               onSelect={setActiveChatId}
               searchQuery={searchQuery}
             />
-            <ChatWindow 
-              conversation={activeConversation} 
+            <ChatWindow
+              conversation={activeConversation}
               messages={messages}
               onSendMessage={handleSendMessage}
             />
             <ProjectOverviewSidebar conversation={activeConversation} />
           </section>
         )}
->>>>>>> Stashed changes
-      </main>
-    </div>
-  );
-};
+      </main >
+    </div >
+  )
+}
 
-export default MessagesPage;
+export default MessagesPage

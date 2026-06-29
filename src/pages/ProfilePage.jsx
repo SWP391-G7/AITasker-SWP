@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react"
+import { useParams, useNavigate } from "react-router-dom"
 import {
   Award,
   BadgeCheck,
@@ -10,18 +10,15 @@ import {
   MapPin,
   Send,
   Star,
-} from "lucide-react";
-import HeaderCom from "../Components/Navbar/HeaderCom";
-import Footer from "../Components/Footer/Footer";
-import { getUserProfile } from "../Services/profileService";
-import { getStoredUser } from "../Services/checkLogin";
-<<<<<<< Updated upstream
-import { getExpertServicesFromApi } from "../Components/Profile/Expert/ExpertService";
-import { getClientProjectsFromApi } from "../Components/Profile/Client/ClientProject";
-=======
-import { getOrCreateConversation } from "../Services/messageService";
->>>>>>> Stashed changes
-import "./ProfilePage.css";
+} from "lucide-react"
+import HeaderCom from "../Components/Navbar/HeaderCom"
+import Footer from "../Components/Footer/Footer"
+import { getUserProfile } from "../Services/profileService"
+import { getStoredUser } from "../Services/checkLogin"
+import { getExpertServicesFromApi } from "../Components/Profile/Expert/ExpertService"
+import { getClientProjectsFromApi } from "../Components/Profile/Client/ClientProject"
+import { getOrCreateConversation } from "../Services/messageService"
+import "./ProfilePage.css"
 
 function ProfilePage() {
   const { userId } = useParams()
@@ -68,27 +65,27 @@ function ProfilePage() {
   }, [userId])
 
   const getRoleDashboardPath = (role) => {
-    const normalizedRole = String(role || "").toLowerCase();
+    const normalizedRole = String(role || "").toLowerCase()
 
     if (normalizedRole.includes("admin")) {
-      return "/admin-dashboard";
+      return "/admin-dashboard"
     }
 
     if (normalizedRole.includes("expert")) {
-      return "/expert/dashboard";
+      return "/expert/dashboard"
     }
 
-    return "/client/dashboard";
-  };
+    return "/client/dashboard"
+  }
 
   const getMessagesPath = () => {
-    const normalizedRole = String(currentUser?.role || "").toLowerCase();
-    return normalizedRole.includes("expert") ? "/expert/messages" : "/client/messages";
-  };
+    const normalizedRole = String(currentUser?.role || "").toLowerCase()
+    return normalizedRole.includes("expert") ? "/expert/messages" : "/client/messages"
+  }
 
   const handleBack = () => {
     if (currentUser) {
-      navigate(getRoleDashboardPath(currentUser.role));
+      navigate(getRoleDashboardPath(currentUser.role))
     } else {
       navigate("/")
     }
@@ -97,22 +94,22 @@ function ProfilePage() {
   const handleContact = async () => {
     try {
       if (!currentUser) {
-        navigate("/login");
-        return;
+        navigate("/login")
+        return
       }
-      const conv = await getOrCreateConversation(userId);
-      const messagesPath = String(currentUser?.role || "").toLowerCase().includes("expert") 
-        ? "/expert/messages" 
-        : "/client/messages";
-      navigate(messagesPath, { state: { activeConversationId: conv.id } });
+      const conv = await getOrCreateConversation(userId)
+      const messagesPath = String(currentUser?.role || "").toLowerCase().includes("expert")
+        ? "/expert/messages"
+        : "/client/messages"
+      navigate(messagesPath, { state: { activeConversationId: conv.id } })
     } catch (err) {
-      console.error("Failed to start conversation:", err);
-      navigate(getMessagesPath());
+      console.error("Failed to start conversation:", err)
+      navigate(getMessagesPath())
     }
   }
 
   const handleViewAllProfileItems = () => {
-    navigate(activeTab === "expert" ? "/expert/projects" : "/client/projects");
+    navigate(activeTab === "expert" ? "/expert/projects" : "/client/projects")
   }
 
   const renderStars = (rating) => {
@@ -145,86 +142,86 @@ function ProfilePage() {
 
   const getSkills = (skills) => {
     if (!skills) {
-      return [];
+      return []
     }
 
     return skills
       .split(",")
       .map((skill) => skill.trim())
-      .filter(Boolean);
-  };
+      .filter(Boolean)
+  }
 
   const formatDate = (date) => {
     if (!date) {
-      return "Recently";
+      return "Recently"
     }
 
     return new Date(date).toLocaleDateString(undefined, {
       year: "numeric",
       month: "short",
       day: "numeric",
-    });
-  };
+    })
+  }
 
   const formatCurrency = (value) => {
-    const amount = Number(value);
+    const amount = Number(value)
 
     if (!Number.isFinite(amount)) {
-      return "Not specified";
+      return "Not specified"
     }
 
     return amount.toLocaleString(undefined, {
       style: "currency",
       currency: "USD",
       maximumFractionDigits: 0,
-    });
-  };
+    })
+  }
 
   const formatHourlyRate = (value) => {
     if (!value) {
-      return "Not specified";
+      return "Not specified"
     }
 
-    const amount = Number(String(value).replace(/[^0-9.]/g, ""));
+    const amount = Number(String(value).replace(/[^0-9.]/g, ""))
 
     if (!Number.isFinite(amount)) {
-      return String(value);
+      return String(value)
     }
 
-    return `${formatCurrency(amount)}/hr`;
-  };
+    return `${formatCurrency(amount)}/hr`
+  }
 
   const getAverageProjectBudget = (project) => {
-    const min = Number(project.budgetMin);
-    const max = Number(project.budgetMax);
+    const min = Number(project.budgetMin)
+    const max = Number(project.budgetMax)
 
     if (Number.isFinite(min) && Number.isFinite(max)) {
-      return (min + max) / 2;
+      return (min + max) / 2
     }
 
     if (Number.isFinite(min)) {
-      return min;
+      return min
     }
 
     if (Number.isFinite(max)) {
-      return max;
+      return max
     }
 
-    return null;
-  };
+    return null
+  }
 
   const sumNumbers = (items, getValue) =>
     items.reduce((total, item) => {
-      const value = getValue(item);
-      return Number.isFinite(value) ? total + value : total;
-    }, 0);
+      const value = getValue(item)
+      return Number.isFinite(value) ? total + value : total
+    }, 0)
 
   const renderStat = (value, label) => (
     <div className="profile-stat-card">
       <strong>{value}</strong>
       <span>{label}</span>
     </div>
-  );
+  )
 
   const renderServiceCard = (item) => (
     <article className="profile-side-item" key={item.id}>
@@ -240,7 +237,7 @@ function ProfilePage() {
         </div>
       </div>
     </article>
-  );
+  )
 
   const renderProjectCard = (item) => (
     <article className="profile-side-item" key={item.id}>
@@ -257,7 +254,7 @@ function ProfilePage() {
         <p className="project-budget">{item.budget} budget</p>
       </div>
     </article>
-  );
+  )
 
   if (loading) {
     return (
@@ -268,7 +265,7 @@ function ProfilePage() {
           <p>Retrieving secure profile...</p>
         </main>
       </div>
-    );
+    )
   }
 
   if (error) {
@@ -285,39 +282,39 @@ function ProfilePage() {
           </div>
         </main>
       </div>
-    );
+    )
   }
 
-  const { user, clientProfile, expertProfile, hasClientProfile, hasExpertProfile } = profileData;
-  const isExpertView = activeTab === "expert";
-  const activeProfile = isExpertView ? expertProfile : clientProfile;
+  const { user, clientProfile, expertProfile, hasClientProfile, hasExpertProfile } = profileData
+  const isExpertView = activeTab === "expert"
+  const activeProfile = isExpertView ? expertProfile : clientProfile
   // API data: profile page calls API once, then pushes response lists through Profile helpers.
-  const profileServices = getExpertServicesFromApi(profileData.services || []);
-  const profileProjects = getClientProjectsFromApi(profileData.projects || []);
-  const skills = isExpertView ? getSkills(expertProfile?.skills) : [];
-  const expertRating = Number(expertProfile?.avgRating);
-  const displayRating = Number.isFinite(expertRating) ? expertRating.toFixed(1) : "Not rated";
-  const isTopRated = Number.isFinite(expertRating) && expertRating >= 4.8;
-  const serviceTotal = sumNumbers(profileData.services || [], (service) => Number(service.price));
-  const projectBudgetTotal = sumNumbers(profileData.projects || [], getAverageProjectBudget);
+  const profileServices = getExpertServicesFromApi(profileData.services || [])
+  const profileProjects = getClientProjectsFromApi(profileData.projects || [])
+  const skills = isExpertView ? getSkills(expertProfile?.skills) : []
+  const expertRating = Number(expertProfile?.avgRating)
+  const displayRating = Number.isFinite(expertRating) ? expertRating.toFixed(1) : "Not rated"
+  const isTopRated = Number.isFinite(expertRating) && expertRating >= 4.8
+  const serviceTotal = sumNumbers(profileData.services || [], (service) => Number(service.price))
+  const projectBudgetTotal = sumNumbers(profileData.projects || [], getAverageProjectBudget)
   const averageProjectBudget = profileData.projects?.length
     ? projectBudgetTotal / profileData.projects.length
-    : null;
+    : null
   const openProjectCount = (profileData.projects || []).filter((project) =>
     String(project.status || "").toLowerCase().includes("open")
-  ).length;
+  ).length
   const requiredSkills = [
     ...new Set((profileData.projects || []).map((project) => project.requiredSkill).filter(Boolean)),
-  ];
+  ]
   const displayTitle = isExpertView
     ? expertProfile?.professionalTitle || "Professional title not specified"
-    : clientProfile?.companyName || "Company not specified";
+    : clientProfile?.companyName || "Company not specified"
   const locationText = isExpertView
     ? expertProfile?.portfolioUrl || "Portfolio not specified"
-    : clientProfile?.industry || "Industry not specified";
+    : clientProfile?.industry || "Industry not specified"
   const aboutText = isExpertView
     ? expertProfile?.bio
-    : clientProfile?.bio;
+    : clientProfile?.bio
 
   return (
     <div className="profile-shell">
@@ -475,12 +472,12 @@ function ProfilePage() {
                     </span>
                     <small>{user.role}</small>
                   </div>
-                  
-                  {!isOwnProfile && (  
-                  <button className="contact-btn" onClick={handleContact}>
-                    <Mail size={16} />
-                    Contact Me
-                  </button>)}
+
+                  {!isOwnProfile && (
+                    <button className="contact-btn" onClick={handleContact}>
+                      <Mail size={16} />
+                      Contact Me
+                    </button>)}
 
                   <button
                     className="secondary-action-btn"
