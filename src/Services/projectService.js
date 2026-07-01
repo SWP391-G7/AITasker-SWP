@@ -1,176 +1,187 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
+/**
+ * Helper function to retrieve authorization header
+ */
+const getAuthHeaders = () => {
+  const token = localStorage.getItem('token');
+  if (!token) {
+    throw new Error('No authentication token found. Please log in first.');
+  }
+  return {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${token}`
+  };
+};
+
+/**
+ * Create a new project manually from a pending job post
+ */
 export const createProject = async (jobId) => {
-  const token = localStorage.getItem('token');
-  if (!token) throw new Error('No authentication token found');
+  try {
+    const response = await fetch(`${API_BASE_URL}/projects`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ job_id: jobId })
+    });
 
-  const response = await fetch(`${API_BASE_URL}/projects`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`
-    },
-    body: JSON.stringify({ job_id: jobId })
-  });
-
-  const result = await response.json();
-  if (!response.ok) {
-    throw new Error(result.message || 'Failed to start project');
+    const result = await response.json();
+    if (!response.ok) {
+      throw new Error(result.message || 'Failed to create project.');
+    }
+    return result;
+  } catch (error) {
+    console.error('Create project error:', error);
+    throw error;
   }
-  return result;
 };
 
+/**
+ * Get all projects where the user is a participant
+ */
 export const getMyProjects = async () => {
-  const token = localStorage.getItem('token');
-  if (!token) throw new Error('No authentication token found');
+  try {
+    const response = await fetch(`${API_BASE_URL}/projects`, {
+      method: 'GET',
+      headers: getAuthHeaders()
+    });
 
-  const response = await fetch(`${API_BASE_URL}/projects`, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`
+    const result = await response.json();
+    if (!response.ok) {
+      throw new Error(result.message || 'Failed to retrieve projects.');
     }
-  });
-
-  const result = await response.json();
-  if (!response.ok) {
-    throw new Error(result.message || 'Failed to fetch projects');
+    return result.projects || [];
+  } catch (error) {
+    console.error('Get my projects error:', error);
+    throw error;
   }
-  return result.projects || result.data || [];
 };
 
+/**
+ * Get project details by project ID
+ */
 export const getProjectById = async (projectId) => {
-  const token = localStorage.getItem('token');
-  if (!token) throw new Error('No authentication token found');
+  try {
+    const response = await fetch(`${API_BASE_URL}/projects/${projectId}`, {
+      method: 'GET',
+      headers: getAuthHeaders()
+    });
 
-  const response = await fetch(`${API_BASE_URL}/projects/${projectId}`, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`
+    const result = await response.json();
+    if (!response.ok) {
+      throw new Error(result.message || 'Failed to retrieve project details.');
     }
-  });
-
-  const result = await response.json();
-  if (!response.ok) {
-    throw new Error(result.message || 'Failed to fetch project detail');
+    return result; // contains { success, project, milestones }
+  } catch (error) {
+    console.error('Get project by id error:', error);
+    throw error;
   }
-  return result.project || result.data;
 };
 
+/**
+ * Close/abandon a project
+ */
 export const closeProject = async (projectId) => {
-  const token = localStorage.getItem('token');
-  if (!token) throw new Error('No authentication token found');
+  try {
+    const response = await fetch(`${API_BASE_URL}/projects/${projectId}`, {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ status: 'terminated' })
+    });
 
-  const response = await fetch(`${API_BASE_URL}/projects/${projectId}`, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`
-    },
-    body: JSON.stringify({ status: 'terminated' })
-  });
-
-  const result = await response.json();
-  if (!response.ok) {
-    throw new Error(result.message || 'Failed to close project');
-  }
-  return result.project || result.data;
-};
-
-export const createMilestone = async (projectId, data) => {
-  const token = localStorage.getItem('token');
-  if (!token) throw new Error('No authentication token found');
-
-  const response = await fetch(`${API_BASE_URL}/milestones/project/${projectId}`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`
-    },
-    body: JSON.stringify(data)
-  });
-
-  const result = await response.json();
-  if (!response.ok) {
-    throw new Error(result.message || 'Failed to create milestone');
-  }
-  return result.milestone || result.data;
-};
-
-export const getMilestones = async (projectId) => {
-  const token = localStorage.getItem('token');
-  if (!token) throw new Error('No authentication token found');
-
-  const response = await fetch(`${API_BASE_URL}/milestones/project/${projectId}`, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`
+    const result = await response.json();
+    if (!response.ok) {
+      throw new Error(result.message || 'Failed to close project.');
     }
-  });
-
-  const result = await response.json();
-  if (!response.ok) {
-    throw new Error(result.message || 'Failed to fetch milestones');
+    return result.project;
+  } catch (error) {
+    console.error('Close project error:', error);
+    throw error;
   }
-  return result.milestones || result.data || [];
 };
 
-export const updateMilestone = async (milestoneId, data) => {
-  const token = localStorage.getItem('token');
-  if (!token) throw new Error('No authentication token found');
+/**
+ * Create a new milestone for a project
+ */
+export const createMilestone = async (projectId, milestoneData) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/milestones/project/${projectId}`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(milestoneData)
+    });
 
-  const response = await fetch(`${API_BASE_URL}/milestones/${milestoneId}`, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`
-    },
-    body: JSON.stringify(data)
-  });
-
-  const result = await response.json();
-  if (!response.ok) {
-    throw new Error(result.message || 'Failed to update milestone');
+    const result = await response.json();
+    if (!response.ok) {
+      throw new Error(result.message || 'Failed to create milestone.');
+    }
+    return result.milestone;
+  } catch (error) {
+    console.error('Create milestone error:', error);
+    throw error;
   }
-  return result.milestone || result.data;
 };
 
+/**
+ * Update a milestone
+ */
+export const updateMilestone = async (milestoneId, milestoneData) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/milestones/${milestoneId}`, {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(milestoneData)
+    });
+
+    const result = await response.json();
+    if (!response.ok) {
+      throw new Error(result.message || 'Failed to update milestone.');
+    }
+    return result.milestone;
+  } catch (error) {
+    console.error('Update milestone error:', error);
+    throw error;
+  }
+};
+
+/**
+ * Delete a milestone
+ */
 export const deleteMilestone = async (milestoneId) => {
-  const token = localStorage.getItem('token');
-  if (!token) throw new Error('No authentication token found');
+  try {
+    const response = await fetch(`${API_BASE_URL}/milestones/${milestoneId}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders()
+    });
 
-  const response = await fetch(`${API_BASE_URL}/milestones/${milestoneId}`, {
-    method: 'DELETE',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`
+    const result = await response.json();
+    if (!response.ok) {
+      throw new Error(result.message || 'Failed to delete milestone.');
     }
-  });
-
-  const result = await response.json();
-  if (!response.ok) {
-    throw new Error(result.message || 'Failed to delete milestone');
+    return result;
+  } catch (error) {
+    console.error('Delete milestone error:', error);
+    throw error;
   }
-  return result;
 };
 
+/**
+ * Start payment for a milestone
+ */
 export const payMilestone = async (milestoneId) => {
-  const token = localStorage.getItem('token');
-  if (!token) throw new Error('No authentication token found');
+  try {
+    const response = await fetch(`${API_BASE_URL}/milestones/${milestoneId}/pay`, {
+      method: 'PUT',
+      headers: getAuthHeaders()
+    });
 
-  const response = await fetch(`${API_BASE_URL}/milestones/${milestoneId}/pay`, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`
+    const result = await response.json();
+    if (!response.ok) {
+      throw new Error(result.message || 'Failed to process milestone payment.');
     }
-  });
-
-  const result = await response.json();
-  if (!response.ok) {
-    throw new Error(result.message || 'Failed to process milestone payment');
+    return result; // contains { success, milestone, projectCompleted }
+  } catch (error) {
+    console.error('Pay milestone error:', error);
+    throw error;
   }
-  return result;
 };

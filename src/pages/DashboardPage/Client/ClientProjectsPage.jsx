@@ -19,6 +19,11 @@ import "./ClientMarketplace.css";
 
 const getJobId = (job) => job?._id || job?.id || job?.jobId || job?.job_id;
 
+const formatDate = (dateValue) => {
+  if (!dateValue) return "No deadline";
+  return new Date(dateValue).toLocaleDateString();
+};
+
 const formatBudget = (job) => {
   const min = job.budget_min ?? job.budgetMin;
   const max = job.budget_max ?? job.budgetMax ?? job.budget;
@@ -27,6 +32,12 @@ const formatBudget = (job) => {
   if (max) return `$${max}`;
   if (min) return `$${min}`;
   return "No budget";
+};
+
+const getProgress = (item) => {
+  if (typeof item.progress === "number") return item.progress;
+  if (item.status === "completed") return 100;
+  return 0;
 };
 
 function ClientProjectsPage() {
@@ -40,7 +51,7 @@ function ClientProjectsPage() {
   const [error, setError] = useState("");
   const user = useClientUser();
 
-  const fetchJobsAndProjects = async () => {
+  const fetchDashboardData = async () => {
     try {
       setLoading(true);
       setError("");
@@ -52,21 +63,21 @@ function ClientProjectsPage() {
       setJobs(Array.isArray(list) ? list : []);
       setProjects(Array.isArray(projectsResult) ? projectsResult : []);
     } catch (err) {
-      setError(err.message || "Failed to load your dashboard.");
+      setError(err.message || "Failed to load dashboard data.");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchJobsAndProjects();
+    fetchDashboardData();
   }, []);
 
   const filteredJobs = useMemo(() => {
     const query = searchQuery.toLowerCase();
     return jobs.filter((job) =>
-      (job.title || "").toLowerCase().includes(query) ||
-      (job.required_skill || "").toLowerCase().includes(query) ||
+      (job.title || job.jobTitle || "").toLowerCase().includes(query) ||
+      (job.required_skill || job.requiredSkill || job.category || job.serviceCategory || "").toLowerCase().includes(query) ||
       (job.status || "open").toLowerCase().includes(query)
     );
   }, [jobs, searchQuery]);
@@ -95,7 +106,7 @@ function ClientProjectsPage() {
       setDeletingId(jobId);
       setError("");
       await deleteJobPost(jobId);
-      await fetchJobsAndProjects();
+      await fetchDashboardData();
     } catch (err) {
       setError(err.message || "Failed to delete task.");
     } finally {
@@ -114,8 +125,8 @@ function ClientProjectsPage() {
 
       <main className="post-job-main">
         <ClientHeader
-          title="My Workspace"
-          subtitle="Manage all your job posts and active project contracts."
+          title="My Projects"
+          subtitle="Track all tasks you have posted for AI experts."
           notifications={notifications}
           onClearNotifications={() => setNotifications(0)}
           searchQuery={searchQuery}
@@ -124,148 +135,153 @@ function ClientProjectsPage() {
           onLogout={handleLogout}
         />
 
-        <section className="post-form-card" style={{ maxWidth: '100%', width: '100%' }}>
-          <div className="projects-toolbar" style={{ marginBottom: '20px' }}>
-            <div>
-              <h2 className="projects-title" style={{ fontSize: '1.4rem' }}>Dashboard Overview</h2>
-              <p className="projects-subtitle">
-                Found {filteredJobs.length} job post{filteredJobs.length !== 1 ? "s" : ""} and {filteredProjects.length} project contract{filteredProjects.length !== 1 ? "s" : ""}
-              </p>
-            </div>
-
-            <button className="draft-btn" type="button" onClick={fetchJobsAndProjects} disabled={loading}>
-              <RefreshCcw size={16} />
-              Refresh
-            </button>
+        <div className="projects-toolbar" style={{ marginBottom: '24px' }}>
+          <div>
+            <h2 className="projects-title" style={{ fontSize: '1.5rem', fontWeight: '700', color: '#fff', margin: 0 }}>Workspace Dashboard</h2>
+            <p className="projects-subtitle" style={{ color: 'rgba(255,255,255,0.6)', margin: '4px 0 0 0' }}>Manage your tasks and active contracts.</p>
           </div>
 
-          {loading && <div className="alert alert-success">Loading items...</div>}
-          {error && <div className="alert alert-danger">{error}</div>}
+          <button className="draft-btn" type="button" onClick={fetchDashboardData} disabled={loading} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+            <RefreshCcw size={16} />
+            Refresh
+          </button>
+        </div>
 
-          {!loading && !error && (
-            <div className="split-tables-container" style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
-              <div className="split-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(450px, 1fr))', gap: '24px' }}>
-                
-                {/* Left Table: Job Posts */}
-                <div className="table-wrapper-card" style={{ background: '#0b1220', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '20px' }}>
-                  <h3 style={{ fontSize: '1.2rem', fontWeight: '600', color: '#fff', marginBottom: '15px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <BriefcaseBusiness size={20} className="text-primary" />
-                    My Job Posts
-                  </h3>
-                  
-                  {filteredJobs.length === 0 ? (
-                    <div style={{ textAlign: 'center', padding: '30px 10px', color: '#94a3b8' }}>
-                      <p style={{ margin: '0 0 10px 0', fontSize: '0.9rem' }}>No job posts found.</p>
-                      <button className="next-btn" style={{ padding: '6px 12px', fontSize: '0.8rem' }} type="button" onClick={() => navigate("/client/post-job")}>
-                        Post a New Task
-                      </button>
-                    </div>
-                  ) : (
-                    <div style={{ overflowX: 'auto' }}>
-                      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
-                        <thead>
-                          <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', textAlign: 'left', color: '#94a3b8' }}>
-                            <th style={{ padding: '12px 8px' }}>Title</th>
-                            <th style={{ padding: '12px 8px' }}>Budget</th>
-                            <th style={{ padding: '12px 8px' }}>Status</th>
-                            <th style={{ padding: '12px 8px', textAlign: 'right' }}>Actions</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {filteredJobs.map((job) => {
-                            const jobId = getJobId(job);
-                            return (
-                              <tr 
-                                key={jobId || job.title} 
-                                style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', cursor: 'pointer', transition: 'background 0.2s' }}
-                                onClick={() => jobId && navigate(`/client/projects/${jobId}`)}
-                                onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.02)'}
-                                onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-                              >
-                                <td style={{ padding: '12px 8px', color: '#fff', fontWeight: '500' }}>{job.title || "Untitled"}</td>
-                                <td style={{ padding: '12px 8px', color: '#cbd5e1' }}>{formatBudget(job)}</td>
-                                <td style={{ padding: '12px 8px' }}>
-                                  <span className={`project-status ${job.status === 'pending' ? 'pending-status' : ''}`} style={{ fontSize: '0.75rem', padding: '2px 8px' }}>
-                                    {job.status || 'open'}
-                                  </span>
-                                </td>
-                                <td style={{ padding: '12px 8px', textAlign: 'right' }} onClick={(e) => e.stopPropagation()}>
-                                  <button
-                                    type="button"
-                                    className="delete-project-btn"
-                                    style={{ padding: '4px 8px', display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '0.8rem' }}
-                                    disabled={deletingId === jobId}
-                                    onClick={(event) => handleDelete(event, jobId)}
-                                  >
-                                    <Trash2 size={12} />
-                                    Delete
-                                  </button>
-                                </td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
-                </div>
+        {error && <div className="alert alert-danger" style={{ marginBottom: '24px' }}>{error}</div>}
+        {loading && <div className="alert alert-success" style={{ marginBottom: '24px' }}>Loading workspace details...</div>}
 
-                {/* Right Table: Hired Projects */}
-                <div className="table-wrapper-card" style={{ background: '#0b1220', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '20px' }}>
-                  <h3 style={{ fontSize: '1.2rem', fontWeight: '600', color: '#fff', marginBottom: '15px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <BriefcaseBusiness size={20} className="text-success" />
-                    My Hired Projects
-                  </h3>
-                  
-                  {filteredProjects.length === 0 ? (
-                    <div style={{ textAlign: 'center', padding: '30px 10px', color: '#94a3b8' }}>
-                      <p style={{ margin: 0, fontSize: '0.9rem' }}>No project contracts found.</p>
-                      <p style={{ margin: '5px 0 0 0', fontSize: '0.8rem', opacity: 0.8 }}>Approve a proposal to start a project.</p>
-                    </div>
-                  ) : (
-                    <div style={{ overflowX: 'auto' }}>
-                      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
-                        <thead>
-                          <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', textAlign: 'left', color: '#94a3b8' }}>
-                            <th style={{ padding: '12px 8px' }}>Title</th>
-                            <th style={{ padding: '12px 8px' }}>Budget</th>
-                            <th style={{ padding: '12px 8px' }}>Expert</th>
-                            <th style={{ padding: '12px 8px' }}>Status</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {filteredProjects.map((project) => {
-                            return (
-                              <tr 
-                                key={project.id} 
-                                style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', cursor: 'pointer', transition: 'background 0.2s' }}
-                                onClick={() => navigate(`/projects/${project.id}`)}
-                                onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.02)'}
-                                onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-                              >
-                                <td style={{ padding: '12px 8px', color: '#fff', fontWeight: '500' }}>{project.title || "Untitled Project"}</td>
-                                <td style={{ padding: '12px 8px', color: '#cbd5e1' }}>${parseFloat(project.total_amount).toLocaleString()}</td>
-                                <td style={{ padding: '12px 8px', color: '#cbd5e1' }}>{project.expert_name || "AI Expert"}</td>
-                                <td style={{ padding: '12px 8px' }}>
-                                  <span className={`project-status ${
-                                    project.status === 'completed' ? 'accepted-status' : project.status === 'terminated' ? 'rejected-status' : 'active-status'
-                                  }`} style={{ fontSize: '0.75rem', padding: '2px 8px' }}>
-                                    {project.status || 'active'}
-                                  </span>
-                                </td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
-                </div>
-
+        {!loading && !error && (
+          <div className="dashboard-split-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(450px, 1fr))', gap: '30px', alignItems: 'start' }}>
+            
+            {/* LEFT COLUMN: POSTED TASKS (JOB POSTS) */}
+            <div className="post-form-card" style={{ background: '#0b1220', border: '1px solid rgba(255, 255, 255, 0.08)', padding: '24px', borderRadius: '16px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                <h3 style={{ margin: 0, color: '#fff', fontSize: '1.2rem', fontWeight: '600' }}>Posted Tasks</h3>
+                <span className="project-status" style={{ fontSize: '0.8rem', padding: '3px 8px', borderRadius: '12px' }}>{filteredJobs.length} Posts</span>
               </div>
+
+              {filteredJobs.length === 0 ? (
+                <div className="empty-projects" style={{ padding: '40px 20px', textAlign: 'center' }}>
+                  <BriefcaseBusiness size={42} style={{ color: 'rgba(255,255,255,0.2)', marginBottom: '16px' }} />
+                  <h4 style={{ color: '#fff', marginBottom: '8px' }}>No Tasks Posted</h4>
+                  <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.9rem', marginBottom: '20px' }}>You haven't posted any job tasks yet.</p>
+                  <button className="next-btn" type="button" onClick={() => navigate("/client/post-job")} style={{ cursor: 'pointer' }}>
+                    Post a New Task
+                  </button>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  {filteredJobs.map((job) => {
+                    const jobId = getJobId(job);
+                    return (
+                      <div
+                        key={jobId || job.title}
+                        onClick={() => jobId && navigate(`/client/projects/${jobId}`)}
+                        style={{
+                          background: 'rgba(255, 255, 255, 0.02)',
+                          border: '1px solid rgba(255, 255, 255, 0.05)',
+                          borderRadius: '12px',
+                          padding: '16px',
+                          cursor: 'pointer',
+                          transition: 'transform 0.2s, background 0.2s'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = 'rgba(255,255,255,0.04)';
+                          e.currentTarget.style.transform = 'translateY(-2px)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = 'rgba(255,255,255,0.02)';
+                          e.currentTarget.style.transform = 'translateY(0)';
+                        }}
+                      >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '8px' }}>
+                          <h4 style={{ margin: 0, color: '#fff', fontSize: '1rem', fontWeight: '600' }}>{job.title || "Untitled"}</h4>
+                          <span className={`project-status ${job.status === 'pending' ? 'pending-status' : ''}`} style={{ fontSize: '0.75rem', padding: '3px 8px', borderRadius: '4px' }}>
+                            {job.status || "open"}
+                          </span>
+                        </div>
+                        <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.85rem', margin: '0 0 12px 0', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                          {job.description || "No description provided."}
+                        </p>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)' }}>
+                          <span>Budget: {formatBudget(job)}</span>
+                          {job.status !== 'closed' && job.status !== 'pending' && (
+                            <button
+                              type="button"
+                              className="delete-project-btn"
+                              disabled={deletingId === jobId}
+                              onClick={(event) => handleDelete(event, jobId)}
+                              style={{ border: 'none', background: 'transparent', color: '#ff4d4f', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', padding: 0 }}
+                            >
+                              <Trash2 size={12} />
+                              {deletingId === jobId ? "Deleting..." : "Delete"}
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
-          )}
-        </section>
+
+            {/* RIGHT COLUMN: CONTRACTED PROJECTS */}
+            <div className="post-form-card" style={{ background: '#0b1220', border: '1px solid rgba(255, 255, 255, 0.08)', padding: '24px', borderRadius: '16px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                <h3 style={{ margin: 0, color: '#fff', fontSize: '1.2rem', fontWeight: '600' }}>Contracted Projects</h3>
+                <span className="project-status accepted-status" style={{ fontSize: '0.8rem', padding: '3px 8px', borderRadius: '12px' }}>{filteredProjects.length} Active</span>
+              </div>
+
+              {filteredProjects.length === 0 ? (
+                <div style={{ padding: '60px 20px', textAlign: 'center', color: 'rgba(255,255,255,0.4)' }}>
+                  <BriefcaseBusiness size={42} style={{ opacity: 0.2, marginBottom: '16px' }} />
+                  <h4>No Contracts Yet</h4>
+                  <p style={{ fontSize: '0.9rem' }}>When you approve an expert's proposal, active contracts will appear here.</p>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  {filteredProjects.map((project) => (
+                    <div
+                      key={project.id}
+                      onClick={() => navigate(`/projects/${project.id}`)}
+                      style={{
+                        background: 'rgba(255, 255, 255, 0.02)',
+                        border: '1px solid rgba(255, 255, 255, 0.05)',
+                        borderRadius: '12px',
+                        padding: '16px',
+                        cursor: 'pointer',
+                        transition: 'transform 0.2s, background 0.2s'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = 'rgba(255,255,255,0.04)';
+                        e.currentTarget.style.transform = 'translateY(-2px)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = 'rgba(255,255,255,0.02)';
+                        e.currentTarget.style.transform = 'translateY(0)';
+                      }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '8px' }}>
+                        <h4 style={{ margin: 0, color: '#fff', fontSize: '1rem', fontWeight: '600' }}>{project.title || "Project Contract"}</h4>
+                        <span className={`project-status ${project.status}`} style={{ fontSize: '0.75rem', padding: '3px 8px', borderRadius: '4px' }}>
+                          {project.status}
+                        </span>
+                      </div>
+                      <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.85rem', margin: '0 0 12px 0', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                        {project.description || "No description provided."}
+                      </p>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)' }}>
+                        <span>Expert: <strong>{project.expert_name || "AI Expert"}</strong></span>
+                        <span>Amount: <strong>${project.total_amount}</strong></span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+          </div>
+        )}
 
         <Footer variant="dashboard" />
       </main>

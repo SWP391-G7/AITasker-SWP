@@ -1,18 +1,16 @@
-import { useEffect, useState, useMemo } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useEffect, useMemo, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import {
   ArrowLeft,
   CalendarDays,
+  CheckCircle2,
   DollarSign,
-  BriefcaseBusiness,
-  PlusCircle,
-  XCircle,
-  CreditCard,
+  Info,
+  Plus,
   Trash2,
-  Edit,
-  CheckCircle,
+  Edit2,
   AlertTriangle,
-  Loader2
+  CreditCard
 } from 'lucide-react';
 import ClientSidebar from '../Components/Dashboard/Client/ClientSidebar';
 import ExpertSidebar from '../Components/Dashboard/Expert/ExpertSidebar';
@@ -20,17 +18,14 @@ import Footer from '../Components/Footer/Footer';
 import {
   getProjectById,
   closeProject,
-  getMilestones,
   createMilestone,
   updateMilestone,
   deleteMilestone,
   payMilestone
 } from '../Services/projectService';
-import { createHandleLogout } from './DashboardPage/Expert/handleLogout';
 import './DashboardPage/Client/ClientMarketplace.css';
-import '../pages/Style/AdminDashboardPage.css';
 
-function ProjectDetailPage() {
+const ProjectDetailPage = () => {
   const { projectId } = useParams();
   const navigate = useNavigate();
 
@@ -40,39 +35,46 @@ function ProjectDetailPage() {
   const [error, setError] = useState('');
   
   // Modals state
-  const [showCreateModal, setShowCreateModal] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
+  const [showMilestoneModal, setShowMilestoneModal] = useState(false);
+  const [modalMode, setModalMode] = useState('create'); // 'create' or 'edit'
   const [selectedMilestone, setSelectedMilestone] = useState(null);
+  const [milestoneForm, setMilestoneForm] = useState({
+    title: '',
+    content: '',
+    amount: '',
+    due_date: ''
+  });
 
-  // Form states
-  const [milestoneTitle, setMilestoneTitle] = useState('');
-  const [milestoneContent, setMilestoneContent] = useState('');
-  const [milestoneAmount, setMilestoneAmount] = useState('');
-  const [milestoneDueDate, setMilestoneDueDate] = useState('');
-  const [submitting, setSubmitting] = useState(false);
-
+  // User details
   const user = useMemo(() => {
     try {
-      const stored = localStorage.getItem('user');
-      return stored ? JSON.parse(stored) : null;
+      const storedUser = localStorage.getItem('user');
+      if (!storedUser) return null;
+      const parsed = JSON.parse(storedUser);
+      return parsed;
     } catch {
       return null;
     }
   }, []);
 
-  const role = user?.role || 'client';
-  const handleLogout = createHandleLogout(navigate);
+  const role = useMemo(() => {
+    if (!user) return null;
+    return user.role || (user.user && user.user.role) || (user.user && user.user.user && user.user.user.role);
+  }, [user]);
 
-  const fetchProjectDetails = async () => {
+  const userId = useMemo(() => {
+    if (!user) return null;
+    return user.id || (user.user && user.user.id) || (user.user && user.user.user && user.user.user.id);
+  }, [user]);
+
+  const fetchProjectData = async () => {
+    if (!projectId) return;
     try {
       setLoading(true);
       setError('');
-      const [projData, mileData] = await Promise.all([
-        getProjectById(projectId),
-        getMilestones(projectId)
-      ]);
-      setProject(projData);
-      setMilestones(mileData);
+      const data = await getProjectById(projectId);
+      setProject(data.project);
+      setMilestones(data.milestones || []);
     } catch (err) {
       setError(err.message || 'Failed to load project details.');
     } finally {
@@ -81,151 +83,102 @@ function ProjectDetailPage() {
   };
 
   useEffect(() => {
-    if (projectId) {
-      fetchProjectDetails();
-    }
+    fetchProjectData();
   }, [projectId]);
 
   const handleCloseProject = async () => {
-    const ok = window.confirm("Are you sure you want to abandon/close this project? This action is irreversible.");
+    const ok = window.confirm('Are you sure you want to close this project? This will mark it as abandoned and it will no longer be available.');
     if (!ok) return;
 
     try {
       setLoading(true);
       await closeProject(projectId);
-      alert("Project closed successfully.");
-      await fetchProjectDetails();
+      await fetchProjectData();
     } catch (err) {
-      setError(err.message || "Failed to close project.");
+      setError(err.message || 'Failed to close project');
       setLoading(false);
     }
   };
 
-  const handleCreateMilestone = async (e) => {
+  const handleOpenCreateMilestone = () => {
+    setModalMode('create');
+    setMilestoneForm({ title: '', content: '', amount: '', due_date: '' });
+    setShowMilestoneModal(true);
+  };
+
+  const handleOpenEditMilestone = (milestone) => {
+    setModalMode('edit');
+    setSelectedMilestone(milestone);
+    setMilestoneForm({
+      title: milestone.title || '',
+      content: milestone.content || '',
+      amount: milestone.amount || '',
+      due_date: milestone.due_date ? new Date(milestone.due_date).toISOString().split('T')[0] : ''
+    });
+    setShowMilestoneModal(true);
+  };
+
+  const handleMilestoneFormSubmit = async (e) => {
     e.preventDefault();
-    if (!milestoneTitle || !milestoneAmount) {
-      alert("Title and Amount are required.");
+    if (!milestoneForm.title.trim() || !milestoneForm.amount) {
+      alert('Title and Amount are required.');
       return;
     }
 
     try {
-      setSubmitting(true);
-      await createMilestone(projectId, {
-        title: milestoneTitle,
-        content: milestoneContent,
-        amount: parseFloat(milestoneAmount),
-        due_date: milestoneDueDate || null
-      });
-      alert("Milestone created successfully.");
-      setShowCreateModal(false);
-      
-      // Clear forms
-      setMilestoneTitle('');
-      setMilestoneContent('');
-      setMilestoneAmount('');
-      setMilestoneDueDate('');
-
-      // Refresh list
-      const updated = await getMilestones(projectId);
-      setMilestones(updated);
+      setLoading(true);
+      if (modalMode === 'create') {
+        await createMilestone(projectId, milestoneForm);
+      } else {
+        await updateMilestone(selectedMilestone.id, milestoneForm);
+      }
+      setShowMilestoneModal(false);
+      await fetchProjectData();
     } catch (err) {
-      alert(err.message || "Failed to create milestone.");
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const handleOpenEditModal = (milestone) => {
-    setSelectedMilestone(milestone);
-    setMilestoneTitle(milestone.title);
-    setMilestoneContent(milestone.content || '');
-    setMilestoneAmount(milestone.amount);
-    setMilestoneDueDate(milestone.due_date ? new Date(milestone.due_date).toISOString().split('T')[0] : '');
-    setShowEditModal(true);
-  };
-
-  const handleEditMilestone = async (e) => {
-    e.preventDefault();
-    if (!selectedMilestone) return;
-
-    try {
-      setSubmitting(true);
-      await updateMilestone(selectedMilestone.id, {
-        title: milestoneTitle,
-        content: milestoneContent,
-        amount: parseFloat(milestoneAmount),
-        due_date: milestoneDueDate || null
-      });
-      alert("Milestone updated successfully.");
-      setShowEditModal(false);
-
-      // Clear forms
-      setMilestoneTitle('');
-      setMilestoneContent('');
-      setMilestoneAmount('');
-      setMilestoneDueDate('');
-      setSelectedMilestone(null);
-
-      // Refresh list
-      const updated = await getMilestones(projectId);
-      setMilestones(updated);
-    } catch (err) {
-      alert(err.message || "Failed to update milestone.");
-    } finally {
-      setSubmitting(false);
+      setError(err.message || 'Failed to save milestone.');
+      setLoading(false);
     }
   };
 
   const handleDeleteMilestone = async (milestoneId) => {
-    const ok = window.confirm("Are you sure you want to delete this milestone?");
+    const ok = window.confirm('Are you sure you want to delete this milestone?');
     if (!ok) return;
 
     try {
+      setLoading(true);
       await deleteMilestone(milestoneId);
-      alert("Milestone deleted successfully.");
-      const updated = await getMilestones(projectId);
-      setMilestones(updated);
+      await fetchProjectData();
     } catch (err) {
-      alert(err.message || "Failed to delete milestone.");
+      setError(err.message || 'Failed to delete milestone.');
+      setLoading(false);
     }
   };
 
   const handlePayMilestone = async (milestoneId) => {
-    const ok = window.confirm("Do you want to start payment for this milestone?");
+    const ok = window.confirm('Do you want to process payment for this milestone?');
     if (!ok) return;
 
     try {
       setLoading(true);
       const res = await payMilestone(milestoneId);
-      alert("Payment successful!");
       if (res.projectCompleted) {
-        alert("All milestones completed! The project is now marked as Completed.");
+        alert('Payment processed successfully. All milestones have been finished, the project is now completed!');
+      } else {
+        alert('Payment processed successfully.');
       }
-      await fetchProjectDetails();
+      await fetchProjectData();
     } catch (err) {
-      alert(err.message || "Failed to process payment.");
+      setError(err.message || 'Failed to process payment.');
       setLoading(false);
     }
   };
 
-  const handleBack = () => {
-    if (role === 'client') {
-      navigate('/client/projects');
-    } else {
-      navigate('/expert/projects');
-    }
+  const formatProjectDate = (dateVal) => {
+    if (!dateVal) return 'Ongoing';
+    return new Date(dateVal).toLocaleDateString();
   };
 
-  const formatDateTime = (val) => {
-    if (!val) return 'N/A';
-    return new Date(val).toLocaleDateString();
-  };
-
-  const totalMilestonesAmount = useMemo(() => {
-    return milestones.reduce((sum, m) => sum + parseFloat(m.amount), 0);
-  }, [milestones]);
-
-  const paidMilestonesAmount = useMemo(() => {
+  const totalPaid = useMemo(() => {
     return milestones
       .filter((m) => m.status === 'released')
       .reduce((sum, m) => sum + parseFloat(m.amount), 0);
@@ -237,368 +190,345 @@ function ProjectDetailPage() {
     return Math.round((releasedCount / milestones.length) * 100);
   }, [milestones]);
 
+  const handleBack = () => {
+    if (role === 'client') {
+      navigate('/client/projects');
+    } else {
+      navigate('/expert/projects');
+    }
+  };
+
+  if (loading && !project) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#070c14', color: '#fff' }}>
+        <h3>Loading project details...</h3>
+      </div>
+    );
+  }
+
+  // Check if project status is abandoned (terminated)
+  const isAbandoned = project && project.status === 'terminated';
+
   return (
     <div className="market-client-layout">
       {role === 'client' ? (
         <ClientSidebar activeTab="projects" />
       ) : (
-        <ExpertSidebar activeTab="projects" onTabChange={(id) => navigate(`/expert/${id}`)} onLogout={handleLogout} />
+        <ExpertSidebar activeTab="projects" />
       )}
 
       <main className="post-job-main">
-        <header className="post-job-header">
-          <button type="button" className="back-circle" onClick={handleBack}>
-            <ArrowLeft size={24} />
+        <header className="post-job-header" style={{ marginBottom: '24px' }}>
+          <button type="button" className="back-circle" onClick={handleBack} style={{ cursor: 'pointer' }}>
+            <ArrowLeft size={26} />
           </button>
           <div>
-            <h1>Project Workspace</h1>
-            <p>Track progress, manage milestones, and payments.</p>
+            <h1>Project Detail</h1>
+            <p>Track progress, milestones, and release payments.</p>
           </div>
         </header>
 
-        {loading && (
-          <div className="alert alert-success d-flex align-items-center gap-2">
-            <Loader2 className="animate-spin" size={16} /> Loading project details...
-          </div>
-        )}
-        {error && <div className="alert alert-danger">{error}</div>}
+        {error && <div className="alert alert-danger" style={{ marginBottom: '24px' }}>{error}</div>}
 
-        {!loading && !error && project && (
-          <>
-            {project.status === 'terminated' ? (
-              <section className="post-form-card" style={{ textAlign: 'center', padding: '50px 20px', color: '#ff4d4f' }}>
-                <XCircle size={56} style={{ marginBottom: '15px' }} />
-                <h2 style={{ color: '#fff', fontSize: '1.8rem', marginBottom: '10px' }}>Project is no longer available</h2>
-                <p style={{ color: '#94a3b8', fontSize: '1rem', maxWidth: '500px', margin: '0 auto' }}>
-                  This project contract has been closed/abandoned by the client and is no longer active.
-                </p>
-              </section>
-            ) : (
-              <>
-                <section className="task-detail-grid">
-                  
-                  {/* Left Column: Project Overview */}
-                  <article className="post-form-card task-detail-card" style={{ flex: 2 }}>
-                    <div className="task-detail-header">
-                      <div>
-                        <span className={`project-status ${project.status === 'completed' ? 'accepted-status' : 'active-status'}`}>
-                          {project.status}
-                        </span>
-                        <h2 style={{ fontSize: '1.6rem', marginTop: '10px' }}>{project.title || "Contract Project"}</h2>
-                      </div>
-                      
-                      {role === 'client' && project.status === 'active' && (
-                        <button
-                          type="button"
-                          className="delete-project-btn"
-                          style={{ borderColor: '#ff4d4f', color: '#ff4d4f', padding: '8px 16px', borderRadius: '8px' }}
-                          onClick={handleCloseProject}
-                        >
-                          <XCircle size={16} className="me-1 d-inline" />
-                          Abandon Project
-                        </button>
-                      )}
+        {isAbandoned ? (
+          <section className="post-form-card" style={{ textAlign: 'center', padding: '60px 40px', background: '#0b1220', border: '1px solid rgba(239, 68, 68, 0.2)' }}>
+            <AlertTriangle size={64} style={{ color: '#ef4444', marginBottom: '20px' }} />
+            <h2 style={{ color: '#fff', fontSize: '1.8rem', fontWeight: '700', marginBottom: '12px' }}>Project is no longer available</h2>
+            <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '1.05rem', maxWidth: '500px', margin: '0 auto 30px auto' }}>
+              This project contract has been abandoned or closed by the client.
+            </p>
+            <button className="next-btn" type="button" onClick={handleBack} style={{ cursor: 'pointer' }}>
+              Return to Projects
+            </button>
+          </section>
+        ) : (
+          project && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
+              
+              {/* PROJECT INFO CARD */}
+              <section className="post-form-card" style={{ background: '#0b1220', border: '1px solid rgba(255,255,255,0.08)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', flexWrap: 'wrap', gap: '20px', marginBottom: '24px' }}>
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+                      <h2 style={{ color: '#fff', fontSize: '1.6rem', fontWeight: '700', margin: 0 }}>{project.title || "Project Contract"}</h2>
+                      <span className={`project-status ${project.status}`} style={{ fontSize: '0.8rem', padding: '4px 10px', borderRadius: '12px' }}>
+                        {project.status}
+                      </span>
                     </div>
+                    <p style={{ color: 'rgba(255,255,255,0.6)', margin: 0 }}>{project.description || "No description provided."}</p>
+                  </div>
 
-                    <p className="task-detail-description" style={{ whiteSpace: 'pre-wrap', marginTop: '20px', color: '#cbd5e1' }}>
-                      {project.description || "No project description provided."}
-                    </p>
-
-                    <hr style={{ border: '0', borderTop: '1px solid rgba(255,255,255,0.05)', margin: '25px 0' }} />
-
-                    <div className="row" style={{ rowGap: '20px' }}>
-                      <div className="col-sm-6">
-                        <span className="text-muted small fw-bold d-block mb-1">CLIENT</span>
-                        <strong className="text-white">{project.client_name}</strong>
-                        <span className="text-muted d-block small">{project.client_email}</span>
-                      </div>
-                      <div className="col-sm-6">
-                        <span className="text-muted small fw-bold d-block mb-1">AI EXPERT</span>
-                        <strong className="text-white">{project.expert_name}</strong>
-                        <span className="text-muted d-block small">{project.expert_email}</span>
-                      </div>
-                      <div className="col-sm-6">
-                        <span className="text-muted small fw-bold d-block mb-1">START DATE</span>
-                        <span className="text-white d-flex align-items-center">
-                          <CalendarDays size={16} className="text-primary me-1" />
-                          {formatDateTime(project.start_date)}
-                        </span>
-                      </div>
-                      <div className="col-sm-6">
-                        <span className="text-muted small fw-bold d-block mb-1">END DATE</span>
-                        <span className="text-white d-flex align-items-center">
-                          <CalendarDays size={16} className="text-primary me-1" />
-                          {formatDateTime(project.end_date)}
-                        </span>
-                      </div>
-                    </div>
-                  </article>
-
-                  {/* Right Column: Financial Card */}
-                  <aside className="post-form-card task-proposal-summary" style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minWidth: '280px' }}>
-                    <div>
-                      <span className="text-muted small fw-bold d-block mb-1">TOTAL CONTRACT VALUE</span>
-                      <strong className="text-white d-flex align-items-center mb-4" style={{ fontSize: '2rem' }}>
-                        <DollarSign size={28} className="text-success" />
-                        {parseFloat(project.total_amount).toLocaleString()}
-                      </strong>
-
-                      <div className="mb-4">
-                        <span className="text-muted small d-flex justify-content-between mb-1">
-                          <span>Milestones Paid</span>
-                          <span>${paidMilestonesAmount.toLocaleString()} / ${totalMilestonesAmount.toLocaleString()}</span>
-                        </span>
-                        <div className="progress-line" style={{ height: '8px', background: 'rgba(255,255,255,0.05)', borderRadius: '4px' }}>
-                          <div style={{ width: `${progressPercent}%`, height: '100%', background: '#4ade80', borderRadius: '4px' }}></div>
-                        </div>
-                        <span className="text-muted small d-block mt-1 text-end">{progressPercent}% Released</span>
-                      </div>
-                    </div>
-
-                    {role === 'expert' && project.status === 'active' && (
+                  <div style={{ display: 'flex', gap: '12px' }}>
+                    {role === 'client' && project.status === 'active' && (
                       <button
-                        className="next-btn w-100 py-3 fw-semibold d-flex align-items-center justify-content-center gap-2"
-                        type="button"
-                        style={{ borderRadius: '10px' }}
-                        onClick={() => setShowCreateModal(true)}
+                        className="btn btn-sm btn-outline-danger"
+                        style={{ border: '1px solid #ff4d4f', color: '#ff4d4f', background: 'transparent', borderRadius: '8px', padding: '10px 16px', fontWeight: '600', cursor: 'pointer' }}
+                        onClick={handleCloseProject}
                       >
-                        <PlusCircle size={18} />
-                        Create Milestone
+                        Abandon Project
                       </button>
                     )}
-                  </aside>
-                </section>
-
-                {/* Milestones Panel */}
-                <section className="post-form-card" style={{ marginTop: '30px' }}>
-                  <div className="projects-toolbar" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '15px', marginBottom: '20px' }}>
-                    <div>
-                      <h2 className="projects-title" style={{ fontSize: '1.3rem' }}>Milestones & Deliverables</h2>
-                      <p className="projects-subtitle">Manage project phases and secure release funds.</p>
-                    </div>
+                    {role === 'expert' && project.status === 'active' && (
+                      <button
+                        className="btn btn-sm btn-primary"
+                        style={{ backgroundColor: '#10b981', color: '#fff', border: 'none', borderRadius: '8px', padding: '10px 16px', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
+                        onClick={handleOpenCreateMilestone}
+                      >
+                        <Plus size={16} />
+                        Add Milestone
+                      </button>
+                    )}
                   </div>
+                </div>
 
-                  {milestones.length === 0 ? (
-                    <div style={{ textAlign: 'center', padding: '40px 10px', color: '#94a3b8' }}>
-                      <AlertTriangle size={36} style={{ marginBottom: '10px', opacity: 0.5 }} />
-                      <p style={{ margin: 0, fontSize: '0.95rem' }}>No milestones created yet.</p>
-                      {role === 'expert' && (
-                        <p style={{ margin: '5px 0 0 0', fontSize: '0.85rem' }}>Click "Create Milestone" to add the first phase of this project.</p>
-                      )}
-                    </div>
-                  ) : (
-                    <div style={{ overflowX: 'auto' }}>
-                      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.92rem' }}>
-                        <thead>
-                          <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', textAlign: 'left', color: '#94a3b8' }}>
-                            <th style={{ padding: '12px 10px' }}>Milestone Title</th>
-                            <th style={{ padding: '12px 10px' }}>Content / Notes</th>
-                            <th style={{ padding: '12px 10px' }}>Amount</th>
-                            <th style={{ padding: '12px 10px' }}>Due Date</th>
-                            <th style={{ padding: '12px 10px' }}>Status</th>
-                            <th style={{ padding: '12px 10px', textAlign: 'right' }}>Actions</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {milestones.map((m) => (
-                            <tr key={m.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', transition: 'background 0.2s' }}>
-                              <td style={{ padding: '15px 10px', color: '#fff', fontWeight: '600' }}>{m.title}</td>
-                              <td style={{ padding: '15px 10px', color: '#cbd5e1', maxWidth: '220px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={m.content}>
-                                {m.content || 'N/A'}
-                              </td>
-                              <td style={{ padding: '15px 10px', color: '#cbd5e1', fontWeight: '500' }}>
-                                ${parseFloat(m.amount).toLocaleString()}
-                              </td>
-                              <td style={{ padding: '15px 10px', color: '#cbd5e1' }}>
-                                {m.due_date ? formatDateTime(m.due_date) : 'Flexible'}
-                              </td>
-                              <td style={{ padding: '15px 10px' }}>
-                                <span className={`project-status ${m.status === 'released' ? 'accepted-status' : 'pending-status'}`} style={{ fontSize: '0.75rem', padding: '2px 8px' }}>
-                                  {m.status}
-                                </span>
-                              </td>
-                              <td style={{ padding: '15px 10px', textAlign: 'right' }}>
-                                <div className="d-inline-flex gap-2">
-                                  {role === 'client' && m.status === 'pending' && project.status === 'active' && (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '24px', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '24px' }}>
+                  <div>
+                    <span style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.4)', display: 'block', marginBottom: '4px' }}>CLIENT</span>
+                    <strong style={{ color: '#fff', fontSize: '1rem' }}>{project.client_name || "Client"}</strong>
+                    <span style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)', display: 'block' }}>{project.client_email}</span>
+                  </div>
+                  <div>
+                    <span style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.4)', display: 'block', marginBottom: '4px' }}>EXPERT</span>
+                    <strong style={{ color: '#fff', fontSize: '1rem' }}>{project.expert_name || "AI Expert"}</strong>
+                    <span style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)', display: 'block' }}>{project.expert_email}</span>
+                  </div>
+                  <div>
+                    <span style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.4)', display: 'block', marginBottom: '4px' }}>TOTAL BUDGET</span>
+                    <strong style={{ color: '#fff', fontSize: '1.2rem', display: 'flex', alignItems: 'center' }}>
+                      <DollarSign size={18} style={{ color: '#10b981' }} />
+                      {parseFloat(project.total_amount).toLocaleString()}
+                    </strong>
+                  </div>
+                  <div>
+                    <span style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.4)', display: 'block', marginBottom: '4px' }}>TIMELINE</span>
+                    <span style={{ color: '#fff', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <CalendarDays size={16} style={{ color: 'rgba(255,255,255,0.4)' }} />
+                      {formatProjectDate(project.start_date)} - {formatProjectDate(project.end_date)}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="client-project-progress" style={{ marginTop: '24px', paddingTop: '20px', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                    <span style={{ color: 'rgba(255,255,255,0.6)' }}>Milestone Progress</span>
+                    <strong style={{ color: '#fff' }}>{progressPercent}% ({milestones.filter(m => m.status === 'released').length}/{milestones.length} Paid)</strong>
+                  </div>
+                  <div className="progress-line" style={{ height: '8px', background: 'rgba(255,255,255,0.05)', borderRadius: '4px', overflow: 'hidden' }}>
+                    <div style={{ width: `${progressPercent}%`, height: '100%', background: '#10b981', transition: 'width 0.3s' }}></div>
+                  </div>
+                </div>
+              </section>
+
+              {/* MILESTONES TABLE/LIST */}
+              <section className="post-form-card" style={{ background: '#0b1220', border: '1px solid rgba(255,255,255,0.08)' }}>
+                <h3 style={{ color: '#fff', fontSize: '1.25rem', fontWeight: '600', marginBottom: '20px' }}>Milestone Breakdown</h3>
+
+                {milestones.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '60px 20px', color: 'rgba(255,255,255,0.4)' }}>
+                    <Info size={36} style={{ opacity: 0.2, marginBottom: '12px' }} />
+                    <h4 style={{ color: '#fff', marginBottom: '8px' }}>No Milestones Defined</h4>
+                    <p style={{ fontSize: '0.9rem', maxWidth: '400px', margin: '0 auto' }}>
+                      {role === 'expert' ? 'Define deliverables and split the total budget into milestones to begin.' : 'Wait for the expert to create payment milestones.'}
+                    </p>
+                  </div>
+                ) : (
+                  <div style={{ overflowX: 'auto' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', color: 'rgba(255,255,255,0.8)' }}>
+                      <thead>
+                        <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', textAlign: 'left', fontSize: '0.85rem', color: 'rgba(255,255,255,0.5)' }}>
+                          <th style={{ padding: '12px 16px' }}>Milestone</th>
+                          <th style={{ padding: '12px 16px' }}>Deliverables</th>
+                          <th style={{ padding: '12px 16px' }}>Amount</th>
+                          <th style={{ padding: '12px 16px' }}>Due Date</th>
+                          <th style={{ padding: '12px 16px' }}>Status</th>
+                          <th style={{ padding: '12px 16px', textAlign: 'right' }}>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {milestones.map((m) => (
+                          <tr key={m.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                            <td style={{ padding: '20px 16px', fontWeight: '600', color: '#fff' }}>{m.title}</td>
+                            <td style={{ padding: '20px 16px', color: 'rgba(255,255,255,0.6)', fontSize: '0.9rem', maxWidth: '300px' }}>
+                              {m.content || "No deliverable description."}
+                            </td>
+                            <td style={{ padding: '20px 16px', fontWeight: '600', color: '#fff' }}>${parseFloat(m.amount).toLocaleString()}</td>
+                            <td style={{ padding: '20px 16px', fontSize: '0.9rem' }}>
+                              {m.due_date ? new Date(m.due_date).toLocaleDateString() : 'No due date'}
+                            </td>
+                            <td style={{ padding: '20px 16px' }}>
+                              <span className={`project-status ${m.status}`} style={{ fontSize: '0.75rem', padding: '3px 8px', borderRadius: '4px' }}>
+                                {m.status}
+                              </span>
+                            </td>
+                            <td style={{ padding: '20px 16px', textAlign: 'right' }}>
+                              <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                                {role === 'client' && m.status === 'pending' && project.status === 'active' && (
+                                  <button
+                                    onClick={() => handlePayMilestone(m.id)}
+                                    style={{
+                                      backgroundColor: '#10b981',
+                                      color: '#fff',
+                                      border: 'none',
+                                      borderRadius: '6px',
+                                      padding: '6px 12px',
+                                      fontSize: '0.85rem',
+                                      fontWeight: '600',
+                                      cursor: 'pointer',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      gap: '4px'
+                                    }}
+                                  >
+                                    <CreditCard size={14} />
+                                    Pay
+                                  </button>
+                                )}
+
+                                {role === 'expert' && m.status === 'pending' && project.status === 'active' && (
+                                  <>
                                     <button
-                                      type="button"
-                                      className="btn btn-sm btn-success px-3"
-                                      style={{ borderRadius: '6px', fontSize: '0.8rem' }}
-                                      onClick={() => handlePayMilestone(m.id)}
+                                      onClick={() => handleOpenEditMilestone(m)}
+                                      style={{
+                                        background: 'rgba(255,255,255,0.05)',
+                                        border: '1px solid rgba(255,255,255,0.1)',
+                                        color: '#fff',
+                                        borderRadius: '6px',
+                                        padding: '6px 8px',
+                                        cursor: 'pointer'
+                                      }}
                                     >
-                                      <CreditCard size={12} className="me-1 d-inline" />
-                                      Pay
+                                      <Edit2 size={14} />
                                     </button>
-                                  )}
-
-                                  {role === 'expert' && m.status === 'pending' && project.status === 'active' && (
-                                    <>
-                                      <button
-                                        type="button"
-                                        className="btn btn-sm btn-outline-light px-2"
-                                        style={{ borderColor: 'rgba(255,255,255,0.1)', color: '#fff', borderRadius: '6px' }}
-                                        onClick={() => handleOpenEditModal(m)}
-                                      >
-                                        <Edit size={12} />
-                                      </button>
-                                      <button
-                                        type="button"
-                                        className="btn btn-sm btn-outline-danger px-2"
-                                        style={{ borderRadius: '6px' }}
-                                        onClick={() => handleDeleteMilestone(m.id)}
-                                      >
-                                        <Trash2 size={12} />
-                                      </button>
-                                    </>
-                                  )}
-                                  
-                                  {m.status === 'released' && (
-                                    <span style={{ color: '#4ade80', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '3px' }}>
-                                      <CheckCircle size={14} /> Completed
-                                    </span>
-                                  )}
-                                </div>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
-                </section>
-              </>
-            )}
-          </>
-        )}
-
-        {/* Modal: Create Milestone */}
-        {showCreateModal && (
-          <div className="modal-overlay" onClick={() => setShowCreateModal(false)}>
-            <div className="success-modal" style={{ background: '#0b1220', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', maxWidth: '500px', width: '90%', textAlign: 'left', padding: '30px', borderRadius: '16px' }} onClick={(e) => e.stopPropagation()}>
-              <h3 className="mb-4 text-white" style={{ fontSize: '1.25rem' }}>Create Milestone</h3>
-              <form onSubmit={handleCreateMilestone}>
-                <div className="mb-3">
-                  <label className="text-muted small fw-bold mb-1">MILESTONE TITLE</label>
-                  <input
-                    type="text"
-                    required
-                    className="form-control bg-dark bg-opacity-25 border-secondary text-white"
-                    placeholder="e.g., Deliver RAG pipeline architecture documentation"
-                    value={milestoneTitle}
-                    onChange={(e) => setMilestoneTitle(e.target.value)}
-                  />
-                </div>
-                <div className="mb-3">
-                  <label className="text-muted small fw-bold mb-1">DESCRIPTION / DELIVERABLE NOTES</label>
-                  <textarea
-                    rows="3"
-                    className="form-control bg-dark bg-opacity-25 border-secondary text-white"
-                    placeholder="Detail the deliverables required to release this milestone's funds..."
-                    value={milestoneContent}
-                    onChange={(e) => setMilestoneContent(e.target.value)}
-                  />
-                </div>
-                <div className="row">
-                  <div className="col-6 mb-3">
-                    <label className="text-muted small fw-bold mb-1">AMOUNT ($)</label>
-                    <input
-                      type="number"
-                      required
-                      min="1"
-                      step="0.01"
-                      className="form-control bg-dark bg-opacity-25 border-secondary text-white"
-                      placeholder="100.00"
-                      value={milestoneAmount}
-                      onChange={(e) => setMilestoneAmount(e.target.value)}
-                    />
+                                    <button
+                                      onClick={() => handleDeleteMilestone(m.id)}
+                                      style={{
+                                        background: 'rgba(239, 68, 68, 0.1)',
+                                        border: '1px solid rgba(239, 68, 68, 0.2)',
+                                        color: '#ef4444',
+                                        borderRadius: '6px',
+                                        padding: '6px 8px',
+                                        cursor: 'pointer'
+                                      }}
+                                    >
+                                      <Trash2 size={14} />
+                                    </button>
+                                  </>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
-                  <div className="col-6 mb-3">
-                    <label className="text-muted small fw-bold mb-1">DUE DATE (OPTIONAL)</label>
-                    <input
-                      type="date"
-                      className="form-control bg-dark bg-opacity-25 border-secondary text-white"
-                      value={milestoneDueDate}
-                      onChange={(e) => setMilestoneDueDate(e.target.value)}
-                    />
-                  </div>
-                </div>
-                <div className="d-flex gap-2 justify-content-end pt-3 border-top border-secondary mt-4">
-                  <button type="button" className="btn btn-outline-secondary btn-sm" onClick={() => setShowCreateModal(false)}>Cancel</button>
-                  <button type="submit" className="btn btn-primary btn-sm" disabled={submitting}>
-                    {submitting ? 'Creating...' : 'Create Milestone'}
-                  </button>
-                </div>
-              </form>
+                )}
+              </section>
+
             </div>
-          </div>
-        )}
-
-        {/* Modal: Edit Milestone */}
-        {showEditModal && (
-          <div className="modal-overlay" onClick={() => setShowEditModal(false)}>
-            <div className="success-modal" style={{ background: '#0b1220', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', maxWidth: '500px', width: '90%', textAlign: 'left', padding: '30px', borderRadius: '16px' }} onClick={(e) => e.stopPropagation()}>
-              <h3 className="mb-4 text-white" style={{ fontSize: '1.25rem' }}>Edit Milestone</h3>
-              <form onSubmit={handleEditMilestone}>
-                <div className="mb-3">
-                  <label className="text-muted small fw-bold mb-1">MILESTONE TITLE</label>
-                  <input
-                    type="text"
-                    required
-                    className="form-control bg-dark bg-opacity-25 border-secondary text-white"
-                    placeholder="e.g., Deliver RAG pipeline architecture documentation"
-                    value={milestoneTitle}
-                    onChange={(e) => setMilestoneTitle(e.target.value)}
-                  />
-                </div>
-                <div className="mb-3">
-                  <label className="text-muted small fw-bold mb-1">DESCRIPTION / DELIVERABLE NOTES</label>
-                  <textarea
-                    rows="3"
-                    className="form-control bg-dark bg-opacity-25 border-secondary text-white"
-                    placeholder="Detail the deliverables required to release this milestone's funds..."
-                    value={milestoneContent}
-                    onChange={(e) => setMilestoneContent(e.target.value)}
-                  />
-                </div>
-                <div className="row">
-                  <div className="col-6 mb-3">
-                    <label className="text-muted small fw-bold mb-1">AMOUNT ($)</label>
-                    <input
-                      type="number"
-                      required
-                      min="1"
-                      step="0.01"
-                      className="form-control bg-dark bg-opacity-25 border-secondary text-white"
-                      placeholder="100.00"
-                      value={milestoneAmount}
-                      onChange={(e) => setMilestoneAmount(e.target.value)}
-                    />
-                  </div>
-                  <div className="col-6 mb-3">
-                    <label className="text-muted small fw-bold mb-1">DUE DATE (OPTIONAL)</label>
-                    <input
-                      type="date"
-                      className="form-control bg-dark bg-opacity-25 border-secondary text-white"
-                      value={milestoneDueDate}
-                      onChange={(e) => setMilestoneDueDate(e.target.value)}
-                    />
-                  </div>
-                </div>
-                <div className="d-flex gap-2 justify-content-end pt-3 border-top border-secondary mt-4">
-                  <button type="button" className="btn btn-outline-secondary btn-sm" onClick={() => setShowEditModal(false)}>Cancel</button>
-                  <button type="submit" className="btn btn-primary btn-sm" disabled={submitting}>
-                    {submitting ? 'Updating...' : 'Update Milestone'}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
+          )
         )}
 
         <Footer variant="dashboard" />
       </main>
+
+      {/* MILESTONE CREATION/EDIT MODAL */}
+      {showMilestoneModal && (
+        <div className="modal-overlay" onClick={() => setShowMilestoneModal(false)}>
+          <div
+            className="success-modal proposal-detail-modal"
+            style={{
+              background: '#0b1220',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              color: '#ffffff',
+              maxWidth: '500px',
+              width: '90%',
+              textAlign: 'left',
+              padding: '30px',
+              borderRadius: '16px',
+              boxShadow: '0 20px 40px rgba(0, 0, 0, 0.4)'
+            }}
+            onClick={(event) => event.stopPropagation()}
+          >
+            <h3 className="fw-bold mb-4 text-white" style={{ fontSize: '1.4rem' }}>
+              {modalMode === 'create' ? 'Create Milestone' : 'Edit Milestone'}
+            </h3>
+
+            <form onSubmit={handleMilestoneFormSubmit}>
+              <div className="mb-3">
+                <label style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.6)', fontWeight: '600', display: 'block', marginBottom: '6px' }}>
+                  MILESTONE TITLE
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. Frontend draft UI integration"
+                  value={milestoneForm.title}
+                  onChange={(e) => setMilestoneForm({ ...milestoneForm, title: e.target.value })}
+                  style={{ width: '100%', padding: '10px', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: '#fff' }}
+                  required
+                />
+              </div>
+
+              <div className="mb-3">
+                <label style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.6)', fontWeight: '600', display: 'block', marginBottom: '6px' }}>
+                  DELIVERABLE DETAILS
+                </label>
+                <textarea
+                  placeholder="Describe what will be delivered under this milestone..."
+                  rows={3}
+                  value={milestoneForm.content}
+                  onChange={(e) => setMilestoneForm({ ...milestoneForm, content: e.target.value })}
+                  style={{ width: '100%', padding: '10px', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: '#fff', resize: 'vertical' }}
+                />
+              </div>
+
+              <div className="row" style={{ display: 'flex', gap: '15px', marginBottom: '24px' }}>
+                <div style={{ flex: 1 }}>
+                  <label style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.6)', fontWeight: '600', display: 'block', marginBottom: '6px' }}>
+                    AMOUNT ($)
+                  </label>
+                  <input
+                    type="number"
+                    placeholder="250"
+                    value={milestoneForm.amount}
+                    onChange={(e) => setMilestoneForm({ ...milestoneForm, amount: e.target.value })}
+                    style={{ width: '100%', padding: '10px', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: '#fff' }}
+                    required
+                  />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.6)', fontWeight: '600', display: 'block', marginBottom: '6px' }}>
+                    DUE DATE
+                  </label>
+                  <input
+                    type="date"
+                    value={milestoneForm.due_date}
+                    onChange={(e) => setMilestoneForm({ ...milestoneForm, due_date: e.target.value })}
+                    style={{ width: '100%', padding: '10px', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: '#fff' }}
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', paddingTop: '15px', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+                <button
+                  type="button"
+                  style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', borderRadius: '8px', padding: '8px 16px', fontWeight: '600', cursor: 'pointer' }}
+                  onClick={() => setShowMilestoneModal(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  style={{ backgroundColor: '#10b981', color: '#fff', border: 'none', borderRadius: '8px', padding: '8px 24px', fontWeight: '600', cursor: 'pointer' }}
+                >
+                  Save Milestone
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
-}
+};
 
 export default ProjectDetailPage;

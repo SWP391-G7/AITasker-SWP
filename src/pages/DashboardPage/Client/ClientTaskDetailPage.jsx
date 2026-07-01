@@ -55,6 +55,8 @@ function ClientTaskDetailPage() {
   const [error, setError] = useState("");
   const [actingProposal, setActingProposal] = useState(null);
   const [selectedProposal, setSelectedProposal] = useState(null);
+  const [showProjectPrompt, setShowProjectPrompt] = useState(false);
+  const [pendingProposalId, setPendingProposalId] = useState(null);
 
   const proposalCount = useMemo(() => proposals.length, [proposals]);
 
@@ -121,36 +123,56 @@ function ClientTaskDetailPage() {
     navigate(expertId ? `/client/messages?expertId=${expertId}` : "/client/messages");
   };
 
-  const handleAcceptProposal = async (proposalId) => {
+  const handleAcceptProposal = (proposalId) => {
+    setPendingProposalId(proposalId);
+    setShowProjectPrompt(true);
+  };
+
+  const confirmProposalAcceptance = async (startProject) => {
+    setShowProjectPrompt(false);
+    const proposalId = pendingProposalId;
+    if (!proposalId) return;
     if (actingProposal) return;
-    const startNow = window.confirm("Do you want to start a project with this proposal?");
     setActingProposal(proposalId);
     try {
-      if (startNow) {
-        await updateProposalStatus({ proposalId, status: 'accepted', start_project: true });
-        alert("Project started successfully!");
-        navigate("/client/projects");
+      setError("");
+      const result = await updateProposalStatus({ proposalId, status: 'accepted', start_project: startProject });
+      setProposals(prev => prev.map(p =>
+        (p._id || p.id) === proposalId ? { ...p, status: 'accepted' } : p
+      ));
+      setSelectedProposal(prev => prev ? { ...prev, status: 'accepted' } : null);
+
+      if (startProject) {
+        setJob(prev => prev ? { ...prev, status: 'closed' } : null);
+        if (result.project && result.project.id) {
+          navigate(`/projects/${result.project.id}`);
+        } else {
+          navigate('/client/projects');
+        }
       } else {
-        await updateProposalStatus({ proposalId, status: 'accepted', start_project: false });
-        alert("Proposal accepted. The task is now in pending status.");
-        await fetchDetail();
+        setJob(prev => prev ? { ...prev, status: 'pending' } : null);
       }
     } catch (err) {
       setError(err.message);
     } finally {
       setActingProposal(null);
+      setPendingProposalId(null);
     }
   };
 
-  const handleStartProjectFromPending = async () => {
+  const handleCreateProjectFromPending = async () => {
     try {
       setLoading(true);
       setError("");
-      await createProject(jobId);
-      alert("Project created successfully!");
-      navigate("/client/projects");
+      const result = await createProject(jobId);
+      if (result.project && result.project.id) {
+        navigate(`/projects/${result.project.id}`);
+      } else {
+        navigate('/client/projects');
+      }
     } catch (err) {
-      setError(err.message || "Failed to create project from pending task.");
+      setError(err.message || "Failed to create project");
+    } finally {
       setLoading(false);
     }
   };
@@ -202,27 +224,31 @@ function ClientTaskDetailPage() {
                   <div>
                     <span className="project-status">{job.status || "open"}</span>
                     <h2>{job.title || job.jobTitle || "Untitled Task"}</h2>
+                  </div>
+
+                  <div className="d-flex align-items-center gap-2">
                     {job.status === 'pending' && (
                       <button
-                        className="next-btn"
-                        style={{ marginTop: '10px', display: 'inline-flex', padding: '8px 16px', fontSize: '0.85rem' }}
+                        className="btn btn-success fw-bold"
+                        style={{ borderRadius: '8px', padding: '8px 16px', backgroundColor: '#10b981', border: 'none', color: '#fff', cursor: 'pointer' }}
                         type="button"
-                        onClick={handleStartProjectFromPending}
+                        onClick={handleCreateProjectFromPending}
+                        disabled={loading}
                       >
                         Create Project
                       </button>
                     )}
-                  </div>
 
-                  <button
-                    className="draft-btn"
-                    type="button"
-                    onClick={fetchDetail}
-                    disabled={loading}
-                  >
-                    <RefreshCcw size={16} />
-                    Refresh
-                  </button>
+                    <button
+                      className="draft-btn"
+                      type="button"
+                      onClick={fetchDetail}
+                      disabled={loading}
+                    >
+                      <RefreshCcw size={16} />
+                      Refresh
+                    </button>
+                  </div>
                 </div>
 
                 <p className="task-detail-description">
@@ -446,6 +472,49 @@ function ClientTaskDetailPage() {
                         </button>
                       </>
                     )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {showProjectPrompt && (
+              <div className="modal-overlay" onClick={() => setShowProjectPrompt(false)}>
+                <div
+                  className="success-modal proposal-detail-modal"
+                  style={{
+                    background: '#0b1220',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    color: '#ffffff',
+                    maxWidth: '450px',
+                    width: '90%',
+                    textAlign: 'center',
+                    padding: '30px',
+                    borderRadius: '16px',
+                    boxShadow: '0 20px 40px rgba(0, 0, 0, 0.4)'
+                  }}
+                  onClick={(event) => event.stopPropagation()}
+                >
+                  <h3 className="fw-bold mb-3 text-white" style={{ fontSize: '1.3rem' }}>Start Project?</h3>
+                  <p className="text-muted mb-4" style={{ fontSize: '0.95rem', lineHeight: '1.5' }}>
+                    Do you want to start a project with this proposal immediately?
+                  </p>
+                  <div className="d-flex gap-3 justify-content-center">
+                    <button
+                      type="button"
+                      className="btn btn-outline-light px-4 py-2"
+                      style={{ borderRadius: '8px', fontWeight: '600', cursor: 'pointer', background: 'transparent', border: '1px solid rgba(255,255,255,0.3)', color: '#fff' }}
+                      onClick={() => confirmProposalAcceptance(false)}
+                    >
+                      No, Keep Pending
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-success px-4 py-2"
+                      style={{ borderRadius: '8px', fontWeight: '600', cursor: 'pointer', backgroundColor: '#10b981', border: 'none', color: '#fff' }}
+                      onClick={() => confirmProposalAcceptance(true)}
+                    >
+                      Yes, Start Project
+                    </button>
                   </div>
                 </div>
               </div>
