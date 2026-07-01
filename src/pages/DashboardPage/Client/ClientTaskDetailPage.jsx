@@ -16,6 +16,7 @@ import ClientSidebar from "../../../Components/Dashboard/Client/ClientSidebar";
 import Footer from "../../../Components/Footer/Footer";
 import { getJobById, getJobProposals } from "../../../Services/jobService";
 import { updateProposalStatus } from "../../../Services/proposalService";
+import { createProject } from "../../../Services/projectService";
 import "./ClientMarketplace.css";
 
 const getFirstArray = (result, keys) => {
@@ -122,18 +123,35 @@ function ClientTaskDetailPage() {
 
   const handleAcceptProposal = async (proposalId) => {
     if (actingProposal) return;
+    const startNow = window.confirm("Do you want to start a project with this proposal?");
     setActingProposal(proposalId);
     try {
-      await updateProposalStatus({ proposalId, status: 'accepted' });
-      setProposals(prev => prev.map(p =>
-        (p._id || p.id) === proposalId ? { ...p, status: 'accepted' } : p
-      ));
-      setJob(prev => prev ? { ...prev, status: 'closed' } : null);
-      setSelectedProposal(prev => prev ? { ...prev, status: 'accepted' } : null);
+      if (startNow) {
+        await updateProposalStatus({ proposalId, status: 'accepted', start_project: true });
+        alert("Project started successfully!");
+        navigate("/client/projects");
+      } else {
+        await updateProposalStatus({ proposalId, status: 'accepted', start_project: false });
+        alert("Proposal accepted. The task is now in pending status.");
+        await fetchDetail();
+      }
     } catch (err) {
       setError(err.message);
     } finally {
       setActingProposal(null);
+    }
+  };
+
+  const handleStartProjectFromPending = async () => {
+    try {
+      setLoading(true);
+      setError("");
+      await createProject(jobId);
+      alert("Project created successfully!");
+      navigate("/client/projects");
+    } catch (err) {
+      setError(err.message || "Failed to create project from pending task.");
+      setLoading(false);
     }
   };
 
@@ -184,6 +202,16 @@ function ClientTaskDetailPage() {
                   <div>
                     <span className="project-status">{job.status || "open"}</span>
                     <h2>{job.title || job.jobTitle || "Untitled Task"}</h2>
+                    {job.status === 'pending' && (
+                      <button
+                        className="next-btn"
+                        style={{ marginTop: '10px', display: 'inline-flex', padding: '8px 16px', fontSize: '0.85rem' }}
+                        type="button"
+                        onClick={handleStartProjectFromPending}
+                      >
+                        Create Project
+                      </button>
+                    )}
                   </div>
 
                   <button

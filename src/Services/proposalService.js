@@ -34,7 +34,7 @@ export const createProposal = async ({ jobId, coverLetter, bidAmount, deliveryDa
   return result.proposal || result.data || result;
 };
 
-export const updateProposalStatus = async ({ proposalId, status }) => {
+export const updateProposalStatus = async ({ proposalId, status, start_project }) => {
   const token = localStorage.getItem('token');
 
   if (!token) {
@@ -47,7 +47,7 @@ export const updateProposalStatus = async ({ proposalId, status }) => {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify({ status }),
+    body: JSON.stringify({ status, start_project }),
   });
 
   const result = await response.json();
@@ -56,5 +56,5 @@ export const updateProposalStatus = async ({ proposalId, status }) => {
     throw new Error(result.message || `Failed to ${status} proposal.`);
   }
 
-  return result.proposal || result.data || result;
+  return result;
 };

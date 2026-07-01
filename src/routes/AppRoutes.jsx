@@ -33,6 +33,7 @@ import MarketplaceTaskDetailPage from "../pages/MarketplaceTaskDetailPage"
 import ViewAllProjectPage from "../pages/ViewAllProjectPage"
 import ViewAllServicePage from "../pages/ViewAllServicePage"
 import MarketplaceProposalPage from "../pages/MarketplaceProposalPage"
+import ProjectDetailPage from "../pages/ProjectDetailPage"
 
 function useAuthStatus() {
   const [status, setStatus] = useState({ isLoggedIn: null, isVerified: null, role: null })
@@ -237,6 +238,7 @@ function AppRoutes() {
       <Route path="/expert/earnings" element={<ProtectedRoute allowedRoles={["expert"]}><EarningsPage /></ProtectedRoute>} />
       <Route path="/expert/messages" element={<ProtectedRoute allowedRoles={["expert"]}><ExpertMessagesPage /></ProtectedRoute>} />
       <Route path="/expert/settings" element={<ProtectedRoute allowedRoles={["expert"]}><ExpertSettingsPage /></ProtectedRoute>} />
+      <Route path="/projects/:projectId" element={<ProtectedRoute><ProjectDetailPage /></ProtectedRoute>} />
       <Route path="/profile/:userId" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
       <Route path="/profile/:userId/projects" element={<ProtectedRoute><ViewAllProjectPage /></ProtectedRoute>} />
       <Route path="/profile/:userId/services" element={<ProtectedRoute><ViewAllServicePage /></ProtectedRoute>} />
