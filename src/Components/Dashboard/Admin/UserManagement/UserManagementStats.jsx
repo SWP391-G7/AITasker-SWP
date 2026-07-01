@@ -4,13 +4,14 @@ const statIcons = {
   'total-users': Users,
   experts: BrainCircuit,
   clients: UserCheck,
-  pending: BadgeCheck
+  pending: BadgeCheck,
+  suspended: BadgeCheck
 }
 
 const UserManagementStats = ({ stats }) => (
   <section className="user-management-stats" aria-label="User management summary">
     {stats.map(({ id, label, value, trend, tone }) => {
-      const Icon = statIcons[id]
+      const Icon = statIcons[id] || Users
 
       return (
         <article className={`user-stat-card tone-${tone}`} key={id}>

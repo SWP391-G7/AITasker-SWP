@@ -16,6 +16,45 @@ const adminDashboardApi = axios.create({
   },
 })
 
+// Read the latest auth token every time an admin request is made.
+// This avoids using a stale token if the admin logs in again during the same browser session.
+const getAdminAuthHeaders = () => {
+  // The login flow stores the JWT under "token" in localStorage.
+  const token = localStorage.getItem('token')
+
+  // Return only JSON headers when there is no token, so unauthenticated calls fail normally.
+  return {
+    'Content-Type': 'application/json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  }
+}
+
+// Convert backend role values into the labels already used by the admin table.
+// The backend stores enum values like "expert", while the UI displays "AI Expert".
+const formatAdminUserRole = (role) => {
+  // Expert accounts should be shown with the product-facing label.
+  if (role === 'expert') return 'AI Expert'
+
+  // Client accounts keep the simple human label.
+  if (role === 'client') return 'Client'
+
+  // Admin accounts now come from the real /admin/users API too.
+  if (role === 'admin') return 'Admin'
+
+  // Fallback keeps the UI from breaking if a future backend role appears.
+  return role || 'User'
+}
+
+// Create a compact avatar text from the user's display name.
+// Example: "Nguyen Van A" becomes "NV".
+const getAdminUserInitials = (name) =>
+  String(name || 'AU')
+    .split(' ')
+    .map((word) => word[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase()
+
 // Chuyển các giá trị như price/count/rating từ API về number.
 // API đôi khi trả số dưới dạng string, ví dụ "100" thay vì 100.
 // Nếu value bị rỗng, null, undefined hoặc không chuyển được thành số thì dùng 0 để tránh lỗi khi tính toán.
@@ -98,19 +137,91 @@ export const getAdminDashboardData = async () => {
 // Trang quản lý user chỉ cần expert + client, không cần jobs/services.
 // Tách hàm này ra để nếu API jobs hoặc services bị lỗi thì bảng user vẫn hiển thị bình thường.
 export const getAdminUsersData = async () => {
-  const [expertsResult, clientsResult] = await Promise.all([
-    searchAdminTarget('expert'),
-    searchAdminTarget('client'),
-  ])
+  // Use the real admin users endpoint instead of the public /search endpoint.
+  // This returns every user role, including admin users and users without completed profiles.
+  const { data } = await adminDashboardApi.get('/admin/users', {
+    // Admin endpoints must receive the Bearer token from localStorage.
+    headers: getAdminAuthHeaders(),
+  })
 
-  const experts = expertsResult.results || []
-  const clients = clientsResult.results || []
-
-  return [
-    ...experts.map((user) => ({ ...user, dashboardRole: 'AI Expert' })),
-    ...clients.map((user) => ({ ...user, dashboardRole: 'Client' })),
-  ]
+  // The backend controller returns { success, count, users }.
+  // Returning only users keeps the old page-level call shape simple.
+  return data.users || []
 }
+
+// Delete a user by id through the real admin CRUD API.
+// The page asks for browser confirmation before calling this function.
+export const deleteAdminUser = async (userId) => {
+  // DELETE /admin/users/:id performs the hard delete on the backend.
+  const { data } = await adminDashboardApi.delete(`/admin/users/${userId}`, {
+    // Token is required because only admins should delete users.
+    headers: getAdminAuthHeaders(),
+  })
+
+  // Return backend response so the page can remove the row or show an error if needed.
+  return data
+}
+
+// Deactivate a user by id through the real admin ban endpoint.
+// Deactivate means acc_status=false on the backend.
+export const deactivateAdminUser = async (userId) => {
+  // PUT /admin/users/:id/deactivate soft-bans the account without deleting data.
+  const { data } = await adminDashboardApi.put(`/admin/users/${userId}/deactivate`, null, {
+    // Token is required because only admins should ban users.
+    headers: getAdminAuthHeaders(),
+  })
+
+  // Return the updated user from the backend response.
+  return data
+}
+
+// Convert real /admin/users response rows into the table row format used by UserManagementTable.
+// This mapper is separate from the older buildManagedUsers helper because this one understands accStatus.
+export const buildRealAdminUsers = (users = []) =>
+  // Map each backend user object into the exact fields consumed by the table component.
+  users.map((user, index) => {
+    // Prefer the real admin API field first, then support older snake_case fields as fallback.
+    const name = String(user?.fullName || user?.full_name || user?.company_name || 'AITasker User')
+
+    // The backend returns accStatus in normalized responses and acc_status in raw SQL-style responses.
+    const accStatus = user?.accStatus ?? user?.acc_status
+
+    // The backend returns isVerified in normalized responses and is_verified in raw SQL-style responses.
+    const isVerified = user?.isVerified ?? user?.is_verified
+
+    // The backend returns createdAt in normalized responses and created_at in raw SQL-style responses.
+    const createdAt = user?.createdAt || user?.created_at
+
+    // Return the row shape expected by the existing admin user table.
+    return {
+      // Use database id for actions like delete/deactivate; index is only a last-resort display fallback.
+      id: user?.id || index,
+
+      // Show the best available name in the first table column.
+      name,
+
+      // Show email under the name, with a stable fallback when backend data is incomplete.
+      email: String(user?.email || 'Email not available'),
+
+      // Keep the raw backend role for future edit forms.
+      rawRole: user?.role,
+
+      // Convert backend enum role into the human label already used by the table.
+      role: formatAdminUserRole(user?.role),
+
+      // accStatus=false means the admin has banned/deactivated the account.
+      status: accStatus === false ? 'Suspended' : 'Active',
+
+      // Show the real verification state from the backend.
+      verified: Boolean(isVerified),
+
+      // Format the created date for UI display.
+      joined: createdAt ? new Date(createdAt).toLocaleDateString() : 'From API',
+
+      // Use generated initials because users do not have avatar image URLs in the current schema.
+      avatar: getAdminUserInitials(name),
+    }
+  })
 
 // Lấy thông tin admin hiện tại từ token đang lưu trong localStorage.
 //

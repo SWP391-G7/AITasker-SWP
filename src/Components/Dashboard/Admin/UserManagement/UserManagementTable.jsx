@@ -1,4 +1,4 @@
-import { BadgeCheck, ChevronLeft, ChevronRight, SlidersHorizontal, UserPlus } from 'lucide-react'
+import { BadgeCheck, ChevronLeft, ChevronRight, Pencil, SlidersHorizontal, Trash2, UserPlus } from 'lucide-react'
 
 const statusClass = {
   Active: 'status-active',
@@ -8,19 +8,43 @@ const statusClass = {
 
 const roleClass = {
   'AI Expert': 'role-expert',
-  Client: 'role-client'
+  Client: 'role-client',
+  Admin: 'role-admin'
 }
 
-const UserManagementTable = ({ users = [], searchQuery = '' }) => {
-  const filteredUsers = users.filter((user) => {
-    const query = searchQuery.toLowerCase()
-    return (
-      user.name.toLowerCase().includes(query) ||
-      user.email.toLowerCase().includes(query) ||
-      user.role.toLowerCase().includes(query) ||
-      user.status.toLowerCase().includes(query)
-    )
-  })
+const UserManagementTable = ({
+  // users are already normalized by buildRealAdminUsers in the service layer.
+  users = [],
+
+  // searchQuery is owned by AdminHeader and passed down through UserManagementPage.
+  searchQuery = '',
+
+  // isLoading controls the temporary loading table row.
+  isLoading = false,
+
+  // onDeleteUser calls the real DELETE admin API after page-level confirmation.
+  onDeleteUser,
+
+  // onDeactivateUser calls the real deactivate/ban admin API after page-level confirmation.
+  onDeactivateUser,
+
+  // onEditUser is wired now; the edit feature can be implemented later.
+  onEditUser
+}) => {
+  // Always convert unknown values to strings before searching/rendering.
+  // This prevents the page from crashing if one backend row misses a field.
+  const toSearchText = (value) => String(value || '').toLowerCase()
+
+  // Normalize the search text once so every row compares against the same lowercase query.
+  const query = toSearchText(searchQuery)
+
+  // Filter client-side for the visible table rows.
+  const filteredUsers = users.filter((user) => (
+    toSearchText(user.name).includes(query) ||
+    toSearchText(user.email).includes(query) ||
+    toSearchText(user.role).includes(query) ||
+    toSearchText(user.status).includes(query)
+  ))
 
   return (
   <section className="user-table-panel">
@@ -50,7 +74,23 @@ const UserManagementTable = ({ users = [], searchQuery = '' }) => {
           </tr>
         </thead>
         <tbody>
-          {filteredUsers.map((user) => (
+          {isLoading && (
+            <tr>
+              <td colSpan={6}>
+                <span className="quiet-action">Loading users...</span>
+              </td>
+            </tr>
+          )}
+
+          {!isLoading && filteredUsers.length === 0 && (
+            <tr>
+              <td colSpan={6}>
+                <span className="quiet-action">No users found.</span>
+              </td>
+            </tr>
+          )}
+
+          {!isLoading && filteredUsers.map((user) => (
             <tr key={user.id}>
               <td>
                 <div className="user-cell">
@@ -62,10 +102,10 @@ const UserManagementTable = ({ users = [], searchQuery = '' }) => {
                 </div>
               </td>
               <td>
-                <span className={`role-pill ${roleClass[user.role]}`}>{user.role}</span>
+                <span className={`role-pill ${roleClass[user.role] || ''}`}>{user.role}</span>
               </td>
               <td>
-                <span className={`status-pill ${statusClass[user.status]}`}>{user.status}</span>
+                <span className={`status-pill ${statusClass[user.status] || ''}`}>{user.status}</span>
               </td>
               <td>
                 <span className={`verified-indicator ${user.verified ? 'is-verified' : ''}`}>
@@ -74,14 +114,37 @@ const UserManagementTable = ({ users = [], searchQuery = '' }) => {
               </td>
               <td>{user.joined}</td>
               <td>
-                {user.status === 'Pending' ? (
-                  <div className="row-actions">
-                    <button type="button" className="approve-mini">Approve</button>
-                    <button type="button" className="reject-mini">Reject</button>
-                  </div>
-                ) : (
-                  <span className="quiet-action">-</span>
-                )}
+                <div className="row-actions">
+                  <button
+                    type="button"
+                    className="icon-row-action"
+                    title="Edit user"
+                    aria-label={`Edit ${user.name}`}
+                    onClick={() => onEditUser?.(user)}
+                  >
+                    <Pencil size={14} />
+                  </button>
+
+                  <button
+                    type="button"
+                    className="deactivate-mini"
+                    disabled={user.status === 'Suspended'}
+                    title={user.status === 'Suspended' ? 'User is already banned' : 'Deactivate user'}
+                    onClick={() => onDeactivateUser?.(user)}
+                  >
+                    Ban
+                  </button>
+
+                  <button
+                    type="button"
+                    className="icon-row-action danger"
+                    title="Delete user"
+                    aria-label={`Delete ${user.name}`}
+                    onClick={() => onDeleteUser?.(user)}
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
               </td>
             </tr>
           ))}
