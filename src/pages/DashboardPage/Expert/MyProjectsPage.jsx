@@ -258,7 +258,7 @@ const MyProjectsPage = () => {
                       {filteredProposals.map((proposal) => (
                         <div
                           key={proposal.id}
-                          onClick={() => navigate(`/marketplace/task/${proposal.job_id}`)}
+                          onClick={() => navigate(`/expert/proposal/${proposal.id}`)}
                           style={{
                             background: 'rgba(255, 255, 255, 0.02)',
                             border: '1px solid rgba(255, 255, 255, 0.05)',
