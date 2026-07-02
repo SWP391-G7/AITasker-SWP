@@ -58,3 +58,28 @@ export const updateProposalStatus = async ({ proposalId, status, start_project }
 
   return result;
 };
+
+export const counterProposal = async ({ proposalId, bidAmount, coverLetter }) => {
+  const token = localStorage.getItem('token');
+
+  if (!token) {
+    throw new Error('No authentication token found. Please log in first.');
+  }
+
+  const response = await fetch(`${API_BASE_URL}/proposals/${proposalId}/counter`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ bid_amount: bidAmount, cover_letter: coverLetter }),
+  });
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(result.message || 'Failed to submit counter-proposal.');
+  }
+
+  return result;
+};

@@ -4,7 +4,6 @@ import {
   AlertCircle,
   ArrowLeft,
   BriefcaseBusiness,
-  CalendarDays,
   ChevronDown,
   ChevronUp,
   Clock,
@@ -36,10 +35,7 @@ const formatBudget = (task) => {
   return 'Budget TBD';
 };
 
-const formatDate = (value) => {
-  if (!value) return 'No deadline';
-  return new Date(value).toLocaleDateString();
-};
+
 
 const MarketplaceTaskDetailPage = () => {
   const { id } = useParams();
@@ -177,12 +173,8 @@ const MarketplaceTaskDetailPage = () => {
 
                 <div className="pricing-metrics task-metrics">
                   <div className="metric">
-                    <CalendarDays size={16} />
-                    <span>{formatDate(task.deadline)}</span>
-                  </div>
-                  <div className="metric">
                     <Clock size={16} />
-                    <span>{task.duration_days ? `${task.duration_days} days` : 'Duration TBD'}</span>
+                    <span>{task.duration_days ? `${task.duration_days} days duration` : 'Duration TBD'}</span>
                   </div>
                   <div className="metric">
                     <DollarSign size={16} />
