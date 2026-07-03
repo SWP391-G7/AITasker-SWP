@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react"
 import { Link, useNavigate, NavLink } from "react-router-dom"
 import { Bell, LayoutDashboard, LogOut, Mail, Settings, User } from "lucide-react"
 import { getStoredUser, isLoggedIn, logout } from "../../Services/checkLogin"
+import { getConversations } from "../../Services/messageService"
 import SettingPage from "../../pages/SettingPage"
 import "./HeaderCom.css"
 
@@ -20,12 +21,23 @@ const getDashboardPathByRole = (role) => {
   return "/client/dashboard"
 }
 
+const getMessagesPathByRole = (role) => {
+  const normalizedRole = String(role || "").toLowerCase()
+
+  if (normalizedRole.includes("expert")) {
+    return "/expert/messages"
+  }
+
+  return "/client/messages"
+}
+
 export default function HeaderCom() {
   const navigate = useNavigate()
   const [isLogin, setIsLogin] = useState(() => isLoggedIn())
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [showDropdown, setShowDropdown] = useState(false)
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
+  const [pendingMessages, setPendingMessages] = useState(0)
   const dropdownRef = useRef(null)
 
   useEffect(() => {
@@ -38,6 +50,34 @@ export default function HeaderCom() {
     document.addEventListener("mousedown", handleClickOutside)
     return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [])
+
+  useEffect(() => {
+    if (!isLogin) {
+      setPendingMessages(0)
+      return undefined
+    }
+
+    let isMounted = true
+
+    const fetchPendingMessages = async () => {
+      try {
+        const data = await getConversations()
+        if (!isMounted) return
+        const unreadConversations = data.filter((conversation) => Number(conversation.unread) > 0).length
+        setPendingMessages(unreadConversations)
+      } catch {
+        if (isMounted) setPendingMessages(0)
+      }
+    }
+
+    fetchPendingMessages()
+    const interval = setInterval(fetchPendingMessages, 10000)
+
+    return () => {
+      isMounted = false
+      clearInterval(interval)
+    }
+  }, [isLogin])
 
   const closeMenu = () => setIsMenuOpen(false)
 
@@ -53,6 +93,12 @@ export default function HeaderCom() {
     setShowDropdown(false)
     const storedUser = getStoredUser()
     navigate(getDashboardPathByRole(storedUser?.role))
+  }
+
+  const handleMessages = () => {
+    const storedUser = getStoredUser()
+    closeMenu()
+    navigate(getMessagesPathByRole(storedUser?.role))
   }
 
   const handleProfile = () => {
@@ -124,8 +170,15 @@ export default function HeaderCom() {
                     <Bell size={20} />
                     <span className="icon-badge"></span>
                   </button>
-                  <button className="icon-button" aria-label="Messages">
+                  <button
+                    className="icon-button position-relative"
+                    aria-label={`${pendingMessages} unread message conversations`}
+                    onClick={handleMessages}
+                  >
                     <Mail size={20} />
+                    {pendingMessages > 0 && (
+                      <span className="message-count-badge">{pendingMessages > 9 ? "9+" : pendingMessages}</span>
+                    )}
                   </button>
                 </div>
               ) : (
@@ -145,8 +198,15 @@ export default function HeaderCom() {
                   <span className="icon-badge"></span>
                 </button>
 
-                <button className="icon-button" aria-label="Messages">
+                <button
+                  className="icon-button position-relative"
+                  aria-label={`${pendingMessages} unread message conversations`}
+                  onClick={handleMessages}
+                >
                   <Mail size={20} />
+                  {pendingMessages > 0 && (
+                    <span className="message-count-badge">{pendingMessages > 9 ? "9+" : pendingMessages}</span>
+                  )}
                 </button>
 
                 <div className="avatar-wrapper position-relative" ref={dropdownRef}>

@@ -86,6 +86,26 @@
   box-shadow: 0 0 8px var(--accent-sky);
 }
 
+.message-count-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-sky));
+  border: 2px solid rgba(3, 7, 18, 0.96);
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.68rem;
+  font-weight: 800;
+  line-height: 1;
+  box-shadow: 0 8px 18px rgba(37, 99, 235, 0.34);
+}
+
 .avatar-wrapper {
   position: relative;
   cursor: pointer;
