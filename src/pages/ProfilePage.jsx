@@ -16,6 +16,7 @@ import { getUserProfile } from "../Services/profileService";
 import { getStoredUser } from "../Services/checkLogin";
 import { getExpertServicesFromApi } from "../Components/Profile/Expert/ExpertService";
 import { getClientProjectsFromApi } from "../Components/Profile/Client/ClientProject";
+import { getOrCreateConversation } from "../Services/messageService";
 import "./ProfilePage.css";
 
 function ProfilePage() {
@@ -30,6 +31,7 @@ function ProfilePage() {
   const [activeTab, setActiveTab] = useState("") // "client" or "expert"
 
   const isOwnProfile = currentUser && currentUser.id === userId
+  const currentRole = String(currentUser?.role || "").toLowerCase()
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -90,8 +92,23 @@ function ProfilePage() {
     }
   }
 
-  const handleContact = () => {
-    navigate(getMessagesPath());
+  const handleContact = async () => {
+    if (!currentUser) {
+      navigate("/login");
+      return;
+    }
+
+    if (!currentRole.includes("client") || activeTab !== "expert") {
+      return;
+    }
+
+    try {
+      const conversation = await getOrCreateConversation(userId);
+      navigate("/client/messages", { state: { activeConversationId: conversation.id } });
+    } catch (err) {
+      console.error("Failed to start conversation:", err);
+      navigate("/client/messages");
+    }
   }
 
   const handleViewAllProfileItems = () => {
@@ -279,6 +296,7 @@ function ProfilePage() {
 
   const { user, clientProfile, expertProfile, hasClientProfile, hasExpertProfile } = profileData;
   const isExpertView = activeTab === "expert";
+  const canClientContactExpert = !isOwnProfile && currentRole.includes("client") && isExpertView;
   const activeProfile = isExpertView ? expertProfile : clientProfile;
   // API data: profile page calls API once, then pushes response lists through Profile helpers.
   const profileServices = getExpertServicesFromApi(profileData.services || []);
@@ -468,10 +486,10 @@ function ProfilePage() {
                     <small>{user.role}</small>
                   </div>
                   
-                  {!isOwnProfile && (  
+                  {canClientContactExpert && (  
                   <button className="contact-btn" onClick={handleContact}>
                     <Mail size={16} />
-                    Contact Me
+                    Contact Expert
                   </button>)}
 
                   <button

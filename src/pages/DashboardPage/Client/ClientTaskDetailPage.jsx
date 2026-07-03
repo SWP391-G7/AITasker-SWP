@@ -16,6 +16,7 @@ import ClientSidebar from "../../../Components/Dashboard/Client/ClientSidebar";
 import Footer from "../../../Components/Footer/Footer";
 import { getJobById, getJobProposals } from "../../../Services/jobService";
 import { updateProposalStatus } from "../../../Services/proposalService";
+import { getOrCreateConversation } from "../../../Services/messageService";
 import "./ClientMarketplace.css";
 
 const getFirstArray = (result, keys) => {
@@ -109,18 +110,34 @@ function ClientTaskDetailPage() {
     return "No budget";
   };
 
-  const handleContactExpert = (proposal) => {
-    const expertId =
-      proposal?.expert?._id ||
-      proposal?.expert?.id ||
-      proposal?.expertId ||
-      proposal?.user?._id ||
-      proposal?.user?.id;
+  const getProposalExpertId = (proposal) =>
+    proposal?.expert?._id ||
+    proposal?.expert?.id ||
+    proposal?.expert_id ||
+    proposal?.expertId ||
+    proposal?.user?._id ||
+    proposal?.user?.id;
 
-    navigate(expertId ? `/client/messages?expertId=${expertId}` : "/client/messages");
+  const handleContactExpert = async (proposal) => {
+    const expertId =
+      getProposalExpertId(proposal);
+
+    if (!expertId) {
+      navigate("/client/messages");
+      return;
+    }
+
+    try {
+      const conversation = await getOrCreateConversation(expertId);
+      navigate("/client/messages", { state: { activeConversationId: conversation.id } });
+    } catch (err) {
+      console.error("Failed to contact expert:", err);
+      navigate("/client/messages");
+    }
   };
 
-  const handleAcceptProposal = async (proposalId) => {
+  const handleAcceptProposal = async (proposal) => {
+    const proposalId = proposal?._id || proposal?.id;
     if (actingProposal) return;
     setActingProposal(proposalId);
     try {
@@ -130,6 +147,7 @@ function ClientTaskDetailPage() {
       ));
       setJob(prev => prev ? { ...prev, status: 'closed' } : null);
       setSelectedProposal(prev => prev ? { ...prev, status: 'accepted' } : null);
+      await handleContactExpert({ ...proposal, status: 'accepted' });
     } catch (err) {
       setError(err.message);
     } finally {
@@ -369,9 +387,23 @@ function ClientTaskDetailPage() {
 
                   <div className="d-flex gap-2 justify-content-end pt-3 border-top border-secondary border-opacity-25 mt-4">
                     {selectedProposal.status === "accepted" ? (
-                      <span className="project-status accepted-status d-flex align-items-center py-2 px-3">
-                        <Check size={14} className="me-1" /> Accepted
-                      </span>
+                      <>
+                        <span className="project-status accepted-status d-flex align-items-center py-2 px-3">
+                          <Check size={14} className="me-1" /> Accepted
+                        </span>
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-primary px-3 py-2 fw-semibold"
+                          style={{ borderRadius: '8px' }}
+                          onClick={() => {
+                            setSelectedProposal(null);
+                            handleContactExpert(selectedProposal);
+                          }}
+                        >
+                          <Mail size={14} className="me-1" />
+                          Message
+                        </button>
+                      </>
                     ) : selectedProposal.status === "rejected" ? (
                       <span className="project-status rejected-status d-flex align-items-center py-2 px-3">
                         <X size={14} className="me-1" /> Rejected
@@ -395,7 +427,7 @@ function ClientTaskDetailPage() {
                           type="button"
                           className="btn btn-sm btn-success px-3 py-2 fw-semibold"
                           style={{ borderRadius: '8px' }}
-                          onClick={() => handleAcceptProposal(selectedProposal._id || selectedProposal.id)}
+                          onClick={() => handleAcceptProposal(selectedProposal)}
                           disabled={actingProposal !== null}
                         >
                           {actingProposal === (selectedProposal._id || selectedProposal.id) ? (
@@ -404,18 +436,6 @@ function ClientTaskDetailPage() {
                           Approve
                         </button>
 
-                        <button
-                          type="button"
-                          className="btn btn-sm btn-primary px-3 py-2 fw-semibold"
-                          style={{ borderRadius: '8px' }}
-                          onClick={() => {
-                            setSelectedProposal(null);
-                            handleContactExpert(selectedProposal);
-                          }}
-                        >
-                          <Mail size={14} className="me-1" />
-                          Message
-                        </button>
                       </>
                     )}
                   </div>
