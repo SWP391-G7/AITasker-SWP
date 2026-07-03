@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import "./LandingPages.css"
 import {
@@ -16,6 +16,7 @@ import {
   SlidersHorizontal,
 } from "lucide-react"
 import { isLoggedIn } from "../../Services/checkLogin"
+import { getMarketplaceServices } from "../../Services/serviceService"
 import Footer from "../Footer/Footer"
 
 import expertSarah from "./image/expert_sarah.png"
@@ -23,12 +24,45 @@ import expertMarcus from "./image/expert_marcus.png"
 import expertElena from "./image/expert_elena.png"
 import expertDavid from "./image/expert_david.png"
 
+const serviceIconStyles = [
+  {
+    icon: <MessageSquare size={24} className="text-primary" />,
+    bg: "rgba(59, 130, 246, 0.1)",
+  },
+  {
+    icon: <BarChart3 size={24} className="text-success" />,
+    bg: "rgba(16, 185, 129, 0.1)",
+  },
+  {
+    icon: <GitFork size={24} className="text-info" />,
+    bg: "rgba(6, 182, 212, 0.1)",
+  },
+  {
+    icon: <Cpu size={24} className="text-danger" />,
+    bg: "rgba(239, 68, 68, 0.1)",
+  },
+]
+
+const parseServiceTags = (tags) => {
+  if (!tags) return []
+  if (Array.isArray(tags)) return tags.filter(Boolean).slice(0, 2)
+
+  return String(tags)
+    .split(",")
+    .map((tag) => tag.trim())
+    .filter(Boolean)
+    .slice(0, 2)
+}
+
 const LandingPages = () => {
   const navigate = useNavigate()
   const [notice, setNotice] = useState("")
   const [target, setTarget] = useState('expert') // 'expert', 'client', 'services', 'jobs'
   const [query, setQuery] = useState('')
   const [showFilters, setShowFilters] = useState(false)
+  const [services, setServices] = useState([])
+  const [servicesLoading, setServicesLoading] = useState(true)
+  const [servicesError, setServicesError] = useState("")
 
   const [filters, setFilters] = useState({
     budgetMin: '',
@@ -46,6 +80,52 @@ const LandingPages = () => {
     industry: '',
     companyName: ''
   })
+
+  useEffect(() => {
+    let isMounted = true
+
+    const fetchPopularServices = async () => {
+      try {
+        setServicesLoading(true)
+        setServicesError("")
+
+        const apiServices = await getMarketplaceServices()
+        if (!isMounted) return
+
+        const formattedServices = apiServices.slice(0, 4).map((service, index) => {
+          const style = serviceIconStyles[index % serviceIconStyles.length]
+          const tags = parseServiceTags(service.tags)
+
+          return {
+            id: service.id,
+            icon: style.icon,
+            bg: style.bg,
+            title: service.title || "Untitled Service",
+            desc: service.description || "No description provided.",
+            tags: tags.length ? tags : [service.pricing_type || "Service"],
+          }
+        })
+
+        setServices(formattedServices)
+      } catch (error) {
+        console.error("Failed to fetch landing services:", error)
+        if (isMounted) {
+          setServicesError("Unable to load popular services.")
+          setServices([])
+        }
+      } finally {
+        if (isMounted) {
+          setServicesLoading(false)
+        }
+      }
+    }
+
+    fetchPopularServices()
+
+    return () => {
+      isMounted = false
+    }
+  }, [])
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target
@@ -106,37 +186,6 @@ const LandingPages = () => {
   const handleProtectedClick = () => { //Check if user is logged in before allowing access to protected features
     requireLogin()
   }
-
-  const services = [ //Static data for popular services section - in a real app this would likely come from an API
-    {
-      icon: <MessageSquare size={24} className="text-primary" />,
-      bg: "rgba(59, 130, 246, 0.1)",
-      title: "Custom Chatbots",
-      desc: "Intelligent conversational agents tailored to your business knowledge",
-      tags: ["NLP", "Support"],
-    },
-    {
-      icon: <BarChart3 size={24} className="text-success" />,
-      bg: "rgba(16, 185, 129, 0.1)",
-      title: "Data Analytics",
-      desc: "Predictive modeling and deep insights from your structured data.",
-      tags: ["Prediction", "BI"],
-    },
-    {
-      icon: <GitFork size={24} className="text-info" />,
-      bg: "rgba(6, 182, 212, 0.1)",
-      title: "Workflow Auto",
-      desc: "Connect systems and automate repetitive tasks with AI agents.",
-      tags: ["RPA", "Integration"],
-    },
-    {
-      icon: <Cpu size={24} className="text-danger" />,
-      bg: "rgba(239, 68, 68, 0.1)",
-      title: "ML Models",
-      desc: "Bespoke machine learning models trained on proprietary datasets.",
-      tags: ["Training", "Vision"],
-    },
-  ]
 
   const experts = [ //Static data for expert profiles section - in a real app this would likely come from an API
     {
@@ -451,24 +500,32 @@ const LandingPages = () => {
             </button>
           </div>
 
-          <div className="row g-4">
-            {services.map((svc) => (
-              <div key={svc.title} className="col-12 col-sm-6 col-lg-3">
-                <div className="service-card p-4 h-100 d-flex flex-column align-items-start text-start">
-                  <div className="service-icon-box mb-4 d-flex align-items-center justify-content-center" style={{ backgroundColor: svc.bg }}>
-                    {svc.icon}
-                  </div>
-                  <h3 className="service-card-title fw-bold mb-2">{svc.title}</h3>
-                  <p className="service-card-desc text-muted mb-4">{svc.desc}</p>
-                  <div className="service-tags mt-auto d-flex gap-2">
-                    {svc.tags.map((tag) => (
-                      <span key={tag} className="service-tag px-3 py-1 rounded-pill">{tag}</span>
-                    ))}
+          {servicesLoading ? (
+            <p className="text-muted mb-0">Loading popular services...</p>
+          ) : servicesError ? (
+            <p className="text-muted mb-0">{servicesError}</p>
+          ) : services.length === 0 ? (
+            <p className="text-muted mb-0">No popular services available yet.</p>
+          ) : (
+            <div className="row g-4">
+              {services.map((svc) => (
+                <div key={svc.id || svc.title} className="col-12 col-sm-6 col-lg-3">
+                  <div className="service-card p-4 h-100 d-flex flex-column align-items-start text-start">
+                    <div className="service-icon-box mb-4 d-flex align-items-center justify-content-center" style={{ backgroundColor: svc.bg }}>
+                      {svc.icon}
+                    </div>
+                    <h3 className="service-card-title fw-bold mb-2">{svc.title}</h3>
+                    <p className="service-card-desc text-muted mb-4">{svc.desc}</p>
+                    <div className="service-tags mt-auto d-flex gap-2">
+                      {svc.tags.map((tag) => (
+                        <span key={tag} className="service-tag px-3 py-1 rounded-pill">{tag}</span>
+                      ))}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
