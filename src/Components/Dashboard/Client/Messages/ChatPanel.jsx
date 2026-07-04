@@ -1,64 +1,128 @@
-import React, { Component } from 'react'
+import { useEffect, useRef, useState } from 'react';
 import { Phone, Video, MoreVertical, Paperclip, Send } from "lucide-react";
-import "../../../../pages/DashboardPage/Client/ClientMarketplace.css"
-import { messages } from "./Messages";
+import "../../../../pages/DashboardPage/Client/ClientMarketplace.css";
 
-export default class ChatPanel extends Component {
-    render() {
-        return (
-            <section className="chat-panel">
-                <div className="chat-header">
-                    <div className="chat-user">
-                        <div className="chat-avatar">JV</div>
+export default function ChatPanel({ conversation, messages = [], onSendMessage }) {
+  const [inputText, setInputText] = useState("");
+  const messagesEndRef = useRef(null);
+  const shouldScrollAfterSend = useRef(false);
 
-                        <div>
-                            <h2>Dr. Julian V.</h2>
-                            <p>Online · Enterprise LLM Fine-tuning</p>
-                        </div>
-                    </div>
+  const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
 
-                    <div className="chat-actions">
-                        <button>
-                            <Phone size={18} />
-                        </button>
-                        <button>
-                            <Video size={18} />
-                        </button>
-                        <button>
-                            <MoreVertical size={18} />
-                        </button>
-                    </div>
-                </div>
+  useEffect(() => {
+    if (!shouldScrollAfterSend.current) return;
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+    shouldScrollAfterSend.current = false;
+  }, [messages.length]);
 
-                <div className="chat-body">
-                    <div className="chat-date">Today</div>
+  if (!conversation) {
+    return (
+      <section className="chat-panel" style={{ display: "flex", justifyContent: "center", alignItems: "center", color: "#64748b" }}>
+        <p>Select a conversation to start chatting</p>
+      </section>
+    );
+  }
 
-                    {messages.map((message) => (
-                        <div
-                            className={`message-row ${message.sender === "client" ? "client" : "expert"
-                                }`}
-                            key={message.id}
-                        >
-                            <div className="message-bubble">
-                                <p>{message.text}</p>
-                                <span>{message.time}</span>
-                            </div>
-                        </div>
-                    ))}
-                </div>
+  const name = conversation.other_user_name || "Direct Chat";
+  const role = conversation.other_user_role === 'expert'
+    ? (conversation.other_user_professional_title || "Expert")
+    : (conversation.other_user_company_name || "Client");
 
-                <div className="chat-input-area">
-                    <button>
-                        <Paperclip size={20} />
-                    </button>
+  const initials = name
+    .split(" ")
+    .map((word) => word[0])
+    .join("")
+    .replace(".", "")
+    .slice(0, 2)
+    .toUpperCase();
 
-                    <input placeholder="Write a message..." />
+  const handleSend = async () => {
+    const messageText = inputText.trim();
+    if (!messageText) return;
+    shouldScrollAfterSend.current = true;
+    await onSendMessage(messageText);
+    setInputText("");
+  };
 
-                    <button className="send-button">
-                        <Send size={20} />
-                    </button>
-                </div>
-            </section>
-        )
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      handleSend();
     }
+  };
+
+  const formatMessageTime = (timeString) => {
+    if (!timeString) return "";
+    const date = new Date(timeString);
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
+
+  return (
+    <section className="chat-panel">
+      <div className="chat-header">
+        <div className="chat-user">
+          <div className="chat-avatar">{initials}</div>
+
+          <div>
+            <h2>{name}</h2>
+            <p>{role}</p>
+          </div>
+        </div>
+
+        <div className="chat-actions">
+          <button type="button">
+            <Phone size={18} />
+          </button>
+          <button type="button">
+            <Video size={18} />
+          </button>
+          <button type="button">
+            <MoreVertical size={18} />
+          </button>
+        </div>
+      </div>
+
+      <div className="chat-body">
+        {messages.length === 0 ? (
+          <div style={{ textAlign: "center", padding: "20px", color: "#64748b" }}>
+            <p>No messages yet. Send a greeting!</p>
+          </div>
+        ) : (
+          messages.map((message) => {
+            const isMe = message.user_id === currentUser.id;
+            const senderClass = isMe ? "client" : "expert";
+
+            return (
+              <div
+                className={`message-row ${senderClass}`}
+                key={message.id}
+              >
+                <div className="message-bubble">
+                  <p>{message.content}</p>
+                  <span>{formatMessageTime(message.send_at || message.time)}</span>
+                </div>
+              </div>
+            );
+          })
+        )}
+        <div ref={messagesEndRef} />
+      </div>
+
+      <div className="chat-input-area">
+        <button type="button">
+          <Paperclip size={20} />
+        </button>
+
+        <input
+          placeholder="Write a message..."
+          value={inputText}
+          onChange={(e) => setInputText(e.target.value)}
+          onKeyDown={handleKeyDown}
+        />
+
+        <button type="button" className="send-button" onClick={handleSend}>
+          <Send size={20} />
+        </button>
+      </div>
+    </section>
+  );
 }
