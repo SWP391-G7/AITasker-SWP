@@ -291,3 +291,70 @@ export const requestRevision = async (milestoneId, note) => {
   return result;
 };
 
+/**
+ * Client approves a milestone (Planning -> Approved, or On-going -> Wait for payment)
+ */
+export const approveMilestone = async (milestoneId) => {
+  const response = await fetch(`${API_BASE_URL}/milestones/${milestoneId}/approve`, {
+    method: 'PUT',
+    headers: getAuthHeaders()
+  });
+  const result = await response.json();
+  if (!response.ok) throw new Error(result.message || 'Failed to approve milestone.');
+  return result;
+};
+
+/**
+ * Client declines a milestone (status -> Declined)
+ */
+export const declineMilestone = async (milestoneId) => {
+  const response = await fetch(`${API_BASE_URL}/milestones/${milestoneId}/decline`, {
+    method: 'PUT',
+    headers: getAuthHeaders()
+  });
+  const result = await response.json();
+  if (!response.ok) throw new Error(result.message || 'Failed to decline milestone.');
+  return result;
+};
+
+/**
+ * Client submits response note for a declined milestone
+ */
+export const submitMilestoneResponse = async (milestoneId, responseText) => {
+  const response = await fetch(`${API_BASE_URL}/milestones/${milestoneId}/response`, {
+    method: 'PUT',
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ response: responseText })
+  });
+  const result = await response.json();
+  if (!response.ok) throw new Error(result.message || 'Failed to submit response content.');
+  return result;
+};
+
+/**
+ * Expert submits/resubmits content for a milestone
+ */
+export const submitMilestoneContent = async (milestoneId, content) => {
+  const response = await fetch(`${API_BASE_URL}/milestones/${milestoneId}/submit-content`, {
+    method: 'PUT',
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ content })
+  });
+  const result = await response.json();
+  if (!response.ok) throw new Error(result.message || 'Failed to submit content.');
+  return result;
+};
+
+/**
+ * Client starts project after all milestones are Approved
+ */
+export const startProject = async (projectId) => {
+  const response = await fetch(`${API_BASE_URL}/milestones/project/${projectId}/start`, {
+    method: 'PUT',
+    headers: getAuthHeaders()
+  });
+  const result = await response.json();
+  if (!response.ok) throw new Error(result.message || 'Failed to start project.');
+  return result;
+};
+
