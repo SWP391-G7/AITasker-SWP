@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   ArrowLeft,
-  CalendarDays,
   Check,
   Clock,
   DollarSign,
@@ -14,7 +13,6 @@ import {
   X,
 } from "lucide-react";
 import ExpertSidebar from "../../../Components/Dashboard/Expert/ExpertSidebar";
-import ExpertHeader from "../../../Components/Dashboard/Expert/ExpertHeader";
 import Footer from "../../../Components/Footer/Footer";
 import { createHandleLogout } from "./handleLogout";
 import {
