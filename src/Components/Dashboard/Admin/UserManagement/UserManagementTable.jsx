@@ -1,5 +1,4 @@
 import { BadgeCheck, ChevronLeft, ChevronRight, SlidersHorizontal, UserPlus } from 'lucide-react'
-import { managedUsers } from './userManagementData'
 
 const statusClass = {
   Active: 'status-active',
@@ -12,7 +11,7 @@ const roleClass = {
   Client: 'role-client'
 }
 
-const UserManagementTable = ({ users = managedUsers, searchQuery = '' }) => {
+const UserManagementTable = ({ users = [], searchQuery = '' }) => {
   const filteredUsers = users.filter((user) => {
     const query = searchQuery.toLowerCase()
     return (

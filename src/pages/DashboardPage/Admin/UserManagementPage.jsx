@@ -9,7 +9,7 @@ import Footer from '../../../Components/Footer/Footer'
 import { handleAdminTabChange } from '../../../Components/Dashboard/Admin/adminNavigation'
 import {
   buildManagedUsers,
-  getAdminDashboardData
+  getAdminUsersData
 } from '../../../Services/adminDashboardService'
 import '../../../Components/Dashboard/Admin/UserManagement/UserManagement.css'
 import '../../Style/AdminDashboardPage.css'
@@ -26,9 +26,9 @@ const UserManagementPage = ({ onLogout }) => {
       try {
         setUserError('')
 
-        // API data: user management combines experts and clients from GET /api/search.
-        const data = await getAdminDashboardData()
-        setUsers(buildManagedUsers(data.users))
+        // API data: user management chỉ cần expert + client từ GET /api/search.
+        const usersData = await getAdminUsersData()
+        setUsers(buildManagedUsers(usersData))
       } catch (err) {
         setUserError(err.message || 'Failed to load users.')
         setUsers([])

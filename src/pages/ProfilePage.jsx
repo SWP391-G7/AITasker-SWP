@@ -69,7 +69,7 @@ function ProfilePage() {
     const normalizedRole = String(role || "").toLowerCase();
 
     if (normalizedRole.includes("admin")) {
-      return "/admin-dashboard";
+      return "/admin/dashboard";
     }
 
     if (normalizedRole.includes("expert")) {
