@@ -2058,6 +2058,12 @@
   font-weight: 700;
 }
 
+.project-status.rejected {
+  background: rgba(239, 68, 68, 0.15);
+  color: #fca5a5 !important;
+  border-color: rgba(239, 68, 68, 0.25);
+}
+
 .project-description {
   color: #cbd5e1;
   line-height: 1.6;

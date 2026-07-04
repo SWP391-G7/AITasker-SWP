@@ -14,7 +14,6 @@ function JobPostPage() {
     budgetMax: "",
     requiredSkill: "",
     durationDays: "",
-    deadline: "",
   });
 
   const [validationErrors, setValidationErrors] = useState({});
@@ -59,14 +58,7 @@ function JobPostPage() {
       errors.durationDays = "Duration must be a positive number of days";
     }
 
-    if (formData.deadline) {
-      const deadlineDate = new Date(formData.deadline);
-      if (isNaN(deadlineDate.getTime())) {
-        errors.deadline = "Invalid deadline date";
-      } else if (deadlineDate <= new Date()) {
-        errors.deadline = "Deadline must be in the future";
-      }
-    }
+
 
     return errors;
   };
@@ -91,7 +83,6 @@ function JobPostPage() {
         budgetMax: formData.budgetMax !== "" ? Number(formData.budgetMax) : null,
         requiredSkill: formData.requiredSkill || null,
         durationDays: formData.durationDays !== "" ? Number(formData.durationDays) : null,
-        deadline: formData.deadline || null,
       };
 
       await createJobPost(payload);
@@ -235,21 +226,7 @@ function JobPostPage() {
               </div>
             </div>
 
-            <div className="form-row">
-              <div className="form-field">
-                <label htmlFor="deadline">Application Deadline</label>
-                <input
-                  type="date"
-                  id="deadline"
-                  name="deadline"
-                  value={formData.deadline}
-                  onChange={handleChange}
-                  disabled={isSubmitting}
-                  className={validationErrors.deadline ? "error-input" : ""}
-                />
-                {validationErrors.deadline && <span className="field-error">{validationErrors.deadline}</span>}
-              </div>
-            </div>
+
 
             <div className="form-actions-row">
               <button 

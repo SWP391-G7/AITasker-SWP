@@ -25,6 +25,7 @@ import EarningsPage from "../pages/DashboardPage/Expert/EarningsPage"
 import ExpertMessagesPage from "../pages/DashboardPage/Expert/MessagesPage"
 import ExpertSettingsPage from "../pages/DashboardPage/Expert/SettingsPage"
 import PostServicePage from "../pages/DashboardPage/Expert/PostServicePage"
+import ExpertProposalDetailPage from "../pages/DashboardPage/Expert/ExpertProposalDetailPage"
 import ClientExpertSearchPage from "../pages/ClientExpertSearchPage"
 import ProfilePage from "../pages/ProfilePage"
 import AISolutionMarketplacePage from "../pages/AISolutionMarketplacePage"
@@ -33,6 +34,7 @@ import MarketplaceTaskDetailPage from "../pages/MarketplaceTaskDetailPage"
 import ViewAllProjectPage from "../pages/ViewAllProjectPage"
 import ViewAllServicePage from "../pages/ViewAllServicePage"
 import MarketplaceProposalPage from "../pages/MarketplaceProposalPage"
+import ProjectDetailPage from "../pages/ProjectDetailPage"
 
 function useAuthStatus() {
   const [status, setStatus] = useState({ isLoggedIn: null, isVerified: null, role: null })
@@ -234,6 +236,7 @@ function AppRoutes() {
       <Route path="/expert/dashboard" element={<ProtectedRoute allowedRoles={["expert"]}><ExpertDashboardPage /></ProtectedRoute>} />
       <Route path="/expert/post-service" element={<ProtectedRoute allowedRoles={["expert"]}><PostServicePage /></ProtectedRoute>} />
       <Route path="/expert/projects" element={<ProtectedRoute allowedRoles={["expert"]}><MyProjectsPage /></ProtectedRoute>} />
+      <Route path="/expert/proposal/:id" element={<ProtectedRoute allowedRoles={["expert"]}><ExpertProposalDetailPage /></ProtectedRoute>} />
       <Route path="/expert/earnings" element={<ProtectedRoute allowedRoles={["expert"]}><EarningsPage /></ProtectedRoute>} />
       <Route path="/expert/messages" element={<ProtectedRoute allowedRoles={["expert"]}><ExpertMessagesPage /></ProtectedRoute>} />
       <Route path="/expert/settings" element={<ProtectedRoute allowedRoles={["expert"]}><ExpertSettingsPage /></ProtectedRoute>} />
@@ -242,6 +245,14 @@ function AppRoutes() {
       <Route path="/profile/:userId/services" element={<ProtectedRoute><ViewAllServicePage /></ProtectedRoute>} />
       <Route path="/client/experts/:userId" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
       <Route path="/client/clients/:userId" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+      <Route
+        path="/projects/:projectId"
+        element={
+          <ProtectedRoute>
+            <ProjectDetailPage />
+          </ProtectedRoute>
+        }
+      />
 
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

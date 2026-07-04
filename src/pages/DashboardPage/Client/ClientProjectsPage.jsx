@@ -13,6 +13,7 @@ import Footer from "../../../Components/Footer/Footer";
 import { useClientUser } from "../../../Components/Dashboard/Client/user";
 import { logout } from "../../../Services/authService";
 import { getMyJobs, deleteJobPost } from "../../../Services/jobService";
+import { getMyProjects } from "../../../Services/projectService";
 import "../../Style/AdminDashboardPage.css";
 import "./ClientMarketplace.css";
 
@@ -42,6 +43,7 @@ const getProgress = (item) => {
 function ClientProjectsPage() {
   const navigate = useNavigate();
   const [jobs, setJobs] = useState([]);
+  const [projects, setProjects] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [notifications, setNotifications] = useState(2);
   const [loading, setLoading] = useState(true);
@@ -49,22 +51,26 @@ function ClientProjectsPage() {
   const [error, setError] = useState("");
   const user = useClientUser();
 
-  const fetchJobs = async () => {
+  const fetchDashboardData = async () => {
     try {
       setLoading(true);
       setError("");
-      const result = await getMyJobs();
-      const list = result.jobPosts || result.jobs || result.data || result.projects || result.myJobs || [];
+      const [jobsResult, projectsResult] = await Promise.all([
+        getMyJobs(),
+        getMyProjects()
+      ]);
+      const list = jobsResult.jobPosts || jobsResult.jobs || jobsResult.data || jobsResult.projects || jobsResult.myJobs || [];
       setJobs(Array.isArray(list) ? list : []);
+      setProjects(Array.isArray(projectsResult) ? projectsResult : []);
     } catch (err) {
-      setError(err.message || "Failed to load your projects.");
+      setError(err.message || "Failed to load dashboard data.");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchJobs();
+    fetchDashboardData();
   }, []);
 
   const filteredJobs = useMemo(() => {
@@ -75,6 +81,15 @@ function ClientProjectsPage() {
       (job.status || "open").toLowerCase().includes(query)
     );
   }, [jobs, searchQuery]);
+
+  const filteredProjects = useMemo(() => {
+    const query = searchQuery.toLowerCase();
+    return projects.filter((project) =>
+      (project.title || "").toLowerCase().includes(query) ||
+      (project.expert_name || "").toLowerCase().includes(query) ||
+      (project.status || "active").toLowerCase().includes(query)
+    );
+  }, [projects, searchQuery]);
 
   const handleDelete = async (event, jobId) => {
     event.stopPropagation();
@@ -91,7 +106,7 @@ function ClientProjectsPage() {
       setDeletingId(jobId);
       setError("");
       await deleteJobPost(jobId);
-      await fetchJobs();
+      await fetchDashboardData();
     } catch (err) {
       setError(err.message || "Failed to delete task.");
     } finally {
@@ -120,99 +135,153 @@ function ClientProjectsPage() {
           onLogout={handleLogout}
         />
 
-        <section className="post-form-card">
-          <div className="projects-toolbar">
-            <div>
-              <h2 className="projects-title">Posted Tasks</h2>
-              <p className="projects-subtitle">
-                {filteredJobs.length} task{filteredJobs.length !== 1 ? "s" : ""} found
-              </p>
-            </div>
-
-            <button className="draft-btn" type="button" onClick={fetchJobs} disabled={loading}>
-              <RefreshCcw size={16} />
-              Refresh
-            </button>
+        <div className="projects-toolbar" style={{ marginBottom: '24px' }}>
+          <div>
+            <h2 className="projects-title" style={{ fontSize: '1.5rem', fontWeight: '700', color: '#fff', margin: 0 }}>Workspace Dashboard</h2>
+            <p className="projects-subtitle" style={{ color: 'rgba(255,255,255,0.6)', margin: '4px 0 0 0' }}>Manage your tasks and active contracts.</p>
           </div>
 
-          {loading && <div className="alert alert-success">Loading projects...</div>}
-          {error && <div className="alert alert-danger">{error}</div>}
+          <button className="draft-btn" type="button" onClick={fetchDashboardData} disabled={loading} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+            <RefreshCcw size={16} />
+            Refresh
+          </button>
+        </div>
 
-          {!loading && !error && filteredJobs.length === 0 && (
-            <div className="empty-projects">
-              <BriefcaseBusiness size={42} />
-              <h3>No projects yet</h3>
-              <p>You have not posted any tasks. Start by creating a new task.</p>
-              <button className="next-btn" type="button" onClick={() => navigate("/client/post-job")}>
-                Post a New Task
-              </button>
+        {error && <div className="alert alert-danger" style={{ marginBottom: '24px' }}>{error}</div>}
+        {loading && <div className="alert alert-success" style={{ marginBottom: '24px' }}>Loading workspace details...</div>}
+
+        {!loading && !error && (
+          <div className="dashboard-split-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(450px, 1fr))', gap: '30px', alignItems: 'start' }}>
+            
+            {/* LEFT COLUMN: POSTED TASKS (JOB POSTS) */}
+            <div className="post-form-card" style={{ background: '#0b1220', border: '1px solid rgba(255, 255, 255, 0.08)', padding: '24px', borderRadius: '16px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                <h3 style={{ margin: 0, color: '#fff', fontSize: '1.2rem', fontWeight: '600' }}>Posted Tasks</h3>
+                <span className="project-status" style={{ fontSize: '0.8rem', padding: '3px 8px', borderRadius: '12px' }}>{filteredJobs.length} Posts</span>
+              </div>
+
+              {filteredJobs.length === 0 ? (
+                <div className="empty-projects" style={{ padding: '40px 20px', textAlign: 'center' }}>
+                  <BriefcaseBusiness size={42} style={{ color: 'rgba(255,255,255,0.2)', marginBottom: '16px' }} />
+                  <h4 style={{ color: '#fff', marginBottom: '8px' }}>No Tasks Posted</h4>
+                  <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.9rem', marginBottom: '20px' }}>You haven't posted any job tasks yet.</p>
+                  <button className="next-btn" type="button" onClick={() => navigate("/client/post-job")} style={{ cursor: 'pointer' }}>
+                    Post a New Task
+                  </button>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  {filteredJobs.map((job) => {
+                    const jobId = getJobId(job);
+                    return (
+                      <div
+                        key={jobId || job.title}
+                        onClick={() => jobId && navigate(`/client/projects/${jobId}`)}
+                        style={{
+                          background: 'rgba(255, 255, 255, 0.02)',
+                          border: '1px solid rgba(255, 255, 255, 0.05)',
+                          borderRadius: '12px',
+                          padding: '16px',
+                          cursor: 'pointer',
+                          transition: 'transform 0.2s, background 0.2s'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = 'rgba(255,255,255,0.04)';
+                          e.currentTarget.style.transform = 'translateY(-2px)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = 'rgba(255,255,255,0.02)';
+                          e.currentTarget.style.transform = 'translateY(0)';
+                        }}
+                      >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '8px' }}>
+                          <h4 style={{ margin: 0, color: '#fff', fontSize: '1rem', fontWeight: '600' }}>{job.title || "Untitled"}</h4>
+                          <span className={`project-status ${job.status === 'pending' ? 'pending-status' : ''}`} style={{ fontSize: '0.75rem', padding: '3px 8px', borderRadius: '4px' }}>
+                            {job.status || "open"}
+                          </span>
+                        </div>
+                        <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.85rem', margin: '0 0 12px 0', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                          {job.description || "No description provided."}
+                        </p>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)' }}>
+                          <span>Budget: {formatBudget(job)}</span>
+                          {job.status !== 'closed' && job.status !== 'pending' && (
+                            <button
+                              type="button"
+                              className="delete-project-btn"
+                              disabled={deletingId === jobId}
+                              onClick={(event) => handleDelete(event, jobId)}
+                              style={{ border: 'none', background: 'transparent', color: '#ff4d4f', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', padding: 0 }}
+                            >
+                              <Trash2 size={12} />
+                              {deletingId === jobId ? "Deleting..." : "Delete"}
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
-          )}
 
-          {!loading && !error && filteredJobs.length > 0 && (
-            <div className="project-list">
-              {filteredJobs.map((job) => {
-                const jobId = getJobId(job);
-                const progress = getProgress(job);
+            {/* RIGHT COLUMN: CONTRACTED PROJECTS */}
+            <div className="post-form-card" style={{ background: '#0b1220', border: '1px solid rgba(255, 255, 255, 0.08)', padding: '24px', borderRadius: '16px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                <h3 style={{ margin: 0, color: '#fff', fontSize: '1.2rem', fontWeight: '600' }}>Contracted Projects</h3>
+                <span className="project-status accepted-status" style={{ fontSize: '0.8rem', padding: '3px 8px', borderRadius: '12px' }}>{filteredProjects.length} Active</span>
+              </div>
 
-                return (
-                  <article
-                    className="project-card"
-                    key={jobId || job.title}
-                    onClick={() => (jobId ? navigate(`/client/projects/${jobId}`) : null)}
-                  >
-                    <div className="project-card-header">
-                      <div>
-                        <h3>{job.title || job.jobTitle || "Untitled Task"}</h3>
-                        <span>
-                          {job.required_skill || job.requiredSkill || job.category || job.serviceCategory || "AI Task"}
+              {filteredProjects.length === 0 ? (
+                <div style={{ padding: '60px 20px', textAlign: 'center', color: 'rgba(255,255,255,0.4)' }}>
+                  <BriefcaseBusiness size={42} style={{ opacity: 0.2, marginBottom: '16px' }} />
+                  <h4>No Contracts Yet</h4>
+                  <p style={{ fontSize: '0.9rem' }}>When you approve an expert's proposal, active contracts will appear here.</p>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  {filteredProjects.map((project) => (
+                    <div
+                      key={project.id}
+                      onClick={() => navigate(`/projects/${project.id}`)}
+                      style={{
+                        background: 'rgba(255, 255, 255, 0.02)',
+                        border: '1px solid rgba(255, 255, 255, 0.05)',
+                        borderRadius: '12px',
+                        padding: '16px',
+                        cursor: 'pointer',
+                        transition: 'transform 0.2s, background 0.2s'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = 'rgba(255,255,255,0.04)';
+                        e.currentTarget.style.transform = 'translateY(-2px)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = 'rgba(255,255,255,0.02)';
+                        e.currentTarget.style.transform = 'translateY(0)';
+                      }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '8px' }}>
+                        <h4 style={{ margin: 0, color: '#fff', fontSize: '1rem', fontWeight: '600' }}>{project.title || "Project Contract"}</h4>
+                        <span className={`project-status ${project.status}`} style={{ fontSize: '0.75rem', padding: '3px 8px', borderRadius: '4px' }}>
+                          {project.status}
                         </span>
                       </div>
-
-                      <div className="project-card-actions">
-                        <span className="project-status">{job.status || "open"}</span>
-
-                        <button
-                          type="button"
-                          className="delete-project-btn"
-                          disabled={deletingId === jobId}
-                          onClick={(event) => handleDelete(event, jobId)}
-                        >
-                          <Trash2 size={14} />
-                          {deletingId === jobId ? "Deleting..." : "Delete"}
-                        </button>
+                      <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.85rem', margin: '0 0 12px 0', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                        {project.description || "No description provided."}
+                      </p>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)' }}>
+                        <span>Expert: <strong>{project.expert_name || "AI Expert"}</strong></span>
+                        <span>Amount: <strong>${project.total_amount}</strong></span>
                       </div>
                     </div>
-
-                    <p className="project-description">{job.description || "No description provided."}</p>
-
-                    <div className="project-meta">
-                      <span>
-                        <DollarSign size={16} />
-                        {formatBudget(job)}
-                      </span>
-
-                      <span>
-                        <CalendarDays size={16} />
-                        {formatDate(job.deadline)}
-                      </span>
-                    </div>
-
-                    <div className="client-project-progress">
-                      <div>
-                        <span>Progress</span>
-                        <strong>{progress}%</strong>
-                      </div>
-                      <div className="progress-line">
-                        <div style={{ width: `${progress}%` }}></div>
-                      </div>
-                    </div>
-                  </article>
-                );
-              })}
+                  ))}
+                </div>
+              )}
             </div>
-          )}
-        </section>
+
+          </div>
+        )}
 
         <Footer variant="dashboard" />
       </main>

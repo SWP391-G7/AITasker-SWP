@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
@@ -37,8 +37,9 @@ function PostJobPage() {
     description: "",
     techStack: "",
     requirements: "",
-    budget: "",
-    deadline: "",
+    budgetMin: "",
+    budgetMax: "",
+    durationDays: "",
   });
 
   const [error, setError] = useState("");
@@ -48,11 +49,8 @@ function PostJobPage() {
   const [notifications, setNotifications] = useState(2);
   const user = useClientUser();
 
-  const minDate = new Date();
-  minDate.setDate(minDate.getDate() + 1);
-  const minDeadline = minDate.toISOString().split("T")[0];
-
   const handleChange = (e) => {
+    setError("");
     setFormData((prev) => ({
       ...prev,
       [e.target.name]: e.target.value,
@@ -60,6 +58,7 @@ function PostJobPage() {
   };
 
   const handleCategorySelect = (category) => {
+    setError("");
     setFormData((prev) => ({
       ...prev,
       category,
@@ -99,16 +98,27 @@ function PostJobPage() {
     }
 
     if (step === 3) {
-      const budgetNum = Number(formData.budget)
-      if (!formData.budget || isNaN(budgetNum) || budgetNum <= 0) {
-        setError("Please enter a valid budget.");
+      const minNum = Number(formData.budgetMin);
+      const maxNum = Number(formData.budgetMax);
+
+      if (!formData.budgetMin || isNaN(minNum) || minNum <= 0) {
+        setError("Please enter a valid minimum budget.");
         return false;
       }
 
-      const today = new Date().toISOString().split("T")[0];
+      if (!formData.budgetMax || isNaN(maxNum) || maxNum <= 0) {
+        setError("Please enter a valid maximum budget.");
+        return false;
+      }
 
-      if (!formData.deadline || formData.deadline <= today) {
-        setError("Deadline must be a date in the future.");
+      if (maxNum < minNum) {
+        setError("Maximum budget cannot be less than the minimum budget.");
+        return false;
+      }
+
+      const durNum = Number(formData.durationDays);
+      if (!formData.durationDays || isNaN(durNum) || durNum <= 0 || !Number.isInteger(durNum)) {
+        setError("Please enter a valid project duration in days.");
         return false;
       }
     }
@@ -126,8 +136,7 @@ function PostJobPage() {
     setStep((prev) => prev - 1);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
 
     if (!validateStep()) return;
 
@@ -138,11 +147,11 @@ function PostJobPage() {
 
       await createJobPost({
         title: formData.title.trim(),
-        description: `${formData.description.trim()}\n\nCategory:\n${formData.category}\n\nTech Stack:\n${formData.techStack.trim()}\n\nRequirements:\n${formData.requirements.trim()}`,
-        budgetMin: Number(formData.budget),
-        budgetMax: Number(formData.budget),
+        description: `${formData.description.trim()}`,
+        budgetMin: Number(formData.budgetMin),
+        budgetMax: Number(formData.budgetMax),
+        durationDays: Number(formData.durationDays),
         requiredSkill: formData.techStack.trim() || formData.category,
-        deadline: formData.deadline,
       });
 
       setSuccess("Task posted successfully.");
@@ -205,7 +214,7 @@ function PostJobPage() {
           </div>
         </section>
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={(e) => e.preventDefault()}>
           <section className="post-form-card">
             {error && <div className="alert alert-danger">{error}</div>}
             {success && <div className="alert alert-success">{success}</div>}
@@ -280,30 +289,51 @@ function PostJobPage() {
             )}
 
             {step === 3 && (
-              <div className="form-row two-cols">
-                <div className="form-field">
-                  <label>BUDGET</label>
-                  <input
-                    type="number"
-                    name="budget"
-                    min="1"
-                    value={formData.budget}
-                    onChange={handleChange}
-                    placeholder="e.g., 500"
-                  />
+              <>
+                <div className="form-row two-cols">
+                  <div className="form-field">
+                    <label>MINIMUM BUDGET ($)</label>
+                    <input
+                      type="number"
+                      name="budgetMin"
+                      min="1"
+                      value={formData.budgetMin}
+                      onChange={handleChange}
+                      placeholder="e.g., 500"
+                    />
+                    <p>Lowest acceptable bid amount.</p>
+                  </div>
+
+                  <div className="form-field">
+                    <label>MAXIMUM BUDGET ($)</label>
+                    <input
+                      type="number"
+                      name="budgetMax"
+                      min="1"
+                      value={formData.budgetMax}
+                      onChange={handleChange}
+                      placeholder="e.g., 1500"
+                    />
+                    <p>Upper limit you are willing to pay.</p>
+                  </div>
                 </div>
 
-                <div className="form-field">
-                  <label>DEADLINE</label>
-                  <input
-                    type="date"
-                    name="deadline"
-                    min={minDeadline}
-                    value={formData.deadline}
-                    onChange={handleChange}
-                  />
+                <div className="form-row">
+                  <div className="form-field">
+                    <label>PROJECT DURATION (DAYS)</label>
+                    <input
+                      type="number"
+                      name="durationDays"
+                      min="1"
+                      step="1"
+                      value={formData.durationDays}
+                      onChange={handleChange}
+                      placeholder="e.g., 30"
+                    />
+                    <p>Estimated number of days to complete the project.</p>
+                  </div>
                 </div>
-              </div>
+              </>
             )}
           </section>
 
@@ -323,7 +353,7 @@ function PostJobPage() {
                 {step === 1 ? "Next: Details" : "Next: Budget"}
               </button>
             ) : (
-              <button type="submit" className="next-btn" disabled={submitting}>
+              <button type="button" className="next-btn" onClick={handleSubmit} disabled={submitting}>
                 {submitting ? "Posting..." : "Post Task"}
               </button>
             )}
