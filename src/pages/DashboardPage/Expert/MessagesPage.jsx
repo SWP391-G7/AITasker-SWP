@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import ExpertHeader from '../../../Components/Dashboard/Expert/ExpertHeader'
 import ExpertSidebar from '../../../Components/Dashboard/Expert/ExpertSidebar'
@@ -6,6 +6,7 @@ import ChatList from '../../../Components/Dashboard/Expert/Messages/ChatList'
 import ChatWindow from '../../../Components/Dashboard/Expert/Messages/ChatWindow'
 import { getConversations, getConversationMessages, sendMessage } from '../../../Services/messageService'
 import { createHandleLogout } from './handleLogout'
+import useWebSocket from '../../../hooks/useWebSocket'
 import '../../Style/AdminDashboardPage.css'
 import '../../Style/ExpertDashboardPage.css'
 import '../../../Components/Dashboard/Expert/Messages/MessagesPage.css'
@@ -37,32 +38,40 @@ const MessagesPage = () => {
   }
 
   // 1. Fetch conversations list
-  useEffect(() => {
-    const fetchConvs = async () => {
-      try {
-        const data = await getConversations()
-        setConversations(data)
+  const fetchConvs = useCallback(async () => {
+    try {
+      const data = await getConversations()
+      setConversations(data)
+      return data
+    } catch (err) {
+      console.error("Error fetching conversations:", err)
+      return []
+    } finally {
+      setLoading(false)
+    }
+  }, [])
 
-        const passedId = location.state?.activeConversationId
-        if (passedId) {
-          setActiveChatId(passedId)
-        } else if (data.length > 0 && !activeChatId) {
-          setActiveChatId(data[0].id)
-        }
-      } catch (err) {
-        console.error("Error fetching conversations:", err)
-      } finally {
-        setLoading(false)
+  // Initial load
+  useEffect(() => {
+    const init = async () => {
+      const data = await fetchConvs()
+      const passedId = location.state?.activeConversationId
+      if (passedId) {
+        setActiveChatId(passedId)
+      } else if (data.length > 0) {
+        setActiveChatId(data[0].id)
       }
     }
+    init()
+  }, [fetchConvs, location.state?.activeConversationId])
 
-    fetchConvs()
-
+  // Periodic poll for conversation list
+  useEffect(() => {
     const interval = setInterval(fetchConvs, 10000)
     return () => clearInterval(interval)
-  }, [location.state?.activeConversationId])
+  }, [fetchConvs])
 
-  // 2. Fetch messages for active conversation
+  // 2. Fetch messages for active conversation (only on change)
   useEffect(() => {
     if (!activeChatId) return
 
@@ -80,12 +89,46 @@ const MessagesPage = () => {
     }
 
     fetchMessages()
-
-    const interval = setInterval(fetchMessages, 3000)
-    return () => clearInterval(interval)
   }, [activeChatId])
 
-  // 3. Handle sending a message
+  // 3. Set up WebSocket listener
+  useWebSocket((data) => {
+    if (data.type === 'new_message') {
+      const { conversationId, message } = data
+      
+      // If it belongs to active conversation, append it
+      if (conversationId === activeChatId) {
+        setMessages(prev => {
+          if (prev.some(m => m.id === message.id)) return prev
+          return [...prev, message]
+        })
+
+        // Also update last message preview in list
+        setConversations(prev => prev.map(c =>
+          c.id === conversationId
+            ? { ...c, last_message: message.content, last_message_time: message.send_at, unread: 0 }
+            : c
+        ))
+      } else {
+        // Increment unread count for other conversation
+        setConversations(prev => {
+          const exists = prev.some(c => c.id === conversationId)
+          if (!exists) {
+            // Reload list to fetch new conversation if it's not present
+            fetchConvs()
+            return prev
+          }
+          return prev.map(c =>
+            c.id === conversationId
+              ? { ...c, last_message: message.content, last_message_time: message.send_at, unread: (c.unread || 0) + 1 }
+              : c
+          )
+        })
+      }
+    }
+  })
+
+  // 4. Handle sending a message
   const handleSendMessage = async (text) => {
     if (!activeChatId || !text.trim()) return
     try {

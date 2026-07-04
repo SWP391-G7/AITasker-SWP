@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import ClientSidebar from "../../../Components/Dashboard/Client/ClientSidebar";
 import ClientHeader from "../../../Components/Dashboard/Client/ClientHeader";
@@ -7,6 +7,7 @@ import ChatPanel from "../../../Components/Dashboard/Client/Messages/ChatPanel";
 import { useClientUser } from "../../../Components/Dashboard/Client/user";
 import { logout } from "../../../Services/authService";
 import { getConversations, getConversationMessages, sendMessage } from "../../../Services/messageService";
+import useWebSocket from "../../../hooks/useWebSocket";
 import "../../Style/AdminDashboardPage.css";
 import "./ClientMarketplace.css";
 
@@ -28,34 +29,40 @@ function ClientMessagesPage() {
   };
 
   // 1. Fetch conversations list
-  useEffect(() => {
-    const fetchConvs = async () => {
-      try {
-        const data = await getConversations();
-        setConversations(data);
+  const fetchConvs = useCallback(async () => {
+    try {
+      const data = await getConversations();
+      setConversations(data);
+      return data;
+    } catch (err) {
+      console.error("Error fetching conversations:", err);
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-        // Check if a conversation ID was passed via route state (e.g. from Profile page "Contact")
-        const passedId = location.state?.activeConversationId;
-        if (passedId) {
-          setActiveConversationId(passedId);
-        } else if (data.length > 0 && !activeConversationId) {
-          setActiveConversationId(data[0].id);
-        }
-      } catch (err) {
-        console.error("Error fetching conversations:", err);
-      } finally {
-        setLoading(false);
+  // Initial load
+  useEffect(() => {
+    const init = async () => {
+      const data = await fetchConvs();
+      const passedId = location.state?.activeConversationId;
+      if (passedId) {
+        setActiveConversationId(passedId);
+      } else if (data.length > 0) {
+        setActiveConversationId(data[0].id);
       }
     };
+    init();
+  }, [fetchConvs, location.state?.activeConversationId]);
 
-    fetchConvs();
-
-    // Refresh conversations list periodically
+  // Periodic poll for conversation list
+  useEffect(() => {
     const interval = setInterval(fetchConvs, 10000);
     return () => clearInterval(interval);
-  }, [location.state?.activeConversationId]);
+  }, [fetchConvs]);
 
-  // 2. Fetch messages when active conversation changes
+  // 2. Fetch messages when active conversation changes (only on change)
   useEffect(() => {
     if (!activeConversationId) return;
 
@@ -74,13 +81,46 @@ function ClientMessagesPage() {
     };
 
     fetchMessages();
-
-    // Poll for new messages every 3 seconds for a responsive chat UI
-    const interval = setInterval(fetchMessages, 3000);
-    return () => clearInterval(interval);
   }, [activeConversationId]);
 
-  // 3. Handle sending a new message
+  // 3. Set up WebSocket listener
+  useWebSocket((data) => {
+    if (data.type === 'new_message') {
+      const { conversationId, message } = data;
+
+      // If it belongs to active conversation, append it
+      if (conversationId === activeConversationId) {
+        setMessages(prev => {
+          if (prev.some(m => m.id === message.id)) return prev;
+          return [...prev, message];
+        });
+
+        // Update last message preview in list
+        setConversations(prev => prev.map(c =>
+          c.id === conversationId
+            ? { ...c, last_message: message.content, last_message_time: message.send_at, unread: 0 }
+            : c
+        ));
+      } else {
+        // Increment unread count for other conversation
+        setConversations(prev => {
+          const exists = prev.some(c => c.id === conversationId);
+          if (!exists) {
+            // Reload list to fetch new conversation if it's not present
+            fetchConvs();
+            return prev;
+          }
+          return prev.map(c =>
+            c.id === conversationId
+              ? { ...c, last_message: message.content, last_message_time: message.send_at, unread: (c.unread || 0) + 1 }
+              : c
+          );
+        });
+      }
+    }
+  });
+
+  // 4. Handle sending a new message
   const handleSendMessage = async (text) => {
     if (!activeConversationId || !text.trim()) return;
     try {

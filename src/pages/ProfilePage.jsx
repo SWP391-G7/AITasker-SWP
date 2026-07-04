@@ -98,16 +98,13 @@ function ProfilePage() {
       return;
     }
 
-    if (!currentRole.includes("client") || activeTab !== "expert") {
-      return;
-    }
-
     try {
       const conversation = await getOrCreateConversation(userId);
-      navigate("/client/messages", { state: { activeConversationId: conversation.id } });
+      const targetPath = getMessagesPath();
+      navigate(targetPath, { state: { activeConversationId: conversation.id } });
     } catch (err) {
       console.error("Failed to start conversation:", err);
-      navigate("/client/messages");
+      navigate(getMessagesPath());
     }
   }
 
@@ -486,20 +483,34 @@ function ProfilePage() {
                     <small>{user.role}</small>
                   </div>
                   
-                  {canClientContactExpert && (  
-                  <button className="contact-btn" onClick={handleContact}>
-                    <Mail size={16} />
-                    Contact Expert
-                  </button>)}
+                  {!isOwnProfile && (  
+                    <button className="contact-btn" onClick={handleContact}>
+                      <Mail size={16} />
+                      {isExpertView ? "Contact Expert" : "Contact Client"}
+                    </button>
+                  )}
 
-                  <button
-                    className="secondary-action-btn"
-                    type="button"
-                    onClick={isOwnProfile ? handleBack : undefined}
-                  >
-                    <Send size={15} />
-                    {isOwnProfile ? "Go to Dashboard" : (isExpertView ? "Invite to Job" : "Apply to Project")}
-                  </button>
+                  {isOwnProfile ? (
+                    <button
+                      className="secondary-action-btn"
+                      type="button"
+                      onClick={handleBack}
+                    >
+                      <Send size={15} />
+                      Go to Dashboard
+                    </button>
+                  ) : (
+                    isExpertView && (
+                      <button
+                        className="secondary-action-btn"
+                        type="button"
+                        onClick={undefined}
+                      >
+                        <Send size={15} />
+                        Invite to Job
+                      </button>
+                    )
+                  )}
 
                   <div className="rate-list">
                     <div>
