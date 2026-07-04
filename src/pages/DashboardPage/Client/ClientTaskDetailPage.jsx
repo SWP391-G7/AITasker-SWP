@@ -18,6 +18,7 @@ import Footer from "../../../Components/Footer/Footer";
 import { getJobById, getJobProposals } from "../../../Services/jobService";
 import { updateProposalStatus, counterProposal } from "../../../Services/proposalService";
 import { createProject } from "../../../Services/projectService";
+import { getOrCreateConversation } from "../../../Services/messageService";
 import "./ClientMarketplace.css";
 
 const getFirstArray = (result, keys) => {
@@ -143,12 +144,23 @@ function ClientTaskDetailPage() {
   };
 
   // ── Handlers ─────────────────────────────────────────────────────
-  const handleContactExpert = (proposal) => {
+  const getProposalExpertId = (proposal) =>
+    proposal?.expert?._id ||
+    proposal?.expert?.id ||
+    proposal?.expert_id ||
+    proposal?.expertId ||
+    proposal?.user?._id ||
+    proposal?.user?.id;
+
+  const handleContactExpert = async (proposal) => {
     const expertId =
-      proposal?.expert?._id || proposal?.expert?.id ||
-      proposal?.expertId || proposal?.user?._id || proposal?.user?.id;
-    navigate(expertId ? `/client/messages?expertId=${expertId}` : "/client/messages");
-  };
+      getProposalExpertId(proposal);
+
+    if (!expertId) {
+      navigate("/client/messages");
+      return;
+    }
+  }
 
   /** Client clicks Approve on a proposal (can be a plain proposal or a counter from expert) */
   const handleAcceptProposal = (proposalId) => {

@@ -16,6 +16,7 @@ import { getUserProfile } from "../Services/profileService";
 import { getStoredUser } from "../Services/checkLogin";
 import { getExpertServicesFromApi } from "../Components/Profile/Expert/ExpertService";
 import { getClientProjectsFromApi } from "../Components/Profile/Client/ClientProject";
+import { getOrCreateConversation } from "../Services/messageService";
 import "./ProfilePage.css";
 
 function ProfilePage() {
@@ -30,6 +31,7 @@ function ProfilePage() {
   const [activeTab, setActiveTab] = useState("") // "client" or "expert"
 
   const isOwnProfile = currentUser && currentUser.id === userId
+  const currentRole = String(currentUser?.role || "").toLowerCase()
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -90,8 +92,20 @@ function ProfilePage() {
     }
   }
 
-  const handleContact = () => {
-    navigate(getMessagesPath());
+  const handleContact = async () => {
+    if (!currentUser) {
+      navigate("/login");
+      return;
+    }
+
+    try {
+      const conversation = await getOrCreateConversation(userId);
+      const targetPath = getMessagesPath();
+      navigate(targetPath, { state: { activeConversationId: conversation.id } });
+    } catch (err) {
+      console.error("Failed to start conversation:", err);
+      navigate(getMessagesPath());
+    }
   }
 
   const handleViewAllProfileItems = () => {
@@ -279,6 +293,7 @@ function ProfilePage() {
 
   const { user, clientProfile, expertProfile, hasClientProfile, hasExpertProfile } = profileData;
   const isExpertView = activeTab === "expert";
+  const canClientContactExpert = !isOwnProfile && currentRole.includes("client") && isExpertView;
   const activeProfile = isExpertView ? expertProfile : clientProfile;
   // API data: profile page calls API once, then pushes response lists through Profile helpers.
   const profileServices = getExpertServicesFromApi(profileData.services || []);
@@ -469,19 +484,33 @@ function ProfilePage() {
                   </div>
                   
                   {!isOwnProfile && (  
-                  <button className="contact-btn" onClick={handleContact}>
-                    <Mail size={16} />
-                    Contact Me
-                  </button>)}
+                    <button className="contact-btn" onClick={handleContact}>
+                      <Mail size={16} />
+                      {isExpertView ? "Contact Expert" : "Contact Client"}
+                    </button>
+                  )}
 
-                  <button
-                    className="secondary-action-btn"
-                    type="button"
-                    onClick={isOwnProfile ? handleBack : undefined}
-                  >
-                    <Send size={15} />
-                    {isOwnProfile ? "Go to Dashboard" : (isExpertView ? "Invite to Job" : "Apply to Project")}
-                  </button>
+                  {isOwnProfile ? (
+                    <button
+                      className="secondary-action-btn"
+                      type="button"
+                      onClick={handleBack}
+                    >
+                      <Send size={15} />
+                      Go to Dashboard
+                    </button>
+                  ) : (
+                    isExpertView && (
+                      <button
+                        className="secondary-action-btn"
+                        type="button"
+                        onClick={undefined}
+                      >
+                        <Send size={15} />
+                        Invite to Job
+                      </button>
+                    )
+                  )}
 
                   <div className="rate-list">
                     <div>
