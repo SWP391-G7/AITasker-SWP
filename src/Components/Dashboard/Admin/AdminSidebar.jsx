@@ -38,7 +38,7 @@ const AdminSidebar = ({ activeTab, onTabChange }) => (
     </ul>
 
     <div className="mt-auto pt-4 border-top border-secondary border-opacity-25 d-flex flex-column gap-2">
-      <Link to="/admin-moderation" className="btn btn-primary btn-sm fw-semibold admin-post-task-button">
+      <Link to="/admin/moderation" className="btn btn-primary btn-sm fw-semibold admin-post-task-button">
         <span>Review Queue</span>
       </Link>
       <Link to="/" className="sidebar-item-link py-2 px-3">

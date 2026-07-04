@@ -64,7 +64,7 @@ function useAuthStatus() {
 }
 
 const roleHomePaths = {
-  admin: "/admin-dashboard",
+  admin: "/admin/dashboard",
   client: "/client/dashboard",
   expert: "/expert/dashboard",
 }
@@ -224,11 +224,11 @@ function AppRoutes() {
       <Route path="/client/billing" element={<ProtectedRoute allowedRoles={["client"]}><ClientBillingPage /></ProtectedRoute>} />
       <Route path="/client/settings" element={<ProtectedRoute allowedRoles={["client"]}><ClientSettingsPage /></ProtectedRoute>} />
 
-      <Route path="/admin-dashboard" element={<ProtectedRoute allowedRoles={["admin"]}><AdminDashboardPage /></ProtectedRoute>} />
-      <Route path="/admin-users" element={<ProtectedRoute allowedRoles={["admin"]}><UserManagementPage /></ProtectedRoute>} />
-      <Route path="/admin-moderation" element={<ProtectedRoute allowedRoles={["admin"]}><ContentModerationPage /></ProtectedRoute>} />
-      <Route path="/admin-disputes" element={<ProtectedRoute allowedRoles={["admin"]}><DisputeResolutionPage /></ProtectedRoute>} />
-      <Route path="/admin-analytics" element={<ProtectedRoute allowedRoles={["admin"]}><AnalyticsPage /></ProtectedRoute>} />
+      <Route path="/admin/dashboard" element={<ProtectedRoute allowedRoles={["admin"]}><AdminDashboardPage /></ProtectedRoute>} />
+      <Route path="/admin/users" element={<ProtectedRoute allowedRoles={["admin"]}><UserManagementPage /></ProtectedRoute>} />
+      <Route path="/admin/moderation" element={<ProtectedRoute allowedRoles={["admin"]}><ContentModerationPage /></ProtectedRoute>} />
+      <Route path="/admin/disputes" element={<ProtectedRoute allowedRoles={["admin"]}><DisputeResolutionPage /></ProtectedRoute>} />
+      <Route path="/admin/analytics" element={<ProtectedRoute allowedRoles={["admin"]}><AnalyticsPage /></ProtectedRoute>} />
 
       <Route path="/expert-dashboard" element={<Navigate to="/expert/dashboard" replace />} />
       <Route path="/expert/dashboard" element={<ProtectedRoute allowedRoles={["expert"]}><ExpertDashboardPage /></ProtectedRoute>} />
