@@ -225,6 +225,29 @@ export const forgotPassword = async (email) => {
   }
 }
 
+export const verifyPasswordResetCode = async ({ email, code }) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/auth/verify-reset-code`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, code })
+    })
+
+    const result = await response.json()
+
+    if (!response.ok) {
+      throw new Error(result.message || 'Failed to verify password reset code')
+    }
+
+    return result
+  } catch (error) {
+    console.error('Verify password reset code error:', error)
+    throw error
+  }
+}
+
 export const resetPassword = async ({ email, code, newPassword }) => {
   try {
     const response = await fetch(`${API_BASE_URL}/auth/reset-password`, {

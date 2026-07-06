@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { Eye, EyeOff, KeyRound, Lock, Mail } from "lucide-react"
-import { forgotPassword, resetPassword } from "../../Services/authService"
+import { forgotPassword, resetPassword, verifyPasswordResetCode } from "../../Services/authService"
 import "./Auth.css"
 
 function ForgotPasswordForm() {
@@ -35,9 +35,6 @@ function ForgotPasswordForm() {
   }
 
   const validateReset = () => {
-    const emailError = validateEmail()
-    if (emailError) return emailError
-    if (formData.code.length !== 6) return "Code must be a 6-digit number"
     if (!formData.newPassword.trim()) return "New password is required"
     if (formData.newPassword.length < 6) return "Password must be at least 6 characters"
     if (formData.newPassword !== formData.confirmPassword) return "Confirm password does not match"
@@ -58,10 +55,35 @@ function ForgotPasswordForm() {
       setNotice("")
       setIsLoading(true)
       await forgotPassword(formData.email)
-      setStep("reset")
+      setStep("code")
       setNotice("A password reset code has been sent to your email.")
     } catch (err) {
       setError(err.message || "Could not send reset code. Please try again.")
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleVerifyCode = async (event) => {
+    event.preventDefault()
+
+    if (formData.code.length !== 6) {
+      setError("Code must be a 6-digit number")
+      return
+    }
+
+    try {
+      setError("")
+      setNotice("")
+      setIsLoading(true)
+      await verifyPasswordResetCode({
+        email: formData.email,
+        code: formData.code,
+      })
+      setStep("password")
+      setNotice("Code verified. You can now set a new password.")
+    } catch (err) {
+      setError(err.message || "Could not verify code. Please try again.")
     } finally {
       setIsLoading(false)
     }
@@ -100,12 +122,20 @@ function ForgotPasswordForm() {
     <>
       <h2 className="form-title">Reset password</h2>
       <p className="form-subtitle">
-        {step === "email"
-          ? "Enter your account email and we will send a reset code."
-          : "Enter the code from your email and choose a new password."}
+        {step === "email" && "Enter your account email and we will send a reset code."}
+        {step === "code" && "Enter the code from your email to verify it is you."}
+        {step === "password" && "Choose and confirm your new password."}
       </p>
 
-      <form onSubmit={step === "email" ? handleRequestCode : handleResetPassword}>
+      <form
+        onSubmit={
+          step === "email"
+            ? handleRequestCode
+            : step === "code"
+              ? handleVerifyCode
+              : handleResetPassword
+        }
+      >
         <div className="input-group">
           <span className="input-icon">
             <Mail size={19} />
@@ -116,27 +146,29 @@ function ForgotPasswordForm() {
             placeholder="Email address"
             value={formData.email}
             onChange={handleChange}
-            disabled={isLoading || step === "reset"}
+            disabled={isLoading || step !== "email"}
           />
         </div>
 
-        {step === "reset" && (
-          <>
-            <div className="input-group">
-              <span className="input-icon">
-                <KeyRound size={19} />
-              </span>
-              <input
-                type="text"
-                name="code"
-                placeholder="6-digit code"
-                value={formData.code}
-                onChange={handleChange}
-                disabled={isLoading}
-                inputMode="numeric"
-              />
-            </div>
+        {(step === "code" || step === "password") && (
+          <div className="input-group">
+            <span className="input-icon">
+              <KeyRound size={19} />
+            </span>
+            <input
+              type="text"
+              name="code"
+              placeholder="6-digit code"
+              value={formData.code}
+              onChange={handleChange}
+              disabled={isLoading || step === "password"}
+              inputMode="numeric"
+            />
+          </div>
+        )}
 
+        {step === "password" && (
+          <>
             <div className="input-group">
               <span className="input-icon">
                 <Lock size={19} />
@@ -191,11 +223,13 @@ function ForgotPasswordForm() {
         <button type="submit" className="primary-btn" disabled={isLoading}>
           {step === "email"
             ? (isLoading ? "Sending code..." : "Send reset code")
-            : (isLoading ? "Resetting..." : "Reset password")}
+            : step === "code"
+              ? (isLoading ? "Verifying..." : "Verify code")
+              : (isLoading ? "Resetting..." : "Reset password")}
         </button>
       </form>
 
-      {step === "reset" && (
+      {(step === "code" || step === "password") && (
         <button className="forgot-btn" type="button" onClick={handleRequestCode} disabled={isLoading}>
           Resend code
         </button>
