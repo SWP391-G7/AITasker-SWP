@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { UserPlus } from 'lucide-react'
+import { UserPlus, X, Loader2, Info } from 'lucide-react'
 import AdminHeader from '../../../Components/Dashboard/Admin/AdminHeader'
 import AdminSidebar from '../../../Components/Dashboard/Admin/AdminSidebar'
 import UserManagementStats from '../../../Components/Dashboard/Admin/UserManagement/UserManagementStats'
@@ -9,7 +9,11 @@ import Footer from '../../../Components/Footer/Footer'
 import { handleAdminTabChange } from '../../../Components/Dashboard/Admin/adminNavigation'
 import {
   buildManagedUsers,
-  getAdminUsersData
+  getAdminUsersData,
+  adminCreateUser,
+  adminUpdateUser,
+  adminDeleteUser,
+  adminDeactivateUser
 } from '../../../Services/adminDashboardService'
 import '../../../Components/Dashboard/Admin/UserManagement/UserManagement.css'
 import '../../Style/AdminDashboardPage.css'
@@ -20,34 +24,57 @@ const UserManagementPage = ({ onLogout }) => {
   const [notifications, setNotifications] = useState(3)
   const [users, setUsers] = useState([])
   const [userError, setUserError] = useState('')
+  const [loading, setLoading] = useState(false)
+
+  // Modals state
+  const [showCreateModal, setShowCreateModal] = useState(false)
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [showViewModal, setShowViewModal] = useState(false)
+  const [selectedUser, setSelectedUser] = useState(null)
+
+  // Form states
+  const [createForm, setCreateForm] = useState({
+    fullName: '',
+    email: '',
+    role: 'client',
+    password: ''
+  })
+  const [editForm, setEditForm] = useState({
+    fullName: '',
+    email: '',
+    role: 'client',
+    acc_status: true
+  })
+  const [modalError, setModalError] = useState('')
+
+  const fetchUsers = async () => {
+    try {
+      setUserError('')
+      setLoading(true)
+      const usersData = await getAdminUsersData()
+      setUsers(buildManagedUsers(usersData))
+    } catch (err) {
+      setUserError(err.message || 'Failed to load users.')
+      setUsers([])
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        setUserError('')
-
-        // API data: user management chỉ cần expert + client từ GET /api/search.
-        const usersData = await getAdminUsersData()
-        setUsers(buildManagedUsers(usersData))
-      } catch (err) {
-        setUserError(err.message || 'Failed to load users.')
-        setUsers([])
-      }
-    }
-
     fetchUsers()
   }, [])
 
   const stats = useMemo(() => {
     const experts = users.filter((user) => user.role === 'AI Expert').length
     const clients = users.filter((user) => user.role === 'Client').length
-    const pending = users.filter((user) => user.status === 'Pending').length
+    const suspended = users.filter((user) => user.status === 'Suspended').length
 
     return [
-      { id: 'total-users', label: 'Total Users', value: users.length.toLocaleString(), trend: 'From API', tone: 'blue' },
+      { id: 'total-users', label: 'Total Users', value: users.length.toLocaleString(), trend: 'Live catalog', tone: 'blue' },
       { id: 'experts', label: 'AI Experts', value: experts.toLocaleString(), trend: 'Live', tone: 'teal' },
       { id: 'clients', label: 'Active Clients', value: clients.toLocaleString(), trend: 'Live', tone: 'slate' },
-      { id: 'pending', label: 'Pending Verification', value: pending.toLocaleString(), trend: 'Requires Action', tone: 'rose' },
+      { id: 'suspended', label: 'Banned Users', value: suspended.toLocaleString(), trend: 'Suspended', tone: 'rose' },
     ]
   }, [users])
 
@@ -56,6 +83,93 @@ const UserManagementPage = ({ onLogout }) => {
     localStorage.removeItem('email')
     navigate('/')
   })
+
+  // Action Handlers
+  const handleOpenCreateModal = () => {
+    setCreateForm({
+      fullName: '',
+      email: '',
+      role: 'client',
+      password: ''
+    })
+    setModalError('')
+    setShowCreateModal(true)
+  }
+
+  const handleCreateUser = async (e) => {
+    e.preventDefault()
+    try {
+      setModalError('')
+      await adminCreateUser(createForm)
+      setShowCreateModal(false)
+      fetchUsers()
+    } catch (err) {
+      setModalError(err.message || 'Failed to create user')
+    }
+  }
+
+  const handleOpenEditModal = (userId) => {
+    const targetUser = users.find(u => u.id === userId)
+    if (!targetUser) return
+
+    // Map role back to db role format
+    let dbRole = 'client'
+    if (targetUser.role === 'AI Expert') dbRole = 'expert'
+    else if (targetUser.role === 'Admin') dbRole = 'admin'
+
+    setEditForm({
+      fullName: targetUser.name,
+      email: targetUser.email,
+      role: dbRole,
+      acc_status: targetUser.status !== 'Suspended'
+    })
+    setSelectedUser(targetUser)
+    setModalError('')
+    setShowEditModal(true)
+  }
+
+  const handleUpdateUser = async (e) => {
+    e.preventDefault()
+    try {
+      setModalError('')
+      await adminUpdateUser(selectedUser.id, editForm)
+      setShowEditModal(false)
+      fetchUsers()
+    } catch (err) {
+      setModalError(err.message || 'Failed to update user')
+    }
+  }
+
+  const handleViewUser = (userId) => {
+    const targetUser = users.find(u => u.id === userId)
+    if (targetUser) {
+      setSelectedUser(targetUser)
+      setShowViewModal(true)
+    }
+  }
+
+  const handleDeleteUser = async (userId) => {
+    const targetUser = users.find(u => u.id === userId)
+    if (!targetUser) return
+
+    if (window.confirm(`Are you sure you want to permanently delete user "${targetUser.name}"?`)) {
+      try {
+        await adminDeleteUser(userId)
+        fetchUsers()
+      } catch (err) {
+        alert(err.message || 'Failed to delete user')
+      }
+    }
+  }
+
+  const handleToggleBan = async (userId, newStatus) => {
+    try {
+      await adminDeactivateUser(userId, newStatus)
+      fetchUsers()
+    } catch (err) {
+      alert(err.message || 'Failed to update account ban status')
+    }
+  }
 
   return (
     <div className="admin-dashboard-layout">
@@ -70,7 +184,7 @@ const UserManagementPage = ({ onLogout }) => {
           title="User Management"
           subtitle="Monitor and manage access for all experts and clients."
           headerActions={
-            <button type="button" className="btn-approve admin-header-action-button">
+            <button type="button" className="btn-approve admin-header-action-button" onClick={handleOpenCreateModal}>
               <UserPlus size={16} />
               Invite User
             </button>
@@ -83,12 +197,344 @@ const UserManagementPage = ({ onLogout }) => {
           onLogout={handleLogout}
         />
         {userError && <div className="alert alert-danger">{userError}</div>}
+        {loading && <div className="alert alert-success">Refreshing user management data...</div>}
+        
         <UserManagementStats stats={stats} />
-        <UserManagementTable users={users} searchQuery={searchQuery} />
+        
+        <UserManagementTable 
+          users={users} 
+          searchQuery={searchQuery}
+          onViewUser={handleViewUser}
+          onEditUser={handleOpenEditModal}
+          onDeleteUser={handleDeleteUser}
+          onToggleBan={handleToggleBan}
+          onOpenCreateModal={handleOpenCreateModal}
+        />
+
+        {/* ── View User Modal ────────────────────────────── */}
+        {showViewModal && selectedUser && (
+          <div className="modal-overlay" onClick={() => setShowViewModal(false)} style={modalOverlayStyle}>
+            <div className="modal-content" onClick={(e) => e.stopPropagation()} style={modalContentStyle}>
+              <div className="modal-header" style={modalHeaderStyle}>
+                <h3 className="fw-bold mb-0 text-white"><Info size={20} className="me-2 text-primary" />User Details</h3>
+                <button onClick={() => setShowViewModal(false)} style={closeBtnStyle}><X size={20} /></button>
+              </div>
+              <div className="modal-body" style={{ color: '#94a3b8', fontSize: '0.95rem', lineHeight: '1.8' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
+                  <span className={`user-avatar avatar-${selectedUser.id}`} style={{ width: '60px', height: '60px', fontSize: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', background: 'rgba(99,102,241,0.1)', color: '#a5b4fc', fontWeight: 'bold' }}>
+                    {selectedUser.avatar}
+                  </span>
+                  <div>
+                    <h4 style={{ color: '#fff', margin: 0, fontSize: '1.2rem' }}>{selectedUser.name}</h4>
+                    <p style={{ margin: 0, fontSize: '0.85rem', color: '#64748b' }}>User ID: {selectedUser.id}</p>
+                  </div>
+                </div>
+
+                <div style={detailRowStyle}>
+                  <strong style={labelStyle}>EMAIL ADDRESS</strong>
+                  <span style={valueStyle}>{selectedUser.email}</span>
+                </div>
+                <div style={detailRowStyle}>
+                  <strong style={labelStyle}>SYSTEM ROLE</strong>
+                  <span style={valueStyle}>{selectedUser.role}</span>
+                </div>
+                <div style={detailRowStyle}>
+                  <strong style={labelStyle}>ACCOUNT STATUS</strong>
+                  <span style={{ 
+                    ...valueStyle, 
+                    color: selectedUser.status === 'Suspended' ? '#ef4444' : '#10b981',
+                    fontWeight: 'bold'
+                  }}>
+                    {selectedUser.status === 'Suspended' ? 'Suspended (Banned)' : 'Active'}
+                  </span>
+                </div>
+                <div style={detailRowStyle}>
+                  <strong style={labelStyle}>VERIFICATION STATUS</strong>
+                  <span style={valueStyle}>{selectedUser.verified ? 'Verified Email' : 'Unverified'}</span>
+                </div>
+                <div style={detailRowStyle}>
+                  <strong style={labelStyle}>CREATION DATE</strong>
+                  <span style={valueStyle}>{selectedUser.joined}</span>
+                </div>
+              </div>
+              <div style={{ marginTop: '24px', display: 'flex', justifyContent: 'end' }}>
+                <button 
+                  onClick={() => setShowViewModal(false)}
+                  style={btnSecondaryStyle}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── Create User Modal ────────────────────────────── */}
+        {showCreateModal && (
+          <div className="modal-overlay" onClick={() => setShowCreateModal(false)} style={modalOverlayStyle}>
+            <div className="modal-content" onClick={(e) => e.stopPropagation()} style={modalContentStyle}>
+              <div className="modal-header" style={modalHeaderStyle}>
+                <h3 className="fw-bold mb-0 text-white">Create New User</h3>
+                <button onClick={() => setShowCreateModal(false)} style={closeBtnStyle}><X size={20} /></button>
+              </div>
+              <form onSubmit={handleCreateUser}>
+                {modalError && <div className="alert alert-danger mb-3">{modalError}</div>}
+                
+                <div className="mb-3">
+                  <label style={formLabelStyle}>FULL NAME</label>
+                  <input 
+                    type="text" 
+                    required
+                    style={formInputStyle} 
+                    value={createForm.fullName}
+                    onChange={(e) => setCreateForm({...createForm, fullName: e.target.value})}
+                    placeholder="e.g. John Doe"
+                  />
+                </div>
+                <div className="mb-3">
+                  <label style={formLabelStyle}>EMAIL ADDRESS</label>
+                  <input 
+                    type="email" 
+                    required
+                    style={formInputStyle} 
+                    value={createForm.email}
+                    onChange={(e) => setCreateForm({...createForm, email: e.target.value})}
+                    placeholder="e.g. user@example.com"
+                  />
+                </div>
+                <div className="mb-3">
+                  <label style={formLabelStyle}>ROLE</label>
+                  <select 
+                    style={formInputStyle}
+                    value={createForm.role}
+                    onChange={(e) => setCreateForm({...createForm, role: e.target.value})}
+                  >
+                    <option value="client">Client</option>
+                    <option value="expert">AI Expert</option>
+                    <option value="admin">Global Admin</option>
+                  </select>
+                </div>
+                <div className="mb-3">
+                  <label style={formLabelStyle}>TEMPORARY PASSWORD</label>
+                  <input 
+                    type="password" 
+                    required
+                    minLength={6}
+                    style={formInputStyle} 
+                    value={createForm.password}
+                    onChange={(e) => setCreateForm({...createForm, password: e.target.value})}
+                    placeholder="At least 6 characters"
+                  />
+                </div>
+
+                <div style={{ marginTop: '24px', display: 'flex', gap: '12px', justifyContent: 'end' }}>
+                  <button 
+                    type="button"
+                    onClick={() => setShowCreateModal(false)}
+                    style={btnSecondaryStyle}
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    type="submit"
+                    style={btnPrimaryStyle}
+                  >
+                    Create User
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* ── Edit User Modal ────────────────────────────── */}
+        {showEditModal && selectedUser && (
+          <div className="modal-overlay" onClick={() => setShowEditModal(false)} style={modalOverlayStyle}>
+            <div className="modal-content" onClick={(e) => e.stopPropagation()} style={modalContentStyle}>
+              <div className="modal-header" style={modalHeaderStyle}>
+                <h3 className="fw-bold mb-0 text-white">Edit User Settings</h3>
+                <button onClick={() => setShowEditModal(false)} style={closeBtnStyle}><X size={20} /></button>
+              </div>
+              <form onSubmit={handleUpdateUser}>
+                {modalError && <div className="alert alert-danger mb-3">{modalError}</div>}
+                
+                <div className="mb-3">
+                  <label style={formLabelStyle}>FULL NAME</label>
+                  <input 
+                    type="text" 
+                    required
+                    style={formInputStyle} 
+                    value={editForm.fullName}
+                    onChange={(e) => setEditForm({...editForm, fullName: e.target.value})}
+                  />
+                </div>
+                <div className="mb-3">
+                  <label style={formLabelStyle}>EMAIL ADDRESS</label>
+                  <input 
+                    type="email" 
+                    required
+                    style={formInputStyle} 
+                    value={editForm.email}
+                    onChange={(e) => setEditForm({...editForm, email: e.target.value})}
+                  />
+                </div>
+                <div className="mb-3">
+                  <label style={formLabelStyle}>ROLE</label>
+                  <select 
+                    style={formInputStyle}
+                    value={editForm.role}
+                    onChange={(e) => setEditForm({...editForm, role: e.target.value})}
+                  >
+                    <option value="client">Client</option>
+                    <option value="expert">AI Expert</option>
+                    <option value="admin">Global Admin</option>
+                  </select>
+                </div>
+                <div className="mb-3">
+                  <label style={formLabelStyle}>ACCOUNT STATUS</label>
+                  <select 
+                    style={formInputStyle}
+                    value={editForm.acc_status ? "true" : "false"}
+                    onChange={(e) => setEditForm({...editForm, acc_status: e.target.value === "true"})}
+                  >
+                    <option value="true">Active (Access Allowed)</option>
+                    <option value="false">Suspended (Access Banned)</option>
+                  </select>
+                </div>
+
+                <div style={{ marginTop: '24px', display: 'flex', gap: '12px', justifyContent: 'end' }}>
+                  <button 
+                    type="button"
+                    onClick={() => setShowEditModal(false)}
+                    style={btnSecondaryStyle}
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    type="submit"
+                    style={btnPrimaryStyle}
+                  >
+                    Save Changes
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
         <Footer variant="dashboard" />
       </main>
     </div>
   )
+}
+
+// Inline Styles for Modals
+const modalOverlayStyle = {
+  position: 'fixed',
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  background: 'rgba(15, 23, 42, 0.75)',
+  backdropFilter: 'blur(8px)',
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  zIndex: 1100,
+  padding: '20px'
+}
+
+const modalContentStyle = {
+  background: '#0b1329',
+  border: '1px solid rgba(148, 163, 184, 0.12)',
+  borderRadius: '16px',
+  padding: '28px',
+  maxWidth: '500px',
+  width: '100%',
+  boxShadow: '0 24px 48px -12px rgba(0, 0, 0, 0.5)',
+  animation: 'fadeIn 0.3s ease'
+}
+
+const modalHeaderStyle = {
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  marginBottom: '20px',
+  paddingBottom: '12px',
+  borderBottom: '1px solid rgba(148, 163, 184, 0.1)'
+}
+
+const closeBtnStyle = {
+  background: 'none',
+  border: 'none',
+  color: '#94a3b8',
+  cursor: 'pointer',
+  padding: '4px',
+  borderRadius: '4px',
+  transition: 'color 0.2s'
+}
+
+const formLabelStyle = {
+  display: 'block',
+  fontSize: '0.72rem',
+  fontWeight: '800',
+  color: '#64748b',
+  letterSpacing: '0.1em',
+  marginBottom: '6px',
+  textTransform: 'uppercase'
+}
+
+const formInputStyle = {
+  width: '100%',
+  padding: '10px 14px',
+  background: 'rgba(15, 23, 42, 0.6)',
+  border: '1px solid rgba(148, 163, 184, 0.15)',
+  borderRadius: '8px',
+  color: '#f8fafc',
+  fontSize: '0.95rem',
+  outline: 'none',
+  transition: 'border-color 0.2s'
+}
+
+const btnPrimaryStyle = {
+  background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
+  color: '#fff',
+  border: 'none',
+  padding: '10px 20px',
+  borderRadius: '8px',
+  fontWeight: '600',
+  cursor: 'pointer',
+  fontSize: '0.9rem',
+  boxShadow: '0 4px 12px rgba(99, 102, 241, 0.2)'
+}
+
+const btnSecondaryStyle = {
+  background: 'transparent',
+  border: '1px solid rgba(148, 163, 184, 0.2)',
+  color: '#94a3b8',
+  padding: '10px 20px',
+  borderRadius: '8px',
+  fontWeight: '600',
+  cursor: 'pointer',
+  fontSize: '0.9rem'
+}
+
+const detailRowStyle = {
+  display: 'flex',
+  justifyContent: 'space-between',
+  padding: '10px 0',
+  borderBottom: '1px solid rgba(148, 163, 184, 0.05)'
+}
+
+const labelStyle = {
+  fontSize: '0.75rem',
+  color: '#64748b',
+  letterSpacing: '0.05em'
+}
+
+const valueStyle = {
+  color: '#f8fafc',
+  fontWeight: '500'
 }
 
 export default UserManagementPage

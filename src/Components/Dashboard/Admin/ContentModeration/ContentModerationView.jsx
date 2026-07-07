@@ -1,18 +1,38 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import ContentModerationFilters from './ContentModerationFilters'
 import ContentModerationPagination from './ContentModerationPagination'
 import ContentModerationStats from './ContentModerationStats'
 import { moderationFilters, moderationItems, moderationStats } from './contentModerationData'
 import ModerationQueueList from './ModerationQueueList'
 
-const ContentModerationView = ({ searchQuery: externalSearchQuery, items = moderationItems, stats = moderationStats }) => {
+const ContentModerationView = ({ searchQuery: externalSearchQuery, items = moderationItems, stats = moderationStats, onApprove, onReject }) => {
   const [activeFilter, setActiveFilter] = useState('All Types')
   const [severityFilter, setSeverityFilter] = useState('All Levels')
+  const [currentPage, setCurrentPage] = useState(1)
+  const [showReviewedOnly, setShowReviewedOnly] = useState(false)
   const searchQuery = externalSearchQuery ?? ''
+
+  // Reset page when filters or search terms change
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [activeFilter, severityFilter, searchQuery, showReviewedOnly])
 
   const filteredItems = useMemo(() => {
     return items.filter((item) => {
-      const matchesType = activeFilter === 'All Types' || item.category === activeFilter
+      // Filter by moderation reviewed status
+      const isPending = item.status === 'pending'
+      const matchesReviewed = showReviewedOnly ? !isPending : isPending
+      if (!matchesReviewed) return false
+
+      let matchesType = false
+      if (activeFilter === 'All Types') {
+        matchesType = true
+      } else if (activeFilter === 'Job Posts' && item.category === 'Job') {
+        matchesType = true
+      } else if (activeFilter === 'Service Listings' && item.category === 'Service') {
+        matchesType = true
+      }
+
       const matchesSeverity =
         severityFilter === 'All Levels' || item.severityLabel === severityFilter
       const matchesSearch =
@@ -21,7 +41,16 @@ const ContentModerationView = ({ searchQuery: externalSearchQuery, items = moder
 
       return matchesType && matchesSeverity && matchesSearch
     })
-  }, [activeFilter, items, searchQuery, severityFilter])
+  }, [activeFilter, items, searchQuery, severityFilter, showReviewedOnly])
+
+  const pageSize = 5
+  const totalItems = filteredItems.length
+  const totalPages = Math.ceil(totalItems / pageSize)
+
+  const paginatedItems = useMemo(() => {
+    const start = (currentPage - 1) * pageSize
+    return filteredItems.slice(start, start + pageSize)
+  }, [filteredItems, currentPage, pageSize])
 
   return (
     <>
@@ -32,9 +61,17 @@ const ContentModerationView = ({ searchQuery: externalSearchQuery, items = moder
         onFilterChange={setActiveFilter}
         onSeverityChange={setSeverityFilter}
         severityFilter={severityFilter}
+        showReviewedOnly={showReviewedOnly}
+        onToggleReviewedOnly={setShowReviewedOnly}
       />
-      <ModerationQueueList items={filteredItems} />
-      <ContentModerationPagination />
+      <ModerationQueueList items={paginatedItems} onApprove={onApprove} onReject={onReject} />
+      <ContentModerationPagination 
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+        totalItems={totalItems}
+        pageSize={pageSize}
+      />
     </>
   )
 }

@@ -65,7 +65,11 @@ function LoginForm() {
       // users to /verify automatically based on their isVerified status.
       navigate("/")
     } catch (err) {
-      setError(err.message || "Login failed. Please check your email or password.")
+      if (err.code === 'ACCOUNT_DEACTIVATED') {
+        navigate('/deactivated')
+      } else {
+        setError(err.message || "Login failed. Please check your email or password.")
+      }
     } finally {
       setIsLoading(false)
     }
@@ -80,7 +84,11 @@ function LoginForm() {
         console.log("Google Login success:", result)
         navigate("/")
       } catch (err) {
-        setError(err.message || "Google Login failed. Please try again.")
+        if (err.code === 'ACCOUNT_DEACTIVATED') {
+          navigate('/deactivated')
+        } else {
+          setError(err.message || "Google Login failed. Please try again.")
+        }
       } finally {
         setIsLoading(false)
       }

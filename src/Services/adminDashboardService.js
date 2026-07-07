@@ -5,10 +5,6 @@ import axios from 'axios'
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'
 
 // Tạo một axios instance riêng cho admin dashboard.
-// Lợi ích:
-// - Không phải lặp lại baseURL ở từng request.
-// - Các request trong file này mặc định gửi/nhận JSON.
-// - Sau này nếu cần thêm interceptor hoặc token mặc định cho admin thì thêm ở đây là đủ.
 const adminDashboardApi = axios.create({
   baseURL: API_BASE_URL,
   headers: {
@@ -16,109 +12,44 @@ const adminDashboardApi = axios.create({
   },
 })
 
+// Request interceptor để tự động chèn JWT token
+adminDashboardApi.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token')
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`
+    }
+    return config
+  },
+  (error) => {
+    return Promise.reject(error)
+  }
+)
+
 // Chuyển các giá trị như price/count/rating từ API về number.
-// API đôi khi trả số dưới dạng string, ví dụ "100" thay vì 100.
-// Nếu value bị rỗng, null, undefined hoặc không chuyển được thành số thì dùng 0 để tránh lỗi khi tính toán.
 const toNumber = (value) => Number(value) || 0
 
-// Helper gọi API search cho từng loại dữ liệu admin cần.
-//
-// target có thể là:
-// - "expert": lấy danh sách AI Expert.
-// - "client": lấy danh sách Client.
-// - "jobs": lấy danh sách job/task do client đăng.
-// - "services": lấy danh sách service do expert tạo.
-//
-// Request thực tế sẽ có dạng:
-// GET http://localhost:5000/api/search?target=expert
-//
-// Hàm này trả về format giống searchService cũ:
-// {
-//   results: [...],
-//   count: number,
-//   target: string
-// }
-// Nhờ vậy các hàm phía dưới không cần biết axios trả data như thế nào.
-const searchAdminTarget = async (target) => {
-  const { data } = await adminDashboardApi.get('/search', {
-    params: { target },
-  })
-
-  return {
-    results: data.results || [],
-    count: data.count || 0,
-    target: data.target,
-  }
-}
-
-// Lấy toàn bộ dữ liệu nền cho các màn admin.
-//
-// Hàm này đang dùng chung endpoint /search hiện có thay vì có một endpoint riêng kiểu /admin/dashboard.
-// Nó gọi 4 request cùng lúc bằng Promise.all để trang admin load nhanh hơn:
-// - experts
-// - clients
-// - jobs
-// - services
-//
-// Kết quả trả về là object tổng hợp để các page admin tái sử dụng:
-// - AdminDashboardPage dùng users, jobs, services để hiện thống kê/moderation.
-// - UserManagementPage dùng users để hiện bảng quản lý người dùng.
-// - ContentModerationPage dùng jobs/services để tạo queue kiểm duyệt.
-// - AnalyticsPage dùng toàn bộ dữ liệu để tính KPI.
-export const getAdminDashboardData = async () => {
-  const [expertsResult, clientsResult, jobsResult, servicesResult] = await Promise.all([
-    searchAdminTarget('expert'),
-    searchAdminTarget('client'),
-    searchAdminTarget('jobs'),
-    searchAdminTarget('services'),
+// Lấy toàn bộ dữ liệu nền cho các màn admin từ api thực tế
+export const getAdminDashboardData = async (status = 'pending') => {
+  const [usersRes, contentRes] = await Promise.all([
+    adminDashboardApi.get('/admin/users'),
+    adminDashboardApi.get(`/admin/content?status=${status}`)
   ])
 
-  const experts = expertsResult.results || []
-  const clients = clientsResult.results || []
-  const jobs = jobsResult.results || []
-  const services = servicesResult.results || []
-
   return {
-    experts,
-    clients,
-    jobs,
-    services,
-    users: [
-      // Gộp expert và client vào cùng một mảng users để admin quản lý chung.
-      // dashboardRole là field frontend tự thêm vào, không nhất thiết có trong database.
-      // Field này giúp UI hiển thị role đẹp hơn: "AI Expert" hoặc "Client".
-      ...experts.map((user) => ({ ...user, dashboardRole: 'AI Expert' })),
-      ...clients.map((user) => ({ ...user, dashboardRole: 'Client' })),
-    ],
+    users: usersRes.data.users || [],
+    jobs: contentRes.data.jobs || [],
+    services: contentRes.data.services || []
   }
 }
 
 // Lấy riêng danh sách user cho trang UserManagementPage.
-//
-// Trang quản lý user chỉ cần expert + client, không cần jobs/services.
-// Tách hàm này ra để nếu API jobs hoặc services bị lỗi thì bảng user vẫn hiển thị bình thường.
 export const getAdminUsersData = async () => {
-  const [expertsResult, clientsResult] = await Promise.all([
-    searchAdminTarget('expert'),
-    searchAdminTarget('client'),
-  ])
-
-  const experts = expertsResult.results || []
-  const clients = clientsResult.results || []
-
-  return [
-    ...experts.map((user) => ({ ...user, dashboardRole: 'AI Expert' })),
-    ...clients.map((user) => ({ ...user, dashboardRole: 'Client' })),
-  ]
+  const { data } = await adminDashboardApi.get('/admin/users')
+  return data.users || []
 }
 
 // Lấy thông tin admin hiện tại từ token đang lưu trong localStorage.
-//
-// Luồng:
-// 1. Lấy token sau khi user login.
-// 2. Nếu không có token thì throw error để page gọi hàm này biết là chưa đăng nhập.
-// 3. Gọi GET /auth/me kèm Authorization Bearer token.
-// 4. Trả về data.user nếu backend xác thực thành công.
 export const getAdminProfile = async () => {
   const token = localStorage.getItem('token')
 
@@ -133,6 +64,39 @@ export const getAdminProfile = async () => {
   })
 
   return data.user || null
+}
+
+// Các hàm gọi API mới phục vụ quản lý user và content
+export const adminCreateUser = async (userData) => {
+  const { data } = await adminDashboardApi.post('/admin/users', userData)
+  return data.user
+}
+
+export const adminUpdateUser = async (id, userData) => {
+  const { data } = await adminDashboardApi.put(`/admin/users/${id}`, userData)
+  return data.user
+}
+
+export const adminDeleteUser = async (id) => {
+  const { data } = await adminDashboardApi.delete(`/admin/users/${id}`)
+  return data
+}
+
+export const adminDeactivateUser = async (id, status) => {
+  const { data } = await adminDashboardApi.patch(`/admin/users/${id}/status`, { acc_status: status })
+  return data.user
+}
+
+export const getAdminContent = async ({ type = 'all', status = 'all' }) => {
+  const { data } = await adminDashboardApi.get('/admin/content', {
+    params: { type, status }
+  })
+  return data
+}
+
+export const updateContentStatus = async (type, id, status) => {
+  const { data } = await adminDashboardApi.put(`/admin/content/${type}/${id}/status`, { status })
+  return data.content
 }
 
 // Tạo danh sách moderation đơn giản cho widget trên trang AdminDashboardPage.
@@ -190,6 +154,7 @@ export const buildModerationQueueItems = (jobs = [], services = []) => [
     time: 'From API',
     // Ưu tiên ảnh service từ backend. Nếu chưa có ảnh thì dùng ảnh mẫu để card không bị vỡ layout.
     image: service.image_url || 'https://images.unsplash.com/photo-1677442136019-21780ecad995?w=480&h=320&fit=crop',
+    status: service.status || 'pending',
   })),
   ...jobs.map((job) => ({
     id: `job-${job.id}`,
@@ -206,6 +171,7 @@ export const buildModerationQueueItems = (jobs = [], services = []) => [
     time: 'From API',
     // Job hiện chưa có image_url riêng nên dùng ảnh fallback cố định.
     image: 'https://images.unsplash.com/photo-1551434678-e076c223a692?w=480&h=320&fit=crop',
+    status: job.status || 'pending',
   })),
 ]
 
@@ -232,18 +198,22 @@ export const buildManagedUsers = (users = []) =>
       .slice(0, 2)
       .toUpperCase()
 
+    // Map role to display nicely
+    let displayRole = 'Client';
+    if (user.role === 'expert') {
+      displayRole = 'AI Expert';
+    } else if (user.role === 'admin') {
+      displayRole = 'Admin';
+    }
+
     return {
       // Nếu API không có id thì dùng index làm fallback để React table vẫn có key ổn định tạm thời.
       id: user.id || index,
       name,
       email: user.email || 'Email not available',
-      // dashboardRole được thêm ở getAdminDashboardData hoặc getAdminUsersData.
-      // Nếu không có dashboardRole thì fallback theo user.role từ backend.
-      role: user.dashboardRole || (user.role === 'expert' ? 'AI Expert' : 'Client'),
-      // Hiện backend/search chưa trả trạng thái quản lý user chi tiết, nên tạm để Active.
-      status: 'Active',
-      // Tạm coi user là verified để UI hiển thị; khi backend có field verification thì nên thay bằng dữ liệu thật.
-      verified: true,
+      role: displayRole,
+      status: user.acc_status === false ? 'Suspended' : 'Active',
+      verified: user.is_verified ?? false,
       // created_at nếu có thì format sang ngày theo locale máy người dùng.
       // Nếu thiếu thì dùng "From API" để báo dữ liệu đến từ API nhưng chưa có ngày.
       joined: user.created_at ? new Date(user.created_at).toLocaleDateString() : 'From API',

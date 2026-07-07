@@ -8,7 +8,8 @@ import { handleAdminTabChange } from '../../../Components/Dashboard/Admin/adminN
 import Footer from '../../../Components/Footer/Footer'
 import {
   buildModerationQueueItems,
-  getAdminDashboardData
+  getAdminDashboardData,
+  updateContentStatus
 } from '../../../Services/adminDashboardService'
 import '../../Style/AdminDashboardPage.css'
 import '../../Style/ContentModerationPage.css'
@@ -25,8 +26,8 @@ const ContentModerationPage = ({ onLogout }) => {
       try {
         setModerationError('')
 
-        // API data: moderation queue uses existing jobs and services search endpoints.
-        const data = await getAdminDashboardData()
+        // Fetch ALL content for moderation queue (not just pending)
+        const data = await getAdminDashboardData('all')
         setModerationItems(buildModerationQueueItems(data.jobs, data.services))
       } catch (err) {
         setModerationError(err.message || 'Failed to load moderation data.')
@@ -49,6 +50,39 @@ const ContentModerationPage = ({ onLogout }) => {
       { label: 'Jobs', value: jobs, note: 'Client job posts', tone: 'is-success' },
     ]
   }, [moderationItems])
+
+  const handleApprove = async (id) => {
+    try {
+      const parts = id.split('-');
+      const type = parts[0];
+      const itemId = parts.slice(1).join('-');
+      await updateContentStatus(type, itemId, 'approved');
+      // Update the status state inline so it remains visible
+      setModerationItems((prev) => 
+        prev.map((item) => item.id === id ? { ...item, status: 'approved' } : item)
+      );
+    } catch (err) {
+      console.error(err);
+      alert(err.message || 'Failed to approve content');
+    }
+  }
+
+  const handleReject = async (id) => {
+    try {
+      const parts = id.split('-');
+      const type = parts[0];
+      const itemId = parts.slice(1).join('-');
+      // Update status to 'removed'
+      await updateContentStatus(type, itemId, 'removed');
+      // Update the status state inline so it remains visible
+      setModerationItems((prev) => 
+        prev.map((item) => item.id === id ? { ...item, status: 'removed' } : item)
+      );
+    } catch (err) {
+      console.error(err);
+      alert(err.message || 'Failed to reject content');
+    }
+  }
 
   const handleLogout = onLogout || (() => {
     localStorage.removeItem('token')
@@ -87,6 +121,8 @@ const ContentModerationPage = ({ onLogout }) => {
           searchQuery={searchQuery}
           items={moderationItems}
           stats={moderationStats}
+          onApprove={handleApprove}
+          onReject={handleReject}
         />
         <Footer variant="dashboard" />
       </main>

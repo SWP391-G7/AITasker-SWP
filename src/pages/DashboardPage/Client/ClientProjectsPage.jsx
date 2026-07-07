@@ -196,8 +196,16 @@ function ClientProjectsPage() {
                       >
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '8px' }}>
                           <h4 style={{ margin: 0, color: '#fff', fontSize: '1rem', fontWeight: '600' }}>{job.title || "Untitled"}</h4>
-                          <span className={`project-status ${job.status === 'pending' ? 'pending-status' : ''}`} style={{ fontSize: '0.75rem', padding: '3px 8px', borderRadius: '4px' }}>
-                            {job.status || "open"}
+                          <span 
+                            className={`project-status ${job.status === 'pending' ? 'pending-status' : ''}`} 
+                            style={{ 
+                              fontSize: '0.75rem', 
+                              padding: '3px 8px', 
+                              borderRadius: '4px',
+                              ...(job.status === 'removed' ? { color: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.1)', borderColor: 'rgba(239, 68, 68, 0.2)' } : {})
+                            }}
+                          >
+                            {job.status === 'removed' ? 'Removed' : (job.status || "open")}
                           </span>
                         </div>
                         <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.85rem', margin: '0 0 12px 0', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>

@@ -276,6 +276,14 @@ function ClientTaskDetailPage() {
     const pid = proposal._id || proposal.id;
     const busy = actingProposal === pid;
 
+    if (job && (job.status === "removed" || job.status === "rejected")) {
+      return (
+        <span className="text-danger small fw-bold">
+          No actions available (Job Removed by Admin)
+        </span>
+      );
+    }
+
     if (proposal.status === "accepted") {
       return (
         <span className="project-status accepted-status d-flex align-items-center py-2 px-3">
@@ -422,12 +430,23 @@ function ClientTaskDetailPage() {
 
         {!loading && !error && job && (
           <>
+            {job.status === 'removed' && (
+              <div className="alert alert-danger d-flex align-items-center gap-2 mb-4" style={{ borderRadius: '12px', border: '1px solid rgba(239, 68, 68, 0.2)', background: 'rgba(239, 68, 68, 0.05)', color: '#ef4444' }}>
+                <strong>Warning:</strong> This task has been removed by the administrator due to policy violations. You cannot perform any actions on this task.
+              </div>
+            )}
+
             {/* ── Job summary ─────────────────────────────────────── */}
             <section className="task-detail-grid">
               <article className="post-form-card task-detail-card">
                 <div className="task-detail-header">
                   <div>
-                    <span className="project-status">{job.status || "open"}</span>
+                    <span 
+                      className={`project-status ${job.status === 'removed' ? 'rejected-status' : ''}`}
+                      style={job.status === 'removed' ? { color: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.1)', borderColor: 'rgba(239, 68, 68, 0.2)', textTransform: 'capitalize' } : {}}
+                    >
+                      {job.status === 'removed' ? 'Removed by Admin' : (job.status || "open")}
+                    </span>
                     <h2>{job.title || job.jobTitle || "Untitled Task"}</h2>
                   </div>
 

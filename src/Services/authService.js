@@ -49,6 +49,7 @@ export const login = async (data) => {
       error.isVerificationRequired = result.isVerificationRequired || false
       error.email = result.email || data.email
       error.statusCode = response.status
+      error.code = result.code || null
       throw error
     }
 
@@ -215,7 +216,9 @@ export const googleLogin = async (credentials) => {
     const result = await response.json()
 
     if (!response.ok) {
-      throw new Error(result.message || 'Google Login failed')
+      const error = new Error(result.message || 'Google Login failed')
+      error.code = result.code || null
+      throw error
     }
 
     if (result.token) {

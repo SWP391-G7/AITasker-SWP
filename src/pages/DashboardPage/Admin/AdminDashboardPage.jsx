@@ -11,7 +11,8 @@ import { initialDisputes } from '../../../Components/Dashboard/Admin/adminDashbo
 import { handleAdminTabChange } from '../../../Components/Dashboard/Admin/adminNavigation'
 import {
   buildAdminModerationItems,
-  getAdminDashboardData
+  getAdminDashboardData,
+  updateContentStatus
 } from '../../../Services/adminDashboardService'
 import '../../Style/AdminDashboardPage.css'
 
@@ -56,6 +57,32 @@ const AdminDashboardPage = ({ onLogout }) => {
     setSelectedDispute(null)
   }
 
+  const handleApproveModeration = async (id) => {
+    try {
+      const parts = id.split('-');
+      const type = parts[0];
+      const itemId = parts.slice(1).join('-');
+      await updateContentStatus(type, itemId, 'approved');
+      setModerations((prev) => prev.filter((item) => item.id !== id));
+    } catch (err) {
+      console.error(err);
+      alert(err.message || 'Failed to approve content');
+    }
+  }
+
+  const handleRejectModeration = async (id) => {
+    try {
+      const parts = id.split('-');
+      const type = parts[0];
+      const itemId = parts.slice(1).join('-');
+      await updateContentStatus(type, itemId, 'rejected');
+      setModerations((prev) => prev.filter((item) => item.id !== id));
+    } catch (err) {
+      console.error(err);
+      alert(err.message || 'Failed to reject content');
+    }
+  }
+
   const filteredModerations = moderations.filter((item) =>
     item.target.toLowerCase().includes(searchQuery.toLowerCase()) ||
     item.reason.toLowerCase().includes(searchQuery.toLowerCase())
@@ -91,8 +118,8 @@ const AdminDashboardPage = ({ onLogout }) => {
         <AdminContentGrid
           disputes={filteredDisputes}
           moderations={filteredModerations}
-          onApproveModeration={(id) => setModerations((prev) => prev.filter((item) => item.id !== id))}
-          onRejectModeration={(id) => setModerations((prev) => prev.filter((item) => item.id !== id))}
+          onApproveModeration={handleApproveModeration}
+          onRejectModeration={handleRejectModeration}
           onSelectDispute={setSelectedDispute}
         />
         <UserGrowthChart />

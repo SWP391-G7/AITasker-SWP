@@ -137,6 +137,15 @@ const MarketplaceTaskDetailPage = () => {
               Go Back
             </button>
           </div>
+        ) : task.status === 'removed' || task.status === 'rejected' ? (
+          <div className="error-card" style={{ borderColor: '#ef4444' }}>
+            <AlertCircle size={48} className="text-danger mb-3" />
+            <h3>Post removed by Administrator</h3>
+            <p className="text-muted">This content is unavailable because it has been removed due to a violation of AITasker's policy.</p>
+            <button className="back-btn mt-3 px-4 py-2" type="button" onClick={() => navigate('/marketplace')}>
+              Back to Marketplace
+            </button>
+          </div>
         ) : (
           <div className="detail-layout">
             <div className="detail-main">

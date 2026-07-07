@@ -35,6 +35,7 @@ import ViewAllProjectPage from "../pages/ViewAllProjectPage"
 import ViewAllServicePage from "../pages/ViewAllServicePage"
 import MarketplaceProposalPage from "../pages/MarketplaceProposalPage"
 import ProjectDetailPage from "../pages/ProjectDetailPage"
+import DeactivatedPage from "../pages/DeactivatedPage"
 
 function useAuthStatus() {
   const [status, setStatus] = useState({ isLoggedIn: null, isVerified: null, role: null })
@@ -214,6 +215,7 @@ function AppRoutes() {
       <Route path="/register" element={<GuestOnly><RegisterPage /></GuestOnly>} />
       <Route path="/verify" element={<VerifyOnly><EmailVerificationPage /></VerifyOnly>} />
       <Route path="/verify-email" element={<VerifyOnly><EmailVerificationPage /></VerifyOnly>} />
+      <Route path="/deactivated" element={<DeactivatedPage />} />
 
       <Route path="/onboarding" element={<ProtectedRoute><OnboardingPage /></ProtectedRoute>} />
       <Route path="/dashboard" element={<DashboardRedirect />} />
