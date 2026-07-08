@@ -202,6 +202,75 @@ export const verifyCode = async (email, code) => {
   }
 }
 
+export const forgotPassword = async (email) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email })
+    })
+
+    const result = await response.json()
+
+    if (!response.ok) {
+      throw new Error(result.message || 'Failed to send password reset code')
+    }
+
+    return result
+  } catch (error) {
+    console.error('Forgot password error:', error)
+    throw error
+  }
+}
+
+export const verifyPasswordResetCode = async ({ email, code }) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/auth/verify-reset-code`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, code })
+    })
+
+    const result = await response.json()
+
+    if (!response.ok) {
+      throw new Error(result.message || 'Failed to verify password reset code')
+    }
+
+    return result
+  } catch (error) {
+    console.error('Verify password reset code error:', error)
+    throw error
+  }
+}
+
+export const resetPassword = async ({ email, code, newPassword }) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/auth/reset-password`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, code, newPassword })
+    })
+
+    const result = await response.json()
+
+    if (!response.ok) {
+      throw new Error(result.message || 'Failed to reset password')
+    }
+
+    return result
+  } catch (error) {
+    console.error('Reset password error:', error)
+    throw error
+  }
+}
+
 export const googleLogin = async (credentials) => {
   try {
     const response = await fetch(`${API_BASE_URL}/auth/google`, {
