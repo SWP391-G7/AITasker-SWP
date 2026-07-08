@@ -483,6 +483,12 @@
   background: rgba(251, 113, 133, 0.08);
 }
 
+.favorite-btn.active {
+  color: var(--accent-red);
+  border-color: rgba(251, 113, 133, 0.3);
+  background: rgba(251, 113, 133, 0.12);
+}
+
 .no-expert-result {
   border: 1px dashed var(--border-color);
   border-radius: 1rem;
