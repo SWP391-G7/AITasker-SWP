@@ -40,8 +40,15 @@
   font-size: clamp(2.5rem, 5vw, 4.45rem);
   font-weight: 800;
   line-height: 1.05;
-  color: var(--text-main);
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-sky), #e2e8f0);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   letter-spacing: 0;
+}
+
+.hero-title br + span {
+  display: inline-block;
 }
 
 .gradient-text {

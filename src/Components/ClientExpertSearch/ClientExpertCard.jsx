@@ -53,7 +53,7 @@ const ClientExpertCard = ({ person, isExpertMode, isFavorited, onToggleFavorite 
         <button
           type="button"
           onClick={() =>
-            navigate(isExpertMode ? `/client/clients/${person.id}` : `/client/experts/${person.id}`)
+            navigate(isExpertMode ? `/client/clients/${person.id}` : `/client/experts/${person.id}`, { state: { fromMarketplace: true, marketplaceTarget: isExpertMode ? "clients" : "experts" } })
           }
         >
           {isExpertMode ? "View Client" : "View Profile"}

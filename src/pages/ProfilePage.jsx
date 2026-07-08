@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import {
   Award,
   Briefcase,
@@ -22,7 +22,12 @@ import "./ProfilePage.css";
 function ProfilePage() {
   const { userId } = useParams()
   const navigate = useNavigate()
+  const location = useLocation()
   const currentUser = getStoredUser()
+  const fromLanding = location.state?.fromLanding
+  const fromMarketplace = location.state?.fromMarketplace
+  const marketplaceTarget = location.state?.marketplaceTarget
+  const backLabel = fromLanding ? "Back to Home" : fromMarketplace ? (marketplaceTarget === "clients" ? "Back to Clients List" : "Back to Experts List") : "Back to Profile"
 
   const [profileData, setProfileData] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -251,9 +256,16 @@ function ProfilePage() {
     return (
       <div className="profile-shell">
         <HeaderCom />
-        <main className="profile-container loading-container">
-          <div className="spinner"></div>
-          <p>Retrieving secure profile...</p>
+        <main className="profile-container">
+          <header className="profile-nav-header">
+            <button className="back-link-btn" onClick={() => navigate(-1)}>
+              {backLabel}
+            </button>
+          </header>
+          <div className="loading-container">
+            <div className="spinner"></div>
+            <p>Retrieving secure profile...</p>
+          </div>
         </main>
       </div>
     );
@@ -263,12 +275,17 @@ function ProfilePage() {
     return (
       <div className="profile-shell">
         <HeaderCom />
-        <main className="profile-container error-container">
+        <main className="profile-container">
+          <header className="profile-nav-header">
+            <button className="back-link-btn" onClick={() => navigate(-1)}>
+              {backLabel}
+            </button>
+          </header>
           <div className="error-card">
             <h2>Oops! Profile Not Found</h2>
             <p>{error}</p>
-            <button className="primary-btn" onClick={handleBack}>
-              Return to Dashboard
+            <button className="primary-btn" onClick={() => navigate(-1)}>
+              {backLabel}
             </button>
           </div>
         </main>
@@ -330,12 +347,11 @@ function ProfilePage() {
       <HeaderCom />
 
       <main className="profile-container">
-        {/* <header className="profile-nav-header">
-          <button className="back-link-btn" onClick={handleBack}>
-            Back to Dashboard
+        <header className="profile-nav-header">
+          <button className="back-link-btn" onClick={() => navigate(-1)}>
+            {backLabel}
           </button>
-        </header> */}
-        <br /> <br />
+        </header>
         {(hasClientProfile || hasExpertProfile) ? (
           <>
             {hasClientProfile && hasExpertProfile && (

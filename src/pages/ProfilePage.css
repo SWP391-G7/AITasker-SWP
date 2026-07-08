@@ -5,34 +5,38 @@
   color: var(--text-main);
   display: flex;
   flex-direction: column;
+  padding-top: 72px;
 }
 
 .profile-container {
   width: min(1180px, calc(100% - 40px));
   margin: 0 auto;
-  padding: 32px 0 46px;
+  padding: 24px 0 46px;
   flex: 1;
 }
 
 .profile-nav-header {
+  display: flex;
+  align-items: center;
   margin-bottom: 18px;
 }
 
 .back-link-btn {
-  background: rgba(15, 23, 42, 0.58);
-  border: 1px solid var(--border-color);
-  color: var(--text-muted);
+  background: rgba(59, 130, 246, 0.12);
+  border: 1px solid rgba(96, 165, 250, 0.34);
+  color: var(--accent-sky);
   border-radius: 8px;
   cursor: pointer;
   font-size: 0.9rem;
   font-weight: 700;
   padding: 10px 14px;
+  transition: var(--transition-smooth);
 }
 
 .back-link-btn:hover {
-  background: rgba(59, 130, 246, 0.12);
-  border-color: rgba(96, 165, 250, 0.34);
-  color: var(--text-main);
+  background: rgba(59, 130, 246, 0.22);
+  border-color: var(--accent-sky);
+  color: #fff;
 }
 
 .profile-view-switch {

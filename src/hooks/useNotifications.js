@@ -17,9 +17,48 @@ export default function useNotifications(isLogin) {
   const prevUnreadRef = useRef(0)
   const notificationRef = useRef(null)
 
-  // Seed welcome notification once
+  const loadNotifications = async () => {
+    const local = getLocalNotifications()
+    const conv = await getConversationNotifications()
+    const all = [...local, ...conv]
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    setNotifications(all)
+  }
+
+  const handleBellClick = () => {
+    setShowNotifications((prev) => {
+      if (!prev) loadNotifications()
+      return !prev
+    })
+  }
+
+  const handleNotificationClick = (navigate, notif) => {
+    if (!notif.read) {
+      if (notif.type !== "message" || false) markLocalAsRead(notif.id)
+      setNotifications((prev) => prev.map((n) => (n.id === notif.id ? { ...n, read: true } : n)))
+    }
+    setShowNotifications(false)
+    if (notif.link) navigate(notif.link)
+  }
+
+  const markAsRead = (id, e) => {
+    e.stopPropagation()
+    markLocalAsRead(id)
+    setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)))
+  }
+
+  const clearNotifications = () => {
+    setNotifications([])
+    clearAllLocalNotifications()
+    setShowNotifications(false)
+  }
+
+  // Seed welcome notification once + load on mount
   useEffect(() => {
-    if (isLogin) seedWelcomeNotification()
+    if (isLogin) {
+      seedWelcomeNotification()
+      loadNotifications()
+    }
   }, [isLogin])
 
   // Poll messages for sound/desktop triggers
@@ -62,42 +101,6 @@ export default function useNotifications(isLogin) {
     document.addEventListener("mousedown", handleClickOutside)
     return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [])
-
-  const loadNotifications = async () => {
-    const local = getLocalNotifications()
-    const conv = await getConversationNotifications()
-    const all = [...local, ...conv]
-      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-    setNotifications(all)
-  }
-
-  const handleBellClick = () => {
-    setShowNotifications((prev) => {
-      if (!prev) loadNotifications()
-      return !prev
-    })
-  }
-
-  const handleNotificationClick = (navigate, notif) => {
-    if (!notif.read) {
-      if (notif.type !== "message" || false) markLocalAsRead(notif.id)
-      setNotifications((prev) => prev.map((n) => (n.id === notif.id ? { ...n, read: true } : n)))
-    }
-    setShowNotifications(false)
-    if (notif.link) navigate(notif.link)
-  }
-
-  const markAsRead = (id, e) => {
-    e.stopPropagation()
-    markLocalAsRead(id)
-    setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)))
-  }
-
-  const clearNotifications = () => {
-    setNotifications([])
-    clearAllLocalNotifications()
-    setShowNotifications(false)
-  }
 
   const unreadCount = notifications.filter((n) => !n.read).length
 
