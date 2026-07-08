@@ -201,19 +201,21 @@ function ForgotPasswordForm() {
               : handleResetPassword
         }
       >
-        <div className="input-group">
-          <span className="input-icon">
-            <Mail size={19} />
-          </span>
-          <input
-            type="email"
-            name="email"
-            placeholder="Email address"
-            value={formData.email}
-            onChange={handleChange}
-            disabled={isLoading || step !== "email"}
-          />
-        </div>
+        {step === "email" && (
+          <div className="input-group">
+            <span className="input-icon">
+              <Mail size={19} />
+            </span>
+            <input
+              type="email"
+              name="email"
+              placeholder="Email address"
+              value={formData.email}
+              onChange={handleChange}
+              disabled={isLoading}
+            />
+          </div>
+        )}
 
         {step === "code" && (
           <div className="forgot-otp-section">
