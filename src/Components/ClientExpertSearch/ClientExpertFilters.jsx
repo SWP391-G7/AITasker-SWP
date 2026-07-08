@@ -122,16 +122,15 @@ const ClientExpertFilters = ({
       {!isExpertMode && (
         <div className="filter-group">
           <h3>HOURLY RATE</h3>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
+          <div className="filter-tags">
             {rateRanges.map(({ value, label }) => (
               <button
                 type="button"
                 key={value}
-                className={`availability-btn ${rateRange === value ? "active" : ""}`}
+                className={rateRange === value ? "active" : ""}
                 onClick={() => onRateRangeChange(rateRange === value ? "" : value)}
               >
                 {label}
-                <span></span>
               </button>
             ))}
           </div>
@@ -140,22 +139,23 @@ const ClientExpertFilters = ({
 
       <div className="filter-group">
         <h3>{isExpertMode ? "STATUS" : "AVAILABILITY"}</h3>
-        {[
-          ["all", "Show All"],
-          ["available", isExpertMode ? "Open to Hire" : "Available Now"],
-          ["part-time", isExpertMode ? "Small Projects" : "Part-time (20h/w)"],
-          ["full-time", isExpertMode ? "Long-term Work" : "Full-time (40h/w)"],
-        ].map(([value, label]) => (
-          <button
-            key={value}
-            type="button"
-            className={`availability-btn ${availability === value ? "active" : ""}`}
-            onClick={() => onAvailabilityChange(value)}
-          >
-            {label}
-            <span></span>
-          </button>
-        ))}
+        <div className="filter-tags">
+          {[
+            ["all", "Show All"],
+            ["available", isExpertMode ? "Open to Hire" : "Available Now"],
+            ["part-time", isExpertMode ? "Small Projects" : "Part-time (20h/w)"],
+            ["full-time", isExpertMode ? "Long-term Work" : "Full-time (40h/w)"],
+          ].map(([value, label]) => (
+            <button
+              key={value}
+              type="button"
+              className={availability === value ? "active" : ""}
+              onClick={() => onAvailabilityChange(value)}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
       </div>
     </aside>
   );

@@ -39,13 +39,13 @@ const ClientExpertCard = ({ person, isExpertMode, isFavorited, onToggleFavorite 
       <div className="expert-stats">
         <span>
           <CheckCircle2 size={18} />
-          {person.projects || person.mode === 'client'
-            ? `${person.projects} ${isExpertMode ? "Projects Posted" : "Projects"}`
+          {person.projects > 0 || person.mode === 'client'
+            ? `${person.projects || 0} ${isExpertMode ? "Projects Posted" : "Projects"}`
             : "No projects yet"}
         </span>
         <span>
           <Clock3 size={18} />
-          {isExpertMode ? "Client Account" : person.success ? `${person.success}% Job Success` : "New on AITasker"}
+          {isExpertMode ? "Client Account" : person.success != null ? `${person.success}% Job Success` : "New on AITasker"}
         </span>
       </div>
 

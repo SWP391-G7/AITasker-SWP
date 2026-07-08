@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { ChevronDown } from "lucide-react";
+
 import { search as searchApi } from "../../Services/searchService";
 import { getFavorites, addFavorite, removeFavorite } from "../../Services/favoriteService";
 import ClientExpertHero from "./ClientExpertHero";
@@ -179,7 +179,7 @@ const ClientExpertSearch = () => {
   useEffect(() => {
     fetchPeople();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isExpertMode, selectedFilters, skillSearch, rating, availability, rateRange, searchQuery]);
+  }, [isExpertMode, selectedFilters, skillSearch, rating, rateRange, searchQuery]);
 
   useEffect(() => {
     const fetchFilterOptions = async () => {
@@ -233,9 +233,9 @@ const ClientExpertSearch = () => {
 
       const matchAvailability =
         availability === "all" ||
-        (availability === "available" && (isExpertMode ? person.rate <= 100 : true)) ||
-        (availability === "part-time" && (isExpertMode ? person.rate <= 180 : !person.title)) ||
-        (availability === "full-time" && (isExpertMode ? person.rate >= 100 : person.title));
+        (availability === "available" && (isExpertMode ? !!person.title : person.rate > 0)) ||
+        (availability === "part-time" && (isExpertMode ? !!person.title : person.rate > 0 && person.rate <= 50)) ||
+        (availability === "full-time" && (isExpertMode ? !!person.title : person.rate > 50));
 
       const matchRate = isExpertMode || !rateRange || (() => {
         const ranges = {
@@ -352,7 +352,6 @@ const ClientExpertSearch = () => {
                       </>
                     )}
                   </select>
-                  <ChevronDown size={18} />
                 </div>
               </div>
 
