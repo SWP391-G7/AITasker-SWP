@@ -16,7 +16,8 @@ export const submitClientOnboarding = async (data) => {
       },
       body: JSON.stringify({
         companyName: data.companyName,
-        industry: data.industry
+        industry: data.industry,
+        bio: data.bio || ''
       })
     })
 

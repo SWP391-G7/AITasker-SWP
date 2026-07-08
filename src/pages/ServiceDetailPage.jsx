@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, Clock, Loader2, AlertCircle, Star } from 'lucide-react';
 import Footer from '../Components/Footer/Footer';
 import { getServiceById } from '../Services/serviceService';
@@ -8,6 +8,8 @@ import './Style/ServiceDetail.css';
 const ServiceDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
+  const fromProfile = location.state?.fromProfile;
   const [service, setService] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -31,8 +33,8 @@ const ServiceDetailPage = () => {
   return (
     <div className="service-detail-page-wrapper">
       <div className="service-detail-container">
-        <button className="back-btn" onClick={() => navigate('/marketplace')}>
-          <ArrowLeft size={16} /> Back to Marketplace
+        <button className="back-btn" onClick={() => navigate(fromProfile ? -1 : '/marketplace')}>
+          <ArrowLeft size={16} /> {fromProfile ? 'Back to Profile' : 'Back to Marketplace'}
         </button>
 
         {loading ? (

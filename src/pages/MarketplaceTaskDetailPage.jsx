@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import {
   AlertCircle,
   ArrowLeft,
@@ -40,6 +40,8 @@ const formatBudget = (task) => {
 const MarketplaceTaskDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
+  const fromProfile = location.state?.fromProfile;
   const [task, setTask] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -119,8 +121,8 @@ const MarketplaceTaskDetailPage = () => {
   return (
     <div className="service-detail-page-wrapper">
       <div className="service-detail-container">
-        <button className="back-btn" type="button" onClick={() => navigate('/marketplace')}>
-          <ArrowLeft size={16} /> Back to Marketplace
+        <button className="back-btn" type="button" onClick={() => navigate(fromProfile ? -1 : '/marketplace')}>
+          <ArrowLeft size={16} /> {fromProfile ? 'Back to Profile' : 'Back to Marketplace'}
         </button>
 
         {loading ? (
