@@ -4,6 +4,7 @@ import { Bell, Search, User, Settings, LogOut, ChevronDown } from 'lucide-react'
 import { getStoredUser } from '../../../Services/checkLogin'
 import SettingPage from '../../../pages/SettingPage'
 import useHandleClickOutside from '../HandleClickOutside'
+import NotificationDropdown from '../../Navbar/NotificationDropdown'
 import '../../Navbar/HeaderCom.css'
 
 const ExpertHeader = ({ title, subtitle, headerActions, notifications, onClearNotifications, searchQuery, onSearchChange, user, onLogout }) => {
@@ -53,10 +54,7 @@ const ExpertHeader = ({ title, subtitle, headerActions, notifications, onClearNo
             />
           </div>
 
-          <button className="icon-button position-relative" aria-label="Expert Notifications" onClick={onClearNotifications}>
-            <Bell size={20} />
-            {notifications > 0 && <span className="icon-badge bg-sky"></span>}
-          </button>
+          <NotificationDropdown />
 
           <div className="admin-profile-container" ref={dropdownRef}>
             <div
