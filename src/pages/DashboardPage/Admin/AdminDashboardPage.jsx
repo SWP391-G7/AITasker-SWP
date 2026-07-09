@@ -25,6 +25,7 @@ const AdminDashboardPage = ({ onLogout }) => {
   const [disputes, setDisputes] = useState(initialDisputes)
   const [notifications, setNotifications] = useState(3)
   const [userCount, setUserCount] = useState(0)
+  const [users, setUsers] = useState([])
   const [dashboardError, setDashboardError] = useState('')
 
   useEffect(() => {
@@ -34,11 +35,13 @@ const AdminDashboardPage = ({ onLogout }) => {
 
         // API data: admin dashboard uses existing search endpoints for users, jobs, and services.
         const data = await getAdminDashboardData()
+        setUsers(data.users)
         setUserCount(data.users.length)
         setModerations(buildAdminModerationItems(data.jobs, data.services))
       } catch (err) {
         setDashboardError(err.message || 'Failed to load admin dashboard data.')
         setModerations([])
+        setUsers([])
         setUserCount(0)
       }
     }
@@ -122,7 +125,7 @@ const AdminDashboardPage = ({ onLogout }) => {
           onRejectModeration={handleRejectModeration}
           onSelectDispute={setSelectedDispute}
         />
-        <UserGrowthChart />
+        <UserGrowthChart users={users} />
         <Footer variant="dashboard" />
       </main>
 

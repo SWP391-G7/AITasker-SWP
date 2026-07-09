@@ -770,6 +770,67 @@
   display: inline-block;
 }
 
+.custom-line-chart {
+  height: 240px;
+  margin-top: 1.25rem;
+  width: 100%;
+}
+
+.custom-line-chart svg {
+  display: block;
+  height: 100%;
+  overflow: visible;
+  width: 100%;
+}
+
+.line-chart-grid {
+  stroke: rgba(226, 232, 240, 0.07);
+  stroke-dasharray: 4 6;
+  stroke-width: 1;
+}
+
+.line-chart-area {
+  fill: url("#userGrowthArea");
+}
+
+.line-chart-stroke {
+  fill: none;
+  stroke: #93c5fd;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 4;
+  filter: drop-shadow(0 0 10px rgba(59, 130, 246, 0.26));
+}
+
+.line-chart-point {
+  fill: #0b1220;
+  stroke: #93c5fd;
+  stroke-width: 3;
+  transition: all 0.2s ease;
+}
+
+.line-chart-point.highlighted {
+  fill: #93c5fd;
+  filter: drop-shadow(0 0 10px rgba(147, 197, 253, 0.55));
+}
+
+.line-chart-point-group:hover .line-chart-point {
+  fill: #60a5fa;
+  r: 7;
+}
+
+.line-chart-value {
+  fill: #93c5fd;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.line-chart-label {
+  fill: #64748b;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
 /* CSS Bar Chart Layout */
 .custom-bar-chart {
   display: flex;
