@@ -291,3 +291,58 @@ export const requestRevision = async (milestoneId, note) => {
   return result;
 };
 
+/**
+ * Submit a rating for a target
+ */
+export const submitRating = async (targetId, stars) => {
+  const response = await fetch(`${API_BASE_URL}/ratings`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ target_id: targetId, stars })
+  });
+  const result = await response.json();
+  if (!response.ok) throw new Error(result.message || 'Failed to submit rating.');
+  return result;
+};
+
+/**
+ * Submit a review for a target
+ */
+export const submitReview = async (targetId, review) => {
+  const response = await fetch(`${API_BASE_URL}/reviews`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ target_id: targetId, review })
+  });
+  const result = await response.json();
+  if (!response.ok) throw new Error(result.message || 'Failed to submit review.');
+  return result;
+};
+
+/**
+ * Get rating details by ID
+ */
+export const getRatingById = async (id) => {
+  const response = await fetch(`${API_BASE_URL}/ratings/${id}`, {
+    method: 'GET',
+    headers: getAuthHeaders()
+  });
+  const result = await response.json();
+  if (!response.ok) throw new Error(result.message || 'Failed to retrieve rating.');
+  return result.rating;
+};
+
+/**
+ * Get reviews for a target user ID
+ */
+export const getReviewsByTargetId = async (targetId) => {
+  const response = await fetch(`${API_BASE_URL}/reviews/target/${targetId}`, {
+    method: 'GET',
+    headers: getAuthHeaders()
+  });
+  const result = await response.json();
+  if (!response.ok) throw new Error(result.message || 'Failed to retrieve reviews.');
+  return result.reviews;
+};
+
+

@@ -30,6 +30,8 @@ import {
   submitDeliverable,
   approveDeliverable,
   requestRevision,
+  submitRating,
+  submitReview,
 } from '../Services/projectService';
 import './DashboardPage/Client/ClientMarketplace.css';
 
@@ -137,6 +139,11 @@ export default function ProjectDetailPage() {
   const [error,      setError]      = useState('');
   const [actionErr,  setActionErr]  = useState('');
   const [busy,       setBusy]       = useState(false);
+
+  // Rating & Review popup states
+  const [rateModalOpen, setRateModalOpen] = useState(false);
+  const [ratingStars,   setRatingStars]   = useState(5);
+  const [reviewText,    setReviewText]    = useState('');
 
   // Expert's local draft list (built before submit)
   const [drafts, setDrafts] = useState([
@@ -320,6 +327,26 @@ export default function ProjectDetailPage() {
     wrap(() => closeProject(projectId));
   };
 
+  const handleRateAndReviewSubmit = async () => {
+    if (ratingStars < 1 || ratingStars > 5) {
+      setActionErr('Please select a rating between 1 and 5.');
+      return;
+    }
+    const targetId = isCli ? project.expert_id : project.client_id;
+    if (!targetId) {
+      setActionErr('Target user ID not found.');
+      return;
+    }
+    wrap(async () => {
+      await submitRating(targetId, ratingStars);
+      await submitReview(targetId, reviewText);
+      alert('🎉 Rating and review submitted successfully!');
+      setRateModalOpen(false);
+      setReviewText('');
+      setRatingStars(5);
+    });
+  };
+
   // ── Loading state ─────────────────────────────────────────────────────────
   if (loading && !project) {
     return (
@@ -387,6 +414,14 @@ export default function ProjectDetailPage() {
                   </button>
                   {isCli && project.status === 'active' && (
                     <button style={btnRed} onClick={handleCloseProject} disabled={busy}>Abandon Project</button>
+                  )}
+                  {project.status === 'Completed' && (
+                    <button
+                      style={{ ...btnGreen, backgroundColor: '#3b82f6' }}
+                      onClick={() => setRateModalOpen(true)}
+                    >
+                      Rate & Review
+                    </button>
                   )}
                 </div>
               </div>
@@ -577,6 +612,51 @@ export default function ProjectDetailPage() {
               <button style={btnOutline} onClick={() => setRevisionModal({ open: false, milestoneId: null })} disabled={busy}>Cancel</button>
               <button style={btnAmber} onClick={handleRequestRevision} disabled={busy}>
                 {busy ? <Loader2 size={15} className="animate-spin" /> : null} Request Revision
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── MODAL: Rate & Review ────────────────────────────────────────── */}
+      {rateModalOpen && (
+        <div style={MODAL_OVERLAY} onClick={() => setRateModalOpen(false)}>
+          <div style={MODAL_BOX} onClick={e => e.stopPropagation()}>
+            <ModalHeader title="Rate & Review" onClose={() => setRateModalOpen(false)} />
+            
+            {/* Rating Section (1 to 5 stars) */}
+            <div style={{ marginBottom: '20px' }}>
+              <label style={labelSt}>RATING (1 TO 5 STARS) *</label>
+              <div style={{ display: 'flex', gap: '8px', fontSize: '1.8rem', cursor: 'pointer', margin: '10px 0' }}>
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <span
+                    key={star}
+                    style={{ color: star <= ratingStars ? '#fbbf24' : 'rgba(255,255,255,0.25)', transition: 'color 0.2s' }}
+                    onClick={() => setRatingStars(star)}
+                  >
+                    ★
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/* Review Section (text) */}
+            <div style={{ marginBottom: '24px' }}>
+              <label style={labelSt}>REVIEW *</label>
+              <textarea
+                style={{ ...inputSt, resize: 'vertical', minHeight: '110px' }}
+                placeholder="Write your review here..."
+                value={reviewText}
+                onChange={e => setReviewText(e.target.value)}
+              />
+            </div>
+
+            {actionErr && <p style={{ color: '#f87171', marginBottom: '12px', fontSize: '0.88rem' }}>{actionErr}</p>}
+            
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+              <button style={btnOutline} onClick={() => setRateModalOpen(false)} disabled={busy}>Cancel</button>
+              <button style={btnGreen} onClick={handleRateAndReviewSubmit} disabled={busy}>
+                {busy ? <Loader2 size={15} className="animate-spin" /> : null} Submit
               </button>
             </div>
           </div>
