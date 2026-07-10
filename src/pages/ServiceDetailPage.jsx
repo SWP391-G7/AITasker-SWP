@@ -31,8 +31,8 @@ const ServiceDetailPage = () => {
   return (
     <div className="service-detail-page-wrapper">
       <div className="service-detail-container">
-        <button className="back-btn" onClick={() => navigate('/marketplace')}>
-          <ArrowLeft size={16} /> Back to Marketplace
+        <button className="back-btn" onClick={() => navigate(-1)}>
+          <ArrowLeft size={16} /> Back 
         </button>
 
         {loading ? (

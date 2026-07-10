@@ -86,11 +86,6 @@ const AdminDashboardPage = ({ onLogout }) => {
     }
   }
 
-  const filteredModerations = moderations.filter((item) =>
-    item.target.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    item.reason.toLowerCase().includes(searchQuery.toLowerCase())
-  )
-
   const filteredDisputes = disputes.filter((item) =>
     item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
     item.caseId.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -120,7 +115,7 @@ const AdminDashboardPage = ({ onLogout }) => {
         <AdminStats userCount={userCount} moderationCount={moderations.length} disputeCount={disputes.length} />
         <AdminContentGrid
           disputes={filteredDisputes}
-          moderations={filteredModerations}
+          moderations={moderations}
           onApproveModeration={handleApproveModeration}
           onRejectModeration={handleRejectModeration}
           onSelectDispute={setSelectedDispute}
