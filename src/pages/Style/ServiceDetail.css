@@ -253,6 +253,89 @@
   color: var(--text-main);
 }
 
+.admin-service-moderation {
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+}
+
+.service-moderation-btn {
+  align-items: center;
+  border: 0;
+  border-radius: 0.85rem;
+  color: #ffffff;
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 0.95rem;
+  font-weight: 800;
+  gap: 0.55rem;
+  justify-content: center;
+  min-height: 44px;
+  transition: var(--transition-smooth);
+  width: 100%;
+}
+
+.service-moderation-btn.approve {
+  background: linear-gradient(135deg, #10b981, #14b8a6);
+  box-shadow: 0 10px 20px -8px rgba(16, 185, 129, 0.45);
+}
+
+.service-moderation-btn.reject {
+  background: rgba(220, 38, 38, 0.16);
+  border: 1px solid rgba(248, 113, 113, 0.34);
+  color: #fca5a5;
+}
+
+.service-moderation-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+}
+
+.service-moderation-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.68;
+}
+
+.service-moderation-error {
+  color: #fca5a5;
+  font-size: 0.82rem;
+  font-weight: 700;
+  margin: 0;
+  text-align: center;
+}
+
+.service-status-note {
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.22);
+  border-radius: 0.85rem;
+  color: #fbbf24;
+  font-size: 0.86rem;
+  font-weight: 700;
+  margin-top: 1rem;
+  padding: 0.75rem 0.9rem;
+  text-align: center;
+  text-transform: capitalize;
+}
+
+.service-status-note span {
+  font-weight: 900;
+}
+
+.service-status-note.status-approved {
+  background: rgba(16, 185, 129, 0.13);
+  border-color: rgba(16, 185, 129, 0.28);
+  color: #34d399;
+}
+
+.service-status-note.status-rejected,
+.service-status-note.status-removed {
+  background: rgba(239, 68, 68, 0.13);
+  border-color: rgba(239, 68, 68, 0.28);
+  color: #fca5a5;
+}
+
 /* Features List */
 .features-list {
   margin-bottom: 2.25rem;

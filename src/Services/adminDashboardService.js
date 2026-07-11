@@ -141,6 +141,7 @@ export const buildAdminModerationItems = (jobs = [], services = []) => [
 export const buildModerationQueueItems = (jobs = [], services = []) => [
   ...services.map((service) => ({
     id: `service-${service.id}`,
+    detailPath: `/marketplace/service/${service.id}`,
     title: service.title || 'Untitled Service',
     description: service.description || 'No service description provided.',
     category: 'Service',
@@ -158,6 +159,7 @@ export const buildModerationQueueItems = (jobs = [], services = []) => [
   })),
   ...jobs.map((job) => ({
     id: `job-${job.id}`,
+    detailPath: `/marketplace/task/${job.id}`,
     title: job.title || 'Untitled Client Task',
     description: job.description || 'No job description provided.',
     category: 'Job',

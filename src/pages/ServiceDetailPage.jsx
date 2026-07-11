@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Clock, Loader2, AlertCircle, Star } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, Clock, Loader2, AlertCircle, Star, XCircle } from 'lucide-react';
 import Footer from '../Components/Footer/Footer';
 import { getServiceById } from '../Services/serviceService';
+import { updateContentStatus } from '../Services/adminDashboardService';
+import { getStoredUser } from '../Services/checkLogin';
 import './Style/ServiceDetail.css';
 
 const ServiceDetailPage = () => {
@@ -11,6 +13,12 @@ const ServiceDetailPage = () => {
   const [service, setService] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [moderationAction, setModerationAction] = useState('');
+  const [moderationError, setModerationError] = useState('');
+
+  const currentUser = getStoredUser();
+  const isAdmin = currentUser?.role === 'admin';
+  const canModerateService = isAdmin && service?.status === 'pending';
 
   useEffect(() => {
     const fetchDetail = async () => {
@@ -28,11 +36,24 @@ const ServiceDetailPage = () => {
     fetchDetail();
   }, [id]);
 
+  const handleModerateService = async (status) => {
+    try {
+      setModerationAction(status);
+      setModerationError('');
+      const updatedService = await updateContentStatus('service', id, status);
+      setService((prev) => ({ ...prev, ...updatedService }));
+    } catch (err) {
+      setModerationError(err.message || 'Failed to update service status.');
+    } finally {
+      setModerationAction('');
+    }
+  };
+
   return (
     <div className="service-detail-page-wrapper">
       <div className="service-detail-container">
         <button className="back-btn" onClick={() => navigate(-1)}>
-          <ArrowLeft size={16} /> Back 
+          <ArrowLeft size={16} /> Back
         </button>
 
         {loading ? (
@@ -96,6 +117,37 @@ const ServiceDetailPage = () => {
                     <span>{service.delivery_days || 'TBD'} Days Delivery</span>
                   </div>
                 </div>
+
+                {canModerateService && (
+                  <div className="admin-service-moderation">
+                    <button
+                      className="service-moderation-btn approve"
+                      type="button"
+                      disabled={Boolean(moderationAction)}
+                      onClick={() => handleModerateService('approved')}
+                    >
+                      <CheckCircle2 size={16} />
+                      {moderationAction === 'approved' ? 'Approving...' : 'Approve'}
+                    </button>
+                    <button
+                      className="service-moderation-btn reject"
+                      type="button"
+                      disabled={Boolean(moderationAction)}
+                      onClick={() => handleModerateService('rejected')}
+                    >
+                      <XCircle size={16} />
+                      {moderationAction === 'rejected' ? 'Rejecting...' : 'Reject'}
+
+                    </button>
+                    {moderationError && <p className="service-moderation-error">{moderationError}</p>}
+                  </div>
+                )}
+
+                {isAdmin && service.status && (
+                  <div className={`service-status-note status-${service.status}`}>
+                    Status: <span>{service.status}</span>
+                  </div>
+                )}
               </div>
             </div>
           </div>

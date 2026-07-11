@@ -5,6 +5,9 @@ import ContentModerationStats from './ContentModerationStats'
 import { moderationFilters, moderationItems, moderationStats } from './contentModerationData'
 import ModerationQueueList from './ModerationQueueList'
 
+const normalizeSeverity = (value = '') =>
+  value.toLowerCase().replace(' severity', '').trim()
+
 const ContentModerationView = ({ searchQuery: externalSearchQuery, items = moderationItems, stats = moderationStats, onApprove, onReject }) => {
   const [activeFilter, setActiveFilter] = useState('All Types')
   const [severityFilter, setSeverityFilter] = useState('All Levels')
@@ -34,7 +37,8 @@ const ContentModerationView = ({ searchQuery: externalSearchQuery, items = moder
       }
 
       const matchesSeverity =
-        severityFilter === 'All Levels' || item.severityLabel === severityFilter
+        severityFilter === 'All Levels' ||
+        normalizeSeverity(item.severityLabel || item.severity) === normalizeSeverity(severityFilter)
       const matchesSearch =
         item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.description.toLowerCase().includes(searchQuery.toLowerCase())
