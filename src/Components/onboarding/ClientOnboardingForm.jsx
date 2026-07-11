@@ -9,7 +9,7 @@ function ClientOnboardingForm({ onBack }) {
   const [formData, setFormData] = useState({
     companyName: "",
     industry: "",
-    
+    bio: "",
   });
 
   const [error, setError] = useState("");
@@ -86,6 +86,17 @@ function ClientOnboardingForm({ onBack }) {
             name="industry"
             placeholder="Example: Education, Finance, Healthcare"
             value={formData.industry}
+            onChange={handleChange}
+          />
+        </div>
+
+        <div className="form-field">
+          <label>Company Bio</label>
+          <textarea
+            name="bio"
+            rows="4"
+            placeholder="Tell potential experts about your company, projects, and mission..."
+            value={formData.bio}
             onChange={handleChange}
           />
         </div>

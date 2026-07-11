@@ -2,6 +2,7 @@ import { useEffect, useState } from "react"
 import { Navigate, Route, Routes, useLocation } from "react-router-dom"
 import LoginPage from "../pages/LoginPage"
 import RegisterPage from "../pages/RegisterPage"
+import ForgotPasswordPage from "../pages/ForgotPasswordPage"
 import LandingPages from "../Components/LandingPages/LandingPages"
 import HeaderCom from "../Components/Navbar/HeaderCom"
 import EmailVerificationPage from "../pages/EmailVerificationPage"
@@ -213,6 +214,7 @@ function AppRoutes() {
 
       <Route path="/login" element={<GuestOnly><LoginPage /></GuestOnly>} />
       <Route path="/register" element={<GuestOnly><RegisterPage /></GuestOnly>} />
+      <Route path="/forgot-password" element={<GuestOnly><ForgotPasswordPage /></GuestOnly>} />
       <Route path="/verify" element={<VerifyOnly><EmailVerificationPage /></VerifyOnly>} />
       <Route path="/verify-email" element={<VerifyOnly><EmailVerificationPage /></VerifyOnly>} />
       <Route path="/deactivated" element={<DeactivatedPage />} />

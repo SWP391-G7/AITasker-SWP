@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Briefcase, Heart, Star, CheckCircle, Clock } from 'lucide-react';
 import './Marketplace.css';
@@ -14,9 +13,10 @@ const ServiceCard = ({
   type = 'service',
   description,
   status,
+  isFavorited,
+  onToggleFavorite,
 }) => {
   const navigate = useNavigate();
-  const [isWishlisted, setIsWishlisted] = useState(false);
   const isJob = type === 'job';
 
   const handleViewDetails = () => {
@@ -58,11 +58,13 @@ const ServiceCard = ({
           <span className="online-dot"></span>
         </div>
 
-        <div className="expert-rating">
-          <div>
-            <Star size={18} fill={isJob ? "none" : "currentColor"} className={isJob ? "text-muted" : "text-success"} />
-            <strong>{isJob ? 'Task' : rating}</strong>
-          </div>
+        <div className="expert-rating" style={{ justifyContent: 'flex-end' }}>
+          {!isJob && rating && Number(rating) > 0 && (
+            <div>
+              <Star size={18} fill="currentColor" className="text-success" />
+              <strong>{rating}</strong>
+            </div>
+          )}
           <strong>
             {price}
           </strong>
@@ -76,8 +78,8 @@ const ServiceCard = ({
         <span>{tag}</span>
       </div>
 
-      <p style={{ minHeight: '60px' }}>
-        {description || (isJob ? "Collaborate with this client on their custom AI task requirements." : "Get premium AI solutions delivered by vetted machine learning experts.")}
+      <p style={{ whiteSpace: 'pre-line' }}>
+        {(description || "No description provided.").replace(/([A-Za-zÀ-ỹ\s]+:)\s*\n\s*/g, '$1 ')}
       </p>
 
       <div className="expert-stats">
@@ -107,12 +109,12 @@ const ServiceCard = ({
         </button>
 
         <button 
-          className={`favorite-btn ${isWishlisted ? 'active' : ''}`} 
-          style={{ color: isWishlisted ? 'var(--accent-red)' : '' }}
+          className={`favorite-btn ${isFavorited ? 'active' : ''}`} 
+          style={{ color: isFavorited ? 'var(--accent-red)' : '' }}
           type="button"
-          onClick={() => setIsWishlisted(!isWishlisted)}
+          onClick={() => onToggleFavorite(id)}
         >
-          <Heart size={24} fill={isWishlisted ? "currentColor" : "none"} />
+          <Heart size={24} fill={isFavorited ? "currentColor" : "none"} />
         </button>
       </div>
     </article>

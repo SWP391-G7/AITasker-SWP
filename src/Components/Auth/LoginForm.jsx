@@ -151,7 +151,12 @@ function LoginForm() {
         </button>
       </form>
 
-      <button className="forgot-btn" type="button" disabled={isLoading}>
+      <button
+        className="forgot-btn"
+        type="button"
+        onClick={() => navigate("/forgot-password")}
+        disabled={isLoading}
+      >
         Forgot password?
       </button>
 

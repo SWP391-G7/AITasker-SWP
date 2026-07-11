@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from "react"
 import { Link, useNavigate, NavLink } from "react-router-dom"
-import { Bell, LayoutDashboard, LogOut, Mail, Settings, User } from "lucide-react"
+import { LayoutDashboard, LogOut, Mail, Settings, User } from "lucide-react"
 import { getStoredUser, isLoggedIn, logout } from "../../Services/checkLogin"
 import { getConversations } from "../../Services/messageService"
 import SettingPage from "../../pages/SettingPage"
+import NotificationBell from "./NotificationBell"
 import "./HeaderCom.css"
 
 // ROLE ROUTING: Map role trong localStorage.user sang dashboard tương ứng.
@@ -166,10 +167,7 @@ export default function HeaderCom() {
             <div className="d-flex d-lg-none flex-column align-items-center gap-3 w-100 mt-3 pt-3 border-top border-secondary-subtle">
               {isLogin ? (
                 <div className="d-flex align-items-center justify-content-center gap-4 py-2">
-                  <button className="icon-button position-relative" aria-label="Notifications">
-                    <Bell size={20} />
-                    <span className="icon-badge"></span>
-                  </button>
+                  <NotificationBell isLogin={isLogin} isMobile />
                   <button
                     className="icon-button position-relative"
                     aria-label={`${pendingMessages} unread message conversations`}
@@ -193,10 +191,7 @@ export default function HeaderCom() {
           <div className="d-none d-lg-flex align-items-center gap-3">
             {isLogin ? (
               <>
-                <button className="icon-button position-relative" aria-label="Notifications">
-                  <Bell size={20} />
-                  <span className="icon-badge"></span>
-                </button>
+                <NotificationBell isLogin={isLogin} />
 
                 <button
                   className="icon-button position-relative"

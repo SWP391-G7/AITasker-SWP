@@ -1,7 +1,8 @@
 import { useState, useMemo, useEffect } from 'react';
-import { Grid, List, Search as SearchIcon, Loader2, ChevronDown, ChevronLeft, ChevronRight, SlidersHorizontal } from 'lucide-react';
+import { Search as SearchIcon, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
 import ServiceCard from './ServiceCard';
 import { search as searchApi } from '../../Services/searchService';
+import { getFavorites, addFavorite, removeFavorite } from '../../Services/favoriteService';
 import { useLocation } from 'react-router-dom';
 import '../../pages/ClientExpertSearchPage.css';
 import './Marketplace.css';
@@ -25,7 +26,8 @@ const formatBudget = (job) => {
   const min = parseMoney(job.budget_min);
   const max = parseMoney(job.budget_max);
 
-  if (min && max) return `${formatMoney(min)} - ${formatMoney(max)}`;
+  if (min && max && min !== max) return `${formatMoney(min)} - ${formatMoney(max)}`;
+  if (min && max) return formatMoney(min);
   if (max) return `Up to ${formatMoney(max)}`;
   if (min) return `From ${formatMoney(min)}`;
   return 'Budget TBD';
@@ -36,11 +38,12 @@ const formatService = (service) => ({
   type: 'service',
   tag: service.tags?.toUpperCase() || 'AI',
   expert: service.expert_name || 'AI Expert',
-  rating: service.avg_rating?.toString() || '5.0',
+  rating: service.avg_rating?.toString() || '',
   title: service.title || 'AI Service',
-  price: formatMoney(service.price),
-  budgetValue: parseMoney(service.price),
+  price: 'From ' + formatMoney(service.price) + (service.pricing_type === 'hourly' ? '/hr' : ''),
+  rawPrice: parseMoney(service.price),
   image: service.image_url || null,
+  description: service.description || '',
   deliveryDays: service.delivery_days || 0,
 });
 
@@ -71,8 +74,25 @@ const MarketplaceGrid = () => {
     return localStorage.getItem('marketplaceViewMode') || getCurrentRole();
   });
   const [showClosed, setShowClosed] = useState(false);
+  const [sortBy, setSortBy] = useState("relevance");
+  const [favoriteIds, setFavoriteIds] = useState(() => new Set(getFavorites('services')));
   const itemsPerPage = 9;
   const isExpert = viewMode === 'expert';
+
+  useEffect(() => {
+    setFavoriteIds(new Set(getFavorites(isExpert ? 'jobs' : 'services')));
+  }, [isExpert]);
+
+  const toggleFavorite = (id) => {
+    const targetKey = isExpert ? 'jobs' : 'services';
+    if (favoriteIds.has(id)) {
+      removeFavorite(targetKey, id);
+      setFavoriteIds((prev) => { const n = new Set(prev); n.delete(id); return n; });
+    } else {
+      addFavorite(targetKey, id);
+      setFavoriteIds((prev) => new Set(prev).add(id));
+    }
+  };
 
   useEffect(() => {
     localStorage.setItem('marketplaceViewMode', viewMode);
@@ -111,7 +131,7 @@ const MarketplaceGrid = () => {
         }
 
         // Category filter (backend only supports requiredSkill for jobs)
-        if (isExpert && category !== 'All Categories') {
+        if (isExpert && category !== 'All Categories' && category !== 'Other') {
           searchParams.requiredSkill = category;
         }
 
@@ -166,10 +186,21 @@ const MarketplaceGrid = () => {
   const filteredItems = useMemo(() => {
     let result = marketplaceItems;
 
-    // Client-side category filter for services
-    if (!isExpert && category !== 'All Categories') {
-      const cat = category.toLowerCase();
-      result = result.filter((item) => item.tag?.toLowerCase().includes(cat));
+    // Category filter
+    if (category !== 'All Categories') {
+      const hardcodedCats = isExpert
+        ? ['AI', 'NLP', 'Computer Vision', 'Automation', 'Data']
+        : ['NLP', 'VISION', 'DATA', 'GEN AI', 'MLOPS'];
+
+      if (category === 'Other') {
+        result = result.filter((item) => {
+          const itemCat = item.tag?.toLowerCase() || '';
+          return !hardcodedCats.some((c) => itemCat === c.toLowerCase());
+        });
+      } else {
+        const cat = category.toLowerCase();
+        result = result.filter((item) => item.tag?.toLowerCase() === cat);
+      }
     }
 
     // Client-side delivery time filter for services
@@ -184,8 +215,17 @@ const MarketplaceGrid = () => {
       });
     }
 
+    // Sort
+    if (sortBy === "rating") {
+      result = [...result].sort((a, b) => Number(b.rating) - Number(a.rating));
+    } else if (sortBy === "price-low") {
+      result = [...result].sort((a, b) => (a.rawPrice || a.budgetValue) - (b.rawPrice || b.budgetValue));
+    } else if (sortBy === "price-high") {
+      result = [...result].sort((a, b) => (b.rawPrice || b.budgetValue) - (a.rawPrice || a.budgetValue));
+    }
+
     return result;
-  }, [marketplaceItems, isExpert, category, deliveryTime]);
+  }, [marketplaceItems, isExpert, category, deliveryTime, sortBy]);
 
   const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
   const indexOfLastItem = currentPage * itemsPerPage;
@@ -194,7 +234,7 @@ const MarketplaceGrid = () => {
 
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
-    window.scrollTo({ top: 300, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   if (loading) {
@@ -278,7 +318,7 @@ const MarketplaceGrid = () => {
               <div className="filter-group">
                 <h3>Category</h3>
                 <div className="filter-tags">
-                  {['All Categories', ...(isExpert ? ['AI', 'NLP', 'Computer Vision', 'Automation', 'Data'] : ['NLP', 'VISION', 'DATA', 'GEN AI', 'MLOPS'])].map((cat) => (
+                  {['All Categories', ...(isExpert ? ['AI', 'NLP', 'Computer Vision', 'Automation', 'Data'] : ['NLP', 'VISION', 'DATA', 'GEN AI', 'MLOPS']), 'Other'].map((cat) => (
                     <button
                       type="button"
                       key={cat}
@@ -296,62 +336,60 @@ const MarketplaceGrid = () => {
 
               <div className="filter-group">
                 <h3>Budget Range</h3>
-                {[
-                  ['Any Price', 'Any Price'],
-                  ['$0 - $500', '$0 - $500'],
-                  ['$500 - $2,000', '$500 - $2,000'],
-                  ['$2,000+', '$2,000+']
-                ].map(([value, label]) => (
-                  <button
-                    key={value}
-                    type="button"
-                    className={`availability-btn ${budget === value ? "active" : ""}`}
-                    onClick={() => {
-                      setBudget(value);
-                      setCurrentPage(1);
-                    }}
-                  >
-                    {label}
-                    <span></span>
-                  </button>
-                ))}
+                <div className="filter-tags">
+                  {["Any Price", "$0 - $500", "$500 - $2,000", "$2,000+"].map((opt) => (
+                    <button
+                      key={opt}
+                      type="button"
+                      className={budget === opt ? "active" : ""}
+                      onClick={() => {
+                        setBudget(opt);
+                        setCurrentPage(1);
+                      }}
+                    >
+                      {opt}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               <div className="filter-group">
                 <h3>Delivery Time</h3>
-                {[
-                  ['Anytime', 'Anytime'],
-                  ['Within 24 hours', 'Within 24 hours'],
-                  ['3 Days', '3 Days'],
-                  ['7 Days', '7 Days']
-                ].map(([value, label]) => (
-                  <button
-                    key={value}
-                    type="button"
-                    className={`availability-btn ${deliveryTime === value ? "active" : ""}`}
-                    onClick={() => setDeliveryTime(value)}
-                  >
-                    {label}
-                    <span></span>
-                  </button>
-                ))}
+                <div className="filter-tags">
+                  {["Anytime", "Within 24 hours", "3 Days", "7 Days"].map((opt) => (
+                    <button
+                      key={opt}
+                      type="button"
+                      className={deliveryTime === opt ? "active" : ""}
+                      onClick={() => {
+                        setDeliveryTime(opt);
+                        setCurrentPage(1);
+                      }}
+                    >
+                      {opt}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               {isExpert && (
                 <div className="filter-group">
                   <h3>Status</h3>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#fff', cursor: 'pointer', userSelect: 'none', padding: '5px 0' }}>
-                    <input
-                      type="checkbox"
-                      checked={showClosed}
-                      onChange={(e) => {
-                        setShowClosed(e.target.checked);
-                        setCurrentPage(1);
-                      }}
-                      style={{ width: '16px', height: '16px', accentColor: '#3b82f6', cursor: 'pointer' }}
-                    />
-                    <span style={{ fontSize: '0.9rem' }}>Show Closed Tasks</span>
-                  </label>
+                  <div className="filter-tags">
+                    {["Open Only", "All"].map((opt) => (
+                      <button
+                        key={opt}
+                        type="button"
+                        className={(!showClosed && opt === "Open Only") || (showClosed && opt === "All") ? "active" : ""}
+                        onClick={() => {
+                          setShowClosed(opt === "All");
+                          setCurrentPage(1);
+                        }}
+                      >
+                        {opt}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               )}
             </aside>
@@ -364,18 +402,25 @@ const MarketplaceGrid = () => {
 
                 <div className="sort-box">
                   <span>Sort by:</span>
-                  <select>
+                  <select
+                    value={sortBy}
+                    onChange={(e) => {
+                      setSortBy(e.target.value);
+                      setCurrentPage(1);
+                    }}
+                  >
                     <option value="relevance">Relevance</option>
                     <option value="rating">Rating</option>
+                    <option value="price-low">Price: Low to High</option>
+                    <option value="price-high">Price: High to Low</option>
                   </select>
-                  <ChevronDown size={18} />
                 </div>
               </div>
 
               <div className="expert-grid">
                 {currentItems.length > 0 ? (
                   currentItems.map((svc, index) => (
-                    <ServiceCard key={index} {...svc} />
+                    <ServiceCard key={svc.id} {...svc} isFavorited={favoriteIds.has(svc.id)} onToggleFavorite={toggleFavorite} />
                   ))
                 ) : (
                   <div className="no-expert-result">
