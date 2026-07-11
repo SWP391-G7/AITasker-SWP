@@ -1,6 +1,6 @@
 import { Send } from 'lucide-react'
 
-const InvitationsPanel = ({ invitations }) => (
+const InvitationsPanel = ({ invitations, onAccept, onDecline }) => (
   <div className="admin-panel-card expert-invitations-panel">
     <div className="panel-header">
       <h2 className="panel-title">New Invitations</h2>
@@ -21,8 +21,16 @@ const InvitationsPanel = ({ invitations }) => (
               </div>
             </div>
             <div className="item-actions">
-              <button className="btn-approve">Accept</button>
-              <button className="btn-reject">Decline</button>
+              {item.status === 'pending' || !item.status ? (
+                <>
+                  <button className="btn-approve" onClick={() => onAccept && onAccept(item.id)}>Accept</button>
+                  <button className="btn-reject" onClick={() => onDecline && onDecline(item.id)}>Decline</button>
+                </>
+              ) : (
+                <span className="dispute-tag tag-review" style={{ textTransform: 'capitalize', fontSize: '0.75rem', padding: '3px 8px', borderRadius: '4px' }}>
+                  {item.status}
+                </span>
+              )}
             </div>
           </div>
         ))
@@ -38,3 +46,4 @@ const InvitationsPanel = ({ invitations }) => (
 )
 
 export default InvitationsPanel
+

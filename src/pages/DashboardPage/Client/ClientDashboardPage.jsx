@@ -12,6 +12,8 @@ import Footer from "../../../Components/Footer/Footer";
 
 import { logout } from "../../../Services/authService";
 import { getMyJobs } from "../../../Services/jobService";
+import { getMyProjects } from "../../../Services/projectService";
+import { getMyTransactionsAPI } from "../../../Services/transactionService";
 
 import "../../Style/AdminDashboardPage.css";
 import "../../Style/ClientDashboardPage.css";
@@ -32,16 +34,10 @@ function ClientDashboardPage() {
       minimumFractionDigits: 0,
     }).format(Number(value) || 0);
 
-  const getBudgetValue = (job) =>
-    Number(job.budget_max ?? job.budgetMax ?? job.budget_min ?? job.budgetMin ?? 0) || 0;
-
-  const mapJobToProject = (job) => ({
-    id: job.id || job._id || job.job_id,
-    name: job.title || job.jobTitle || "Untitled Task",
-    description: job.description || "No description provided.",
-    expert: job.expert_name || job.expertName || "Waiting for expert",
-    status: job.status || "open",
-    budget: formatCurrency(getBudgetValue(job)),
+  const [stats, setStats] = useState({
+    totalSpent: "$0.00",
+    activeProjects: 0,
+    pendingProposals: 0,
   });
 
   useEffect(() => {
@@ -49,20 +45,56 @@ function ClientDashboardPage() {
       try {
         setError("");
 
-        // API data: get this client's jobs from GET /api/jobs/my.
-        const result = await getMyJobs();
-        const jobs = result.jobPosts || result.jobs || result.data || [];
-        const mappedProjects = Array.isArray(jobs) ? jobs.map(mapJobToProject) : [];
+        // API data: load jobs, projects, and transaction stats in parallel
+        const [jobsResult, projectsResult, transactionsResult] = await Promise.all([
+          getMyJobs(),
+          getMyProjects(),
+          getMyTransactionsAPI().catch(() => ({ success: false, stats: null }))
+        ]);
 
+        // 1. Map projects (contracts)
+        const apiProjects = Array.isArray(projectsResult) ? projectsResult : [];
+        const mappedProjects = apiProjects.map((proj) => ({
+          id: proj.id,
+          name: proj.title || "Untitled Project",
+          description: proj.description || "No description provided.",
+          expert: proj.expert_name || "Expert",
+          status: proj.status || "active",
+          budget: formatCurrency(proj.total_amount),
+        }));
         setProjects(mappedProjects);
-        setActivities(
-          mappedProjects.slice(0, 3).map((project) => ({
-            id: `activity-${project.id}`,
-            title: `${project.name} updated`,
-            description: `Current status: ${project.status}`,
-            time: "From API",
-          }))
-        );
+
+        // 2. Map financial stats and job counts
+        const totalSpentVal = transactionsResult?.success && transactionsResult?.stats?.totalLifetime
+          ? transactionsResult.stats.totalLifetime
+          : 0;
+
+        const apiJobs = Array.isArray(jobsResult?.jobPosts || jobsResult?.jobs || jobsResult)
+          ? (jobsResult.jobPosts || jobsResult.jobs || jobsResult)
+          : [];
+
+        setStats({
+          totalSpent: formatCurrency(totalSpentVal),
+          activeProjects: apiProjects.filter((p) => p.status !== 'completed' && p.status !== 'terminated').length,
+          pendingProposals: apiJobs.filter((j) => j.status === 'open' || j.status === 'pending').length,
+        });
+
+        // 3. Map activities
+        const projectActivities = mappedProjects.slice(0, 2).map((p) => ({
+          id: `act-proj-${p.id}`,
+          title: `Project "${p.name}" status updated`,
+          description: `Current status is ${p.status}.`,
+          time: "Recent",
+        }));
+
+        const jobActivities = apiJobs.slice(0, 2).map((j) => ({
+          id: `act-job-${j.id}`,
+          title: `Job post "${j.title || "Untitled"}" active`,
+          description: `Status: ${j.status || "open"}.`,
+          time: j.created_at ? new Date(j.created_at).toLocaleDateString() : "Just now",
+        }));
+
+        setActivities([...projectActivities, ...jobActivities]);
       } catch (err) {
         setError(err.message || "Failed to load dashboard data.");
         setProjects([]);
@@ -72,19 +104,6 @@ function ClientDashboardPage() {
 
     fetchDashboardData();
   }, []);
-
-  const stats = useMemo(() => {
-    const totalSpent = projects.reduce((sum, project) => {
-      const amount = Number(String(project.budget).replace(/[^0-9.]/g, ""));
-      return sum + (Number.isFinite(amount) ? amount : 0);
-    }, 0);
-
-    return {
-      totalSpent: formatCurrency(totalSpent),
-      activeProjects: projects.filter((project) => project.status !== "completed").length,
-      pendingProposals: projects.filter((project) => project.status === "open").length,
-    };
-  }, [projects]);
 
   const filteredProjects = projects.filter(
     (item) =>

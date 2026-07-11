@@ -10,7 +10,9 @@ import FinancialPerformancePanel from '../../../Components/Dashboard/Expert/Fina
 import InvitationsPanel from '../../../Components/Dashboard/Expert/InvitationsPanel'
 import TechnicalStackCard from '../../../Components/Dashboard/Expert/TechnicalStackCard'
 import { getUserProfile } from '../../../Services/profileService'
-import { getMarketplaceJobs, getMyServices } from '../../../Services/serviceService'
+import { getMyProjects } from '../../../Services/projectService'
+import { getMyInvitations, updateInvitationStatus } from '../../../Services/invitationService'
+import { getMyTransactionsAPI } from '../../../Services/transactionService'
 import '../../Style/AdminDashboardPage.css'
 import '../../Style/ExpertDashboardPage.css'
 
@@ -62,61 +64,94 @@ const ExpertDashboardPage = ({ onLogout }) => {
       ? String(value).split(',').map((item) => item.trim()).filter(Boolean)
       : []
 
-  useEffect(() => {
-    const fetchExpertDashboardData = async () => {
-      try {
-        setDashboardError('')
+  const fetchExpertDashboardData = async () => {
+    try {
+      setDashboardError('')
 
-        // API data: load profile, own services, and marketplace jobs for expert dashboard.
-        const [profileResult, services, jobs] = await Promise.all([
-          user?.id ? getUserProfile(user.id) : Promise.resolve(null),
-          getMyServices(),
-          getMarketplaceJobs(),
-        ])
+      // API data: load profile, projects, invitations, and transaction stats in parallel
+      const [profileResult, projectsResult, invitationsResult, transactionsResult] = await Promise.all([
+        user?.id ? getUserProfile(user.id) : Promise.resolve(null),
+        getMyProjects(),
+        getMyInvitations(),
+        getMyTransactionsAPI().catch(() => ({ success: false, stats: null }))
+      ])
 
-        const apiServices = Array.isArray(services) ? services : []
-        const serviceTotal = apiServices.reduce((sum, service) => sum + (Number(service.price) || 0), 0)
+      setSkills(splitCsv(profileResult?.expertProfile?.skills))
+      setRating(profileResult?.expertProfile?.avgRating || 5)
 
-        setSkills(splitCsv(profileResult?.expertProfile?.skills))
-        setRating(profileResult?.expertProfile?.avgRating || 5)
+      // 1. Map financial stats from transaction API
+      if (transactionsResult && transactionsResult.success && transactionsResult.stats) {
+        const stats = transactionsResult.stats;
         setFinancialStats({
-          totalLifetime: formatCurrency(serviceTotal),
-          availableNow: formatCurrency(serviceTotal * 0.6),
-          pendingClearance: formatCurrency(serviceTotal * 0.2),
-          inEscrow: formatCurrency(serviceTotal * 0.2),
-        })
-
-        setContracts(
-          apiServices.map((service) => ({
-            id: service.id,
-            name: service.title || 'Untitled Service',
-            client: 'Marketplace Listing',
-            price: formatCurrency(service.price),
-            pricingType: service.pricing_type || service.pricingType || 'fixed',
-            progress: `${service.delivery_days || service.deliveryDays || 0} days`,
-            deadline: service.pricing_type || service.pricingType || 'fixed',
-            status: 'ACTIVE',
-            tagClass: 'tag-review',
-          }))
-        )
-
-        setInvitations(
-          (Array.isArray(jobs) ? jobs : []).slice(0, 5).map((job) => ({
-            id: job.id,
-            role: job.title || 'Untitled Client Task',
-            budget: formatCurrency(job.budget_max ?? job.budgetMax ?? job.budget_min ?? job.budgetMin ?? 0),
-            duration: job.duration_days ? `${job.duration_days} days` : 'Flexible',
-          }))
-        )
-      } catch (err) {
-        setDashboardError(err.message || 'Failed to load expert dashboard data.')
-        setContracts([])
-        setInvitations([])
+          totalLifetime: formatCurrency(stats.totalLifetime),
+          availableNow: formatCurrency(stats.availableNow),
+          pendingClearance: formatCurrency(stats.pendingClearance),
+          inEscrow: formatCurrency(stats.inEscrow)
+        });
+      } else {
+        setFinancialStats({
+          totalLifetime: '$0.00',
+          availableNow: '$0.00',
+          pendingClearance: '$0.00',
+          inEscrow: '$0.00'
+        });
       }
-    }
 
+      // 2. Map projects to contracts panel
+      const apiProjects = Array.isArray(projectsResult) ? projectsResult : [];
+      setContracts(
+        apiProjects.map((proj) => ({
+          id: proj.id,
+          name: proj.title || 'Untitled Project',
+          client: proj.client_name || 'Client',
+          price: formatCurrency(proj.total_amount),
+          pricingType: proj.type || 'fixed',
+          progress: proj.status || 'ACTIVE',
+          status: String(proj.status).toUpperCase(),
+          tagClass: proj.status === 'completed' ? 'tag-completed' : 'tag-review',
+        }))
+      )
+
+      // 3. Map invitations
+      const apiInvitations = Array.isArray(invitationsResult) ? invitationsResult : [];
+      setInvitations(
+        apiInvitations.slice(0, 5).map((inv) => ({
+          id: inv.id,
+          role: inv.service_title || 'Untitled Service Request',
+          budget: formatCurrency(inv.bid_amount || inv.service_price),
+          duration: inv.delivery_days ? `${inv.delivery_days} days` : (inv.service_delivery_days ? `${inv.service_delivery_days} days` : 'Flexible'),
+          client: inv.client_name || 'Client',
+          status: inv.status || 'pending',
+        }))
+      )
+    } catch (err) {
+      setDashboardError(err.message || 'Failed to load expert dashboard data.')
+      setContracts([])
+      setInvitations([])
+    }
+  }
+
+  useEffect(() => {
     fetchExpertDashboardData()
   }, [user?.id])
+
+  const handleAcceptInvitation = async (invitationId) => {
+    try {
+      await updateInvitationStatus({ invitationId, status: 'accepted', start_project: true })
+      await fetchExpertDashboardData()
+    } catch (err) {
+      setDashboardError(err.message || 'Failed to accept service request.')
+    }
+  }
+
+  const handleDeclineInvitation = async (invitationId) => {
+    try {
+      await updateInvitationStatus({ invitationId, status: 'rejected' })
+      await fetchExpertDashboardData()
+    } catch (err) {
+      setDashboardError(err.message || 'Failed to decline service request.')
+    }
+  }
 
   const filteredContracts = contracts.filter((item) =>
     item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -157,7 +192,7 @@ const ExpertDashboardPage = ({ onLogout }) => {
 
         <section className="expert-work-grid">
           <ContractsPanel contracts={filteredContracts} />
-          <InvitationsPanel invitations={filteredInvitations} />
+          <InvitationsPanel invitations={filteredInvitations} onAccept={handleAcceptInvitation} onDecline={handleDeclineInvitation} />
         </section>
 
         <Footer variant="dashboard" />
