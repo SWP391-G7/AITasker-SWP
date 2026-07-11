@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import { ChevronDown } from "lucide-react";
+
 import { search as searchApi } from "../../Services/searchService";
+import { getFavorites, addFavorite, removeFavorite } from "../../Services/favoriteService";
 import ClientExpertHero from "./ClientExpertHero";
 import ClientExpertSearchBox from "./ClientExpertSearchBox";
 import ClientExpertFilters from "./ClientExpertFilters";
@@ -36,15 +37,13 @@ const mapExpertFromApi = (expert) => {
     name: expert.full_name || "Unnamed Expert",
     title: expert.professional_title || "AI Expert",
     avatar: expert.avatar || defaultExpertAvatar,
-    rating: Number(expert.avg_rating) || 4.8,
-    reviews: Number(expert.review_count) || 0,
+    rating: Number(expert.avg_rating) || 0,
+    reviews: 0,
     rate: hourlyRate,
-    tags: skills.length
-      ? skills.map((skill) => skill.toUpperCase())
-      : ["AI EXPERT"],
+    tags: skills.map((skill) => skill.toUpperCase()),
     description: expert.bio || "No bio provided.",
-    projects: Number(expert.completed_projects) || 0,
-    success: Number(expert.job_success) || 100,
+    projects: 0,
+    success: 0,
     available: true,
     stack: skills,
     mode: "expert",
@@ -52,26 +51,23 @@ const mapExpertFromApi = (expert) => {
 };
 
 const mapClientFromApi = (client) => {
-  const industry = client.industry || client.company_industry || "Client";
-  const company = client.company_name || "Client Company";
+  const industry = client.industry || "";
+  const company = client.company_name || "";
 
   return {
     id: client.id,
     name: client.full_name || company || "Unnamed Client",
     title: company,
     avatar: client.avatar || defaultClientAvatar,
-    rating: Number(client.avg_rating) || 4.8,
-    reviews: Number(client.review_count) || 0,
+    rating: Number(client.avg_rating) || 0,
+    reviews: 0,
     rate: 0,
-    tags: [String(industry).toUpperCase()],
-    description:
-      client.bio ||
-      client.company_description ||
-      "This client is looking for AI experts to help with project delivery.",
-    projects: Number(client.posted_jobs_count || client.jobs_count) || 0,
-    success: 100,
-    available: true,
-    stack: [industry],
+    tags: industry ? [String(industry).toUpperCase()] : [],
+    description: client.bio || "No bio provided.",
+    projects: 0,
+    success: 0,
+    available: false,
+    stack: industry ? [industry] : [],
     company,
     mode: "client",
   };
@@ -92,14 +88,39 @@ const ClientExpertSearch = () => {
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [allFilterOptions, setAllFilterOptions] = useState([]);
+  const [skillSearch, setSkillSearch] = useState("");
   const [selectedFilters, setSelectedFilters] = useState([]);
   const [rating, setRating] = useState("");
-  const [availability, setAvailability] = useState("available");
+  const [availability, setAvailability] = useState("all");
+  const [rateRange, setRateRange] = useState("");
   const [sortBy, setSortBy] = useState("relevance");
   const [page, setPage] = useState(1);
+  const [favoriteIds, setFavoriteIds] = useState(() => new Set(getFavorites(isExpertMode ? "client" : "expert")));
+
+  const targetType = isExpertMode ? "client" : "expert";
+
+  useEffect(() => {
+    setFavoriteIds(new Set(getFavorites(targetType)));
+  }, [targetType]);
+
+  const toggleFavorite = (id) => {
+    const isFav = favoriteIds.has(id);
+    if (isFav) {
+      removeFavorite(targetType, id);
+      setFavoriteIds((prev) => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
+    } else {
+      addFavorite(targetType, id);
+      setFavoriteIds((prev) => new Set(prev).add(id));
+    }
+  };
 
   const toggleFilter = (filter) => {
-    if (filter === "SHOW ALL") {
+    if (filter === "All") {
       setSelectedFilters([]);
       return;
     }
@@ -115,19 +136,27 @@ const ClientExpertSearch = () => {
       setLoading(true);
       setError("");
 
+      const rateParams = {};
+      if (!isExpertMode && rateRange) {
+        const ranges = {
+          "under-50": { min: 0, max: 50 },
+          "50-100": { min: 50, max: 100 },
+          "100-200": { min: 100, max: 200 },
+          "over-200": { min: 200, max: undefined },
+        };
+        rateParams.hourlyRateMin = ranges[rateRange].min;
+        if (ranges[rateRange].max) rateParams.hourlyRateMax = ranges[rateRange].max;
+      }
+
+      const activeSkillFilter = !isExpertMode && selectedFilters.length === 1 && selectedFilters[0] !== "Other" ? selectedFilters[0] : "";
+      const activeIndustryFilter = isExpertMode && selectedFilters.length === 1 && selectedFilters[0] !== "Other" ? selectedFilters[0] : "";
       const result = await searchApi({
         target: isExpertMode ? "client" : "expert",
         query: searchQuery.trim(),
-        skill:
-          !isExpertMode && selectedFilters.length > 0
-            ? selectedFilters.join(",")
-            : "",
-        industry:
-          isExpertMode && selectedFilters.length > 0
-            ? selectedFilters.join(",")
-            : "",
-        ratingMin: !isExpertMode && rating ? rating : "",
-        hourlyRateMax: !isExpertMode && availability === "part-time" ? 180 : "",
+        skill: activeSkillFilter || skillSearch || "",
+        industry: activeIndustryFilter || skillSearch || "",
+        ratingMin: rating || "",
+        ...rateParams,
       });
 
       const mapped = (result.results || []).map(
@@ -150,7 +179,27 @@ const ClientExpertSearch = () => {
   useEffect(() => {
     fetchPeople();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isExpertMode, selectedFilters, rating, availability, searchQuery]);
+  }, [isExpertMode, selectedFilters, skillSearch, rating, rateRange, searchQuery]);
+
+  useEffect(() => {
+    const fetchFilterOptions = async () => {
+      try {
+        const result = await searchApi({
+          target: isExpertMode ? "client" : "expert",
+          query: searchQuery.trim(),
+        });
+        const mapped = (result.results || []).map(
+          isExpertMode ? mapClientFromApi : mapExpertFromApi
+        );
+        const items = mapped.flatMap((p) => p.stack || []);
+        const unique = [...new Set(items.map((s) => String(s).toUpperCase()))].sort();
+        setAllFilterOptions(unique);
+      } catch {
+        setAllFilterOptions([]);
+      }
+    };
+    fetchFilterOptions();
+  }, [isExpertMode, searchQuery]);
 
   const filteredPeople = useMemo(() => {
     let result = people.filter((person) => {
@@ -163,24 +212,43 @@ const ClientExpertSearch = () => {
         person.description.toLowerCase().includes(keyword) ||
         person.tags.join(" ").toLowerCase().includes(keyword);
 
+      const hardcodedFilters = isExpertMode
+        ? ["Technology", "Finance", "Healthcare", "Education", "Retail"]
+        : ["Python", "PyTorch", "OpenAI API", "TensorFlow", "NLP", "Computer Vision"];
+
       const matchFilter =
         selectedFilters.length === 0 ||
-        selectedFilters.some((filter) =>
-          person.stack.some(
+        selectedFilters.some((filter) => {
+          if (filter === "Other") {
+            return !person.stack.some((item) =>
+              hardcodedFilters.some((hf) => item.toLowerCase() === hf.toLowerCase())
+            );
+          }
+          return person.stack.some(
             (item) => item.toLowerCase() === filter.toLowerCase()
-          )
-        );
+          );
+        });
 
-      const matchRating = isExpertMode || !rating || person.rating >= Number(rating);
+      const matchRating = !rating || person.rating >= Number(rating);
 
       const matchAvailability =
-        isExpertMode ||
         availability === "all" ||
-        (availability === "available" && person.available) ||
-        (availability === "part-time" && person.rate <= 180) ||
-        (availability === "full-time" && person.projects >= 50);
+        (availability === "available" && (isExpertMode ? !!person.title : person.rate > 0)) ||
+        (availability === "part-time" && (isExpertMode ? !!person.title : person.rate > 0 && person.rate <= 50)) ||
+        (availability === "full-time" && (isExpertMode ? !!person.title : person.rate > 50));
 
-      return matchSearch && matchFilter && matchRating && matchAvailability;
+      const matchRate = isExpertMode || !rateRange || (() => {
+        const ranges = {
+          "under-50": { min: 0, max: 50 },
+          "50-100": { min: 50, max: 100 },
+          "100-200": { min: 100, max: 200 },
+          "over-200": { min: 200, max: Infinity },
+        };
+        const r = ranges[rateRange];
+        return person.rate >= r.min && person.rate <= r.max;
+      })();
+
+      return matchSearch && matchFilter && matchRating && matchAvailability && matchRate;
     });
 
     if (sortBy === "rate-low") {
@@ -191,8 +259,18 @@ const ClientExpertSearch = () => {
       result = [...result].sort((a, b) => b.rating - a.rating);
     }
 
+    result.sort((a, b) => {
+      const aFav = favoriteIds.has(a.id) ? 1 : 0;
+      const bFav = favoriteIds.has(b.id) ? 1 : 0;
+      return bFav - aFav;
+    });
+
     return result;
-  }, [availability, isExpertMode, people, rating, searchQuery, selectedFilters, sortBy]);
+  }, [availability, isExpertMode, people, rateRange, rating, searchQuery, selectedFilters, sortBy]);
+
+  const filterOptions = useMemo(() => {
+    return ["All", ...allFilterOptions];
+  }, [allFilterOptions]);
 
   const resultLabel = isExpertMode ? "clients" : "experts";
   const itemsPerPage = 6;
@@ -203,7 +281,7 @@ const ClientExpertSearch = () => {
 
   return (
     <div className="expert-search-page">
-      <main className="expert-search-page">
+      <main key={viewMode} className="expert-search-page">
         <section className="expert-main">
           <ClientExpertHero isExpertMode={isExpertMode} />
 
@@ -236,12 +314,17 @@ const ClientExpertSearch = () => {
           <section className="expert-content">
             <ClientExpertFilters
               isExpertMode={isExpertMode}
+              filterOptions={filterOptions}
               selectedFilters={selectedFilters}
               onToggleFilter={toggleFilter}
               rating={rating}
               onRatingChange={setRating}
               availability={availability}
               onAvailabilityChange={setAvailability}
+              rateRange={rateRange}
+              onRateRangeChange={setRateRange}
+              skillSearch={skillSearch}
+              onSkillSearchChange={setSkillSearch}
             />
 
             <section className="expert-results">
@@ -269,7 +352,6 @@ const ClientExpertSearch = () => {
                       </>
                     )}
                   </select>
-                  <ChevronDown size={18} />
                 </div>
               </div>
 
@@ -288,6 +370,8 @@ const ClientExpertSearch = () => {
                       key={person.id}
                       person={person}
                       isExpertMode={isExpertMode}
+                      isFavorited={favoriteIds.has(person.id)}
+                      onToggleFavorite={toggleFavorite}
                     />
                   ))}
                 </div>

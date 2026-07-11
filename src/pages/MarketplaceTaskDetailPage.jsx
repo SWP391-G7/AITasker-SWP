@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import {
   AlertCircle,
   ArrowLeft,
@@ -40,6 +40,10 @@ const formatBudget = (task) => {
 const MarketplaceTaskDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
+  const fromProfile = location.state?.fromProfile;
+  const fromLanding = location.state?.fromLanding;
+  const backLabel = fromProfile ? "Back to Profile" : fromLanding ? "Back to Home" : "Back to Marketplace";
   const [task, setTask] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -119,8 +123,8 @@ const MarketplaceTaskDetailPage = () => {
   return (
     <div className="service-detail-page-wrapper">
       <div className="service-detail-container">
-        <button className="back-btn" type="button" onClick={() => navigate('/marketplace')}>
-          <ArrowLeft size={16} /> Back to Marketplace
+        <button className="back-btn" type="button" onClick={() => navigate(-1)}>
+          <ArrowLeft size={16} /> {backLabel}
         </button>
 
         {loading ? (
@@ -133,7 +137,7 @@ const MarketplaceTaskDetailPage = () => {
             <AlertCircle size={48} className="text-danger mb-3" />
             <h3>Failed to Load Task</h3>
             <p className="text-muted">{error}</p>
-            <button className="back-btn mt-3 px-4 py-2" type="button" onClick={() => navigate('/marketplace')}>
+            <button className="back-btn mt-3 px-4 py-2" type="button" onClick={() => navigate(-1)}>
               Go Back
             </button>
           </div>

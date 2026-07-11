@@ -1,7 +1,8 @@
 .site-footer {
-  background: #020b1a;
-  color: #cbd5e1;
+  background: var(--bg-primary);
+  color: var(--text-muted);
   padding: 1.25rem 0;
+  border-top: 1px solid var(--border-color);
 }
 
 .site-footer-landing {
@@ -29,14 +30,17 @@
 }
 
 .footer-brand {
-  color: #e2e8f0;
-  font-size: 0.86rem;
-  font-weight: 600;
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-sky));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-size: 1rem;
+  font-weight: 700;
   line-height: 1;
 }
 
 .copyright-text {
-  color: #94a3b8;
+  color: var(--text-dark);
   font-size: 0.75rem;
   line-height: 1;
 }
@@ -49,7 +53,7 @@
 }
 
 .footer-link {
-  color: #cbd5e1;
+  color: var(--text-muted);
   font-size: 0.75rem;
   line-height: 1;
   text-decoration: none;
@@ -57,7 +61,7 @@
 }
 
 .footer-link:hover {
-  color: #ffffff;
+  color: var(--accent-sky);
 }
 
 @media (max-width: 768px) {

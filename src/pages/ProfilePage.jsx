@@ -24,6 +24,10 @@ function ProfilePage() {
   const navigate = useNavigate()
   const location = useLocation()
   const currentUser = getStoredUser()
+  const fromLanding = location.state?.fromLanding
+  const fromMarketplace = location.state?.fromMarketplace
+  const marketplaceTarget = location.state?.marketplaceTarget
+  const backLabel = fromLanding ? "Back to Home" : fromMarketplace ? (marketplaceTarget === "clients" ? "Back to Clients List" : "Back to Experts List") : "Back to Profile"
 
   const [profileData, setProfileData] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -106,30 +110,6 @@ function ProfilePage() {
       console.error("Failed to start conversation:", err);
       navigate(getMessagesPath());
     }
-  }
-
-  const handleViewAllProfileItems = () => {
-    if (isOwnProfile) {
-      navigate(activeTab === "expert" ? "/expert/projects" : "/client/projects");
-      return;
-    }
-
-    navigate(`/profile/${userId}/${activeTab === "expert" ? "services" : "projects"}`, {
-      state: { backgroundLocation: location },
-    });
-  }
-
-  const renderStars = (rating) => {
-    const stars = []
-    const r = rating || 0
-    for (let i = 1; i <= 5; i++) {
-      stars.push(
-        <span key={i} className={i <= r ? "star filled" : "star"}>
-          ★
-        </span>
-      )
-    }
-    return <div className="stars-wrapper">{stars}</div>
   }
 
   const getExperienceLabel = (exp) => {
@@ -231,7 +211,12 @@ function ProfilePage() {
   );
 
   const renderServiceCard = (item) => (
-    <article className="profile-side-item" key={item.id}>
+    <article
+      className="profile-side-item"
+      key={item.id}
+      onClick={() => navigate(`/marketplace/service/${item.id}`, { state: { fromProfile: true } })}
+      style={{ cursor: 'pointer' }}
+    >
       <div className={`profile-side-visual ${item.imageClass}`} />
       <div className="profile-side-item-body">
         <h4>{item.title}</h4>
@@ -247,7 +232,12 @@ function ProfilePage() {
   );
 
   const renderProjectCard = (item) => (
-    <article className="profile-side-item" key={item.id}>
+    <article
+      className="profile-side-item"
+      key={item.id}
+      onClick={() => navigate(`/marketplace/task/${item.id}`, { state: { fromProfile: true } })}
+      style={{ cursor: 'pointer' }}
+    >
       <div className={`profile-side-visual ${item.imageClass}`} />
       <div className="profile-side-item-body">
         <h4>{item.title}</h4>
@@ -256,7 +246,7 @@ function ProfilePage() {
             <Briefcase size={12} />
             {item.status}
           </span>
-          <strong>{item.proposalsLabel}</strong>
+          <strong>{item.budget}</strong>
         </div>
       </div>  
     </article>
@@ -266,9 +256,16 @@ function ProfilePage() {
     return (
       <div className="profile-shell">
         <HeaderCom />
-        <main className="profile-container loading-container">
-          <div className="spinner"></div>
-          <p>Retrieving secure profile...</p>
+        <main className="profile-container">
+          <header className="profile-nav-header">
+            <button className="back-link-btn" onClick={() => navigate(-1)}>
+              {backLabel}
+            </button>
+          </header>
+          <div className="loading-container">
+            <div className="spinner"></div>
+            <p>Retrieving secure profile...</p>
+          </div>
         </main>
       </div>
     );
@@ -278,12 +275,17 @@ function ProfilePage() {
     return (
       <div className="profile-shell">
         <HeaderCom />
-        <main className="profile-container error-container">
+        <main className="profile-container">
+          <header className="profile-nav-header">
+            <button className="back-link-btn" onClick={() => navigate(-1)}>
+              {backLabel}
+            </button>
+          </header>
           <div className="error-card">
             <h2>Oops! Profile Not Found</h2>
             <p>{error}</p>
-            <button className="primary-btn" onClick={handleBack}>
-              Return to Dashboard
+            <button className="primary-btn" onClick={() => navigate(-1)}>
+              {backLabel}
             </button>
           </div>
         </main>
@@ -293,14 +295,28 @@ function ProfilePage() {
 
   const { user, clientProfile, expertProfile, hasClientProfile, hasExpertProfile } = profileData;
   const isExpertView = activeTab === "expert";
-  const canClientContactExpert = !isOwnProfile && currentRole.includes("client") && isExpertView;
   const activeProfile = isExpertView ? expertProfile : clientProfile;
   // API data: profile page calls API once, then pushes response lists through Profile helpers.
-  const profileServices = getExpertServicesFromApi(profileData.services || []);
-  const profileProjects = getClientProjectsFromApi(profileData.projects || []);
-  const visibleProfileServices = profileServices.slice(0, 2);
-  const visibleProfileProjects = profileProjects.slice(0, 2);
-  const hasMoreProfileItems = isExpertView ? profileServices.length > 2 : profileProjects.length > 2;
+  const sortedServices = [...(profileData.services || [])].sort((a, b) => {
+    const priceA = Number(a.price) || 0;
+    const priceB = Number(b.price) || 0;
+    return priceB - priceA;
+  });
+  const profileServices = getExpertServicesFromApi(sortedServices);
+  const sortedProjects = [...(profileData.projects || [])].sort((a, b) => {
+    const avgBudget = (p) => {
+      const min = Number(p.budgetMin);
+      const max = Number(p.budgetMax);
+      if (Number.isFinite(min) && Number.isFinite(max)) return (min + max) / 2;
+      if (Number.isFinite(min)) return min;
+      if (Number.isFinite(max)) return max;
+      return 0;
+    };
+    return avgBudget(b) - avgBudget(a);
+  });
+  const profileProjects = getClientProjectsFromApi(sortedProjects);
+  const visibleProfileServices = profileServices.slice(0, 5);
+  const visibleProfileProjects = profileProjects.slice(0, 5);
   const skills = isExpertView ? getSkills(expertProfile?.skills) : [];
   const expertRating = Number(expertProfile?.avgRating);
   const displayRating = Number.isFinite(expertRating) ? expertRating.toFixed(1) : "Not rated";
@@ -320,7 +336,7 @@ function ProfilePage() {
     ? expertProfile?.professionalTitle || "Professional title not specified"
     : clientProfile?.companyName || "Company not specified";
   const locationText = isExpertView
-    ? expertProfile?.portfolioUrl || "Portfolio not specified"
+    ? getExperienceLabel(expertProfile?.experience)
     : clientProfile?.industry || "Industry not specified";
   const aboutText = isExpertView
     ? expertProfile?.bio
@@ -331,12 +347,11 @@ function ProfilePage() {
       <HeaderCom />
 
       <main className="profile-container">
-        {/* <header className="profile-nav-header">
-          <button className="back-link-btn" onClick={handleBack}>
-            Back to Dashboard
+        <header className="profile-nav-header">
+          <button className="back-link-btn" onClick={() => navigate(-1)}>
+            {backLabel}
           </button>
-        </header> */}
-        <br /> <br />
+        </header>
         {(hasClientProfile || hasExpertProfile) ? (
           <>
             {hasClientProfile && hasExpertProfile && (
@@ -499,18 +514,7 @@ function ProfilePage() {
                       <Send size={15} />
                       Go to Dashboard
                     </button>
-                  ) : (
-                    isExpertView && (
-                      <button
-                        className="secondary-action-btn"
-                        type="button"
-                        onClick={undefined}
-                      >
-                        <Send size={15} />
-                        Invite to Job
-                      </button>
-                    )
-                  )}
+                  ) : null}
 
                   <div className="rate-list">
                     <div>
@@ -540,7 +544,6 @@ function ProfilePage() {
                     {/* API data: render only the services/projects owned by this profile user. */}
                     {isExpertView && visibleProfileServices.length > 0 && visibleProfileServices.map(renderServiceCard)}
                     {!isExpertView && visibleProfileProjects.length > 0 && visibleProfileProjects.map(renderProjectCard)}
-                    {hasMoreProfileItems && <p className="profile-more-indicator">...</p>}
                     {isExpertView && profileServices.length === 0 && (
                       <p>This expert has not published any services yet.</p>
                     )}
@@ -548,9 +551,6 @@ function ProfilePage() {
                       <p>This client has not posted any projects yet.</p>
                     )}
                   </div>
-                  <button className="view-all-btn" type="button" onClick={handleViewAllProfileItems}>
-                    {isExpertView ? "View All Services" : "View All Projects"}
-                  </button>
                 </article>
               </aside>
             </div>

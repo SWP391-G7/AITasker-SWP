@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, Clock, Loader2, AlertCircle, Star } from 'lucide-react';
 import Footer from '../Components/Footer/Footer';
 import { getServiceById } from '../Services/serviceService';
@@ -8,6 +8,10 @@ import './Style/ServiceDetail.css';
 const ServiceDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
+  const fromProfile = location.state?.fromProfile;
+  const fromLanding = location.state?.fromLanding;
+  const backLabel = fromProfile ? "Back to Profile" : fromLanding ? "Back to Home" : "Back to Marketplace";
   const [service, setService] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -31,8 +35,8 @@ const ServiceDetailPage = () => {
   return (
     <div className="service-detail-page-wrapper">
       <div className="service-detail-container">
-        <button className="back-btn" onClick={() => navigate('/marketplace')}>
-          <ArrowLeft size={16} /> Back to Marketplace
+        <button className="back-btn" onClick={() => navigate(-1)}>
+          <ArrowLeft size={16} /> {backLabel}
         </button>
 
         {loading ? (
@@ -45,7 +49,7 @@ const ServiceDetailPage = () => {
             <AlertCircle size={48} className="text-danger mb-3" />
             <h3>Failed to Load Service</h3>
             <p className="text-muted">{error}</p>
-            <button className="back-btn mt-3 px-4 py-2" onClick={() => navigate('/marketplace')}>
+            <button className="back-btn mt-3 px-4 py-2" onClick={() => navigate(-1)}>
               Go Back
             </button>
           </div>

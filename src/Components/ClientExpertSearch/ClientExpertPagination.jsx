@@ -10,7 +10,7 @@ const ClientExpertPagination = ({ page, totalPages, onPageChange }) => {
         disabled={page === 1}
         onClick={() => {
           onPageChange(Math.max(1, page - 1));
-          window.scrollTo({ top: 300, behavior: 'smooth' });
+          window.scrollTo({ top: 0, behavior: 'smooth' });
         }}
       >
         <ChevronLeft size={22} />
@@ -23,7 +23,7 @@ const ClientExpertPagination = ({ page, totalPages, onPageChange }) => {
           className={page === item ? "active" : ""}
           onClick={() => {
             onPageChange(item);
-            window.scrollTo({ top: 300, behavior: 'smooth' });
+            window.scrollTo({ top: 0, behavior: 'smooth' });
           }}
         >
           {item}
@@ -35,7 +35,7 @@ const ClientExpertPagination = ({ page, totalPages, onPageChange }) => {
         disabled={page === totalPages}
         onClick={() => {
           onPageChange(Math.min(totalPages, page + 1));
-          window.scrollTo({ top: 300, behavior: 'smooth' });
+          window.scrollTo({ top: 0, behavior: 'smooth' });
         }}
       >
         <ChevronRight size={22} />

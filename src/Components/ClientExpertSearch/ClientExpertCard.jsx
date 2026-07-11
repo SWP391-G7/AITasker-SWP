@@ -1,7 +1,7 @@
 import { CheckCircle2, Clock3, Heart, Star } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-const ClientExpertCard = ({ person, isExpertMode }) => {
+const ClientExpertCard = ({ person, isExpertMode, isFavorited, onToggleFavorite }) => {
   const navigate = useNavigate();
 
   return (
@@ -15,7 +15,7 @@ const ClientExpertCard = ({ person, isExpertMode }) => {
           <div>
             <Star size={18} fill="currentColor" />
             <strong>{person.rating}</strong>
-            <span>({person.reviews})</span>
+            {person.reviews > 0 && <span>({person.reviews})</span>}
           </div>
           <strong>
             {isExpertMode ? "Client" : `$${person.rate}/hr`}
@@ -26,22 +26,26 @@ const ClientExpertCard = ({ person, isExpertMode }) => {
       <h2>{person.name}</h2>
       <h4>{person.title}</h4>
 
-      <div className="expert-tags">
-        {person.tags.map((tag) => (
-          <span key={tag}>{tag}</span>
-        ))}
-      </div>
+      {person.tags.length > 0 && (
+        <div className="expert-tags">
+          {person.tags.map((tag) => (
+            <span key={tag}>{tag}</span>
+          ))}
+        </div>
+      )}
 
       <p>{person.description}</p>
 
       <div className="expert-stats">
         <span>
           <CheckCircle2 size={18} />
-          {person.projects} {isExpertMode ? "Projects Posted" : "Projects"}
+          {person.projects > 0 || person.mode === 'client'
+            ? `${person.projects || 0} ${isExpertMode ? "Projects Posted" : "Projects"}`
+            : "No projects yet"}
         </span>
         <span>
           <Clock3 size={18} />
-          {isExpertMode ? "Verified Client" : `${person.success}% Job Success`}
+          {isExpertMode ? "Client Account" : person.success != null ? `${person.success}% Job Success` : "New on AITasker"}
         </span>
       </div>
 
@@ -49,12 +53,16 @@ const ClientExpertCard = ({ person, isExpertMode }) => {
         <button
           type="button"
           onClick={() =>
-            navigate(isExpertMode ? `/client/clients/${person.id}` : `/client/experts/${person.id}`)
+            navigate(isExpertMode ? `/client/clients/${person.id}` : `/client/experts/${person.id}`, { state: { fromMarketplace: true, marketplaceTarget: isExpertMode ? "clients" : "experts" } })
           }
         >
           {isExpertMode ? "View Client" : "View Profile"}
         </button>
-        <button className="favorite-btn" type="button">
+        <button
+          className={`favorite-btn ${isFavorited ? "active" : ""}`}
+          type="button"
+          onClick={() => onToggleFavorite(person.id)}
+        >
           <Heart size={24} />
         </button>
       </div>
