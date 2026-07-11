@@ -37,6 +37,8 @@ import ViewAllServicePage from "../pages/ViewAllServicePage"
 import MarketplaceProposalPage from "../pages/MarketplaceProposalPage"
 import ProjectDetailPage from "../pages/ProjectDetailPage"
 import DeactivatedPage from "../pages/DeactivatedPage"
+import ServiceRequestPage from "../pages/ServiceRequestPage"
+import ServiceRequestDetailPage from "../pages/ServiceRequestDetailPage"
 
 function useAuthStatus() {
   const [status, setStatus] = useState({ isLoggedIn: null, isVerified: null, role: null })
@@ -185,6 +187,15 @@ function AppRoutes() {
         }
       />
       <Route
+        path="/marketplace/service/:id/request"
+        element={
+          <ProtectedRoute allowedRoles={["client"]}>
+            <HeaderCom />
+            <ServiceRequestPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/marketplace/task/:id"
         element={
           <ProtectedRoute>
@@ -254,6 +265,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <ProjectDetailPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/service-requests/:id"
+        element={
+          <ProtectedRoute>
+            <ServiceRequestDetailPage />
           </ProtectedRoute>
         }
       />

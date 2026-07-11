@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, CheckCircle2, Clock, Loader2, AlertCircle, Star, XCircle } from 'lucide-react';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { ArrowLeft, CheckCircle2, Clock, Loader2, AlertCircle, Star, XCircle, Send } from 'lucide-react';
 import Footer from '../Components/Footer/Footer';
 import { getServiceById } from '../Services/serviceService';
 import { updateContentStatus } from '../Services/adminDashboardService';
@@ -121,6 +121,18 @@ const ServiceDetailPage = () => {
                     <span>{service.delivery_days || 'TBD'} Days Delivery</span>
                   </div>
                 </div>
+
+                {currentUser && currentUser.role === 'client' && currentUser.id !== service.expert_id && (
+                  <button 
+                    className="order-btn" 
+                    type="button"
+                    onClick={() => navigate(`/marketplace/service/${service.id}/request`)}
+                    style={{ marginTop: '20px', width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
+                  >
+                    <Send size={16} />
+                    Send Request
+                  </button>
+                )}
 
                 {canModerateService && (
                   <div className="admin-service-moderation">

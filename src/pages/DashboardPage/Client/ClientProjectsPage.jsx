@@ -14,6 +14,7 @@ import { useClientUser } from "../../../Components/Dashboard/Client/user";
 import { logout } from "../../../Services/authService";
 import { getMyJobs, deleteJobPost } from "../../../Services/jobService";
 import { getMyProjects } from "../../../Services/projectService";
+import { getMyInvitations } from "../../../Services/invitationService";
 import "../../Style/AdminDashboardPage.css";
 import "./ClientMarketplace.css";
 
@@ -44,6 +45,8 @@ function ClientProjectsPage() {
   const navigate = useNavigate();
   const [jobs, setJobs] = useState([]);
   const [projects, setProjects] = useState([]);
+  const [invitations, setInvitations] = useState([]);
+  const [activeTab, setActiveTab] = useState("tasks");
   const [searchQuery, setSearchQuery] = useState("");
   const [notifications, setNotifications] = useState(2);
   const [loading, setLoading] = useState(true);
@@ -55,13 +58,15 @@ function ClientProjectsPage() {
     try {
       setLoading(true);
       setError("");
-      const [jobsResult, projectsResult] = await Promise.all([
+      const [jobsResult, projectsResult, invitationsResult] = await Promise.all([
         getMyJobs(),
-        getMyProjects()
+        getMyProjects(),
+        getMyInvitations()
       ]);
       const list = jobsResult.jobPosts || jobsResult.jobs || jobsResult.data || jobsResult.projects || jobsResult.myJobs || [];
       setJobs(Array.isArray(list) ? list : []);
       setProjects(Array.isArray(projectsResult) ? projectsResult : []);
+      setInvitations(Array.isArray(invitationsResult) ? invitationsResult : []);
     } catch (err) {
       setError(err.message || "Failed to load dashboard data.");
     } finally {
@@ -81,6 +86,15 @@ function ClientProjectsPage() {
       (job.status || "open").toLowerCase().includes(query)
     );
   }, [jobs, searchQuery]);
+
+  const filteredInvitations = useMemo(() => {
+    const query = searchQuery.toLowerCase();
+    return invitations.filter((invitation) =>
+      (invitation.service_title || "").toLowerCase().includes(query) ||
+      (invitation.expert_name || "").toLowerCase().includes(query) ||
+      (invitation.status || "").toLowerCase().includes(query)
+    );
+  }, [invitations, searchQuery]);
 
   const filteredProjects = useMemo(() => {
     const query = searchQuery.toLowerCase();
@@ -147,11 +161,32 @@ function ClientProjectsPage() {
           </button>
         </div>
 
+        <div style={{ marginBottom: '24px' }}>
+          <div className="view-toggle-group">
+            <button
+              type="button"
+              className={`view-toggle-btn ${activeTab === 'tasks' ? 'active' : ''}`}
+              onClick={() => setActiveTab('tasks')}
+            >
+              Tasks & Projects
+            </button>
+            <button
+              type="button"
+              className={`view-toggle-btn ${activeTab === 'requests' ? 'active' : ''}`}
+              onClick={() => setActiveTab('requests')}
+            >
+              Service Requests Sent
+            </button>
+          </div>
+        </div>
+
         {error && <div className="alert alert-danger" style={{ marginBottom: '24px' }}>{error}</div>}
         {loading && <div className="alert alert-success" style={{ marginBottom: '24px' }}>Loading workspace details...</div>}
 
         {!loading && !error && (
-          <div className="dashboard-split-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(450px, 1fr))', gap: '30px', alignItems: 'start' }}>
+          <>
+            {activeTab === 'tasks' && (
+              <div className="dashboard-split-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(450px, 1fr))', gap: '30px', alignItems: 'start' }}>
             
             {/* LEFT COLUMN: POSTED TASKS (JOB POSTS) */}
             <div className="post-form-card" style={{ background: '#0b1220', border: '1px solid rgba(255, 255, 255, 0.08)', padding: '24px', borderRadius: '16px' }}>
@@ -289,6 +324,67 @@ function ClientProjectsPage() {
             </div>
 
           </div>
+            )}
+
+            {activeTab === 'requests' && (
+              <div className="post-form-card" style={{ background: '#0b1220', border: '1px solid rgba(255, 255, 255, 0.08)', padding: '24px', borderRadius: '16px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                  <h3 style={{ margin: 0, color: '#fff', fontSize: '1.2rem', fontWeight: '600' }}>Service Requests Sent</h3>
+                  <span className="project-status" style={{ fontSize: '0.8rem', padding: '3px 8px', borderRadius: '12px' }}>{filteredInvitations.length} Requests</span>
+                </div>
+
+                {filteredInvitations.length === 0 ? (
+                  <div className="empty-projects" style={{ padding: '40px 20px', textAlign: 'center' }}>
+                    <BriefcaseBusiness size={42} style={{ color: 'rgba(255,255,255,0.2)', marginBottom: '16px' }} />
+                    <h4 style={{ color: '#fff', marginBottom: '8px' }}>No Service Requests Sent</h4>
+                    <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.9rem', marginBottom: '20px' }}>You haven't requested any services yet.</p>
+                    <button className="next-btn" type="button" onClick={() => navigate("/marketplace")} style={{ cursor: 'pointer' }}>
+                      Browse Services
+                    </button>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    {filteredInvitations.map((invitation) => (
+                      <div
+                        key={invitation.id}
+                        onClick={() => navigate(`/service-requests/${invitation.id}`)}
+                        style={{
+                          background: 'rgba(255, 255, 255, 0.02)',
+                          border: '1px solid rgba(255, 255, 255, 0.05)',
+                          borderRadius: '12px',
+                          padding: '16px',
+                          cursor: 'pointer',
+                          transition: 'transform 0.2s, background 0.2s'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = 'rgba(255,255,255,0.04)';
+                          e.currentTarget.style.transform = 'translateY(-2px)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = 'rgba(255, 255, 255, 0.02)';
+                          e.currentTarget.style.transform = 'translateY(0)';
+                        }}
+                      >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '8px' }}>
+                          <h4 style={{ margin: 0, color: '#fff', fontSize: '1rem', fontWeight: '600' }}>{invitation.service_title || "Untitled Service Request"}</h4>
+                          <span className={`project-status ${invitation.status}`} style={{ fontSize: '0.75rem', padding: '3px 8px', borderRadius: '4px' }}>
+                            {invitation.status}
+                          </span>
+                        </div>
+                        <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.85rem', margin: '0 0 12px 0', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                          {invitation.cover_letter || invitation.service_description || "No description provided."}
+                        </p>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)' }}>
+                          <span>Expert: <strong>{invitation.expert_name || "AI Expert"}</strong></span>
+                          <span>Offer: <strong>${invitation.bid_amount}</strong></span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </>
         )}
 
         <Footer variant="dashboard" />
