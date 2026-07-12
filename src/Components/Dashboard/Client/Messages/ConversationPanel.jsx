@@ -71,8 +71,12 @@ export default function ConversationPanel({ conversations = [], activeId, onSele
                 onClick={() => onSelectConversation(item.id)}
                 style={{ cursor: "pointer" }}
               >
-                <div className="conversation-avatar">
-                  {initials}
+                <div className="conversation-avatar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                  {item.other_user_avatar_url ? (
+                    <img src={item.other_user_avatar_url} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  ) : (
+                    initials
+                  )}
                 </div>
 
                 <div className="conversation-content">

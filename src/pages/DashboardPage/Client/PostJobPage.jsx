@@ -508,7 +508,13 @@ function PostJobPage() {
                 </div>
                 <div className="mock-body">
                   <div className="mock-expert">
-                    <div className="mock-avatar"></div>
+                    {user?.avatarUrl ? (
+                      <img src={user.avatarUrl} alt="Avatar" className="mock-avatar" style={{ width: "32px", height: "32px", borderRadius: "50%", objectFit: "cover" }} />
+                    ) : (
+                      <div className="mock-avatar">
+                        {(user?.fullName || user?.name || "Client").trim().charAt(0).toUpperCase()}
+                      </div>
+                    )}
                     <span>You (Client)</span>
                     <div className="mock-rating">{formData.durationDays || "—"} days</div>
                   </div>

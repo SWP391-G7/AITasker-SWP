@@ -62,7 +62,11 @@ const ClientHeader = ({ title, subtitle, headerActions, notifications, onClearNo
                 <span className="admin-profile-role">Client</span>
               </div>
               <div className="admin-profile-avatar-wrapper">
-                <div className="avatar">{userAvatar}</div>
+                {currentUser?.avatarUrl ? (
+                  <img src={currentUser.avatarUrl} alt="Avatar" className="avatar" style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'cover' }} />
+                ) : (
+                  <div className="avatar">{userAvatar}</div>
+                )}
               </div>
               <ChevronDown size={14} className={`profile-chevron ${isProfileOpen ? 'rotate' : ''}`} />
             </div>

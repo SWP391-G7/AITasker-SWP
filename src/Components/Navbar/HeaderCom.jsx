@@ -134,8 +134,12 @@ export default function HeaderCom() {
 
           <div className="d-flex align-items-center gap-2">
             {isLogin && (
-              <div className="avatar-wrapper d-lg-none">
-                <div className="avatar">{userAvatar}</div>
+              <div className="avatar-wrapper d-lg-none" onClick={handleProfile} style={{ cursor: "pointer" }}>
+                {currentUser?.avatarUrl ? (
+                  <img src={currentUser.avatarUrl} alt="Avatar" className="avatar" style={{ width: "36px", height: "36px", borderRadius: "50%", objectFit: "cover" }} />
+                ) : (
+                  <div className="avatar">{userAvatar}</div>
+                )}
               </div>
             )}
 
@@ -210,8 +214,12 @@ export default function HeaderCom() {
                     onClick={() => setShowDropdown((value) => !value)}
                     aria-label="User Menu"
                   >
-                    {/* Avatar uses the first letter when no profile image exists. */}
-                    <div className="avatar">{userAvatar}</div>
+                    {/* Avatar uses the image when exists, otherwise first letter. */}
+                    {currentUser?.avatarUrl ? (
+                      <img src={currentUser.avatarUrl} alt="Avatar" className="avatar" style={{ width: "36px", height: "36px", borderRadius: "50%", objectFit: "cover" }} />
+                    ) : (
+                      <div className="avatar">{userAvatar}</div>
+                    )}
                   </button>
 
                   {showDropdown && (

@@ -157,7 +157,7 @@ const MessagesPage = () => {
         ? (c.other_user_professional_title || "Expert")
         : (c.other_user_company_name || "Client")
 
-      const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random&color=fff`
+      const avatarUrl = c.other_user_avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random&color=fff`
 
       return {
         id: c.id,

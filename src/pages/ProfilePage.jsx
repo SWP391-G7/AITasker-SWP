@@ -375,7 +375,11 @@ function ProfilePage() {
               <section className="profile-main-column">
                 <article className="profile-hero-card">
                   <div className="avatar-large">
-                    {user.fullName ? user.fullName.charAt(0).toUpperCase() : "?"}
+                    {user.avatarUrl ? (
+                      <img src={user.avatarUrl} alt={user.fullName} className="avatar-large-img" style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover" }} />
+                    ) : (
+                      user.fullName ? user.fullName.charAt(0).toUpperCase() : "?"
+                    )}
                     <span className="avatar-status" />
                   </div>
 

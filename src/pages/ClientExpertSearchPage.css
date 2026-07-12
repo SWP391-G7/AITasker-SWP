@@ -601,3 +601,17 @@
     width: 100%;
   }
 }
+
+.expert-avatar-wrap .avatar-initials-placeholder {
+  width: 60px;
+  height: 60px;
+  border-radius: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(135deg, #3b82f6, #60a5fa);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 1.5rem;
+}

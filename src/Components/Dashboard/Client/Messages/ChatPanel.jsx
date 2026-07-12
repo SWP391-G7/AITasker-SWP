@@ -60,7 +60,13 @@ export default function ChatPanel({ conversation, messages = [], onSendMessage }
     <section className="chat-panel">
       <div className="chat-header">
         <div className="chat-user">
-          <div className="chat-avatar">{initials}</div>
+          <div className="chat-avatar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+            {conversation.other_user_avatar_url ? (
+              <img src={conversation.other_user_avatar_url} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            ) : (
+              initials
+            )}
+          </div>
 
           <div>
             <h2>{name}</h2>

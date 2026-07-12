@@ -727,7 +727,11 @@ function PostServicePage() {
                 </div>
                 <div className="mock-body">
                   <div className="mock-expert">
-                    <div className="mock-avatar">{avatarLetter}</div>
+                    {user?.avatarUrl ? (
+                      <img src={user.avatarUrl} alt="Avatar" className="mock-avatar" style={{ width: "32px", height: "32px", borderRadius: "50%", objectFit: "cover" }} />
+                    ) : (
+                      <div className="mock-avatar">{avatarLetter}</div>
+                    )}
                     <span>You (Expert)</span>
                     <div className="mock-rating">5.0</div>
                   </div>

@@ -8,7 +8,13 @@ const ClientExpertCard = ({ person, isExpertMode, isFavorited, onToggleFavorite 
     <article className="expert-card">
       <div className="expert-card-top">
         <div className="expert-avatar-wrap">
-          <img src={person.avatar} alt={person.name} />
+          {person.avatar ? (
+            <img src={person.avatar} alt={person.name} />
+          ) : (
+            <div className="avatar-initials-placeholder">
+              {person.name ? person.name.trim().charAt(0).toUpperCase() : "?"}
+            </div>
+          )}
           {person.available && <span className="online-dot"></span>}
         </div>
         <div className="expert-rating">
