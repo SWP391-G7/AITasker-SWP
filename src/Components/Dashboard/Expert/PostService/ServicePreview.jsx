@@ -1,15 +1,13 @@
 import React from 'react';
 
-const ServicePreview = ({ formData, categories }) => {
-  const selectedCategory = categories.find(c => c.id === formData.category);
-
+const ServicePreview = ({ formData }) => {
   return (
     <div className="service-preview-sidebar">
       <div className="preview-sticky">
         <h4 className="preview-label">LIVE PREVIEW</h4>
         <div className="preview-card-mock">
-          <div className="mock-image">
-            <span className="mock-tag">{selectedCategory?.title.toUpperCase() || formData.category.toUpperCase()}</span>
+          <div className="mock-image" style={formData.images?.[0]?.preview ? { backgroundImage: `url(${formData.images[0].preview})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}>
+            <span className="mock-tag">{(formData.techStack || formData.tags || "AI").split(",")[0].trim().toUpperCase()}</span>
           </div>
           <div className="mock-body">
             <div className="mock-expert">
@@ -24,7 +22,7 @@ const ServicePreview = ({ formData, categories }) => {
           <div className="mock-footer">
             <div className="mock-price">
               <small>STARTING AT</small>
-              <strong>{formData.tiers.basic.price ? `$${formData.tiers.basic.price}` : "$ ---"}</strong>
+              <strong>{formData.price ? `$${formData.price}` : "$ ---"}</strong>
             </div>
             <div className="mock-btn">View Details</div>
           </div>
@@ -33,7 +31,7 @@ const ServicePreview = ({ formData, categories }) => {
           <h5>Pro Tips</h5>
           <ul>
             <li>High-quality images increase clicks by 40%.</li>
-            <li>Clear, tiered pricing helps clients choose faster.</li>
+            <li>Clear pricing helps clients decide faster.</li>
             <li>Be specific about your deliverables.</li>
           </ul>
         </div>

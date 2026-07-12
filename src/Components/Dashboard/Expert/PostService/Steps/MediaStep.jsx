@@ -8,8 +8,11 @@ const MediaStep = ({ formData, setFormData }) => {
     const files = Array.from(e.target.files);
     if (!files.length) return;
 
-    const newImages = files.map(file => URL.createObjectURL(file));
-    
+    const newImages = files.map(file => ({
+      file,
+      preview: URL.createObjectURL(file),
+    }));
+
     setFormData({
       ...formData,
       images: [...(formData.images || []), ...newImages].slice(0, 3)
@@ -17,6 +20,9 @@ const MediaStep = ({ formData, setFormData }) => {
   };
 
   const removeImage = (index) => {
+    if (formData.images[index]?.preview) {
+      URL.revokeObjectURL(formData.images[index].preview);
+    }
     const updatedImages = formData.images.filter((_, i) => i !== index);
     setFormData({ ...formData, images: updatedImages });
   };
@@ -28,7 +34,7 @@ const MediaStep = ({ formData, setFormData }) => {
   return (
     <div className="form-section fade-in">
       <h3 className="section-title">Service Gallery</h3>
-      
+
       <div className="media-guidelines">
         <div className="guideline-item">
           <AlertCircle size={16} />
@@ -39,7 +45,7 @@ const MediaStep = ({ formData, setFormData }) => {
       <div className="upload-grid-enhanced">
         {formData.images && formData.images[0] ? (
           <div className="preview-box main">
-            <img src={formData.images[0]} alt="Primary" />
+            <img src={formData.images[0].preview} alt="Primary" />
             <button className="remove-media-btn" onClick={() => removeImage(0)}><Trash2 size={16} /></button>
             <div className="media-tag">PRIMARY</div>
           </div>
@@ -55,7 +61,7 @@ const MediaStep = ({ formData, setFormData }) => {
 
         {formData.images && formData.images[1] ? (
           <div className="preview-box">
-            <img src={formData.images[1]} alt="Gallery 1" />
+            <img src={formData.images[1].preview} alt="Gallery 1" />
             <button className="remove-media-btn" onClick={() => removeImage(1)}><Trash2 size={14} /></button>
           </div>
         ) : (
@@ -67,7 +73,7 @@ const MediaStep = ({ formData, setFormData }) => {
 
         {formData.images && formData.images[2] ? (
           <div className="preview-box">
-            <img src={formData.images[2]} alt="Gallery 2" />
+            <img src={formData.images[2].preview} alt="Gallery 2" />
             <button className="remove-media-btn" onClick={() => removeImage(2)}><Trash2 size={14} /></button>
           </div>
         ) : (
@@ -87,9 +93,9 @@ const MediaStep = ({ formData, setFormData }) => {
         />
       </div>
 
-      <div className="form-group mt-5">
-        <label className="d-flex align-items-center gap-2">
-          <Video size={16} className="text-primary" />
+      <div className="form-group" style={{ marginTop: '2rem' }}>
+        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <Video size={16} style={{ color: '#60a5fa' }} />
           VIDEO DEMO (OPTIONAL)
         </label>
         <div className="video-input-wrapper">

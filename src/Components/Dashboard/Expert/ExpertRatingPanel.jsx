@@ -16,18 +16,7 @@ const ExpertRatingPanel = ({ rating = 5.0, projectCount = 342 }) => (
       </div>
     </div>
 
-    <div className="expert-kpi-list">
-      <div className="expert-kpi-row">
-        <span>Project Success Rate</span>
-        <strong>100%</strong>
-      </div>
-      <div className="expert-progress"><span style={{ width: '100%' }}></span></div>
-      <div className="expert-kpi-row">
-        <span>On-time Delivery</span>
-        <strong>98%</strong>
-      </div>
-      <div className="expert-progress"><span style={{ width: '98%' }}></span></div>
-    </div>
+
   </section>
 )
 

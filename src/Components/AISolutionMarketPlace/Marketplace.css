@@ -273,6 +273,61 @@
   box-shadow: 0 0 15px rgba(59, 130, 246, 0.1);
 }
 
+.tech-stack-filter-input {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.tech-stack-filter-input input {
+  flex: 1;
+  min-width: 120px;
+  height: 36px;
+  background: rgba(6, 11, 24, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 0.5rem;
+  color: #e2e8f0;
+  padding: 0 0.75rem;
+  font-size: 0.8rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.tech-stack-filter-input input:focus {
+  border-color: #60a5fa;
+}
+
+.tech-stack-apply-btn,
+.tech-stack-clear-btn {
+  height: 36px;
+  padding: 0 0.75rem;
+  border-radius: 0.5rem;
+  border: none;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+
+.tech-stack-apply-btn {
+  background: #2563eb;
+  color: #fff;
+}
+
+.tech-stack-apply-btn:hover {
+  background: #1d4ed8;
+}
+
+.tech-stack-clear-btn {
+  background: rgba(255, 255, 255, 0.06);
+  color: #94a3b8;
+}
+
+.tech-stack-clear-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #e2e8f0;
+}
+
 /* Main Content Area */
 .marketplace-main-content {
   flex-grow: 1;

@@ -45,7 +45,7 @@ const ClientExpertCard = ({ person, isExpertMode, isFavorited, onToggleFavorite 
         </span>
         <span>
           <Clock3 size={18} />
-          {isExpertMode ? "Client Account" : person.success != null ? `${person.success}% Job Success` : "New on AITasker"}
+          {isExpertMode ? "Client Account" : `${person.projects || 0} Projects`}
         </span>
       </div>
 

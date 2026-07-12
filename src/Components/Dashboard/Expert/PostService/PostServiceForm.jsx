@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  Bot, Code2, Eye, MoreHorizontal, Database, Workflow, 
   CheckCircle2
 } from "lucide-react";
 
@@ -11,17 +10,9 @@ import DescriptionStep from './Steps/DescriptionStep';
 import MediaStep from './Steps/MediaStep';
 import ServicePreview from './ServicePreview';
 import { publishService } from '../../../../Services/serviceService';
+import { uploadImage } from '../../../../Services/uploadService';
 
 import './PostService.css';
-
-const categories = [
-  { id: "nlp", title: "NLP & LLMs", icon: Bot },
-  { id: "vision", title: "Computer Vision", icon: Eye },
-  { id: "data", title: "Data Science", icon: Database },
-  { id: "automation", title: "Automation", icon: Workflow },
-  { id: "integration", title: "AI Integration", icon: Code2 },
-  { id: "other", title: "Other", icon: MoreHorizontal },
-];
 
 const PostServiceForm = ({ currentStep, setCurrentStep }) => {
   const navigate = useNavigate();
@@ -29,15 +20,14 @@ const PostServiceForm = ({ currentStep, setCurrentStep }) => {
   const [error, setError] = useState("");
   const [formData, setFormData] = useState({
     title: "",
-    category: "nlp",
+    techStack: "",
+    tags: "",
     description: "",
-    tags: [],
     faqs: [{ question: "", answer: "" }],
-    tiers: {
-      basic: { price: "", delivery: "3", revisions: "1", features: ["Basic AI Model Setup"] },
-      standard: { price: "", delivery: "7", revisions: "3", features: ["Advanced Fine-tuning", "Documentation"] },
-      premium: { price: "", delivery: "14", revisions: "Unlimited", features: ["Full Integration", "1 Month Support", "Source Code"] }
-    },
+    price: "",
+    delivery: "3",
+    revisions: "1",
+    features: ["Basic AI Model Setup"],
     images: [],
     videoLink: ""
   });
@@ -48,13 +38,13 @@ const PostServiceForm = ({ currentStep, setCurrentStep }) => {
   const handlePublish = async () => {
     const validationErrors = [];
     if (!formData.title || formData.title.trim() === '') {
-      validationErrors.push('Title is required (Step 1 - Overview)');
+      validationErrors.push('Title is required (Step 1 - Basics)');
     }
-    if (!formData.tiers.basic.price || parseFloat(formData.tiers.basic.price) <= 0) {
-      validationErrors.push('Basic tier price must be a positive number (Step 2 - Pricing)');
+    if (!formData.price || parseFloat(formData.price) <= 0) {
+      validationErrors.push('Price must be a positive number (Step 3 - Budget)');
     }
     if (!formData.description || formData.description.trim().length < 120) {
-      validationErrors.push('Description must be at least 120 characters (Step 3 - Description)');
+      validationErrors.push('Description must be at least 120 characters (Step 2 - Details)');
     }
 
     if (validationErrors.length > 0) {
@@ -66,15 +56,23 @@ const PostServiceForm = ({ currentStep, setCurrentStep }) => {
       setLoading(true);
       setError("");
 
+      const imageUrls = [];
+      for (const img of formData.images) {
+        if (img.file) {
+          const url = await uploadImage(img.file);
+          imageUrls.push(url);
+        }
+      }
+
       const serviceData = {
         title: formData.title,
-        category: formData.category,
+        techStack: formData.techStack,
+        tags: formData.tags,
         description: formData.description,
-        price: formData.tiers.basic.price,
-        deliveryDays: formData.tiers.basic.delivery,
-        tiers: formData.tiers,
+        price: formData.price,
+        deliveryDays: formData.delivery,
         faqs: formData.faqs,
-        images: formData.images,
+        images: JSON.stringify(imageUrls),
         videoLink: formData.videoLink
       };
 
@@ -91,11 +89,11 @@ const PostServiceForm = ({ currentStep, setCurrentStep }) => {
   const renderStep = () => {
     switch (currentStep) {
       case 1:
-        return <OverviewStep formData={formData} setFormData={setFormData} categories={categories} />;
+        return <OverviewStep formData={formData} setFormData={setFormData} />;
       case 2:
-        return <PricingStep formData={formData} setFormData={setFormData} />;
-      case 3:
         return <DescriptionStep formData={formData} setFormData={setFormData} />;
+      case 3:
+        return <PricingStep formData={formData} setFormData={setFormData} />;
       case 4:
         return <MediaStep formData={formData} setFormData={setFormData} />;
       default:
@@ -108,9 +106,9 @@ const PostServiceForm = ({ currentStep, setCurrentStep }) => {
       <div className="post-service-form-wrapper">
         <nav className="service-stepper">
           {[
-            { step: 1, label: "Overview" },
-            { step: 2, label: "Pricing" },
-            { step: 3, label: "Description" },
+            { step: 1, label: "Basics" },
+            { step: 2, label: "Details" },
+            { step: 3, label: "Budget" },
             { step: 4, label: "Media" }
           ].map((item) => (
             <div key={item.step} className={`step-item ${currentStep === item.step ? 'active' : ''} ${currentStep > item.step ? 'completed' : ''}`}>
@@ -140,7 +138,7 @@ const PostServiceForm = ({ currentStep, setCurrentStep }) => {
         </div>
       </div>
 
-      <ServicePreview formData={formData} categories={categories} />
+      <ServicePreview formData={formData} />
     </div>
   );
 };

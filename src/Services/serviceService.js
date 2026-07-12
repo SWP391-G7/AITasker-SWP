@@ -19,11 +19,13 @@ export const publishService = async (serviceData) => {
     },
     body: JSON.stringify({
       title: serviceData.title,
-      description: serviceData.description || '',
+      description: [serviceData.techStack ? `Tech Stack: ${serviceData.techStack}` : '', serviceData.description || ''].filter(Boolean).join('\n\n'),
       price: parseFloat(serviceData.price) || 0,
       pricing_type: 'fixed',
       delivery_days: serviceData.deliveryDays ? parseInt(serviceData.deliveryDays, 10) : 3,
-      tags: serviceData.category || ''
+      tags: serviceData.tags || '',
+      images: serviceData.images || null,
+      videoLink: serviceData.videoLink || null
     })
   });
 

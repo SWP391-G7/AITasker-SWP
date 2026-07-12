@@ -1,14 +1,6 @@
-import { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  ArrowLeft,
-  Bot,
-  Code2,
-  Eye,
-  MoreHorizontal,
-  Database,
-  Workflow,
-} from "lucide-react";
+import { ArrowLeft, Plus, Trash2, Camera, Video, AlertCircle, CheckCircle2 } from "lucide-react";
 import ClientSidebar from "../../../Components/Dashboard/Client/ClientSidebar";
 import ClientHeader from "../../../Components/Dashboard/Client/ClientHeader";
 import Footer from "../../../Components/Footer/Footer";
@@ -18,31 +10,28 @@ import { createJobPost } from "../../../Services/jobService";
 import AIExtendButton from "../../../Components/AIExtendButton";
 import AISkeletonLoader from "../../../Components/AISkeletonLoader";
 import Toast from "../../../Components/Toast";
+import { uploadImage } from "../../../Services/uploadService";
 import "../../Style/AdminDashboardPage.css";
 import "./ClientMarketplace.css";
-
-const categories = [
-  { id: "NLP & LLMs", title: "NLP & LLMs", icon: Bot },
-  { id: "Computer Vision", title: "Computer Vision", icon: Eye },
-  { id: "Data Science", title: "Data Science", icon: Database },
-  { id: "Automation", title: "Automation", icon: Workflow },
-  { id: "AI Integration", title: "AI Integration", icon: Code2 },
-  { id: "Other", title: "Other", icon: MoreHorizontal },
-];
+import "../../../Components/Dashboard/Expert/PostService/PostService.css";
 
 function PostJobPage() {
   const navigate = useNavigate();
 
   const [step, setStep] = useState(1);
+  const fileInputRef = useRef(null);
+
   const [formData, setFormData] = useState({
     title: "",
-    category: "",
     description: "",
     techStack: "",
+    tags: "",
     requirements: "",
     budgetMin: "",
     budgetMax: "",
     durationDays: "",
+    images: [],
+    videoLink: "",
   });
 
   const [isGenerating, setIsGenerating] = useState(false);
@@ -65,7 +54,7 @@ function PostJobPage() {
   const [success, setSuccess] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [notifications, setNotifications] = useState(2);
+  const [notifications, setNotifications] = useState(0);
   const user = useClientUser();
 
   const handleChange = (e) => {
@@ -73,14 +62,6 @@ function PostJobPage() {
     setFormData((prev) => ({
       ...prev,
       [e.target.name]: e.target.value,
-    }));
-  };
-
-  const handleCategorySelect = (category) => {
-    setError("");
-    setFormData((prev) => ({
-      ...prev,
-      category,
     }));
   };
 
@@ -93,13 +74,8 @@ function PostJobPage() {
         return false;
       }
 
-      if (!formData.category) {
-        setError("Please select a service category.");
-        return false;
-      }
-
-      if (!formData.description.trim()) {
-        setError("Please enter project description.");
+      if (!formData.techStack.trim()) {
+        setError("Please enter tech stack.");
         return false;
       }
 
@@ -110,8 +86,8 @@ function PostJobPage() {
     }
 
     if (step === 2) {
-      if (!formData.techStack.trim()) {
-        setError("Please enter tech stack.");
+      if (!formData.description.trim()) {
+        setError("Please enter project description.");
         return false;
       }
 
@@ -152,12 +128,12 @@ function PostJobPage() {
 
   const handleNext = () => {
     if (!validateStep()) return;
-    setStep((prev) => prev + 1);
+    setStep((prev) => Math.min(prev + 1, 4));
   };
 
   const handleBack = () => {
     setError("");
-    setStep((prev) => prev - 1);
+    setStep((prev) => Math.max(prev - 1, 1));
   };
 
   const handleSubmit = async () => {
@@ -169,13 +145,25 @@ function PostJobPage() {
       setError("");
       setSuccess("");
 
+      const imageUrls = [];
+      for (const img of formData.images) {
+        if (img.file) {
+          const url = await uploadImage(img.file);
+          imageUrls.push(url);
+        }
+      }
+
       await createJobPost({
         title: formData.title.trim(),
-        description: `${formData.description.trim()}`,
+        description: formData.description.trim(),
+        requirements: formData.requirements.trim(),
         budgetMin: Number(formData.budgetMin),
         budgetMax: Number(formData.budgetMax),
         durationDays: Number(formData.durationDays),
-        requiredSkill: formData.techStack.trim() || formData.category,
+        requiredSkill: formData.techStack.split(',').map(t => t.trim()).filter(Boolean).join(', '),
+        tags: formData.tags.split(',').map(t => t.trim().toLowerCase()).filter(Boolean).join(','),
+        images: JSON.stringify(imageUrls),
+        videoLink: formData.videoLink,
       });
 
       setSuccess("Task posted successfully.");
@@ -221,27 +209,29 @@ function PostJobPage() {
           onLogout={handleLogout}
         />
 
-        <section className="post-stepper">
-          <div className={`step ${step >= 1 ? "active" : ""}`}>
-            <span>1</span>
-            <strong>BASICS</strong>
-          </div>
-          <div className="step-line"></div>
-          <div className={`step ${step >= 2 ? "active" : ""}`}>
-            <span>2</span>
-            <strong>DETAILS</strong>
-          </div>
-          <div className="step-line"></div>
-          <div className={`step ${step >= 3 ? "active" : ""}`}>
-            <span>3</span>
-            <strong>BUDGET</strong>
-          </div>
-        </section>
+        <div className="expert-post-service-container">
+          <div className="post-service-form-wrapper">
+            <section className="post-stepper">
+              {[
+                { step: 1, label: "BASICS" },
+                { step: 2, label: "DETAILS" },
+                { step: 3, label: "BUDGET" },
+                { step: 4, label: "MEDIA" },
+              ].map((item, idx) => (
+                <React.Fragment key={item.step}>
+                  <div className={`step ${step >= item.step ? "active" : ""}`}>
+                    <span>{step > item.step ? <CheckCircle2 size={16} /> : item.step}</span>
+                    <strong>{item.label}</strong>
+                  </div>
+                  {idx < 3 && <div className="step-line"></div>}
+                </React.Fragment>
+              ))}
+            </section>
 
         <form onSubmit={(e) => e.preventDefault()}>
           <section className="post-form-card" style={{ position: "relative" }}>
             {isGenerating && <AISkeletonLoader />}
-            {error && <div className="alert alert-danger">{error}</div>}
+            {error && <div className="error-alert mb-4" style={{ color: '#ef4444', padding: '1rem', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '0.5rem', whiteSpace: 'pre-line' }}>{error}</div>}
             {success && <div className="alert alert-success">{success}</div>}
 
             {step === 1 && (
@@ -274,42 +264,12 @@ function PostJobPage() {
                     name="title"
                     value={formData.title}
                     onChange={handleChange}
+                    maxLength={255}
                     placeholder="e.g., Develop a Custom LLM for Legal Research"
                   />
                   <p>Make it descriptive to attract specialized talent.</p>
                 </div>
 
-                <div className="form-group">
-                  <label>SERVICE CATEGORY</label>
-                  <div className="category-grid">
-                    {categories.map(({ id, title, icon: Icon }) => (
-                      <button
-                        type="button"
-                        className={`category-card ${formData.category === id ? "selected" : ""}`}
-                        key={id}
-                        onClick={() => handleCategorySelect(id)}
-                      >
-                        <Icon size={28} />
-                        <span>{title}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="form-group">
-                  <label>PROJECT DESCRIPTION</label>
-                  <textarea
-                    name="description"
-                    value={formData.description}
-                    onChange={handleChange}
-                    placeholder="Outline the problem you're solving, current infrastructure, and desired outcomes..."
-                  ></textarea>
-                </div>
-              </>
-            )}
-
-            {step === 2 && (
-              <>
                 <div className="form-group">
                   <label>TECH STACK</label>
                   <input
@@ -320,6 +280,32 @@ function PostJobPage() {
                     placeholder="e.g., React, Node.js, Python, OpenAI API, PostgreSQL"
                   />
                   <p>List technologies or tools you prefer for this task.</p>
+                </div>
+
+                <div className="form-group">
+                  <label>TAGS</label>
+                  <input
+                    type="text"
+                    name="tags"
+                    value={formData.tags}
+                    onChange={handleChange}
+                    placeholder="e.g., NLP, Computer Vision, Automation"
+                  />
+                  <p>Comma-separated tags to help experts find your task.</p>
+                </div>
+              </>
+            )}
+
+            {step === 2 && (
+              <>
+                <div className="form-group">
+                  <label>PROJECT DESCRIPTION</label>
+                  <textarea
+                    name="description"
+                    value={formData.description}
+                    onChange={handleChange}
+                    placeholder="Outline the problem you're solving, current infrastructure, and desired outcomes..."
+                  ></textarea>
                 </div>
 
                 <div className="form-group">
@@ -381,6 +367,112 @@ function PostJobPage() {
                 </div>
               </>
             )}
+
+            {step === 4 && (
+              <>
+                <div className="form-section fade-in">
+                  <h3 className="section-title">Task Gallery</h3>
+
+                  <div className="media-guidelines">
+                    <div className="guideline-item">
+                      <AlertCircle size={16} />
+                      <span>Upload images that help experts understand your task. (Max 3)</span>
+                    </div>
+                  </div>
+
+                  <div className="upload-grid-enhanced">
+                    {formData.images && formData.images[0] ? (
+                      <div className="preview-box main">
+                        <img src={formData.images[0].preview} alt="Primary" />
+                        <button className="remove-media-btn" onClick={() => {
+                          URL.revokeObjectURL(formData.images[0].preview);
+                          const updated = formData.images.filter((_, i) => i !== 0);
+                          setFormData({ ...formData, images: updated });
+                        }}><Trash2 size={16} /></button>
+                        <div className="media-tag">PRIMARY</div>
+                      </div>
+                    ) : (
+                      <div className="upload-box main" onClick={() => fileInputRef.current.click()}>
+                        <div className="upload-icon-circle">
+                          <Camera size={32} />
+                        </div>
+                        <span>Upload Main Image</span>
+                        <p>High resolution (1280x720) recommended</p>
+                      </div>
+                    )}
+
+                    {formData.images && formData.images[1] ? (
+                      <div className="preview-box">
+                        <img src={formData.images[1].preview} alt="Gallery 1" />
+                        <button className="remove-media-btn" onClick={() => {
+                          URL.revokeObjectURL(formData.images[1].preview);
+                          const updated = formData.images.filter((_, i) => i !== 1);
+                          setFormData({ ...formData, images: updated });
+                        }}><Trash2 size={14} /></button>
+                      </div>
+                    ) : (
+                      <div className="upload-box small" onClick={() => fileInputRef.current.click()}>
+                        <Plus size={24} />
+                        <span>Add Image</span>
+                      </div>
+                    )}
+
+                    {formData.images && formData.images[2] ? (
+                      <div className="preview-box">
+                        <img src={formData.images[2].preview} alt="Gallery 2" />
+                        <button className="remove-media-btn" onClick={() => {
+                          URL.revokeObjectURL(formData.images[2].preview);
+                          const updated = formData.images.filter((_, i) => i !== 2);
+                          setFormData({ ...formData, images: updated });
+                        }}><Trash2 size={14} /></button>
+                      </div>
+                    ) : (
+                      <div className="upload-box small" onClick={() => fileInputRef.current.click()}>
+                        <Plus size={24} />
+                        <span>Add Image</span>
+                      </div>
+                    )}
+
+                    <input 
+                      type="file" 
+                      hidden 
+                      ref={fileInputRef} 
+                      accept="image/*" 
+                      multiple 
+                      onChange={(e) => {
+                        const files = Array.from(e.target.files);
+                        if (!files.length) return;
+                        const newImages = files.map(file => ({
+                          file,
+                          preview: URL.createObjectURL(file),
+                        }));
+                        setFormData({
+                          ...formData,
+                          images: [...(formData.images || []), ...newImages].slice(0, 3)
+                        });
+                      }} 
+                    />
+                  </div>
+
+                  <div className="form-group" style={{ marginTop: '2rem' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <Video size={16} style={{ color: '#60a5fa' }} />
+                      VIDEO DEMO (OPTIONAL)
+                    </label>
+                    <div className="video-input-wrapper">
+                      <input 
+                        type="text" 
+                        placeholder="Paste YouTube, Vimeo or Loom URL here..." 
+                        className="video-url-input"
+                        value={formData.videoLink || ""}
+                        onChange={(e) => setFormData({...formData, videoLink: e.target.value})}
+                      />
+                    </div>
+                    <p className="help-text">Videos help experts understand your requirements better.</p>
+                  </div>
+                </div>
+              </>
+            )}
           </section>
 
           <section className="post-actions">
@@ -394,9 +486,9 @@ function PostJobPage() {
               </button>
             )}
 
-            {step < 3 ? (
+            {step < 4 ? (
               <button type="button" className="next-btn" onClick={handleNext} disabled={submitting}>
-                {step === 1 ? "Next: Details" : "Next: Budget"}
+                {step === 1 ? "Next: Description" : step === 2 ? "Next: Budget" : "Next: Media"}
               </button>
             ) : (
               <button type="button" className="next-btn" onClick={handleSubmit} disabled={submitting}>
@@ -405,6 +497,47 @@ function PostJobPage() {
             )}
           </section>
         </form>
+          </div>
+
+          <aside className="service-preview-sidebar">
+            <div className="preview-sticky">
+              <h4 className="preview-label">LIVE PREVIEW</h4>
+              <div className="preview-card-mock">
+                <div className="mock-image" style={formData.images?.[0]?.preview ? { backgroundImage: `url(${formData.images[0].preview})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}>
+                  <span className="mock-tag">{(formData.techStack || formData.tags || "TASK").split(",")[0].trim().toUpperCase()}</span>
+                </div>
+                <div className="mock-body">
+                  <div className="mock-expert">
+                    <div className="mock-avatar"></div>
+                    <span>You (Client)</span>
+                    <div className="mock-rating">{formData.durationDays || "—"} days</div>
+                  </div>
+                  <h3 className="mock-title">
+                    {formData.title || "Your task title will appear here..."}
+                  </h3>
+                  <p className="mock-description" style={{ fontSize: '0.8rem', color: '#64748b', lineHeight: '1.4', marginTop: '0.5rem' }}>
+                    {formData.description ? formData.description.substring(0, 120) + (formData.description.length > 120 ? '...' : '') : "No description yet."}
+                  </p>
+                </div>
+                <div className="mock-footer">
+                  <div className="mock-price">
+                    <small>TASK BUDGET</small>
+                    <strong>${Number(formData.budgetMin || 0).toLocaleString()} - ${Number(formData.budgetMax || 0).toLocaleString()}</strong>
+                  </div>
+                  <div className="mock-btn">Apply as Expert</div>
+                </div>
+              </div>
+              <div className="preview-tips">
+                <h5>Pro Tips</h5>
+                <ul>
+                  <li>Be specific about your tech stack to attract the right experts.</li>
+                  <li>Clear requirements help experts quote accurately.</li>
+                  <li>Adding images increases response rate by 40%.</li>
+                </ul>
+              </div>
+            </div>
+          </aside>
+        </div>
 
         <Footer variant="dashboard" />
       </main>

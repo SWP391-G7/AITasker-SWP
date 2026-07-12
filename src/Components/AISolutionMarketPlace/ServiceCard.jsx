@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Briefcase, Heart, Star, CheckCircle, Clock } from 'lucide-react';
+import { Heart, Star } from 'lucide-react';
 import './Marketplace.css';
 
 const ServiceCard = ({
@@ -81,24 +81,6 @@ const ServiceCard = ({
       <p style={{ whiteSpace: 'pre-line' }}>
         {(description || "No description provided.").replace(/([A-Za-zÀ-ỹ\s]+:)\s*\n\s*/g, '$1 ')}
       </p>
-
-      <div className="expert-stats">
-        <span>
-          <Briefcase size={18} />
-          {isJob ? "Open Contract" : "Service Gig"}
-        </span>
-
-        <span>
-          {isJob ? <Clock size={18} /> : <CheckCircle size={18} />}
-          {isJob ? `Duration: ${rating}` : "Vetted Expert"}
-        </span>
-
-        {isJob && status && status !== 'open' && (
-          <span className={`status-badge ${status}`}>
-            {status === 'active' ? 'In Progress' : status}
-          </span>
-        )}
-      </div>
 
       <div className="expert-actions">
         <button
