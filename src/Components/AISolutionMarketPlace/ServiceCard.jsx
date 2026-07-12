@@ -1,6 +1,25 @@
 import { useNavigate } from 'react-router-dom';
-import { Heart, Star } from 'lucide-react';
+import { Heart, Star, Clock } from 'lucide-react';
 import './Marketplace.css';
+
+/**
+ * Deterministically pick one of the profile-side-visual gradient classes
+ * based on the item id, so each card consistently gets the same gradient.
+ */
+const VISUAL_CLASSES = [
+  'service-visual-automation',
+  'service-visual-analytics',
+  'service-visual-network',
+  'service-visual-purple',
+  'service-visual-amber',
+];
+
+const getVisualClass = (id) => {
+  if (!id) return VISUAL_CLASSES[0];
+  // Use the numeric part or string hash
+  const num = typeof id === 'number' ? id : String(id).split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
+  return VISUAL_CLASSES[num % VISUAL_CLASSES.length];
+};
 
 const ServiceCard = ({
   id,
@@ -13,6 +32,7 @@ const ServiceCard = ({
   type = 'service',
   description,
   status,
+  deliveryDays,
   isFavorited,
   onToggleFavorite,
 }) => {
@@ -24,80 +44,105 @@ const ServiceCard = ({
       navigate('/marketplace/task/' + id);
       return;
     }
-
     navigate(`/marketplace/service/${id}`);
   };
 
-  const getInitials = (name) => {
-    return name
-      ? name
-          .split(" ")
-          .map((word) => word[0])
-          .join("")
-          .slice(0, 2)
-          .toUpperCase()
-      : "?";
-  };
+  const getInitials = (name) =>
+    name
+      ? name.split(' ').map((w) => w[0]).join('').slice(0, 2).toUpperCase()
+      : '?';
 
-  const defaultClientAvatar = "https://images.unsplash.com/photo-1556157382-97eda2d62296?w=200&h=200&fit=crop";
-  const defaultExpertAvatar = "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&h=200&fit=crop";
-  const avatarUrl = image || (isJob ? defaultClientAvatar : defaultExpertAvatar);
+  const hasImage = !!image;
+  const visualClass = getVisualClass(id);
 
   return (
-    <article className="expert-card">
-      <div className="expert-card-top">
-        <div className="expert-avatar-wrap">
-          <img 
-            src={avatarUrl} 
-            alt={expert} 
+    <article className="mp-service-card" onClick={handleViewDetails}>
+      {/* ── Image / Profile-side-visual ─────────────────── */}
+      <div className="mp-card-image-area">
+        {hasImage ? (
+          <img
+            className="mp-card-image"
+            src={image}
+            alt={title}
             onError={(e) => {
-              e.target.onerror = null;
-              e.target.src = isJob ? defaultClientAvatar : defaultExpertAvatar;
+              e.target.style.display = 'none';
+              e.target.nextSibling.style.display = 'block';
             }}
           />
-          <span className="online-dot"></span>
-        </div>
+        ) : null}
+        {/* Profile-side-visual fallback — always rendered, hidden when image exists */}
+        <div
+          className={`mp-card-visual-fallback profile-side-visual ${visualClass}`}
+          style={{ display: hasImage ? 'none' : 'block' }}
+        />
 
-        <div className="expert-rating" style={{ justifyContent: 'flex-end' }}>
-          {!isJob && rating && Number(rating) > 0 && (
-            <div>
-              <Star size={18} fill="currentColor" className="text-success" />
-              <strong>{rating}</strong>
-            </div>
-          )}
-          <strong>
-            {price}
-          </strong>
-        </div>
-      </div>
+        {/* Category / tag badge */}
+        <span className="mp-card-tag">{tag}</span>
 
-      <h2>{title}</h2>
-      <h4>{isJob ? `Posted by ${expert}` : `Offered by ${expert}`}</h4>
-
-      <div className="expert-tags">
-        <span>{tag}</span>
-      </div>
-
-      <p style={{ whiteSpace: 'pre-line' }}>
-        {(description || "No description provided.").replace(/([A-Za-zÀ-ỹ\s]+:)\s*\n\s*/g, '$1 ')}
-      </p>
-
-      <div className="expert-actions">
+        {/* Favorite button */}
         <button
           type="button"
-          onClick={handleViewDetails}
+          className={`mp-favorite-btn ${isFavorited ? 'active' : ''}`}
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleFavorite(id);
+          }}
+          aria-label={isFavorited ? 'Remove from favorites' : 'Add to favorites'}
         >
-          {isJob ? "View Task" : "View Details"}
+          <Heart size={15} fill={isFavorited ? 'currentColor' : 'none'} />
         </button>
+      </div>
 
-        <button 
-          className={`favorite-btn ${isFavorited ? 'active' : ''}`} 
-          style={{ color: isFavorited ? 'var(--accent-red)' : '' }}
-          type="button"
-          onClick={() => onToggleFavorite(id)}
-        >
-          <Heart size={24} fill={isFavorited ? "currentColor" : "none"} />
-        </button>
+      {/* ── Card body ────────────────────────────────────── */}
+      <div className="mp-card-body">
+        {/* Expert / poster row */}
+        <div className="mp-card-expert-row">
+          <div className="mp-card-avatar">
+            {getInitials(expert)}
+          </div>
+          <span className="mp-card-expert-name">
+            {isJob ? expert : expert}
+          </span>
+          {!isJob && rating && Number(rating) > 0 && (
+            <div className="mp-card-rating">
+              <Star size={11} fill="currentColor" />
+              {Number(rating).toFixed(1)}
+            </div>
+          )}
+          {isJob && status && (
+            <span className={`mp-status-badge mp-status-${status?.toLowerCase()}`}>
+              {status}
+            </span>
+          )}
+        </div>
+
+        {/* Title */}
+        <h3 className="mp-card-title">
+          {isJob ? title : `I will ${title}`}
+        </h3>
+
+        {/* Description */}
+        <p className="mp-card-description">
+          {(description || 'No description provided.')
+            .replace(/([A-Za-zÀ-ỹ\s]+:)\s*\n\s*/g, '$1 ')}
+        </p>
+      </div>
+
+      {/* ── Card footer ──────────────────────────────────── */}
+      <div className="mp-card-footer">
+        <div className="mp-card-price">
+          <small>{isJob ? 'BUDGET' : 'STARTING AT'}</small>
+          <strong>{price}</strong>
+        </div>
+        {deliveryDays && !isJob && (
+          <div className="mp-card-delivery">
+            <Clock size={12} />
+            {deliveryDays}d delivery
+          </div>
+        )}
+        <div className="mp-view-btn">
+          {isJob ? 'View Task' : 'View Details'}
+        </div>
       </div>
     </article>
   );
