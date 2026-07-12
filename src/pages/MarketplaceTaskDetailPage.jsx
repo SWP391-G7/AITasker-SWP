@@ -164,7 +164,7 @@ const MarketplaceTaskDetailPage = () => {
                   <div className="expert-bar-name">{task.client_name || task.company_name || task.clientName || 'Client'}</div>
                   <div className="expert-bar-rating">
                     <BriefcaseBusiness size={14} color="#10b981" />
-                    <span className="rating-val">Open task</span>
+                    <span className="rating-val">Open</span>
                   </div>
                 </div>
               </div>

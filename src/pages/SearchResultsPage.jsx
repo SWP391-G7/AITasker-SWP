@@ -528,7 +528,7 @@ function SearchResultsPage() {
                         <div>
                           <h3 className="card-item-title mb-1">{svc.title}</h3>
                           <p className="card-item-subtitle text-muted mb-0">
-                            Offered by: {svc.expert_name || "Vetted Expert"}
+                            Offered by: {svc.expert_name || "AI Expert"}
                           </p>
                         </div>
                         <span className={`status-pill ${svc.pricing_type}`}>

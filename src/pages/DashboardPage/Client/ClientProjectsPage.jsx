@@ -58,11 +58,13 @@ function ClientProjectsPage() {
     try {
       setLoading(true);
       setError("");
+
       const [jobsResult, projectsResult, invitationsResult] = await Promise.all([
-        getMyJobs(),
-        getMyProjects(),
-        getMyInvitations()
+        getMyJobs().catch(() => ({})),
+        getMyProjects().catch(() => []),
+        getMyInvitations().catch(() => [])
       ]);
+
       const list = jobsResult.jobPosts || jobsResult.jobs || jobsResult.data || jobsResult.projects || jobsResult.myJobs || [];
       setJobs(Array.isArray(list) ? list : []);
       setProjects(Array.isArray(projectsResult) ? projectsResult : []);

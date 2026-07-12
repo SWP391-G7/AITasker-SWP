@@ -76,7 +76,6 @@ const mapExpertFromApi = (expert) => {
       : ["AI EXPERT"],
     description: expert.bio || "No bio provided.",
     projects: Number(expert.completed_projects) || 0,
-    success: Number(expert.job_success) || 100,
     available: true,
     stack: skills,
     mode: "expert",
@@ -101,7 +100,6 @@ const mapClientFromApi = (client) => {
       client.company_description ||
       "This client is looking for AI experts to help with project delivery.",
     projects: Number(client.posted_jobs_count || client.jobs_count) || 0,
-    success: 100,
     available: true,
     stack: [industry],
     company,
@@ -464,9 +462,7 @@ function ExpertSearchPage() {
 
                         <span>
                           <Clock3 size={18} />
-                          {isExpertMode
-                            ? "Verified Client"
-                            : `${person.success}% Job Success`}
+                          {isExpertMode ? "Verified Client" : `${person.projects} Projects`}
                         </span>
                       </div>
 
