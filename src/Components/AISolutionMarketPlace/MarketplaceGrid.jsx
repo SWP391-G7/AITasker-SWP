@@ -36,27 +36,37 @@ const formatBudget = (job) => {
 const formatService = (service) => ({
   id: service.id,
   type: 'service',
-  tag: service.tags?.toUpperCase() || 'AI',
+  tag: (service.tags || 'AI').toUpperCase(),
   expert: service.expert_name || 'AI Expert',
   rating: service.avg_rating?.toString() || '',
   title: service.title || 'AI Service',
   price: 'From ' + formatMoney(service.price) + (service.pricing_type === 'hourly' ? '/hr' : ''),
   rawPrice: parseMoney(service.price),
-  image: service.image_url || null,
+  image: parseJobImage(service.images) || service.image_url || null,
   description: service.description || '',
   deliveryDays: service.delivery_days || 0,
 });
 
+const parseJobImage = (images) => {
+  if (!images) return null;
+  try {
+    const parsed = JSON.parse(images);
+    return Array.isArray(parsed) && parsed.length > 0 ? parsed[0] : null;
+  } catch {
+    return typeof images === 'string' ? images : null;
+  }
+};
+
 const formatJob = (job) => ({
   id: job.id,
   type: 'job',
-  tag: job.required_skill?.toUpperCase() || 'CLIENT TASK',
+  tag: (job.required_skill || job.tags || 'CLIENT TASK').toUpperCase(),
   expert: job.client_name || job.company_name || 'Client',
-  rating: job.duration_days ? `${job.duration_days} days` : 'Open task',
+  rating: job.duration_days ? `${job.duration_days} days` : 'Open',
   title: job.title || 'Untitled client task',
   price: formatBudget(job),
   budgetValue: parseMoney(job.budget_max) || parseMoney(job.budget_min),
-  image: null,
+  image: parseJobImage(job.images),
   description: job.description || 'No task description provided yet.',
   status: job.status,
 });
@@ -65,7 +75,8 @@ const MarketplaceGrid = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchDraft, setSearchDraft] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
-  const [category, setCategory] = useState('All Categories');
+  const [techStackDraft, setTechStackDraft] = useState('');
+  const [techStackFilter, setTechStackFilter] = useState('');
   const [budget, setBudget] = useState('Any Price');
   const [deliveryTime, setDeliveryTime] = useState('Anytime');
   const [marketplaceItems, setMarketplaceItems] = useState([]);
@@ -130,9 +141,13 @@ const MarketplaceGrid = () => {
           searchParams.includeClosed = showClosed;
         }
 
-        // Category filter (backend only supports requiredSkill for jobs)
-        if (isExpert && category !== 'All Categories' && category !== 'Other') {
-          searchParams.requiredSkill = category;
+        // Tech Stack filter
+        if (techStackFilter) {
+          if (isExpert) {
+            searchParams.requiredSkill = techStackFilter;
+          } else {
+            searchParams.tags = techStackFilter;
+          }
         }
 
         // Budget filter mapping
@@ -181,27 +196,10 @@ const MarketplaceGrid = () => {
     };
 
     fetchData();
-  }, [isExpert, searchQuery, category, budget, deliveryTime, showClosed]);
+  }, [isExpert, searchQuery, techStackFilter, budget, deliveryTime, showClosed]);
 
   const filteredItems = useMemo(() => {
     let result = marketplaceItems;
-
-    // Category filter
-    if (category !== 'All Categories') {
-      const hardcodedCats = isExpert
-        ? ['AI', 'NLP', 'Computer Vision', 'Automation', 'Data']
-        : ['NLP', 'VISION', 'DATA', 'GEN AI', 'MLOPS'];
-
-      if (category === 'Other') {
-        result = result.filter((item) => {
-          const itemCat = item.tag?.toLowerCase() || '';
-          return !hardcodedCats.some((c) => itemCat === c.toLowerCase());
-        });
-      } else {
-        const cat = category.toLowerCase();
-        result = result.filter((item) => item.tag?.toLowerCase() === cat);
-      }
-    }
 
     // Client-side delivery time filter for services
     if (!isExpert && deliveryTime !== 'Anytime') {
@@ -225,7 +223,7 @@ const MarketplaceGrid = () => {
     }
 
     return result;
-  }, [marketplaceItems, isExpert, category, deliveryTime, sortBy]);
+  }, [marketplaceItems, isExpert, deliveryTime, sortBy]);
 
   const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
   const indexOfLastItem = currentPage * itemsPerPage;
@@ -316,21 +314,43 @@ const MarketplaceGrid = () => {
           <section className="expert-content">
             <aside className="expert-filters">
               <div className="filter-group">
-                <h3>Category</h3>
-                <div className="filter-tags">
-                  {['All Categories', ...(isExpert ? ['AI', 'NLP', 'Computer Vision', 'Automation', 'Data'] : ['NLP', 'VISION', 'DATA', 'GEN AI', 'MLOPS']), 'Other'].map((cat) => (
+                <h3>Tech Stack</h3>
+                <div className="tech-stack-filter-input">
+                  <input
+                    type="text"
+                    placeholder={isExpert ? 'e.g., Python, NLP, LLM...' : 'e.g., Python, Computer Vision...'}
+                    value={techStackDraft}
+                    onChange={(e) => setTechStackDraft(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        setTechStackFilter(techStackDraft);
+                        setCurrentPage(1);
+                      }
+                    }}
+                  />
+                  <button
+                    type="button"
+                    className="tech-stack-apply-btn"
+                    onClick={() => {
+                      setTechStackFilter(techStackDraft);
+                      setCurrentPage(1);
+                    }}
+                  >
+                    Apply
+                  </button>
+                  {techStackFilter && (
                     <button
                       type="button"
-                      key={cat}
-                      className={category === cat ? "active" : ""}
+                      className="tech-stack-clear-btn"
                       onClick={() => {
-                        setCategory(cat);
+                        setTechStackDraft('');
+                        setTechStackFilter('');
                         setCurrentPage(1);
                       }}
                     >
-                      {cat.toUpperCase()}
+                      Clear
                     </button>
-                  ))}
+                  )}
                 </div>
               </div>
 
