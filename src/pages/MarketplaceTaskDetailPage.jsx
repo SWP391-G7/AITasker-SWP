@@ -4,18 +4,13 @@ import {
   AlertCircle,
   ArrowLeft,
   BriefcaseBusiness,
-  ChevronDown,
-  ChevronUp,
   Clock,
   DollarSign,
-  FileText,
   Loader2,
   Send,
-  X,
 } from 'lucide-react';
 import Footer from '../Components/Footer/Footer';
 import { getMarketplaceJobById } from '../Services/serviceService';
-import { createProposal } from '../Services/proposalService';
 import './Style/ServiceDetail.css';
 
 const parseMoney = (value) => {
@@ -47,11 +42,6 @@ const MarketplaceTaskDetailPage = () => {
   const [task, setTask] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [showProposal, setShowProposal] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [submitMessage, setSubmitMessage] = useState('');
-  const [submitError, setSubmitError] = useState('');
-
   useEffect(() => {
     const fetchTaskDetail = async () => {
       try {
@@ -70,55 +60,6 @@ const MarketplaceTaskDetailPage = () => {
   }, [id]);
 
   const requiredSkill = task?.required_skill || task?.requiredSkill || 'AI Task';
-
-  const proposalDefaults = useMemo(
-    () => ({
-      bidAmount: parseMoney(task?.budget_max ?? task?.budgetMax ?? task?.budget) || '',
-      deliveryDays: task?.duration_days || task?.durationDays || '',
-    }),
-    [task]
-  );
-
-  const handleSubmitProposal = async (event) => {
-    event.preventDefault();
-
-    const form = event.currentTarget;
-    const formData = new FormData(form);
-    const coverLetter = String(formData.get('coverLetter') || '').trim();
-    const implementationApproach = String(formData.get('implementationApproach') || '').trim();
-    const portfolioUrl = String(formData.get('portfolioUrl') || '').trim();
-    const bidAmount = formData.get('bidAmount');
-    const deliveryDays = formData.get('deliveryDays');
-
-    const combinedCoverLetter = [
-      coverLetter,
-      implementationApproach ? `Implementation Approach:\n${implementationApproach}` : '',
-      portfolioUrl ? `Portfolio / Reference:\n${portfolioUrl}` : '',
-    ].filter(Boolean).join('\n\n');
-
-    try {
-      setSubmitting(true);
-      setSubmitError('');
-      setSubmitMessage('');
-
-      await createProposal({
-        jobId: id,
-        coverLetter: combinedCoverLetter,
-        bidAmount: Number(bidAmount),
-        deliveryDays: Number(deliveryDays),
-      });
-
-      setSubmitMessage('Proposal submitted successfully. The client can now review it.');
-      form.reset();
-      form.querySelectorAll('input, textarea').forEach((el) => {
-        if (el.type !== 'hidden' && el.type !== 'submit' && el.type !== 'reset') el.value = '';
-      });
-    } catch (err) {
-      setSubmitError(err.message || 'Failed to submit proposal.');
-    } finally {
-      setSubmitting(false);
-    }
-  };
 
   return (
     <div className="service-detail-page-wrapper">
@@ -196,7 +137,7 @@ const MarketplaceTaskDetailPage = () => {
                 </div>
 
                 {task?.status === 'open' ? (
-                  <button className="order-btn" type="button" onClick={() => setShowProposal(true)} style={{ marginTop: '1.25rem' }}>
+                  <button className="order-btn" type="button" onClick={() => navigate(`/marketplace/task/${task.id}/proposal`)} style={{ marginTop: '1.25rem' }}>
                     <Send size={16} /> Send Proposal
                   </button>
                 ) : (
@@ -209,91 +150,6 @@ const MarketplaceTaskDetailPage = () => {
           </div>
         )}
       </div>
-
-      {showProposal && (
-        <div className="proposal-overlay" onClick={() => setShowProposal(false)}>
-          <div className="proposal-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="proposal-modal-header">
-              <div className="proposal-modal-header-text">
-                <div className="proposal-modal-header-icon">
-                  <FileText size={20} />
-                </div>
-                <div>
-                  <h2>Create a Proposal</h2>
-                  <p>Explain how you will solve this task</p>
-                </div>
-              </div>
-              <button type="button" className="proposal-close-btn" onClick={() => setShowProposal(false)}>
-                <X size={20} />
-              </button>
-            </div>
-
-            <div className="proposal-modal-body">
-              <form className="proposal-form" onSubmit={handleSubmitProposal}>
-                <label className="proposal-field">
-                  <span>Cover Letter</span>
-                  <textarea name="coverLetter" rows="6" required placeholder="Introduce yourself, explain your approach, and tell the client why you are a good fit for this task." />
-                </label>
-
-                  <div className="proposal-field-grid">
-                    <label className="proposal-field">
-                      <span>Bid Amount</span>
-                      <div className="proposal-input-with-icon">
-                        <DollarSign size={18} />
-                        <input name="bidAmount" type="number" min="1" step="1" defaultValue={proposalDefaults.bidAmount} placeholder="1200" required />
-                        <div className="proposal-input-stepper">
-                          <button type="button" tabIndex={-1} onClick={(e) => { const i = e.currentTarget.parentElement.previousElementSibling; i.stepUp(); i.dispatchEvent(new Event('input', { bubbles: true })); }}>
-                            <ChevronUp size={14} />
-                          </button>
-                          <button type="button" tabIndex={-1} onClick={(e) => { const i = e.currentTarget.parentElement.previousElementSibling; i.stepDown(); i.dispatchEvent(new Event('input', { bubbles: true })); }}>
-                            <ChevronDown size={14} />
-                          </button>
-                        </div>
-                      </div>
-                    </label>
-
-                    <label className="proposal-field">
-                      <span>Delivery Days</span>
-                      <div className="proposal-input-with-icon">
-                        <Clock size={18} />
-                        <input name="deliveryDays" type="number" min="1" defaultValue={proposalDefaults.deliveryDays} placeholder="14" required />
-                        <div className="proposal-input-stepper">
-                          <button type="button" tabIndex={-1} onClick={(e) => { const i = e.currentTarget.parentElement.previousElementSibling; i.stepUp(); i.dispatchEvent(new Event('input', { bubbles: true })); }}>
-                            <ChevronUp size={14} />
-                          </button>
-                          <button type="button" tabIndex={-1} onClick={(e) => { const i = e.currentTarget.parentElement.previousElementSibling; i.stepDown(); i.dispatchEvent(new Event('input', { bubbles: true })); }}>
-                            <ChevronDown size={14} />
-                          </button>
-                        </div>
-                      </div>
-                    </label>
-                  </div>
-
-                <label className="proposal-field">
-                  <span>Implementation Approach</span>
-                  <textarea name="implementationApproach" rows="4" placeholder="Describe milestones, tools, model strategy, testing plan, and expected deliverables." />
-                </label>
-
-                <label className="proposal-field">
-                  <span>Portfolio or Reference Link</span>
-                  <input name="portfolioUrl" type="url" placeholder="https://your-portfolio.com/project" />
-                </label>
-
-                {submitError && <div className="proposal-status-message error">{submitError}</div>}
-                {submitMessage && <div className="proposal-status-message success">{submitMessage}</div>}
-
-                <div className="proposal-actions-row">
-                  <button className="contact-btn" type="reset" disabled={submitting}>Clear Form</button>
-                  <button className="order-btn" type="submit" disabled={submitting}>
-                    {submitting ? <Loader2 className="animate-spin" size={18} /> : <Send size={18} />}
-                    {submitting ? 'Submitting...' : 'Submit Proposal'}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      )}
 
       <Footer />
     </div>

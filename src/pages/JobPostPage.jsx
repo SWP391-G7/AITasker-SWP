@@ -3,6 +3,9 @@ import { useNavigate } from "react-router-dom";
 import Sidebar from "../Components/dashboard/Sidebar";
 import DashboardHeader from "../Components/dashboard/DashboardHeader";
 import { createJobPost } from "../Services/jobService";
+import AIExtendButton from "../Components/AIExtendButton";
+import AISkeletonLoader from "../Components/AISkeletonLoader";
+import Toast from "../Components/Toast";
 import "./JobPostPage.css";
 
 function JobPostPage() {
@@ -18,6 +21,20 @@ function JobPostPage() {
 
   const [validationErrors, setValidationErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [isAiOptimized, setIsAiOptimized] = useState(false);
+  const [toastError, setToastError] = useState("");
+
+  const handleExtendSuccess = (data) => {
+    setFormData((prev) => ({
+      ...prev,
+      title: data.title || prev.title,
+      description: data.description || prev.description,
+      requiredSkill: data.skills || prev.requiredSkill,
+    }));
+    setIsGenerating(false);
+    setIsAiOptimized(true);
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -58,7 +75,11 @@ function JobPostPage() {
       errors.durationDays = "Duration must be a positive number of days";
     }
 
-
+    if (!formData.description || !formData.description.trim()) {
+      errors.description = "Job description is required";
+    } else if (formData.description.trim().length < 50) {
+      errors.description = "Description must be at least 50 characters";
+    }
 
     return errors;
   };
@@ -122,11 +143,32 @@ function JobPostPage() {
           subtitle="Hire elite experts and deploy autonomous AI agents to build your projects." 
         />
 
-        <div className="job-post-container">
+        <div className="job-post-container" style={{ position: "relative" }}>
+          {isGenerating && <AISkeletonLoader />}
           <form className="job-post-form" onSubmit={handleSubmit}>
-            <div className="form-section-header">
-              <h2>Job Details</h2>
-              <p>Provide the scope, budget, and guidelines for your job posting.</p>
+            <div className="form-section-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+              <div>
+                <h2>Job Details</h2>
+                <p>Provide the scope, budget, and guidelines for your job posting.</p>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                {isAiOptimized && (
+                  <span className="ai-sparkle-badge">
+                    ✨ AI Optimized
+                  </span>
+                )}
+                <AIExtendButton
+                  draftFields={[formData.title, formData.description]}
+                  onExtendStart={() => {
+                    setIsGenerating(true);
+                    setIsAiOptimized(false);
+                  }}
+                  onExtendSuccess={handleExtendSuccess}
+                  onExtendFailure={() => setIsGenerating(false)}
+                  type="job_description"
+                  onErrorToast={(msg) => setToastError(msg)}
+                />
+              </div>
             </div>
 
             <div className="form-row">
@@ -156,8 +198,10 @@ function JobPostPage() {
                   value={formData.description}
                   onChange={handleChange}
                   disabled={isSubmitting}
+                  className={validationErrors.description ? "error-input" : ""}
                   rows={6}
                 />
+                {validationErrors.description && <span className="field-error">{validationErrors.description}</span>}
               </div>
             </div>
 
@@ -248,6 +292,7 @@ function JobPostPage() {
           </form>
         </div>
       </main>
+      {toastError && <Toast message={toastError} onClose={() => setToastError("")} />}
     </div>
   );
 }

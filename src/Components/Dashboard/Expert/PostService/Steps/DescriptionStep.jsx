@@ -1,7 +1,28 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Plus, Trash2 } from "lucide-react";
+import AIExtendButton from '../../../../AIExtendButton';
+import AISkeletonLoader from '../../../../AISkeletonLoader';
+import Toast from '../../../../Toast';
 
 const DescriptionStep = ({ formData, setFormData }) => {
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [isAiOptimized, setIsAiOptimized] = useState(false);
+  const [toastError, setToastError] = useState("");
+
+  const handleExtendSuccess = (data) => {
+    let parsedTags = [];
+    if (typeof data.tags === 'string') {
+      parsedTags = data.tags.split(',').map(t => t.trim()).filter(Boolean);
+    }
+    setFormData((prev) => ({
+      ...prev,
+      title: data.title || prev.title,
+      description: data.description || prev.description,
+      tags: parsedTags.length > 0 ? parsedTags : prev.tags,
+    }));
+    setIsGenerating(false);
+    setIsAiOptimized(true);
+  };
   const addFAQ = () => {
     setFormData({ ...formData, faqs: [...formData.faqs, { question: "", answer: "" }] });
   };
@@ -17,8 +38,29 @@ const DescriptionStep = ({ formData, setFormData }) => {
   };
 
   return (
-    <div className="form-section fade-in">
-      <h3 className="section-title">Detailed Description</h3>
+    <div className="form-section fade-in" style={{ position: "relative" }}>
+      {isGenerating && <AISkeletonLoader message="AI Engine is designing your service description..." />}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+        <h3 className="section-title" style={{ margin: 0 }}>Detailed Description</h3>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          {isAiOptimized && (
+            <span className="ai-sparkle-badge">
+              ✨ AI Optimized
+            </span>
+          )}
+          <AIExtendButton
+            draftFields={[formData.title, formData.description]}
+            onExtendStart={() => {
+              setIsGenerating(true);
+              setIsAiOptimized(false);
+            }}
+            onExtendSuccess={handleExtendSuccess}
+            onExtendFailure={() => setIsGenerating(false)}
+            type="service_description"
+            onErrorToast={(msg) => setToastError(msg)}
+          />
+        </div>
+      </div>
       <div className="form-group">
         <label>DESCRIBE YOUR SERVICE</label>
         <textarea 
@@ -57,6 +99,7 @@ const DescriptionStep = ({ formData, setFormData }) => {
         </div>
         <button className="add-faq-btn" onClick={addFAQ}><Plus size={16} /> Add FAQ</button>
       </div>
+      {toastError && <Toast message={toastError} onClose={() => setToastError("")} />}
     </div>
   );
 };

@@ -16,6 +16,9 @@ import {
 } from 'lucide-react';
 import { getServiceById } from '../Services/serviceService';
 import { createInvitation } from '../Services/invitationService';
+import AIExtendButton from '../Components/AIExtendButton';
+import AISkeletonLoader from '../Components/AISkeletonLoader';
+import Toast from '../Components/Toast';
 import './Style/ServiceDetail.css';
 
 const parseMoney = (value) => {
@@ -34,6 +37,17 @@ const ServiceRequestPage = () => {
   const [submitting, setSubmitting] = useState(false);
   const [submitMessage, setSubmitMessage] = useState('');
   const [submitError, setSubmitError] = useState('');
+
+  const [coverLetter, setCoverLetter] = useState('');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [isAiOptimized, setIsAiOptimized] = useState(false);
+  const [toastError, setToastError] = useState('');
+
+  const handleExtendSuccess = (data) => {
+    if (data.coverLetter) setCoverLetter(data.coverLetter);
+    setIsGenerating(false);
+    setIsAiOptimized(true);
+  };
 
   useEffect(() => {
     const fetchService = async () => {
@@ -80,6 +94,8 @@ const ServiceRequestPage = () => {
 
       setSubmitMessage('Purchase request sent successfully. The expert will review it shortly.');
       form.reset();
+      setCoverLetter('');
+      setIsAiOptimized(false);
       setTimeout(() => {
         navigate('/client/projects');
       }, 1500);
@@ -129,7 +145,8 @@ const ServiceRequestPage = () => {
             </div>
           ) : (
             <div className="proposal-layout">
-              <main className="proposal-form-card glass-card">
+              <main className="proposal-form-card glass-card" style={{ position: "relative" }}>
+                {isGenerating && <AISkeletonLoader message="AI Engine is composing your requirements..." />}
                 <div className="proposal-section-heading">
                   <FileText size={22} />
                   <div>
@@ -140,11 +157,34 @@ const ServiceRequestPage = () => {
 
                 <form className="proposal-form" onSubmit={handleSubmitRequest}>
                   <label className="proposal-field">
-                    <span>Describe Your Requirements</span>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <span>Describe Your Requirements</span>
+                      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                        {isAiOptimized && (
+                          <span className="ai-sparkle-badge">
+                            ✨ AI Optimized
+                          </span>
+                        )}
+                        <AIExtendButton
+                          draftFields={[coverLetter]}
+                          onExtendStart={() => {
+                            setIsGenerating(true);
+                            setIsAiOptimized(false);
+                          }}
+                          onExtendSuccess={handleExtendSuccess}
+                          onExtendFailure={() => setIsGenerating(false)}
+                          type="request"
+                          context={service ? `Service Title: ${service.title}\nService Description: ${service.description}` : ''}
+                          onErrorToast={(msg) => setToastError(msg)}
+                        />
+                      </div>
+                    </div>
                     <textarea
                       name="coverLetter"
                       rows="8"
                       required
+                      value={coverLetter}
+                      onChange={(e) => setCoverLetter(e.target.value)}
                       placeholder="Explain your project context, customization requirements, and why you are choosing this service."
                     />
                   </label>
@@ -233,6 +273,7 @@ const ServiceRequestPage = () => {
           )}
         </section>
       </div>
+      {toastError && <Toast message={toastError} onClose={() => setToastError('')} />}
     </div>
   );
 };

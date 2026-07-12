@@ -15,6 +15,9 @@ import Footer from "../../../Components/Footer/Footer";
 import { useClientUser } from "../../../Components/Dashboard/Client/user";
 import { logout } from "../../../Services/authService";
 import { createJobPost } from "../../../Services/jobService";
+import AIExtendButton from "../../../Components/AIExtendButton";
+import AISkeletonLoader from "../../../Components/AISkeletonLoader";
+import Toast from "../../../Components/Toast";
 import "../../Style/AdminDashboardPage.css";
 import "./ClientMarketplace.css";
 
@@ -41,6 +44,22 @@ function PostJobPage() {
     budgetMax: "",
     durationDays: "",
   });
+
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [isAiOptimized, setIsAiOptimized] = useState(false);
+  const [toastError, setToastError] = useState("");
+
+  const handleExtendSuccess = (data) => {
+    setFormData((prev) => ({
+      ...prev,
+      title: data.title || prev.title,
+      description: data.description || prev.description,
+      techStack: data.skills || prev.techStack,
+      requirements: data.requirements || prev.requirements,
+    }));
+    setIsGenerating(false);
+    setIsAiOptimized(true);
+  };
 
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -81,6 +100,11 @@ function PostJobPage() {
 
       if (!formData.description.trim()) {
         setError("Please enter project description.");
+        return false;
+      }
+
+      if (formData.description.trim().length < 50) {
+        setError("Project description must be at least 50 characters.");
         return false;
       }
     }
@@ -215,12 +239,34 @@ function PostJobPage() {
         </section>
 
         <form onSubmit={(e) => e.preventDefault()}>
-          <section className="post-form-card">
+          <section className="post-form-card" style={{ position: "relative" }}>
+            {isGenerating && <AISkeletonLoader />}
             {error && <div className="alert alert-danger">{error}</div>}
             {success && <div className="alert alert-success">{success}</div>}
 
             {step === 1 && (
               <>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    {isAiOptimized && (
+                      <span className="ai-sparkle-badge">
+                        ✨ AI Optimized
+                      </span>
+                    )}
+                  </div>
+                  <AIExtendButton
+                    draftFields={[formData.title, formData.description]}
+                    onExtendStart={() => {
+                      setIsGenerating(true);
+                      setIsAiOptimized(false);
+                    }}
+                    onExtendSuccess={handleExtendSuccess}
+                    onExtendFailure={() => setIsGenerating(false)}
+                    type="job_description"
+                    onErrorToast={(msg) => setToastError(msg)}
+                  />
+                </div>
+
                 <div className="form-group">
                   <label>PROJECT TITLE</label>
                   <input
@@ -362,6 +408,7 @@ function PostJobPage() {
 
         <Footer variant="dashboard" />
       </main>
+      {toastError && <Toast message={toastError} onClose={() => setToastError("")} />}
     </div>
   );
 }

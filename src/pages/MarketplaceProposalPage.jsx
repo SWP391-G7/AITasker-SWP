@@ -16,6 +16,9 @@ import {
 } from 'lucide-react';
 import { getMarketplaceJobById } from '../Services/serviceService';
 import { createProposal } from '../Services/proposalService';
+import AIExtendButton from '../Components/AIExtendButton';
+import AISkeletonLoader from '../Components/AISkeletonLoader';
+import Toast from '../Components/Toast';
 import './Style/ServiceDetail.css';
 
 const parseMoney = (value) => {
@@ -49,6 +52,19 @@ const MarketplaceProposalPage = () => {
   const [submitting, setSubmitting] = useState(false);
   const [submitMessage, setSubmitMessage] = useState('');
   const [submitError, setSubmitError] = useState('');
+
+  const [coverLetter, setCoverLetter] = useState('');
+  const [implementationApproach, setImplementationApproach] = useState('');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [isAiOptimized, setIsAiOptimized] = useState(false);
+  const [toastError, setToastError] = useState('');
+
+  const handleExtendSuccess = (data) => {
+    if (data.coverLetter) setCoverLetter(data.coverLetter);
+    if (data.implementationApproach) setImplementationApproach(data.implementationApproach);
+    setIsGenerating(false);
+    setIsAiOptimized(true);
+  };
 
   useEffect(() => {
     const fetchTask = async () => {
@@ -103,6 +119,9 @@ const MarketplaceProposalPage = () => {
 
       setSubmitMessage('Proposal submitted successfully. The client can now review it from their task detail.');
       form.reset();
+      setCoverLetter('');
+      setImplementationApproach('');
+      setIsAiOptimized(false);
       form.querySelectorAll('input, textarea').forEach((el) => {
         if (el.type !== 'hidden' && el.type !== 'submit' && el.type !== 'reset') el.value = '';
       });
@@ -154,7 +173,8 @@ const MarketplaceProposalPage = () => {
             </div>
           ) : (
             <div className="proposal-layout">
-              <main className="proposal-form-card glass-card">
+              <main className="proposal-form-card glass-card" style={{ position: "relative" }}>
+                {isGenerating && <AISkeletonLoader message="AI Engine is composing your proposal details..." />}
                 <div className="proposal-section-heading">
                   <FileText size={22} />
                   <div>
@@ -165,11 +185,34 @@ const MarketplaceProposalPage = () => {
 
                 <form className="proposal-form" onSubmit={handleSubmitProposal}>
                   <label className="proposal-field">
-                    <span>Cover Letter</span>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <span>Cover Letter</span>
+                      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                        {isAiOptimized && (
+                          <span className="ai-sparkle-badge">
+                            ✨ AI Optimized
+                          </span>
+                        )}
+                        <AIExtendButton
+                          draftFields={[coverLetter, implementationApproach]}
+                          onExtendStart={() => {
+                            setIsGenerating(true);
+                            setIsAiOptimized(false);
+                          }}
+                          onExtendSuccess={handleExtendSuccess}
+                          onExtendFailure={() => setIsGenerating(false)}
+                          type="proposal"
+                          context={task ? `Task Title: ${task.title}\nTask Description: ${task.description}` : ''}
+                          onErrorToast={(msg) => setToastError(msg)}
+                        />
+                      </div>
+                    </div>
                     <textarea
                       name="coverLetter"
                       rows="8"
                       required
+                      value={coverLetter}
+                      onChange={(e) => setCoverLetter(e.target.value)}
                       placeholder="Introduce yourself, explain your approach, and tell the client why you are a good fit for this task."
                     />
                   </label>
@@ -213,6 +256,8 @@ const MarketplaceProposalPage = () => {
                     <textarea
                       name="implementationApproach"
                       rows="5"
+                      value={implementationApproach}
+                      onChange={(e) => setImplementationApproach(e.target.value)}
                       placeholder="Describe milestones, tools, model strategy, testing plan, and expected deliverables."
                     />
                   </label>
@@ -276,6 +321,7 @@ const MarketplaceProposalPage = () => {
           )}
         </section>
       </div>
+      {toastError && <Toast message={toastError} onClose={() => setToastError('')} />}
     </div>
   );
 };
