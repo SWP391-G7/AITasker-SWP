@@ -1,15 +1,13 @@
 import React from 'react';
 
-const ServicePreview = ({ formData, categories }) => {
-  const selectedCategory = categories.find(c => c.id === formData.category);
-
+const ServicePreview = ({ formData }) => {
   return (
     <div className="service-preview-sidebar">
       <div className="preview-sticky">
         <h4 className="preview-label">LIVE PREVIEW</h4>
         <div className="preview-card-mock">
-          <div className="mock-image">
-            <span className="mock-tag">{selectedCategory?.title.toUpperCase() || formData.category.toUpperCase()}</span>
+          <div className="mock-image" style={formData.images?.[0]?.preview ? { backgroundImage: `url(${formData.images[0].preview})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}>
+            <span className="mock-tag">{(formData.techStack || formData.tags || "AI").split(",")[0].trim().toUpperCase()}</span>
           </div>
           <div className="mock-body">
             <div className="mock-expert">

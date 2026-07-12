@@ -1,6 +1,6 @@
 import React from 'react';
 
-const OverviewStep = ({ formData, setFormData, categories }) => {
+const OverviewStep = ({ formData, setFormData }) => {
   return (
     <div className="form-section fade-in">
       <h3 className="section-title">Service Overview</h3>
@@ -19,19 +19,25 @@ const OverviewStep = ({ formData, setFormData, categories }) => {
       </div>
 
       <div className="form-group">
-        <label>CATEGORY</label>
-        <div className="category-selection-grid">
-          {categories.map((cat) => (
-            <button 
-              key={cat.id}
-              className={`cat-toggle ${formData.category === cat.id ? 'selected' : ''}`}
-              onClick={() => setFormData({...formData, category: cat.id})}
-            >
-              <cat.icon size={20} />
-              <span>{cat.title}</span>
-            </button>
-          ))}
-        </div>
+        <label>TECH STACK</label>
+        <input
+          type="text"
+          value={formData.techStack}
+          onChange={(e) => setFormData({...formData, techStack: e.target.value})}
+          placeholder="e.g., Python, LangChain, OpenAI, Pinecone"
+        />
+        <p className="help-text">List technologies or tools used in this service.</p>
+      </div>
+
+      <div className="form-group">
+        <label>TAGS</label>
+        <input
+          type="text"
+          value={formData.tags}
+          onChange={(e) => setFormData({...formData, tags: e.target.value})}
+          placeholder="e.g., NLP, RAG, Automation"
+        />
+        <p className="help-text">Comma-separated tags to help clients find your service.</p>
       </div>
     </div>
   );
