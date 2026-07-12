@@ -45,7 +45,7 @@ const PostServicePage = () => {
 
   const stepLabels = [
     { title: "Overview", subtitle: "Technical Overview" },
-    { title: "Pricing", subtitle: "Service Packages" },
+    { title: "Pricing", subtitle: "Set Your Price" },
     { title: "Description", subtitle: "Detailed Information" },
     { title: "Media", subtitle: "Gallery & Video" }
   ];

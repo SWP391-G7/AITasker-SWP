@@ -33,11 +33,10 @@ const PostServiceForm = ({ currentStep, setCurrentStep }) => {
     description: "",
     tags: [],
     faqs: [{ question: "", answer: "" }],
-    tiers: {
-      basic: { price: "", delivery: "3", revisions: "1", features: ["Basic AI Model Setup"] },
-      standard: { price: "", delivery: "7", revisions: "3", features: ["Advanced Fine-tuning", "Documentation"] },
-      premium: { price: "", delivery: "14", revisions: "Unlimited", features: ["Full Integration", "1 Month Support", "Source Code"] }
-    },
+    price: "",
+    delivery: "3",
+    revisions: "1",
+    features: ["Basic AI Model Setup"],
     images: [],
     videoLink: ""
   });
@@ -50,8 +49,8 @@ const PostServiceForm = ({ currentStep, setCurrentStep }) => {
     if (!formData.title || formData.title.trim() === '') {
       validationErrors.push('Title is required (Step 1 - Overview)');
     }
-    if (!formData.tiers.basic.price || parseFloat(formData.tiers.basic.price) <= 0) {
-      validationErrors.push('Basic tier price must be a positive number (Step 2 - Pricing)');
+    if (!formData.price || parseFloat(formData.price) <= 0) {
+      validationErrors.push('Price must be a positive number (Step 2 - Pricing)');
     }
     if (!formData.description || formData.description.trim().length < 120) {
       validationErrors.push('Description must be at least 120 characters (Step 3 - Description)');
@@ -70,9 +69,8 @@ const PostServiceForm = ({ currentStep, setCurrentStep }) => {
         title: formData.title,
         category: formData.category,
         description: formData.description,
-        price: formData.tiers.basic.price,
-        deliveryDays: formData.tiers.basic.delivery,
-        tiers: formData.tiers,
+        price: formData.price,
+        deliveryDays: formData.delivery,
         faqs: formData.faqs,
         images: formData.images,
         videoLink: formData.videoLink

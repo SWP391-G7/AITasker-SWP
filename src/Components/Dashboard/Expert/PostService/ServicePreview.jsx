@@ -24,7 +24,7 @@ const ServicePreview = ({ formData, categories }) => {
           <div className="mock-footer">
             <div className="mock-price">
               <small>STARTING AT</small>
-              <strong>{formData.tiers.basic.price ? `$${formData.tiers.basic.price}` : "$ ---"}</strong>
+              <strong>{formData.price ? `$${formData.price}` : "$ ---"}</strong>
             </div>
             <div className="mock-btn">View Details</div>
           </div>
@@ -33,7 +33,7 @@ const ServicePreview = ({ formData, categories }) => {
           <h5>Pro Tips</h5>
           <ul>
             <li>High-quality images increase clicks by 40%.</li>
-            <li>Clear, tiered pricing helps clients choose faster.</li>
+            <li>Clear pricing helps clients decide faster.</li>
             <li>Be specific about your deliverables.</li>
           </ul>
         </div>

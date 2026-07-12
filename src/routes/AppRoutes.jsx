@@ -39,6 +39,7 @@ import ProjectDetailPage from "../pages/ProjectDetailPage"
 import DeactivatedPage from "../pages/DeactivatedPage"
 import ServiceRequestPage from "../pages/ServiceRequestPage"
 import ServiceRequestDetailPage from "../pages/ServiceRequestDetailPage"
+import { PrivacyPolicy, TermsOfService, HelpCenter, ApiDocs } from "../pages/InfoPages"
 
 function useAuthStatus() {
   const [status, setStatus] = useState({ isLoggedIn: null, isVerified: null, role: null })
@@ -229,6 +230,10 @@ function AppRoutes() {
       <Route path="/verify" element={<VerifyOnly><EmailVerificationPage /></VerifyOnly>} />
       <Route path="/verify-email" element={<VerifyOnly><EmailVerificationPage /></VerifyOnly>} />
       <Route path="/deactivated" element={<DeactivatedPage />} />
+      <Route path="/privacy" element={<PrivacyPolicy />} />
+      <Route path="/terms" element={<TermsOfService />} />
+      <Route path="/help" element={<HelpCenter />} />
+      <Route path="/api-docs" element={<ApiDocs />} />
 
       <Route path="/onboarding" element={<ProtectedRoute><OnboardingPage /></ProtectedRoute>} />
       <Route path="/dashboard" element={<DashboardRedirect />} />
