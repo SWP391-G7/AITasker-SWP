@@ -1,10 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 import {
-  seedWelcomeNotification,
-  getLocalNotifications,
   getConversationNotifications,
-  markLocalAsRead,
-  clearAllLocalNotifications,
   playNotificationSound,
   requestDesktopPermission,
   sendDesktopNotification,
@@ -26,7 +22,6 @@ export default function useNotifications(isLogin) {
 
   const loadNotifications = async () => {
     try {
-      const local = getLocalNotifications()
       const conv = await getConversationNotifications()
       
       let dbNotifs = []
@@ -50,7 +45,7 @@ export default function useNotifications(isLogin) {
         }
       }
 
-      const all = [...local, ...conv, ...dbNotifs]
+      const all = [...conv, ...dbNotifs]
         .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
       setNotifications(all)
     } catch (err) {
@@ -73,8 +68,6 @@ export default function useNotifications(isLogin) {
         } catch (e) {
           console.error("Failed to mark db notification as read:", e)
         }
-      } else if (notif.type !== "message") {
-        markLocalAsRead(notif.id)
       }
       setNotifications((prev) => prev.map((n) => (n.id === notif.id ? { ...n, read: true } : n)))
     }
@@ -182,8 +175,6 @@ export default function useNotifications(isLogin) {
         } catch (err) {
           console.error("Failed to mark db notification as read:", err)
         }
-      } else {
-        markLocalAsRead(id)
       }
       setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)))
     }
@@ -191,7 +182,6 @@ export default function useNotifications(isLogin) {
 
   const clearNotifications = async () => {
     setNotifications([])
-    clearAllLocalNotifications()
     try {
       if (isLogin) {
         await markAllNotificationsAsReadAPI()
@@ -202,10 +192,9 @@ export default function useNotifications(isLogin) {
     setShowNotifications(false)
   }
 
-  // Seed welcome notification once + load on mount
+  // Load on mount
   useEffect(() => {
     if (isLogin) {
-      seedWelcomeNotification()
       loadNotifications()
     }
   }, [isLogin])
