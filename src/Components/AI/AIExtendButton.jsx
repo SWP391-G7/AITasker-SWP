@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Sparkles, Loader2 } from 'lucide-react';
-import { generateFormWithAI } from '../Services/aiService';
+import { generateFormWithAI } from '../../Services/aiService';
 import './AIExtendButton.css';
 
 const AIExtendButton = ({

@@ -74,7 +74,7 @@ const ServiceDetailPage = () => {
               Go Back
             </button>
           </div>
-        ) : service.status === 'removed' || service.status === 'rejected' ? (
+        ) : (service.status === 'removed' || service.status === 'rejected') && !isAdmin ? (
           <div className="error-card" style={{ borderColor: '#ef4444' }}>
             <AlertCircle size={48} className="text-danger mb-3" />
             <h3>Service removed by Administrator</h3>

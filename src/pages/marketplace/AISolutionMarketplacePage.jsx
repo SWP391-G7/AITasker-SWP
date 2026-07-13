@@ -1,7 +1,7 @@
 
 import HeaderCom from "../../Components/Navbar/HeaderCom";
 import Footer from "../../Components/Footer/Footer";
-import AISolutionMarketPlace from "../../Components/AISolutionMarketPlace/AISolutionMarketPlace";
+import AISolutionMarketPlace from "../../Components/marketplace/AISolutionMarketPlace";
 
 const AISolutionMarketplacePage = () => {
   return (

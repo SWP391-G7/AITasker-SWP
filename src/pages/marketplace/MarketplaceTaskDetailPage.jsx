@@ -10,6 +10,7 @@ import {
   Send,
 } from 'lucide-react';
 import Footer from '../../Components/Footer/Footer';
+import { getStoredUser } from '../../Services/checkLogin';
 import { getMarketplaceJobById } from '../../Services/serviceService';
 import '../Style/ServiceDetail.css';
 
@@ -42,6 +43,9 @@ const MarketplaceTaskDetailPage = () => {
   const [task, setTask] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const currentUser = getStoredUser();
+  const isAdmin = currentUser?.role === 'admin';
+
   useEffect(() => {
     const fetchTaskDetail = async () => {
       try {
@@ -82,7 +86,7 @@ const MarketplaceTaskDetailPage = () => {
               Go Back
             </button>
           </div>
-        ) : task.status === 'removed' || task.status === 'rejected' ? (
+        ) : (task.status === 'removed' || task.status === 'rejected') && !isAdmin ? (
           <div className="error-card" style={{ borderColor: '#ef4444' }}>
             <AlertCircle size={48} className="text-danger mb-3" />
             <h3>Post removed by Administrator</h3>

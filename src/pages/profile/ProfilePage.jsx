@@ -294,6 +294,31 @@ function ProfilePage() {
   }
 
   const { user, clientProfile, expertProfile, hasClientProfile, hasExpertProfile } = profileData;
+  
+  // If user is suspended, only allow admin to view
+  if (user?.status === 'Suspended' && currentUser?.role !== 'admin') {
+    return (
+      <div className="profile-shell">
+        <HeaderCom />
+        <main className="profile-container">
+          <header className="profile-nav-header">
+            <button className="back-link-btn" onClick={() => navigate(-1)}>
+              {backLabel}
+            </button>
+          </header>
+          <div className="error-card" style={{ borderColor: '#ef4444' }}>
+            <AlertCircle size={48} className="text-danger mb-3" />
+            <h2>User Account Suspended</h2>
+            <p className="text-muted">This user profile is no longer available because the account has been suspended for violating AITasker's terms of service.</p>
+            <button className="primary-btn mt-3" onClick={() => navigate(-1)}>
+              Go Back
+            </button>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
   const isExpertView = activeTab === "expert";
   const activeProfile = isExpertView ? expertProfile : clientProfile;
   // API data: profile page calls API once, then pushes response lists through Profile helpers.
