@@ -116,9 +116,8 @@ const ServiceCard = ({
           )}
         </div>
 
-        {/* Title */}
         <h3 className="mp-card-title">
-          {isJob ? title : `I will ${title}`}
+          {title}
         </h3>
 
         {/* Description */}

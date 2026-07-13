@@ -76,10 +76,9 @@ function PostServicePage() {
 
     let titleVal = data.title || "";
     if (titleVal) {
-      titleVal = titleVal.replace(/^i\s+will\s+/i, "");
-      const firstWord = titleVal.split(" ")[0];
-      if (firstWord && firstWord !== firstWord.toUpperCase()) {
-        titleVal = titleVal.charAt(0).toLowerCase() + titleVal.slice(1);
+      titleVal = titleVal.replace(/^i\s+will\s+/i, "").trim();
+      if (titleVal) {
+        titleVal = titleVal.charAt(0).toUpperCase() + titleVal.slice(1);
       }
     }
 
@@ -329,18 +328,15 @@ function PostServicePage() {
                     </div>
 
                     <div className="form-group">
-                      <label>I WILL...</label>
-                      <div className="input-with-prefix">
-                        <span>I will</span>
-                        <input
-                          type="text"
-                          name="title"
-                          value={formData.title}
-                          onChange={handleChange}
-                          maxLength={80}
-                          placeholder="e.g., build a custom RAG system for your documentation"
-                        />
-                      </div>
+                      <label>SERVICE TITLE</label>
+                      <input
+                        type="text"
+                        name="title"
+                        value={formData.title}
+                        onChange={handleChange}
+                        maxLength={80}
+                        placeholder="e.g., Build a custom RAG system for your documentation"
+                      />
                       <p>Start with a strong action verb. Maximum 80 characters.</p>
                     </div>
 
@@ -736,7 +732,7 @@ function PostServicePage() {
                     <div className="mock-rating">5.0</div>
                   </div>
                   <h3 className="mock-title">
-                    {formData.title ? `I will ${formData.title}` : "Your service title will appear here..."}
+                    {formData.title ? formData.title : "Your service title will appear here..."}
                   </h3>
                   <p
                     className="mock-description"
