@@ -84,7 +84,7 @@ function ExpertOnboardingForm({ onBack }) {
 
       console.log("Expert onboarding success:", result);
 
-      navigate("/dashboard");
+      navigate("/expert/dashboard");
     } catch (error) {
       setError("Submit failed. Please try again.");
     }

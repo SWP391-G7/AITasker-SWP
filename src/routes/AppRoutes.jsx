@@ -42,7 +42,7 @@ import ServiceRequestDetailPage from "../pages/ServiceRequestDetailPage"
 import { PrivacyPolicy, TermsOfService, HelpCenter, ApiDocs } from "../pages/InfoPages"
 
 function useAuthStatus() {
-  const [status, setStatus] = useState({ isLoggedIn: null, isVerified: null, role: null })
+  const [status, setStatus] = useState({ isLoggedIn: null, isVerified: null, isOnboarded: null, role: null })
 
   useEffect(() => {
     let mounted = true
@@ -53,12 +53,14 @@ function useAuthStatus() {
           const loggedIn = result?.isLoggedIn ?? false
           const user = result?.user?.user
           const verified = loggedIn ? (user?.isVerified ?? false) : false
-          setStatus({ isLoggedIn: loggedIn, isVerified: verified, role: user?.role ?? null })
+          // isOnboarded is enriched onto the user object by authService.getMe
+          const onboarded = loggedIn ? (user?.isOnboarded ?? false) : false
+          setStatus({ isLoggedIn: loggedIn, isVerified: verified, isOnboarded: onboarded, role: user?.role ?? null })
         }
       })
       .catch(() => {
         if (mounted) {
-          setStatus({ isLoggedIn: false, isVerified: false, role: null })
+          setStatus({ isLoggedIn: false, isVerified: false, isOnboarded: false, role: null })
         }
       })
 
@@ -77,10 +79,43 @@ const roleHomePaths = {
 }
 
 function GuestOnly({ children }) {
-  const { isLoggedIn, isVerified } = useAuthStatus()
+  const { isLoggedIn, isVerified, isOnboarded, role } = useAuthStatus()
 
   if (isLoggedIn === null) return null
-  if (isLoggedIn && isVerified) return <Navigate to="/" replace />
+  if (isLoggedIn && isVerified) {
+    // Redirect to onboarding if profile not yet complete
+    if (!isOnboarded) return <Navigate to="/onboarding" replace />
+    return <Navigate to={roleHomePaths[role] || "/"} replace />
+  }
+
+  return children
+}
+
+// Allows access only to logged-in, verified users who have NOT yet onboarded.
+// Already-onboarded users are sent straight to their role dashboard.
+function OnboardingOnly({ children }) {
+  const location = useLocation()
+  const { isLoggedIn, isVerified, isOnboarded, role } = useAuthStatus()
+
+  if (isLoggedIn === null) return null
+
+  if (!isLoggedIn) {
+    return (
+      <Navigate
+        to="/login"
+        replace
+        state={{
+          from: location.pathname,
+          message: "Please log in or create an account to use this feature.",
+        }}
+      />
+    )
+  }
+
+  if (!isVerified) return <Navigate to="/verify" replace />
+
+  // Profile already established — send them home
+  if (isOnboarded) return <Navigate to={roleHomePaths[role] || "/"} replace />
 
   return children
 }
@@ -109,9 +144,9 @@ function VerifyOnly({ children }) {
   return children
 }
 
-function ProtectedRoute({ children, allowedRoles }) {
+function ProtectedRoute({ children, allowedRoles, onboardingRequired = true }) {
   const location = useLocation()
-  const { isLoggedIn, isVerified, role } = useAuthStatus()
+  const { isLoggedIn, isVerified, isOnboarded, role } = useAuthStatus()
 
   if (isLoggedIn === null) return null
 
@@ -129,6 +164,11 @@ function ProtectedRoute({ children, allowedRoles }) {
   }
 
   if (!isVerified) return <Navigate to="/verify" replace />
+
+  // Redirect to onboarding if the user hasn't completed their profile yet
+  if (onboardingRequired && !isOnboarded) {
+    return <Navigate to="/onboarding" replace />
+  }
 
   if (allowedRoles?.length && !allowedRoles.includes(role)) {
     return <Navigate to={roleHomePaths[role] || "/"} replace />
@@ -139,7 +179,7 @@ function ProtectedRoute({ children, allowedRoles }) {
 
 function DashboardRedirect() {
   const location = useLocation()
-  const { isLoggedIn, isVerified, role } = useAuthStatus()
+  const { isLoggedIn, isVerified, isOnboarded, role } = useAuthStatus()
 
   if (isLoggedIn === null) return null
 
@@ -157,6 +197,8 @@ function DashboardRedirect() {
   }
 
   if (!isVerified) return <Navigate to="/verify" replace />
+
+  if (!isOnboarded) return <Navigate to="/onboarding" replace />
 
   return <Navigate to={roleHomePaths[role] || "/"} replace />
 }
@@ -235,7 +277,7 @@ function AppRoutes() {
       <Route path="/help" element={<HelpCenter />} />
       <Route path="/api-docs" element={<ApiDocs />} />
 
-      <Route path="/onboarding" element={<ProtectedRoute><OnboardingPage /></ProtectedRoute>} />
+      <Route path="/onboarding" element={<OnboardingOnly><OnboardingPage /></OnboardingOnly>} />
       <Route path="/dashboard" element={<DashboardRedirect />} />
 
       <Route path="/client/dashboard" element={<ProtectedRoute allowedRoles={["client"]}><ClientDashboardPage /></ProtectedRoute>} />

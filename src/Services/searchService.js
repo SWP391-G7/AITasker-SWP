@@ -18,11 +18,13 @@ export const search = async (searchParams) => {
 
     const queryString = queryParts.length > 0 ? `?${queryParts.join('&')}` : '';
 
-    // 2. Perform public request
+    // 2. Perform authenticated request
+    const token = localStorage.getItem('token');
     const response = await fetch(`${API_BASE_URL}/search${queryString}`, {
       method: 'GET',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
       }
     });
 

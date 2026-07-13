@@ -1,9 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import RoleSelection from "../Components/onboarding/RoleSelection";
 import ClientOnboardingForm from "../Components/onboarding/ClientOnboardingForm";
 import ExpertOnboardingForm from "../Components/onboarding/ExpertOnboardingForm";
-import { isLoggedIn } from "../Services/checkLogin";
 import { updateUserRole } from "../Services/onboardingService";
 import "../Components/onboarding/Onboarding.css";
 
@@ -11,12 +10,6 @@ function OnboardingPage() {
   const navigate = useNavigate();
   const [selectedRole, setSelectedRole] = useState("");
   const [error, setError] = useState("");
-
-  useEffect(() => {
-    if (!isLoggedIn()) {
-      navigate("/login");
-    }
-  }, [navigate]);
 
   const handleSelectRole = async (role) => {
     try {
