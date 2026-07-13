@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, CheckCircle2, Clock, Loader2, AlertCircle, Star, XCircle, Send } from 'lucide-react';
-import Footer from '../Components/Footer/Footer';
-import { getServiceById } from '../Services/serviceService';
-import { updateContentStatus } from '../Services/adminDashboardService';
-import { getStoredUser } from '../Services/checkLogin';
-import './Style/ServiceDetail.css';
+import Footer from '../../Components/Footer/Footer';
+import { getServiceById } from '../../Services/serviceService';
+import { updateContentStatus } from '../../Services/adminDashboardService';
+import { getStoredUser } from '../../Services/checkLogin';
+import '../Style/ServiceDetail.css';
 
 const ServiceDetailPage = () => {
   const { id } = useParams();
@@ -176,3 +176,4 @@ const ServiceDetailPage = () => {
 };
 
 export default ServiceDetailPage;
+

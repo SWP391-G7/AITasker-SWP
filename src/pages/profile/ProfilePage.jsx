@@ -10,13 +10,13 @@ import {
   Star,
   BadgeCheck,
 } from "lucide-react";
-import HeaderCom from "../Components/Navbar/HeaderCom";
-import Footer from "../Components/Footer/Footer";
-import { getUserProfile } from "../Services/profileService";
-import { getStoredUser } from "../Services/checkLogin";
-import { getExpertServicesFromApi } from "../Components/Profile/Expert/ExpertService";
-import { getClientProjectsFromApi } from "../Components/Profile/Client/ClientProject";
-import { getOrCreateConversation } from "../Services/messageService";
+import HeaderCom from "../../Components/Navbar/HeaderCom";
+import Footer from "../../Components/Footer/Footer";
+import { getUserProfile } from "../../Services/profileService";
+import { getStoredUser } from "../../Services/checkLogin";
+import { getExpertServicesFromApi } from "../../Components/Profile/Expert/ExpertService";
+import { getClientProjectsFromApi } from "../../Components/Profile/Client/ClientProject";
+import { getOrCreateConversation } from "../../Services/messageService";
 import "./ProfilePage.css";
 
 function ProfilePage() {
@@ -584,3 +584,4 @@ function ProfilePage() {
 }
 
 export default ProfilePage
+

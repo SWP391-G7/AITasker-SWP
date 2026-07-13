@@ -11,7 +11,7 @@ import AIExtendButton from "../../../Components/AIExtendButton";
 import AISkeletonLoader from "../../../Components/AISkeletonLoader";
 import Toast from "../../../Components/Toast";
 import { uploadImage } from "../../../Services/uploadService";
-import "../../Style/AdminDashboardPage.css";
+import "../Style/AdminDashboardPage.css";
 import "./ClientMarketplace.css";
 import "../../../Components/Dashboard/Expert/PostService/PostService.css";
 
@@ -553,3 +553,4 @@ function PostJobPage() {
 }
 
 export default PostJobPage;
+

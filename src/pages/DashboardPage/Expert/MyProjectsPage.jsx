@@ -14,10 +14,10 @@ import { getMyProjects } from '../../../Services/projectService'
 import { getMyProposals } from '../../../Services/proposalService'
 import { getMyInvitations } from '../../../Services/invitationService'
 import { createHandleLogout } from './handleLogout'
-import '../../Style/AdminDashboardPage.css'
-import '../../Style/ExpertDashboardPage.css'
+import '../Style/AdminDashboardPage.css'
+import '../Style/ExpertDashboardPage.css'
 import '../Client/ClientMarketplace.css'
-import '../../ClientExpertSearchPage.css'
+import '../../clients-experts/ClientExpertSearchPage.css'
 
 const parseMoney = (value) => Number(String(value || '0').replace(/[^0-9.]/g, '')) || 0
 const formatMoney = (value) => `$${parseMoney(value).toLocaleString()}`
@@ -459,3 +459,4 @@ const MyProjectsPage = () => {
 }
 
 export default MyProjectsPage
+

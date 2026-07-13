@@ -1,7 +1,7 @@
 
-import HeaderCom from "../Components/Navbar/HeaderCom";
-import Footer from "../Components/Footer/Footer";
-import AISolutionMarketPlace from "../Components/AISolutionMarketPlace/AISolutionMarketPlace";
+import HeaderCom from "../../Components/Navbar/HeaderCom";
+import Footer from "../../Components/Footer/Footer";
+import AISolutionMarketPlace from "../../Components/AISolutionMarketPlace/AISolutionMarketPlace";
 
 const AISolutionMarketplacePage = () => {
   return (
@@ -14,3 +14,4 @@ const AISolutionMarketplacePage = () => {
 };
 
 export default AISolutionMarketplacePage;
+

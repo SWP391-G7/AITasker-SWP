@@ -9,8 +9,8 @@ import EarningsCharts from '../../../Components/Dashboard/Expert/Earnings/Earnin
 import TransactionTable from '../../../Components/Dashboard/Expert/Earnings/TransactionTable'
 import { getMyTransactionsAPI } from '../../../Services/transactionService'
 import { createHandleLogout } from './handleLogout'
-import '../../Style/AdminDashboardPage.css'
-import '../../Style/ExpertDashboardPage.css'
+import '../Style/AdminDashboardPage.css'
+import '../Style/ExpertDashboardPage.css'
 import '../../../Components/Dashboard/Expert/Earnings/EarningsPage.css'
 
 const EarningsPage = () => {
@@ -166,3 +166,4 @@ const EarningsPage = () => {
 }
 
 export default EarningsPage
+

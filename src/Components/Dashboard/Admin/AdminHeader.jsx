@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Bell, ChevronDown, LogOut, Search, Settings, User } from 'lucide-react'
 import { getStoredUser } from '../../../Services/checkLogin'
-import SettingPage from '../../../pages/SettingPage'
+import SettingPage from '../../Settings/SettingsPage'
 import useHandleClickOutside from '../HandleClickOutside'
 import '../../Navbar/HeaderCom.css'
 

@@ -14,7 +14,7 @@ import {
   getAdminDashboardData,
   updateContentStatus
 } from '../../../Services/adminDashboardService'
-import '../../Style/AdminDashboardPage.css'
+import '../Style/AdminDashboardPage.css'
 
 const AdminDashboardPage = ({ onLogout }) => {
   const navigate = useNavigate()
@@ -134,3 +134,4 @@ const AdminDashboardPage = ({ onLogout }) => {
 }
 
 export default AdminDashboardPage
+

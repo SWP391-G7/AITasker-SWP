@@ -1,6 +1,6 @@
-import HeaderCom from "../Components/Navbar/HeaderCom";
-import Footer from "../Components/Footer/Footer";
-import ClientExpertSearch from "../Components/ClientExpertSearch/ClientExpertSearch";
+import HeaderCom from "../../Components/Navbar/HeaderCom";
+import Footer from "../../Components/Footer/Footer";
+import ClientExpertSearch from "../../Components/ClientExpertSearch/ClientExpertSearch";
 import "./ClientExpertSearchPage.css";
 
 function ClientExpertSearchPage() {
@@ -14,3 +14,4 @@ function ClientExpertSearchPage() {
 }
 
 export default ClientExpertSearchPage;
+

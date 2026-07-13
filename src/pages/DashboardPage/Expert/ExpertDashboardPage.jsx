@@ -13,8 +13,8 @@ import { getUserProfile } from '../../../Services/profileService'
 import { getMyProjects } from '../../../Services/projectService'
 import { getMyInvitations, updateInvitationStatus } from '../../../Services/invitationService'
 import { getMyTransactionsAPI } from '../../../Services/transactionService'
-import '../../Style/AdminDashboardPage.css'
-import '../../Style/ExpertDashboardPage.css'
+import '../Style/AdminDashboardPage.css'
+import '../Style/ExpertDashboardPage.css'
 
 const ExpertDashboardPage = ({ onLogout }) => {
   const navigate = useNavigate()
@@ -202,3 +202,4 @@ const ExpertDashboardPage = ({ onLogout }) => {
 }
 
 export default ExpertDashboardPage
+

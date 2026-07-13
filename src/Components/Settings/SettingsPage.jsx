@@ -7,7 +7,7 @@ import {
   UserRound,
   X,
 } from "lucide-react";
-import { uploadImage } from "../Services/uploadService";
+import { uploadImage } from "../../Services/uploadService";
 
 const SettingPage = ({ isOpen, onClose, user, role = "Client", onLogout, onSwitchRole }) => {
   const [isTwoFactorEnabled, setIsTwoFactorEnabled] = useState(false);
@@ -160,7 +160,7 @@ const SettingPage = ({ isOpen, onClose, user, role = "Client", onLogout, onSwitc
           <div className="settings-card">
             <div className="settings-section-title">
               <ShieldCheck size={18} />
-              <h2>2. Security & Privacy</h2>
+              <h2>2. Security &amp; Privacy</h2>
             </div>
 
             <div className="settings-action-row">

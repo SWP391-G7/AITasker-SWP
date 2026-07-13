@@ -14,7 +14,7 @@ import ClientHeader from "../../../Components/Dashboard/Client/ClientHeader";
 import Footer from "../../../Components/Footer/Footer";
 import { useClientUser } from "../../../Components/Dashboard/Client/user";
 import { logout } from "../../../Services/authService";
-import "../../Style/AdminDashboardPage.css";
+import "../Style/AdminDashboardPage.css";
 import "./ClientMarketplace.css";
 
 const transactions = [
@@ -288,3 +288,4 @@ function ClientBillingPage() {
 }
 
 export default ClientBillingPage;
+

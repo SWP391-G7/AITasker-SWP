@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react"
 import { Navigate, Route, Routes, useLocation } from "react-router-dom"
-import LoginPage from "../pages/LoginPage"
-import RegisterPage from "../pages/RegisterPage"
-import ForgotPasswordPage from "../pages/ForgotPasswordPage"
+import LoginPage from "../pages/auth/LoginPage"
+import RegisterPage from "../pages/auth/RegisterPage"
+import ForgotPasswordPage from "../pages/auth/ForgotPasswordPage"
 import LandingPages from "../Components/LandingPages/LandingPages"
 import HeaderCom from "../Components/Navbar/HeaderCom"
-import EmailVerificationPage from "../pages/EmailVerificationPage"
+import EmailVerificationPage from "../pages/auth/EmailVerificationPage"
 import { checkLogin } from "../Services/checkLogin"
-import OnboardingPage from "../pages/OnboardingPage"
+import OnboardingPage from "../pages/onboarding/OnboardingPage"
 import ClientDashboardPage from "../pages/DashboardPage/Client/ClientDashboardPage"
 import ClientProjectsPage from "../pages/DashboardPage/Client/ClientProjectsPage"
 import ClientTaskDetailPage from "../pages/DashboardPage/Client/ClientTaskDetailPage"
@@ -27,19 +27,19 @@ import ExpertMessagesPage from "../pages/DashboardPage/Expert/MessagesPage"
 import ExpertSettingsPage from "../pages/DashboardPage/Expert/SettingsPage"
 import PostServicePage from "../pages/DashboardPage/Expert/PostServicePage"
 import ExpertProposalDetailPage from "../pages/DashboardPage/Expert/ExpertProposalDetailPage"
-import ClientExpertSearchPage from "../pages/ClientExpertSearchPage"
-import ProfilePage from "../pages/ProfilePage"
-import AISolutionMarketplacePage from "../pages/AISolutionMarketplacePage"
-import ServiceDetailPage from "../pages/ServiceDetailPage"
-import MarketplaceTaskDetailPage from "../pages/MarketplaceTaskDetailPage"
-import ViewAllProjectPage from "../pages/ViewAllProjectPage"
-import ViewAllServicePage from "../pages/ViewAllServicePage"
-import MarketplaceProposalPage from "../pages/MarketplaceProposalPage"
-import ProjectDetailPage from "../pages/ProjectDetailPage"
-import DeactivatedPage from "../pages/DeactivatedPage"
-import ServiceRequestPage from "../pages/ServiceRequestPage"
-import ServiceRequestDetailPage from "../pages/ServiceRequestDetailPage"
-import { PrivacyPolicy, TermsOfService, HelpCenter, ApiDocs } from "../pages/InfoPages"
+import ClientExpertSearchPage from "../pages/clients-experts/ClientExpertSearchPage"
+import ProfilePage from "../pages/profile/ProfilePage"
+import AISolutionMarketplacePage from "../pages/marketplace/AISolutionMarketplacePage"
+import ServiceDetailPage from "../pages/marketplace/ServiceDetailPage"
+import MarketplaceTaskDetailPage from "../pages/marketplace/MarketplaceTaskDetailPage"
+import ViewAllProjectPage from "../pages/profile/ViewAllProjectPage"
+import ViewAllServicePage from "../pages/profile/ViewAllServicePage"
+import MarketplaceProposalPage from "../pages/marketplace/MarketplaceProposalPage"
+import ProjectDetailPage from "../pages/projects/ProjectDetailPage"
+import DeactivatedPage from "../pages/misc/DeactivatedPage"
+import ServiceRequestPage from "../pages/marketplace/ServiceRequestPage"
+import ServiceRequestDetailPage from "../pages/marketplace/ServiceRequestDetailPage"
+import { PrivacyPolicy, TermsOfService, HelpCenter, ApiDocs } from "../pages/info/InfoPages"
 
 function useAuthStatus() {
   const [status, setStatus] = useState({ isLoggedIn: null, isVerified: null, isOnboarded: null, role: null })
@@ -270,7 +270,6 @@ function AppRoutes() {
       <Route path="/register" element={<GuestOnly><RegisterPage /></GuestOnly>} />
       <Route path="/forgot-password" element={<GuestOnly><ForgotPasswordPage /></GuestOnly>} />
       <Route path="/verify" element={<VerifyOnly><EmailVerificationPage /></VerifyOnly>} />
-      <Route path="/verify-email" element={<VerifyOnly><EmailVerificationPage /></VerifyOnly>} />
       <Route path="/deactivated" element={<DeactivatedPage />} />
       <Route path="/privacy" element={<PrivacyPolicy />} />
       <Route path="/terms" element={<TermsOfService />} />

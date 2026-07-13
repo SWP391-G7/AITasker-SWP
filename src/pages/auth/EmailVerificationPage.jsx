@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import AuthLayout from '../Components/Auth/AuthLayout'
-import EmailVerification from '../Components/Auth/EmailVerificationForm'
+import AuthLayout from '../../Components/Auth/AuthLayout'
+import EmailVerification from '../../Components/Auth/EmailVerificationForm'
 
-import '../Components/Auth/Auth.css'
+import '../../Components/Auth/Auth.css'
 
 /** Pull email from localStorage-stored user when no state email is passed. */
 function getStoredEmail() {
@@ -72,3 +72,4 @@ const EmailVerificationPage = () => {
 }
 
 export default EmailVerificationPage
+

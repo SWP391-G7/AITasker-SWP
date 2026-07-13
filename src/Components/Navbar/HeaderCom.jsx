@@ -3,7 +3,7 @@ import { Link, useNavigate, NavLink } from "react-router-dom"
 import { LayoutDashboard, LogOut, Mail, Settings, User } from "lucide-react"
 import { getStoredUser, isLoggedIn, logout } from "../../Services/checkLogin"
 import { getConversations } from "../../Services/messageService"
-import SettingPage from "../../pages/SettingPage"
+import SettingPage from "../Settings/SettingsPage"
 import NotificationBell from "./NotificationBell"
 import "./HeaderCom.css"
 

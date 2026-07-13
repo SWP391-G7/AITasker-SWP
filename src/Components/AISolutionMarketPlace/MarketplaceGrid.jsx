@@ -4,7 +4,7 @@ import ServiceCard from './ServiceCard';
 import { search as searchApi } from '../../Services/searchService';
 import { getFavorites, addFavorite, removeFavorite } from '../../Services/favoriteService';
 import { useLocation } from 'react-router-dom';
-import '../../pages/ClientExpertSearchPage.css';
+import '../../pages/clients-experts/ClientExpertSearchPage.css';
 import './Marketplace.css';
 
 const getCurrentRole = () => {

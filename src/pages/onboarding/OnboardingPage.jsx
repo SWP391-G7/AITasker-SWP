@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import RoleSelection from "../Components/onboarding/RoleSelection";
-import ClientOnboardingForm from "../Components/onboarding/ClientOnboardingForm";
-import ExpertOnboardingForm from "../Components/onboarding/ExpertOnboardingForm";
-import { updateUserRole } from "../Services/onboardingService";
-import "../Components/onboarding/Onboarding.css";
+import RoleSelection from "../../Components/onboarding/RoleSelection";
+import ClientOnboardingForm from "../../Components/onboarding/ClientOnboardingForm";
+import ExpertOnboardingForm from "../../Components/onboarding/ExpertOnboardingForm";
+import { updateUserRole } from "../../Services/onboardingService";
+import "../../Components/onboarding/Onboarding.css";
 
 function OnboardingPage() {
   const navigate = useNavigate();

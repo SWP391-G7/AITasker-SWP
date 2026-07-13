@@ -5,8 +5,8 @@ import ExpertHeader from '../../../Components/Dashboard/Expert/ExpertHeader'
 import Footer from '../../../Components/Footer/Footer'
 import { getUserProfile } from '../../../Services/profileService'
 import { createHandleLogout } from './handleLogout'
-import '../../Style/AdminDashboardPage.css'
-import '../../Style/ExpertDashboardPage.css'
+import '../Style/AdminDashboardPage.css'
+import '../Style/ExpertDashboardPage.css'
 
 const SettingsPage = () => {
   const navigate = useNavigate()
@@ -87,3 +87,4 @@ const SettingsPage = () => {
 }
 
 export default SettingsPage
+

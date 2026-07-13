@@ -10,8 +10,8 @@ import {
   buildAnalytics,
   getAdminDashboardData
 } from '../../../Services/adminDashboardService'
-import '../../Style/AdminDashboardPage.css'
-import '../../Style/AnalyticsPage.css'
+import '../Style/AdminDashboardPage.css'
+import '../Style/AnalyticsPage.css'
 
 const AnalyticsPage = ({ onLogout }) => {
   const navigate = useNavigate()
@@ -84,3 +84,4 @@ const AnalyticsPage = ({ onLogout }) => {
 }
 
 export default AnalyticsPage
+

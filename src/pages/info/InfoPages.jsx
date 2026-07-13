@@ -1,5 +1,5 @@
-import HeaderCom from '../Components/Navbar/HeaderCom';
-import Footer from '../Components/Footer/Footer';
+import HeaderCom from '../../Components/Navbar/HeaderCom';
+import Footer from '../../Components/Footer/Footer';
 
 function PageShell({ title, children }) {
   return (
@@ -71,3 +71,4 @@ export function ApiDocs() {
     </PageShell>
   );
 }
+

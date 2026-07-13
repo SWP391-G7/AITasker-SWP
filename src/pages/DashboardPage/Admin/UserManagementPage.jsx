@@ -16,7 +16,7 @@ import {
   adminDeactivateUser
 } from '../../../Services/adminDashboardService'
 import '../../../Components/Dashboard/Admin/UserManagement/UserManagement.css'
-import '../../Style/AdminDashboardPage.css'
+import '../Style/AdminDashboardPage.css'
 
 const UserManagementPage = ({ onLogout }) => {
   const navigate = useNavigate()
@@ -538,3 +538,4 @@ const valueStyle = {
 }
 
 export default UserManagementPage
+

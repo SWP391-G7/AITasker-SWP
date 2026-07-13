@@ -15,7 +15,7 @@ import { logout } from "../../../Services/authService";
 import { getMyJobs, deleteJobPost } from "../../../Services/jobService";
 import { getMyProjects } from "../../../Services/projectService";
 import { getMyInvitations } from "../../../Services/invitationService";
-import "../../Style/AdminDashboardPage.css";
+import "../Style/AdminDashboardPage.css";
 import "./ClientMarketplace.css";
 
 const getJobId = (job) => job?._id || job?.id || job?.jobId || job?.job_id;
@@ -396,3 +396,4 @@ function ClientProjectsPage() {
 }
 
 export default ClientProjectsPage;
+

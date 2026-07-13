@@ -14,12 +14,12 @@ import {
   Send,
   X,
 } from 'lucide-react';
-import { getMarketplaceJobById } from '../Services/serviceService';
-import { createProposal } from '../Services/proposalService';
-import AIExtendButton from '../Components/AIExtendButton';
-import AISkeletonLoader from '../Components/AISkeletonLoader';
-import Toast from '../Components/Toast';
-import './Style/ServiceDetail.css';
+import { getMarketplaceJobById } from '../../Services/serviceService';
+import { createProposal } from '../../Services/proposalService';
+import AIExtendButton from '../../Components/AIExtendButton';
+import AISkeletonLoader from '../../Components/AISkeletonLoader';
+import Toast from '../../Components/Toast';
+import '../Style/ServiceDetail.css';
 
 const parseMoney = (value) => {
   const parsed = Number(String(value || '0').replace(/[^0-9.]/g, ''));

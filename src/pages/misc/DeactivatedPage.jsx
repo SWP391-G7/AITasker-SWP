@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { ShieldAlert, LogOut, Mail } from 'lucide-react'
-import '../pages/Style/DeactivatedPage.css' // We will create this styling file
+import '../Style/DeactivatedPage.css' // We will create this styling file
 
 const DeactivatedPage = () => {
   const navigate = useNavigate()
@@ -45,3 +45,4 @@ const DeactivatedPage = () => {
 }
 
 export default DeactivatedPage
+

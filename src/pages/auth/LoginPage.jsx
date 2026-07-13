@@ -1,5 +1,5 @@
-import AuthLayout from "../Components/Auth/AuthLayout";
-import LoginForm from "../Components/Auth/LoginForm";
+import AuthLayout from "../../Components/Auth/AuthLayout";
+import LoginForm from "../../Components/Auth/LoginForm";
 
 function LoginPage() {
   return (
@@ -10,3 +10,4 @@ function LoginPage() {
 }
 
 export default LoginPage;
+

@@ -10,7 +10,7 @@ import Toast from "../../../Components/Toast";
 import { logout } from "../../../Services/authService";
 import { publishService } from "../../../Services/serviceService";
 import { uploadImage } from "../../../Services/uploadService";
-import "../../Style/AdminDashboardPage.css";
+import "../Style/AdminDashboardPage.css";
 import "../Client/ClientMarketplace.css";
 import "../../../Components/Dashboard/Expert/PostService/PostService.css";
 
@@ -775,3 +775,4 @@ function PostServicePage() {
 }
 
 export default PostServicePage;
+

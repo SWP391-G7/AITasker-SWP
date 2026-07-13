@@ -9,9 +9,9 @@ import {
   Loader2,
   Send,
 } from 'lucide-react';
-import Footer from '../Components/Footer/Footer';
-import { getMarketplaceJobById } from '../Services/serviceService';
-import './Style/ServiceDetail.css';
+import Footer from '../../Components/Footer/Footer';
+import { getMarketplaceJobById } from '../../Services/serviceService';
+import '../Style/ServiceDetail.css';
 
 const parseMoney = (value) => {
   const parsed = Number(String(value || '0').replace(/[^0-9.]/g, ''));
@@ -157,3 +157,4 @@ const MarketplaceTaskDetailPage = () => {
 };
 
 export default MarketplaceTaskDetailPage;
+

@@ -1,5 +1,5 @@
-import AuthLayout from "../Components/Auth/AuthLayout"
-import ForgotPasswordForm from "../Components/Auth/ForgotPasswordForm"
+import AuthLayout from "../../Components/Auth/AuthLayout"
+import ForgotPasswordForm from "../../Components/Auth/ForgotPasswordForm"
 
 function ForgotPasswordPage() {
   return (
@@ -10,3 +10,4 @@ function ForgotPasswordPage() {
 }
 
 export default ForgotPasswordPage
+

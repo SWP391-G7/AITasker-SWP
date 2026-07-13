@@ -8,7 +8,7 @@ import { useClientUser } from "../../../Components/Dashboard/Client/user";
 import { logout } from "../../../Services/authService";
 import { getConversations, getConversationMessages, sendMessage } from "../../../Services/messageService";
 import useWebSocket from "../../../hooks/useWebSocket";
-import "../../Style/AdminDashboardPage.css";
+import "../Style/AdminDashboardPage.css";
 import "./ClientMarketplace.css";
 
 function ClientMessagesPage() {
@@ -192,3 +192,4 @@ function ClientMessagesPage() {
 }
 
 export default ClientMessagesPage;
+

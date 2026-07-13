@@ -14,12 +14,12 @@ import {
   Send,
   X,
 } from 'lucide-react';
-import { getServiceById } from '../Services/serviceService';
-import { createInvitation } from '../Services/invitationService';
-import AIExtendButton from '../Components/AIExtendButton';
-import AISkeletonLoader from '../Components/AISkeletonLoader';
-import Toast from '../Components/Toast';
-import './Style/ServiceDetail.css';
+import { getServiceById } from '../../Services/serviceService';
+import { createInvitation } from '../../Services/invitationService';
+import AIExtendButton from '../../Components/AIExtendButton';
+import AISkeletonLoader from '../../Components/AISkeletonLoader';
+import Toast from '../../Components/Toast';
+import '../Style/ServiceDetail.css';
 
 const parseMoney = (value) => {
   const parsed = Number(String(value || '0').replace(/[^0-9.]/g, ''));
@@ -279,3 +279,4 @@ const ServiceRequestPage = () => {
 };
 
 export default ServiceRequestPage;
+

@@ -785,3 +785,4 @@ function ClientTaskDetailPage() {
 }
 
 export default ClientTaskDetailPage;
+

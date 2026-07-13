@@ -16,9 +16,9 @@ import {
   Trash2,
   X,
 } from 'lucide-react';
-import ClientSidebar from '../Components/Dashboard/Client/ClientSidebar';
-import ExpertSidebar from '../Components/Dashboard/Expert/ExpertSidebar';
-import Footer from '../Components/Footer/Footer';
+import ClientSidebar from '../../Components/Dashboard/Client/ClientSidebar';
+import ExpertSidebar from '../../Components/Dashboard/Expert/ExpertSidebar';
+import Footer from '../../Components/Footer/Footer';
 import {
   getProjectById,
   closeProject,
@@ -30,8 +30,8 @@ import {
   submitDeliverable,
   approveDeliverable,
   requestRevision,
-} from '../Services/projectService';
-import './DashboardPage/Client/ClientMarketplace.css';
+} from '../../Services/projectService';
+import '../DashboardPage/Client/ClientMarketplace.css';
 
 // ── Status metadata ──────────────────────────────────────────────────────────
 const STATUS_LABELS = {
@@ -836,3 +836,4 @@ function MilestoneTable({ milestones, role, startable, onStart, onOpenDeliverabl
     </div>
   );
 }
+

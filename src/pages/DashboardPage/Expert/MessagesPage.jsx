@@ -7,8 +7,8 @@ import ChatWindow from '../../../Components/Dashboard/Expert/Messages/ChatWindow
 import { getConversations, getConversationMessages, sendMessage } from '../../../Services/messageService'
 import { createHandleLogout } from './handleLogout'
 import useWebSocket from '../../../hooks/useWebSocket'
-import '../../Style/AdminDashboardPage.css'
-import '../../Style/ExpertDashboardPage.css'
+import '../Style/AdminDashboardPage.css'
+import '../Style/ExpertDashboardPage.css'
 import '../../../Components/Dashboard/Expert/Messages/MessagesPage.css'
 
 const MessagesPage = () => {
@@ -222,3 +222,4 @@ const MessagesPage = () => {
 }
 
 export default MessagesPage
+

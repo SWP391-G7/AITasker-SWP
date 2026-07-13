@@ -11,19 +11,19 @@ import {
   X,
   BriefcaseBusiness
 } from "lucide-react";
-import ClientSidebar from "../Components/Dashboard/Client/ClientSidebar";
-import ExpertSidebar from "../Components/Dashboard/Expert/ExpertSidebar";
-import Footer from "../Components/Footer/Footer";
+import ClientSidebar from "../../Components/Dashboard/Client/ClientSidebar";
+import ExpertSidebar from "../../Components/Dashboard/Expert/ExpertSidebar";
+import Footer from "../../Components/Footer/Footer";
 import {
   getInvitationById,
   updateInvitationStatus,
   counterInvitation,
   startProjectFromInvitation
-} from "../Services/invitationService";
-import { getStoredUser } from "../Services/checkLogin";
-import "./Style/AdminDashboardPage.css";
-import "./Style/ExpertDashboardPage.css";
-import "./DashboardPage/Client/ClientMarketplace.css";
+} from "../../Services/invitationService";
+import { getStoredUser } from "../../Services/checkLogin";
+import "../DashboardPage/Style/AdminDashboardPage.css";
+import "../DashboardPage/Style/ExpertDashboardPage.css";
+import "../DashboardPage/Client/ClientMarketplace.css";
 
 const parseMoney = (value) => Number(String(value || '0').replace(/[^0-9.]/g, '')) || 0;
 const formatMoney = (value) => `$${parseMoney(value).toLocaleString()}`;
@@ -552,3 +552,5 @@ function ServiceRequestDetailPage() {
 }
 
 export default ServiceRequestDetailPage;
+
+

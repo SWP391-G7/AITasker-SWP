@@ -15,8 +15,8 @@ import { getMyJobs } from "../../../Services/jobService";
 import { getMyProjects } from "../../../Services/projectService";
 import { getMyTransactionsAPI } from "../../../Services/transactionService";
 
-import "../../Style/AdminDashboardPage.css";
-import "../../Style/ClientDashboardPage.css";
+import "../Style/AdminDashboardPage.css";
+import "../Style/ClientDashboardPage.css";
 
 function ClientDashboardPage() {
   const navigate = useNavigate();
@@ -160,3 +160,4 @@ function ClientDashboardPage() {
 }
 
 export default ClientDashboardPage;
+
