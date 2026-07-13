@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { getMarketplaceJobById } from '../../Services/serviceService';
 import { createProposal } from '../../Services/proposalService';
+import { getStoredUser } from '../../Services/checkLogin';
 import AIExtendButton from '../../Components/AI/AIExtendButton';
 import AISkeletonLoader from '../../Components/AI/AISkeletonLoader';
 import Toast from '../../Components/Toast';
@@ -58,6 +59,36 @@ const MarketplaceProposalPage = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isAiOptimized, setIsAiOptimized] = useState(false);
   const [toastError, setToastError] = useState('');
+  const currentUser = getStoredUser();
+
+  if (currentUser?.role !== 'expert') {
+    return (
+      <div className="proposal-page-wrapper">
+        <div className="proposal-modal-overlay">
+          <section className="proposal-modal-shell" role="dialog" aria-modal="true" aria-labelledby="proposal-title">
+            <div className="proposal-modal-header">
+              <div className="proposal-hero">
+                <span className="detail-tag">Access Denied</span>
+                <h1 className="detail-title" id="proposal-title">Unauthorized</h1>
+                <p>Only registered AI Experts can submit proposals to client tasks.</p>
+              </div>
+              <button className="proposal-close-btn" type="button" onClick={() => navigate(-1)} aria-label="Close popup">
+                <X size={20} />
+              </button>
+            </div>
+            <div className="error-card" style={{ padding: "40px", textAlign: "center" }}>
+              <AlertCircle size={48} className="text-danger mb-3" style={{ margin: "0 auto 15px auto", display: "block" }} />
+              <h3>Expert Account Required</h3>
+              <p className="text-muted">You are logged in as a {currentUser?.role || 'guest'}. Only experts can access this page.</p>
+              <button className="back-btn mt-3 px-4 py-2" type="button" onClick={() => navigate(-1)}>
+                Go Back
+              </button>
+            </div>
+          </section>
+        </div>
+      </div>
+    );
+  }
 
   const handleExtendSuccess = (data) => {
     if (data.coverLetter) setCoverLetter(data.coverLetter);

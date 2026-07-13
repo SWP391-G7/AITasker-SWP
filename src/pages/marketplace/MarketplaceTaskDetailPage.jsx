@@ -12,6 +12,8 @@ import {
 import Footer from '../../Components/Footer/Footer';
 import { getStoredUser } from '../../Services/checkLogin';
 import { getMarketplaceJobById } from '../../Services/serviceService';
+import DetailCarousel from '../../Components/marketplace/DetailCarousel';
+import '../../Components/marketplace/Marketplace.css';
 import '../Style/ServiceDetail.css';
 
 const parseMoney = (value) => {
@@ -101,7 +103,7 @@ const MarketplaceTaskDetailPage = () => {
               <span className="detail-tag">{String(requiredSkill).toUpperCase()}</span>
               <h1 className="detail-title">{task.title || 'Untitled Client Task'}</h1>
 
-              <div className="expert-bar">
+              <div className="expert-bar clickable" onClick={() => navigate(`/profile/${task.client_id || task.clientId}`)}>
                 <div className="expert-avatar-large initials-avatar">
                   {(task.client_name || task.company_name || 'C').charAt(0).toUpperCase()}
                 </div>
@@ -113,6 +115,8 @@ const MarketplaceTaskDetailPage = () => {
                   </div>
                 </div>
               </div>
+
+              <DetailCarousel itemId={task.id} images={task.images} title={task.title} />
 
               <div className="detail-section glass-card">
                 <h3 className="section-header">Task Description</h3>
@@ -140,11 +144,12 @@ const MarketplaceTaskDetailPage = () => {
                   </div>
                 </div>
 
-                {task?.status === 'open' ? (
+                {task?.status === 'open' && currentUser?.role === 'expert' && (
                   <button className="order-btn" type="button" onClick={() => navigate(`/marketplace/task/${task.id}/proposal`)} style={{ marginTop: '1.25rem' }}>
                     <Send size={16} /> Send Proposal
                   </button>
-                ) : (
+                )}
+                {task?.status !== 'open' && (
                   <div className="proposal-closed-msg">
                     This task is no longer accepting proposals.
                   </div>

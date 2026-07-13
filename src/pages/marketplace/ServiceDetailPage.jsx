@@ -5,6 +5,8 @@ import Footer from '../../Components/Footer/Footer';
 import { getServiceById } from '../../Services/serviceService';
 import { updateContentStatus } from '../../Services/adminDashboardService';
 import { getStoredUser } from '../../Services/checkLogin';
+import DetailCarousel from '../../Components/marketplace/DetailCarousel';
+import '../../Components/marketplace/Marketplace.css';
 import '../Style/ServiceDetail.css';
 
 const ServiceDetailPage = () => {
@@ -89,7 +91,7 @@ const ServiceDetailPage = () => {
               <span className="detail-tag">{service.tags?.toUpperCase() || 'SERVICE'}</span>
               <h1 className="detail-title">{service.title}</h1>
 
-              <div className="expert-bar">
+              <div className="expert-bar clickable" onClick={() => navigate(`/profile/${service.expert_id}`)}>
                 <div className="expert-avatar-large initials-avatar">
                   {(service.expert_name || 'E').charAt(0).toUpperCase()}
                 </div>
@@ -101,6 +103,8 @@ const ServiceDetailPage = () => {
                   </div>
                 </div>
               </div>
+
+              <DetailCarousel itemId={service.id} images={service.images} title={service.title} />
 
               <div className="detail-section glass-card">
                 <h3 className="section-header">About This Service</h3>

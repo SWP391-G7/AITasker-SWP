@@ -1,0 +1,160 @@
+/* Detail Image Carousel Styles */
+
+.detail-carousel-wrapper {
+  position: relative;
+  width: 100%;
+  height: 400px;
+  border-radius: 1.5rem;
+  overflow: hidden;
+  margin-bottom: 2.5rem;
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
+  box-shadow: var(--shadow-card);
+}
+
+.detail-carousel-slides {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.detail-carousel-slide {
+  flex: 0 0 100%;
+  width: 100%;
+  height: 100%;
+}
+
+.detail-carousel-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.detail-carousel-image:hover {
+  transform: scale(1.015);
+}
+
+/* Glassmorphic Arrows */
+.detail-carousel-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-main);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 10;
+  padding: 0;
+}
+
+.detail-carousel-btn:hover {
+  background: rgba(15, 23, 42, 0.8);
+  border-color: var(--accent-blue);
+  color: white;
+  transform: translateY(-50%) scale(1.08);
+}
+
+.detail-carousel-btn.prev {
+  left: 1.25rem;
+}
+
+.detail-carousel-btn.next {
+  right: 1.25rem;
+}
+
+/* Dot Indicators */
+.detail-carousel-indicators {
+  position: absolute;
+  bottom: 1.25rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 0.6rem;
+  background: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 0.5rem 0.8rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  z-index: 10;
+}
+
+.detail-carousel-indicator-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.35);
+  border: none;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  padding: 0;
+}
+
+.detail-carousel-indicator-dot.active {
+  background: var(--accent-blue);
+  width: 18px;
+  border-radius: 4px;
+}
+
+/* Fallback Card Style */
+.detail-carousel-fallback {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 3rem 2.5rem;
+  overflow: hidden;
+}
+
+.fallback-glow-overlay {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.08) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.fallback-meta-text {
+  position: relative;
+  z-index: 2;
+  text-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+.fallback-meta-text h3 {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: white;
+  margin: 0 0 0.5rem 0;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.fallback-meta-text span {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.7);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+/* Responsiveness */
+@media (max-width: 768px) {
+  .detail-carousel-wrapper {
+    height: 300px;
+  }
+  .fallback-meta-text h3 {
+    font-size: 1.6rem;
+  }
+}
