@@ -334,7 +334,8 @@
   font-weight: 900;
 }
 
-.service-status-note.status-approved {
+.service-status-note.status-approved,
+.service-status-note.status-open {
   background: rgba(16, 185, 129, 0.13);
   border-color: rgba(16, 185, 129, 0.28);
   color: #34d399;

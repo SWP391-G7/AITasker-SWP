@@ -103,12 +103,6 @@ const ContentModerationPage = ({ onLogout }) => {
         <AdminHeader
           title="Content Moderation"
           subtitle="Review flagged listings, services, and marketplace activity."
-          headerActions={
-            <button type="button" className="btn-approve admin-header-action-button">
-              <ShieldCheck size={16} />
-              Review Queue
-            </button>
-          }
           notifications={notifications}
           onClearNotifications={() => setNotifications(0)}
           searchQuery={searchQuery}

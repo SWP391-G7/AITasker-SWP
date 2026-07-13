@@ -153,10 +153,10 @@ const ServiceDetailPage = () => {
                       className="service-moderation-btn reject"
                       type="button"
                       disabled={Boolean(moderationAction)}
-                      onClick={() => handleModerateService('rejected')}
+                      onClick={() => handleModerateService('removed')}
                     >
                       <XCircle size={16} />
-                      {moderationAction === 'rejected' ? 'Rejecting...' : 'Reject'}
+                      {moderationAction === 'removed' ? 'Removing...' : 'Reject'}
 
                     </button>
                     {moderationError && <p className="service-moderation-error">{moderationError}</p>}
