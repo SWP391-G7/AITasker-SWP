@@ -4,14 +4,17 @@ import {
   AlertCircle,
   ArrowLeft,
   BriefcaseBusiness,
+  CheckCircle2,
   Clock,
   DollarSign,
   Loader2,
   Send,
+  XCircle,
 } from 'lucide-react';
 import Footer from '../../Components/Footer/Footer';
 import { getStoredUser } from '../../Services/checkLogin';
 import { getMarketplaceJobById } from '../../Services/serviceService';
+import { updateContentStatus } from '../../Services/adminDashboardService';
 import '../Style/ServiceDetail.css';
 
 const parseMoney = (value) => {
@@ -43,8 +46,11 @@ const MarketplaceTaskDetailPage = () => {
   const [task, setTask] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [moderationAction, setModerationAction] = useState('');
+  const [moderationError, setModerationError] = useState('');
   const currentUser = getStoredUser();
   const isAdmin = currentUser?.role === 'admin';
+  const isExpert = currentUser?.role === 'expert';
 
   useEffect(() => {
     const fetchTaskDetail = async () => {
@@ -64,6 +70,22 @@ const MarketplaceTaskDetailPage = () => {
   }, [id]);
 
   const requiredSkill = task?.required_skill || task?.requiredSkill || 'AI Task';
+  const taskStatus = task?.status || 'open';
+  const canModerateTask = isAdmin && taskStatus === 'pending';
+  const canSendProposal = isExpert && taskStatus === 'open';
+
+  const handleModerateTask = async (status) => {
+    try {
+      setModerationAction(status);
+      setModerationError('');
+      const updatedTask = await updateContentStatus('job', id, status);
+      setTask((prev) => ({ ...prev, ...updatedTask }));
+    } catch (err) {
+      setModerationError(err.message || 'Failed to update task status.');
+    } finally {
+      setModerationAction('');
+    }
+  };
 
   return (
     <div className="service-detail-page-wrapper">
@@ -136,17 +158,45 @@ const MarketplaceTaskDetailPage = () => {
                   </div>
                   <div className="metric">
                     <DollarSign size={16} />
-                    <span>{task.status || 'open'}</span>
+                    <span>{taskStatus}</span>
                   </div>
                 </div>
 
-                {task?.status === 'open' ? (
+                {canSendProposal ? (
                   <button className="order-btn" type="button" onClick={() => navigate(`/marketplace/task/${task.id}/proposal`)} style={{ marginTop: '1.25rem' }}>
                     <Send size={16} /> Send Proposal
                   </button>
-                ) : (
+                ) : canModerateTask ? (
+                  <div className="admin-service-moderation">
+                    <button
+                      className="service-moderation-btn approve"
+                      type="button"
+                      disabled={Boolean(moderationAction)}
+                      onClick={() => handleModerateTask('approved')}
+                    >
+                      <CheckCircle2 size={16} />
+                      {moderationAction === 'approved' ? 'Approving...' : 'Approve'}
+                    </button>
+                    <button
+                      className="service-moderation-btn reject"
+                      type="button"
+                      disabled={Boolean(moderationAction)}
+                      onClick={() => handleModerateTask('removed')}
+                    >
+                      <XCircle size={16} />
+                      {moderationAction === 'removed' ? 'Removing...' : 'Reject'}
+                    </button>
+                    {moderationError && <p className="service-moderation-error">{moderationError}</p>}
+                  </div>
+                ) : taskStatus !== 'open' ? (
                   <div className="proposal-closed-msg">
                     This task is no longer accepting proposals.
+                  </div>
+                ) : null}
+
+                {(isAdmin || taskStatus !== 'open') && (
+                  <div className={`service-status-note status-${taskStatus}`}>
+                    Status: <span>{taskStatus}</span>
                   </div>
                 )}
               </div>
