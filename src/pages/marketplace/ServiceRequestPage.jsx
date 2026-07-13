@@ -16,8 +16,8 @@ import {
 } from 'lucide-react';
 import { getServiceById } from '../../Services/serviceService';
 import { createInvitation } from '../../Services/invitationService';
-import AIExtendButton from '../../Components/AIExtendButton';
-import AISkeletonLoader from '../../Components/AISkeletonLoader';
+import AIExtendButton from '../../Components/AI/AIExtendButton';
+import AISkeletonLoader from '../../Components/AI/AISkeletonLoader';
 import Toast from '../../Components/Toast';
 import '../Style/ServiceDetail.css';
 

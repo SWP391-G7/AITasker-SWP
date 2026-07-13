@@ -4,8 +4,8 @@ import { ArrowLeft, Plus, Trash2, Camera, Video, AlertCircle, CheckCircle2, Cloc
 import ExpertSidebar from "../../../Components/Dashboard/Expert/ExpertSidebar";
 import ExpertHeader from "../../../Components/Dashboard/Expert/ExpertHeader";
 import Footer from "../../../Components/Footer/Footer";
-import AIExtendButton from "../../../Components/AIExtendButton";
-import AISkeletonLoader from "../../../Components/AISkeletonLoader";
+import AIExtendButton from "../../../Components/AI/AIExtendButton";
+import AISkeletonLoader from "../../../Components/AI/AISkeletonLoader";
 import Toast from "../../../Components/Toast";
 import { logout } from "../../../Services/authService";
 import { publishService } from "../../../Services/serviceService";

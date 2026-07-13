@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { submitClientOnboarding } from "../../Services/onboardingService";
-import AIExtendButton from "../AIExtendButton";
-import AISkeletonLoader from "../AISkeletonLoader";
+import AIExtendButton from "../AI/AIExtendButton";
+import AISkeletonLoader from "../AI/AISkeletonLoader";
 import Toast from "../Toast";
 import "./Onboarding.css";
 
