@@ -78,16 +78,16 @@ function PostJobPage() {
         setError("Please enter tech stack.");
         return false;
       }
-
-      if (formData.description.trim().length < 50) {
-        setError("Project description must be at least 50 characters.");
-        return false;
-      }
     }
 
     if (step === 2) {
       if (!formData.description.trim()) {
         setError("Please enter project description.");
+        return false;
+      }
+
+      if (formData.description.trim().length < 50) {
+        setError("Project description must be at least 50 characters.");
         return false;
       }
 
@@ -234,28 +234,31 @@ function PostJobPage() {
             {error && <div className="error-alert mb-4" style={{ color: '#ef4444', padding: '1rem', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '0.5rem', whiteSpace: 'pre-line' }}>{error}</div>}
             {success && <div className="alert alert-success">{success}</div>}
 
+            {(step === 1 || step === 2) && (
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  {isAiOptimized && (
+                    <span className="ai-sparkle-badge">
+                      ✨ AI Optimized
+                    </span>
+                  )}
+                </div>
+                <AIExtendButton
+                  draftFields={[formData.title, formData.description]}
+                  onExtendStart={() => {
+                    setIsGenerating(true);
+                    setIsAiOptimized(false);
+                  }}
+                  onExtendSuccess={handleExtendSuccess}
+                  onExtendFailure={() => setIsGenerating(false)}
+                  type="job_description"
+                  onErrorToast={(msg) => setToastError(msg)}
+                />
+              </div>
+            )}
+
             {step === 1 && (
               <>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                    {isAiOptimized && (
-                      <span className="ai-sparkle-badge">
-                        ✨ AI Optimized
-                      </span>
-                    )}
-                  </div>
-                  <AIExtendButton
-                    draftFields={[formData.title, formData.description]}
-                    onExtendStart={() => {
-                      setIsGenerating(true);
-                      setIsAiOptimized(false);
-                    }}
-                    onExtendSuccess={handleExtendSuccess}
-                    onExtendFailure={() => setIsGenerating(false)}
-                    type="job_description"
-                    onErrorToast={(msg) => setToastError(msg)}
-                  />
-                </div>
 
                 <div className="form-group">
                   <label>PROJECT TITLE</label>

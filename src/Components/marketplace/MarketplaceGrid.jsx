@@ -29,7 +29,7 @@ const formatBudget = (job) => {
   if (min && max && min !== max) return `${formatMoney(min)} - ${formatMoney(max)}`;
   if (min && max) return formatMoney(min);
   if (max) return `Up to ${formatMoney(max)}`;
-  if (min) return `From ${formatMoney(min)}`;
+  if (min) return formatMoney(min);
   return 'Budget TBD';
 };
 
@@ -40,7 +40,7 @@ const formatService = (service) => ({
   expert: service.expert_name || 'AI Expert',
   rating: service.avg_rating?.toString() || '',
   title: service.title || 'AI Service',
-  price: 'From ' + formatMoney(service.price) + (service.pricing_type === 'hourly' ? '/hr' : ''),
+  price: formatMoney(service.price) + (service.pricing_type === 'hourly' ? '/hr' : ''),
   rawPrice: parseMoney(service.price),
   image: parseJobImage(service.images) || service.image_url || null,
   description: service.description || '',
