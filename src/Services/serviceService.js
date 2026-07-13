@@ -48,10 +48,12 @@ export const publishService = async (serviceData) => {
  * Get all services from the backend API (via public search endpoint)
  */
 export const getMarketplaceServices = async () => {
+  const token = localStorage.getItem('token');
   const response = await fetch(`${API_BASE_URL}/search?target=services`, {
     method: 'GET',
     headers: {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {})
     }
   });
 
@@ -68,10 +70,12 @@ export const getMarketplaceServices = async () => {
  * Get all client job/task posts for experts from the public search endpoint.
  */
 export const getMarketplaceJobs = async () => {
+  const token = localStorage.getItem('token');
   const response = await fetch(`${API_BASE_URL}/search?target=jobs`, {
     method: 'GET',
     headers: {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {})
     }
   });
 
