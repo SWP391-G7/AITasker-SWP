@@ -2,13 +2,20 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import {
   Award,
+  AlertCircle,
   Briefcase,
   Building2,
+  Edit2,
   GraduationCap,
+  Loader2,
   Mail,
   Send,
+  ShieldAlert,
+  ShieldCheck,
   Star,
   BadgeCheck,
+  Trash2,
+  X,
 } from "lucide-react";
 import HeaderCom from "../../Components/Navbar/HeaderCom";
 import Footer from "../../Components/Footer/Footer";
@@ -17,6 +24,11 @@ import { getStoredUser } from "../../Services/checkLogin";
 import { getExpertServicesFromApi } from "../../Components/Profile/Expert/ExpertService";
 import { getClientProjectsFromApi } from "../../Components/Profile/Client/ClientProject";
 import { getOrCreateConversation } from "../../Services/messageService";
+import {
+  adminUpdateUser,
+  adminDeleteUser,
+  adminDeactivateUser,
+} from "../../Services/adminDashboardService";
 import "./ProfilePage.css";
 
 function ProfilePage() {
@@ -33,9 +45,20 @@ function ProfilePage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
   const [activeTab, setActiveTab] = useState("") // "client" or "expert"
+  const [showAdminEditModal, setShowAdminEditModal] = useState(false)
+  const [adminEditForm, setAdminEditForm] = useState({
+    fullName: "",
+    email: "",
+    role: "client",
+    acc_status: true,
+  })
+  const [adminActionError, setAdminActionError] = useState("")
+  const [adminActionLoading, setAdminActionLoading] = useState("")
+  const [confirmAction, setConfirmAction] = useState(null)
 
-  const isOwnProfile = currentUser && currentUser.id === userId
+  const isOwnProfile = currentUser && String(currentUser.id) === String(userId)
   const currentRole = String(currentUser?.role || "").toLowerCase()
+  const isAdminViewer = currentRole === "admin"
   const isAdminProfile = String(profileData?.user?.role || currentUser?.role || "").toLowerCase() === "admin"
 
   useEffect(() => {
@@ -110,6 +133,96 @@ function ProfilePage() {
     } catch (err) {
       console.error("Failed to start conversation:", err);
       navigate(getMessagesPath());
+    }
+  }
+
+  const refreshProfileData = async () => {
+    const data = await getUserProfile(userId)
+    setProfileData(data)
+  }
+
+  const getProfileRoleValue = (role) => {
+    const normalizedRole = String(role || "").toLowerCase()
+    if (normalizedRole === "expert") return "expert"
+    if (normalizedRole === "admin") return "admin"
+    return "client"
+  }
+
+  const openAdminEditModal = () => {
+    const targetUser = profileData?.user
+    if (!targetUser) return
+
+    setAdminEditForm({
+      fullName: targetUser.fullName || "",
+      email: targetUser.email || "",
+      role: getProfileRoleValue(targetUser.role),
+      acc_status: targetUser.accStatus !== false,
+    })
+    setAdminActionError("")
+    setShowAdminEditModal(true)
+  }
+
+  const handleAdminUpdateUser = async (event) => {
+    event.preventDefault()
+
+    try {
+      setAdminActionError("")
+      setAdminActionLoading("edit")
+      await adminUpdateUser(userId, adminEditForm)
+      setShowAdminEditModal(false)
+      await refreshProfileData()
+    } catch (err) {
+      setAdminActionError(err.message || "Failed to update user")
+    } finally {
+      setAdminActionLoading("")
+    }
+  }
+
+  const handleAdminActivateUser = async () => {
+    try {
+      setAdminActionError("")
+      setAdminActionLoading("activate")
+      await adminDeactivateUser(userId, true)
+      await refreshProfileData()
+    } catch (err) {
+      setAdminActionError(err.message || "Failed to activate account")
+    } finally {
+      setAdminActionLoading("")
+    }
+  }
+
+  const openAdminConfirm = (type) => {
+    setAdminActionError("")
+    setConfirmAction(type)
+  }
+
+  const closeAdminConfirm = () => {
+    if (adminActionLoading) return
+    setConfirmAction(null)
+    setAdminActionError("")
+  }
+
+  const handleAdminConfirmAction = async () => {
+    try {
+      setAdminActionError("")
+      setAdminActionLoading(confirmAction)
+
+      if (confirmAction === "deactivate") {
+        await adminDeactivateUser(userId, false)
+        setConfirmAction(null)
+        await refreshProfileData()
+        return
+      }
+
+      if (confirmAction === "delete") {
+        await adminDeleteUser(userId)
+        setConfirmAction(null)
+        navigate("/admin/users")
+      }
+    } catch (err) {
+      setAdminActionError(err.message || "Failed to complete action")
+    } finally {
+      setAdminActionLoading("")
     }
   }
 
@@ -367,6 +480,10 @@ function ProfilePage() {
   const aboutText = isExpertView
     ? expertProfile?.bio
     : clientProfile?.bio;
+  const targetRole = String(user.role || "").toLowerCase();
+  const isTargetAdmin = targetRole === "admin";
+  const isTargetSuspended = user.accStatus === false || user.status === "Suspended";
+  const showAdminActions = isAdminViewer && !isOwnProfile && !isTargetAdmin;
 
   return (
     <div className="profile-shell">
@@ -528,7 +645,43 @@ function ProfilePage() {
                     <small>{user.role}</small>
                   </div>
                   
-                  {!isOwnProfile && (  
+                  {showAdminActions ? (
+                    <div className="profile-admin-actions">
+                      {adminActionError && <p className="profile-admin-error">{adminActionError}</p>}
+                      <button className="profile-admin-action is-edit" type="button" onClick={openAdminEditModal}>
+                        <Edit2 size={16} />
+                        Edit User
+                      </button>
+                      {isTargetSuspended ? (
+                        <button
+                          className="profile-admin-action is-activate"
+                          type="button"
+                          onClick={handleAdminActivateUser}
+                          disabled={adminActionLoading === "activate"}
+                        >
+                          {adminActionLoading === "activate" ? <Loader2 size={16} /> : <ShieldCheck size={16} />}
+                          {adminActionLoading === "activate" ? "Activating..." : "Activate Account"}
+                        </button>
+                      ) : (
+                        <button
+                          className="profile-admin-action is-deactivate"
+                          type="button"
+                          onClick={() => openAdminConfirm("deactivate")}
+                        >
+                          <ShieldAlert size={16} />
+                          Deactivate Account
+                        </button>
+                      )}
+                      <button
+                        className="profile-admin-action is-delete"
+                        type="button"
+                        onClick={() => openAdminConfirm("delete")}
+                      >
+                        <Trash2 size={16} />
+                        Delete User
+                      </button>
+                    </div>
+                  ) : !isOwnProfile && (
                     <button className="contact-btn" onClick={handleContact}>
                       <Mail size={16} />
                       {isExpertView ? "Contact Expert" : "Contact Client"}
@@ -615,6 +768,103 @@ function ProfilePage() {
               )}
             </div>
           </section>
+        )}
+
+        {showAdminEditModal && (
+          <div className="profile-admin-modal-overlay" onClick={() => setShowAdminEditModal(false)}>
+            <div className="profile-admin-modal" onClick={(event) => event.stopPropagation()}>
+              <div className="profile-admin-modal-header">
+                <h3>Edit User Settings</h3>
+                <button type="button" onClick={() => setShowAdminEditModal(false)}>
+                  <X size={18} />
+                </button>
+              </div>
+              <form onSubmit={handleAdminUpdateUser}>
+                {adminActionError && <p className="profile-admin-error">{adminActionError}</p>}
+                <label>
+                  Full Name
+                  <input
+                    type="text"
+                    required
+                    value={adminEditForm.fullName}
+                    onChange={(event) => setAdminEditForm({ ...adminEditForm, fullName: event.target.value })}
+                  />
+                </label>
+                <label>
+                  Email
+                  <input
+                    type="email"
+                    required
+                    value={adminEditForm.email}
+                    onChange={(event) => setAdminEditForm({ ...adminEditForm, email: event.target.value })}
+                  />
+                </label>
+                <label>
+                  Role
+                  <select
+                    value={adminEditForm.role}
+                    onChange={(event) => setAdminEditForm({ ...adminEditForm, role: event.target.value })}
+                  >
+                    <option value="client">Client</option>
+                    <option value="expert">AI Expert</option>
+                    <option value="admin">Global Admin</option>
+                  </select>
+                </label>
+                <label>
+                  Account Status
+                  <select
+                    value={adminEditForm.acc_status ? "true" : "false"}
+                    onChange={(event) => setAdminEditForm({ ...adminEditForm, acc_status: event.target.value === "true" })}
+                  >
+                    <option value="true">Active</option>
+                    <option value="false">Suspended</option>
+                  </select>
+                </label>
+                <div className="profile-admin-modal-actions">
+                  <button type="button" className="profile-modal-secondary" onClick={() => setShowAdminEditModal(false)}>
+                    Cancel
+                  </button>
+                  <button type="submit" className="profile-modal-primary" disabled={adminActionLoading === "edit"}>
+                    {adminActionLoading === "edit" ? "Saving..." : "Save Changes"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {confirmAction && (
+          <div className="profile-admin-modal-overlay" onClick={closeAdminConfirm}>
+            <div className="profile-admin-modal" onClick={(event) => event.stopPropagation()}>
+              <div className="profile-admin-modal-header">
+                <h3>{confirmAction === "delete" ? "Delete User" : "Deactivate Account"}</h3>
+                <button type="button" onClick={closeAdminConfirm}>
+                  <X size={18} />
+                </button>
+              </div>
+              {adminActionError && <p className="profile-admin-error">{adminActionError}</p>}
+              <p className="profile-admin-confirm-text">
+                {confirmAction === "delete"
+                  ? `Are you sure you want to permanently delete ${user.fullName}?`
+                  : `Are you sure you want to deactivate ${user.fullName}?`}
+              </p>
+              <div className="profile-admin-modal-actions">
+                <button type="button" className="profile-modal-secondary" onClick={closeAdminConfirm}>
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className={confirmAction === "delete" ? "profile-modal-danger" : "profile-modal-warning"}
+                  onClick={handleAdminConfirmAction}
+                  disabled={adminActionLoading === confirmAction}
+                >
+                  {adminActionLoading === confirmAction
+                    ? (confirmAction === "delete" ? "Deleting..." : "Deactivating...")
+                    : (confirmAction === "delete" ? "Delete" : "Deactivate")}
+                </button>
+              </div>
+            </div>
+          </div>
         )}
       </main>
 

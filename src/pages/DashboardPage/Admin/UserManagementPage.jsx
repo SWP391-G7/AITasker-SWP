@@ -156,6 +156,11 @@ const UserManagementPage = ({ onLogout }) => {
     }
   }
 
+  const handleViewProfile = (userId) => {
+    setShowViewModal(false)
+    navigate(`/profile/${userId}`)
+  }
+
   const handleDeleteUser = async (userId) => {
     const targetUser = users.find(u => u.id === userId)
     if (!targetUser) return
@@ -312,7 +317,13 @@ const UserManagementPage = ({ onLogout }) => {
                   <span style={valueStyle}>{selectedUser.joined}</span>
                 </div>
               </div>
-              <div style={{ marginTop: '24px', display: 'flex', justifyContent: 'end' }}>
+              <div style={{ marginTop: '24px', display: 'flex', gap: '12px', justifyContent: 'end' }}>
+                <button
+                  onClick={() => handleViewProfile(selectedUser.id)}
+                  style={btnPrimaryStyle}
+                >
+                  View Profile
+                </button>
                 <button 
                   onClick={() => setShowViewModal(false)}
                   style={btnSecondaryStyle}
