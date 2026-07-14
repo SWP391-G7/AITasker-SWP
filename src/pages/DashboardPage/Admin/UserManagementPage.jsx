@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { UserPlus, X, Loader2, Info, Trash2 } from 'lucide-react'
+import { UserPlus, X, Loader2, Info, Trash2, ShieldAlert } from 'lucide-react'
 import AdminHeader from '../../../Components/Dashboard/Admin/AdminHeader'
 import AdminSidebar from '../../../Components/Dashboard/Admin/AdminSidebar'
 import UserManagementStats from '../../../Components/Dashboard/Admin/UserManagement/UserManagementStats'
@@ -35,6 +35,10 @@ const UserManagementPage = ({ onLogout }) => {
   const [deleteTargetUser, setDeleteTargetUser] = useState(null)
   const [deleteError, setDeleteError] = useState('')
   const [isDeleting, setIsDeleting] = useState(false)
+  const [showDeactivateModal, setShowDeactivateModal] = useState(false)
+  const [deactivateTargetUser, setDeactivateTargetUser] = useState(null)
+  const [deactivateError, setDeactivateError] = useState('')
+  const [isDeactivating, setIsDeactivating] = useState(false)
 
   // Form states
   const [createForm, setCreateForm] = useState({
@@ -186,11 +190,45 @@ const UserManagementPage = ({ onLogout }) => {
   }
 
   const handleToggleBan = async (userId, newStatus) => {
+    const targetUser = users.find(u => u.id === userId)
+    if (!targetUser) return
+
+    if (!newStatus) {
+      setDeactivateTargetUser(targetUser)
+      setDeactivateError('')
+      setShowDeactivateModal(true)
+      return
+    }
+
     try {
       await adminDeactivateUser(userId, newStatus)
       fetchUsers()
     } catch (err) {
       alert(err.message || 'Failed to update account ban status')
+    }
+  }
+
+  const handleCancelDeactivate = () => {
+    if (isDeactivating) return
+    setShowDeactivateModal(false)
+    setDeactivateTargetUser(null)
+    setDeactivateError('')
+  }
+
+  const handleConfirmDeactivate = async () => {
+    if (!deactivateTargetUser) return
+
+    try {
+      setDeactivateError('')
+      setIsDeactivating(true)
+      await adminDeactivateUser(deactivateTargetUser.id, false)
+      setShowDeactivateModal(false)
+      setDeactivateTargetUser(null)
+      fetchUsers()
+    } catch (err) {
+      setDeactivateError(err.message || 'Failed to deactivate account')
+    } finally {
+      setIsDeactivating(false)
     }
   }
 
@@ -497,6 +535,64 @@ const UserManagementPage = ({ onLogout }) => {
           </div>
         )}
 
+        {showDeactivateModal && deactivateTargetUser && (
+          <div className="modal-overlay" onClick={handleCancelDeactivate} style={modalOverlayStyle}>
+            <div className="modal-content" onClick={(e) => e.stopPropagation()} style={modalContentStyle}>
+              <div className="modal-header" style={modalHeaderStyle}>
+                <h3 className="fw-bold mb-0 text-white">
+                  <ShieldAlert size={20} className="me-2 text-warning" />
+                  Deactivate Account
+                </h3>
+                <button onClick={handleCancelDeactivate} style={closeBtnStyle} disabled={isDeactivating}>
+                  <X size={20} />
+                </button>
+              </div>
+
+              {deactivateError && <div className="alert alert-danger mb-3">{deactivateError}</div>}
+
+              <div style={{ color: '#94a3b8', fontSize: '0.95rem', lineHeight: '1.7' }}>
+                <p style={{ marginBottom: '12px' }}>
+                  Are you sure you want to deactivate this account?
+                </p>
+                <div style={{ ...detailRowStyle, borderBottom: '1px solid rgba(251, 191, 36, 0.16)' }}>
+                  <strong style={labelStyle}>USER</strong>
+                  <span style={valueStyle}>{deactivateTargetUser.name}</span>
+                </div>
+                <div style={detailRowStyle}>
+                  <strong style={labelStyle}>EMAIL</strong>
+                  <span style={valueStyle}>{deactivateTargetUser.email}</span>
+                </div>
+              </div>
+
+              <div style={{ marginTop: '24px', display: 'flex', gap: '12px', justifyContent: 'end' }}>
+                <button
+                  type="button"
+                  onClick={handleCancelDeactivate}
+                  style={btnSecondaryStyle}
+                  disabled={isDeactivating}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleConfirmDeactivate}
+                  style={btnWarningStyle}
+                  disabled={isDeactivating}
+                >
+                  {isDeactivating ? (
+                    <>
+                      <Loader2 size={16} className="me-2" />
+                      Deactivating...
+                    </>
+                  ) : (
+                    'Deactivate'
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         <Footer variant="dashboard" />
       </main>
     </div>
@@ -606,6 +702,21 @@ const btnDangerStyle = {
   fontWeight: '600',
   justifyContent: 'center',
   minWidth: '96px',
+  padding: '10px 20px'
+}
+
+const btnWarningStyle = {
+  alignItems: 'center',
+  background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+  border: 'none',
+  borderRadius: '8px',
+  color: '#fff',
+  cursor: 'pointer',
+  display: 'inline-flex',
+  fontSize: '0.9rem',
+  fontWeight: '600',
+  justifyContent: 'center',
+  minWidth: '116px',
   padding: '10px 20px'
 }
 
