@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { UserPlus, X, Loader2, Info } from 'lucide-react'
+import { UserPlus, X, Loader2, Info, Trash2 } from 'lucide-react'
 import AdminHeader from '../../../Components/Dashboard/Admin/AdminHeader'
 import AdminSidebar from '../../../Components/Dashboard/Admin/AdminSidebar'
 import UserManagementStats from '../../../Components/Dashboard/Admin/UserManagement/UserManagementStats'
@@ -30,7 +30,11 @@ const UserManagementPage = ({ onLogout }) => {
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
   const [showViewModal, setShowViewModal] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [selectedUser, setSelectedUser] = useState(null)
+  const [deleteTargetUser, setDeleteTargetUser] = useState(null)
+  const [deleteError, setDeleteError] = useState('')
+  const [isDeleting, setIsDeleting] = useState(false)
 
   // Form states
   const [createForm, setCreateForm] = useState({
@@ -152,13 +156,32 @@ const UserManagementPage = ({ onLogout }) => {
     const targetUser = users.find(u => u.id === userId)
     if (!targetUser) return
 
-    if (window.confirm(`Are you sure you want to permanently delete user "${targetUser.name}"?`)) {
-      try {
-        await adminDeleteUser(userId)
-        fetchUsers()
-      } catch (err) {
-        alert(err.message || 'Failed to delete user')
-      }
+    setDeleteTargetUser(targetUser)
+    setDeleteError('')
+    setShowDeleteModal(true)
+  }
+
+  const handleCancelDelete = () => {
+    if (isDeleting) return
+    setShowDeleteModal(false)
+    setDeleteTargetUser(null)
+    setDeleteError('')
+  }
+
+  const handleConfirmDelete = async () => {
+    if (!deleteTargetUser) return
+
+    try {
+      setDeleteError('')
+      setIsDeleting(true)
+      await adminDeleteUser(deleteTargetUser.id)
+      setShowDeleteModal(false)
+      setDeleteTargetUser(null)
+      fetchUsers()
+    } catch (err) {
+      setDeleteError(err.message || 'Failed to delete user')
+    } finally {
+      setIsDeleting(false)
     }
   }
 
@@ -416,6 +439,64 @@ const UserManagementPage = ({ onLogout }) => {
           </div>
         )}
 
+        {showDeleteModal && deleteTargetUser && (
+          <div className="modal-overlay" onClick={handleCancelDelete} style={modalOverlayStyle}>
+            <div className="modal-content" onClick={(e) => e.stopPropagation()} style={modalContentStyle}>
+              <div className="modal-header" style={modalHeaderStyle}>
+                <h3 className="fw-bold mb-0 text-white">
+                  <Trash2 size={20} className="me-2 text-danger" />
+                  Delete User
+                </h3>
+                <button onClick={handleCancelDelete} style={closeBtnStyle} disabled={isDeleting}>
+                  <X size={20} />
+                </button>
+              </div>
+
+              {deleteError && <div className="alert alert-danger mb-3">{deleteError}</div>}
+
+              <div style={{ color: '#94a3b8', fontSize: '0.95rem', lineHeight: '1.7' }}>
+                <p style={{ marginBottom: '12px' }}>
+                  Are you sure you want to permanently delete this user?
+                </p>
+                <div style={{ ...detailRowStyle, borderBottom: '1px solid rgba(248, 113, 113, 0.16)' }}>
+                  <strong style={labelStyle}>USER</strong>
+                  <span style={valueStyle}>{deleteTargetUser.name}</span>
+                </div>
+                <div style={detailRowStyle}>
+                  <strong style={labelStyle}>EMAIL</strong>
+                  <span style={valueStyle}>{deleteTargetUser.email}</span>
+                </div>
+              </div>
+
+              <div style={{ marginTop: '24px', display: 'flex', gap: '12px', justifyContent: 'end' }}>
+                <button
+                  type="button"
+                  onClick={handleCancelDelete}
+                  style={btnSecondaryStyle}
+                  disabled={isDeleting}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleConfirmDelete}
+                  style={btnDangerStyle}
+                  disabled={isDeleting}
+                >
+                  {isDeleting ? (
+                    <>
+                      <Loader2 size={16} className="me-2" />
+                      Deleting...
+                    </>
+                  ) : (
+                    'Delete'
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         <Footer variant="dashboard" />
       </main>
     </div>
@@ -511,6 +592,21 @@ const btnSecondaryStyle = {
   fontWeight: '600',
   cursor: 'pointer',
   fontSize: '0.9rem'
+}
+
+const btnDangerStyle = {
+  alignItems: 'center',
+  background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+  border: 'none',
+  borderRadius: '8px',
+  color: '#fff',
+  cursor: 'pointer',
+  display: 'inline-flex',
+  fontSize: '0.9rem',
+  fontWeight: '600',
+  justifyContent: 'center',
+  minWidth: '96px',
+  padding: '10px 20px'
 }
 
 const detailRowStyle = {
