@@ -36,6 +36,7 @@ function ProfilePage() {
 
   const isOwnProfile = currentUser && currentUser.id === userId
   const currentRole = String(currentUser?.role || "").toLowerCase()
+  const isAdminProfile = String(profileData?.user?.role || currentUser?.role || "").toLowerCase() === "admin"
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -584,6 +585,20 @@ function ProfilePage() {
               </aside>
             </div>
           </>
+        ) : isAdminProfile ? (
+          <section className="no-profile-card">
+            <div className="no-profile-content">
+              <h3>Admin Profile</h3>
+              <p>
+                Admin accounts do not need client or expert onboarding details.
+              </p>
+              {isOwnProfile && (
+                <button className="primary-btn complete-btn" onClick={handleBack}>
+                  Go to Admin Dashboard
+                </button>
+              )}
+            </div>
+          </section>
         ) : (
           <section className="no-profile-card">
             <div className="no-profile-content">

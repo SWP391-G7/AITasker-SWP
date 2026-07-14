@@ -78,13 +78,15 @@ const roleHomePaths = {
   expert: "/expert/dashboard",
 }
 
+const isAdminRole = (role) => String(role || "").toLowerCase() === "admin"
+
 function GuestOnly({ children }) {
   const { isLoggedIn, isVerified, isOnboarded, role } = useAuthStatus()
 
   if (isLoggedIn === null) return null
   if (isLoggedIn && isVerified) {
     // Redirect to onboarding if profile not yet complete
-    if (!isOnboarded) return <Navigate to="/onboarding" replace />
+    if (!isOnboarded && !isAdminRole(role)) return <Navigate to="/onboarding" replace />
     return <Navigate to={roleHomePaths[role] || "/"} replace />
   }
 
@@ -115,7 +117,7 @@ function OnboardingOnly({ children }) {
   if (!isVerified) return <Navigate to="/verify" replace />
 
   // Profile already established — send them home
-  if (isOnboarded) return <Navigate to={roleHomePaths[role] || "/"} replace />
+  if (isOnboarded || isAdminRole(role)) return <Navigate to={roleHomePaths[role] || "/"} replace />
 
   return children
 }
@@ -166,7 +168,7 @@ function ProtectedRoute({ children, allowedRoles, onboardingRequired = true }) {
   if (!isVerified) return <Navigate to="/verify" replace />
 
   // Redirect to onboarding if the user hasn't completed their profile yet
-  if (onboardingRequired && !isOnboarded) {
+  if (onboardingRequired && !isOnboarded && !isAdminRole(role)) {
     return <Navigate to="/onboarding" replace />
   }
 
@@ -198,7 +200,7 @@ function DashboardRedirect() {
 
   if (!isVerified) return <Navigate to="/verify" replace />
 
-  if (!isOnboarded) return <Navigate to="/onboarding" replace />
+  if (!isOnboarded && !isAdminRole(role)) return <Navigate to="/onboarding" replace />
 
   return <Navigate to={roleHomePaths[role] || "/"} replace />
 }
