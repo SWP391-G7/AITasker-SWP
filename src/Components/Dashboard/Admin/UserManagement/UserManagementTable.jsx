@@ -1,3 +1,5 @@
+import { useState } from 'react'
+import Dropdown from 'react-bootstrap/Dropdown'
 import { BadgeCheck, ChevronLeft, ChevronRight, SlidersHorizontal, UserPlus, Eye, Edit2, Trash2, ShieldAlert, ShieldCheck } from 'lucide-react'
 
 const statusClass = {
@@ -12,6 +14,17 @@ const roleClass = {
   Admin: 'role-admin'
 }
 
+const roleFilterOptions = [
+  { label: 'All', value: 'all' },
+  { label: 'AI Expert', value: 'AI Expert' },
+  { label: 'Client', value: 'Client' }
+]
+const statusFilterOptions = [
+  { label: 'All', value: 'all' },
+  { label: 'Active', value: 'Active' },
+  { label: 'Suspended', value: 'Suspended' }
+]
+
 const UserManagementTable = ({ 
   users = [], 
   searchQuery = '', 
@@ -21,24 +34,66 @@ const UserManagementTable = ({
   onToggleBan,
   onOpenCreateModal
 }) => {
+  const [roleFilter, setRoleFilter] = useState('all')
+  const [statusFilter, setStatusFilter] = useState('all')
+
   const filteredUsers = users.filter((user) => {
     const query = searchQuery.toLowerCase()
-    return (
+    const matchesSearch = (
       user.name.toLowerCase().includes(query) ||
       user.email.toLowerCase().includes(query) ||
       user.role.toLowerCase().includes(query) ||
       user.status.toLowerCase().includes(query)
     )
+    const matchesRole = roleFilter === 'all' || user.role === roleFilter
+    const matchesStatus = statusFilter === 'all' || user.status === statusFilter
+
+    return matchesSearch && matchesRole && matchesStatus
   })
 
   return (
   <section className="user-table-panel">
     <div className="user-table-toolbar">
       <div className="user-table-actions">
-        <button type="button" className="ghost-tool-button">
-          <SlidersHorizontal size={14} />
-          <span>Filter</span>
-        </button>
+        <Dropdown autoClose="outside" className="user-filter-dropdown-wrap">
+          <Dropdown.Toggle
+            as="button"
+            className="ghost-tool-button user-filter-toggle"
+            id="user-management-filter"
+            type="button"
+          >
+            <SlidersHorizontal size={14} />
+            <span>Filter</span>
+          </Dropdown.Toggle>
+
+          <Dropdown.Menu align="end" className="user-filter-dropdown">
+            <Dropdown.Header>Role</Dropdown.Header>
+            {roleFilterOptions.map((role) => (
+              <Dropdown.Item
+                as="button"
+                className="user-filter-item"
+                key={role.value}
+                onClick={() => setRoleFilter(role.value)}
+              >
+                <input type="radio" checked={roleFilter === role.value} readOnly />
+                <span>{role.label}</span>
+              </Dropdown.Item>
+            ))}
+            <Dropdown.Divider />
+            <Dropdown.Header>Status</Dropdown.Header>
+            {statusFilterOptions.map((status) => (
+              <Dropdown.Item
+                as="button"
+                className="user-filter-item"
+                key={status.value}
+                onClick={() => setStatusFilter(status.value)}
+              >
+                <input type="radio" checked={statusFilter === status.value} readOnly />
+                <span>{status.label}</span>
+              </Dropdown.Item>
+            ))}
+          </Dropdown.Menu>
+        </Dropdown>
         <button type="button" className="primary-tool-button" onClick={onOpenCreateModal}>
           <UserPlus size={14} />
           <span>Invite User</span>
@@ -83,56 +138,60 @@ const UserManagementTable = ({
               </td>
               <td>{user.joined}</td>
               <td>
-                <div className="row-actions" style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
-                  <button 
-                    type="button" 
-                    className="ghost-tool-button text-primary" 
-                    title="View details"
-                    onClick={() => onViewUser && onViewUser(user.id)}
-                    style={{ padding: '6px 8px', minWidth: 'auto' }}
-                  >
-                    <Eye size={14} />
-                  </button>
-                  <button 
-                    type="button" 
-                    className="ghost-tool-button text-warning" 
-                    title="Edit user"
-                    onClick={() => onEditUser && onEditUser(user.id)}
-                    style={{ padding: '6px 8px', minWidth: 'auto' }}
-                  >
-                    <Edit2 size={14} />
-                  </button>
-                  {user.status === 'Suspended' ? (
+                {user.role === 'Admin' ? (
+                  <span className="text-muted small">-</span>
+                ) : (
+                  <div className="row-actions" style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
                     <button 
                       type="button" 
-                      className="ghost-tool-button text-success" 
-                      title="Activate account"
-                      onClick={() => onToggleBan && onToggleBan(user.id, true)}
+                      className="ghost-tool-button text-primary" 
+                      title="View details"
+                      onClick={() => onViewUser && onViewUser(user.id)}
                       style={{ padding: '6px 8px', minWidth: 'auto' }}
                     >
-                      <ShieldCheck size={14} />
+                      <Eye size={14} />
                     </button>
-                  ) : (
+                    <button 
+                      type="button" 
+                      className="ghost-tool-button text-warning" 
+                      title="Edit user"
+                      onClick={() => onEditUser && onEditUser(user.id)}
+                      style={{ padding: '6px 8px', minWidth: 'auto' }}
+                    >
+                      <Edit2 size={14} />
+                    </button>
+                    {user.status === 'Suspended' ? (
+                      <button 
+                        type="button" 
+                        className="ghost-tool-button text-success" 
+                        title="Activate account"
+                        onClick={() => onToggleBan && onToggleBan(user.id, true)}
+                        style={{ padding: '6px 8px', minWidth: 'auto' }}
+                      >
+                        <ShieldCheck size={14} />
+                      </button>
+                    ) : (
+                      <button 
+                        type="button" 
+                        className="ghost-tool-button text-danger" 
+                        title="Deactivate (Ban)"
+                        onClick={() => onToggleBan && onToggleBan(user.id, false)}
+                        style={{ padding: '6px 8px', minWidth: 'auto' }}
+                      >
+                        <ShieldAlert size={14} />
+                      </button>
+                    )}
                     <button 
                       type="button" 
                       className="ghost-tool-button text-danger" 
-                      title="Deactivate (Ban)"
-                      onClick={() => onToggleBan && onToggleBan(user.id, false)}
+                      title="Delete user"
+                      onClick={() => onDeleteUser && onDeleteUser(user.id)}
                       style={{ padding: '6px 8px', minWidth: 'auto' }}
                     >
-                      <ShieldAlert size={14} />
+                      <Trash2 size={14} />
                     </button>
-                  )}
-                  <button 
-                    type="button" 
-                    className="ghost-tool-button text-danger" 
-                    title="Delete user"
-                    onClick={() => onDeleteUser && onDeleteUser(user.id)}
-                    style={{ padding: '6px 8px', minWidth: 'auto' }}
-                  >
-                    <Trash2 size={14} />
-                  </button>
-                </div>
+                  </div>
+                )}
               </td>
             </tr>
           ))}

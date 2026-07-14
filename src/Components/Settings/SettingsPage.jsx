@@ -87,6 +87,7 @@ const SettingPage = ({ isOpen, onClose, user, role = "Client", onLogout, onSwitc
 
   if (!isOpen) return null;
 
+  const isAdmin = String(user?.role || role || "").toLowerCase() === "admin";
   const targetRole = role === "expert" ? "Client" : "Expert";
 
   return (
@@ -198,18 +199,20 @@ const SettingPage = ({ isOpen, onClose, user, role = "Client", onLogout, onSwitc
             <button className="settings-add-payment" type="button">+ Add New Payment Method</button>
           </div>
 
-          <div className="settings-card settings-role-card">
-            <div>
-              <div className="settings-section-title">
-                <RefreshCw size={18} />
-                <h2>4. Change Role</h2>
+          {!isAdmin && (
+            <div className="settings-card settings-role-card">
+              <div>
+                <div className="settings-section-title">
+                  <RefreshCw size={18} />
+                  <h2>4. Change Role</h2>
+                </div>
+                <p className="settings-muted">Currently browsing as <strong>{role}</strong>.</p>
               </div>
-              <p className="settings-muted">Currently browsing as <strong>{role}</strong>.</p>
+              <button className="settings-outline-btn" type="button" onClick={onSwitchRole}>
+                Switch to {targetRole} View
+              </button>
             </div>
-            <button className="settings-outline-btn" type="button" onClick={onSwitchRole}>
-              Switch to {targetRole} View
-            </button>
-          </div>
+          )}
 
           <button className="settings-logout-btn" type="button" onClick={onLogout}>
             <LogOut size={16} />

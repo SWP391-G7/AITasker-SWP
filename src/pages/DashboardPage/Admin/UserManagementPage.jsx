@@ -183,12 +183,6 @@ const UserManagementPage = ({ onLogout }) => {
         <AdminHeader
           title="User Management"
           subtitle="Monitor and manage access for all experts and clients."
-          headerActions={
-            <button type="button" className="btn-approve admin-header-action-button" onClick={handleOpenCreateModal}>
-              <UserPlus size={16} />
-              Invite User
-            </button>
-          }
           notifications={notifications}
           onClearNotifications={() => setNotifications(0)}
           searchQuery={searchQuery}
