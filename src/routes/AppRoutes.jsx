@@ -37,6 +37,7 @@ import ViewAllServicePage from "../pages/profile/ViewAllServicePage"
 import MarketplaceProposalPage from "../pages/marketplace/MarketplaceProposalPage"
 import ProjectDetailPage from "../pages/projects/ProjectDetailPage"
 import DeactivatedPage from "../pages/misc/DeactivatedPage"
+import MockPaymentGateway from "../pages/misc/MockPaymentGateway"
 import ServiceRequestPage from "../pages/marketplace/ServiceRequestPage"
 import ServiceRequestDetailPage from "../pages/marketplace/ServiceRequestDetailPage"
 import { PrivacyPolicy, TermsOfService, HelpCenter, ApiDocs } from "../pages/info/InfoPages"
@@ -277,6 +278,7 @@ function AppRoutes() {
       <Route path="/terms" element={<TermsOfService />} />
       <Route path="/help" element={<HelpCenter />} />
       <Route path="/api-docs" element={<ApiDocs />} />
+      <Route path="/mock-payment-gateway/:token" element={<MockPaymentGateway />} />
 
       <Route path="/onboarding" element={<OnboardingOnly><OnboardingPage /></OnboardingOnly>} />
       <Route path="/dashboard" element={<DashboardRedirect />} />

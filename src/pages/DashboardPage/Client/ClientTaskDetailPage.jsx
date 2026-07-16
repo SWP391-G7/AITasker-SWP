@@ -16,7 +16,7 @@ import {
 import ClientSidebar from "../../../Components/Dashboard/Client/ClientSidebar";
 import Footer from "../../../Components/Footer/Footer";
 import { getJobById, getJobProposals } from "../../../Services/jobService";
-import { updateProposalStatus, counterProposal } from "../../../Services/proposalService";
+import { updateProposalStatus, counterProposal, initiateProposalPayment } from "../../../Services/proposalService";
 import { createProject } from "../../../Services/projectService";
 import { getOrCreateConversation } from "../../../Services/messageService";
 import "./ClientMarketplace.css";
@@ -128,6 +128,22 @@ function ClientTaskDetailPage() {
 
   useEffect(() => { fetchDetail(); }, [fetchDetail]);
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const paymentStatus = params.get("payment");
+    const pId = params.get("proposalId");
+    const errorMsg = params.get("error");
+
+    if (paymentStatus === "success" && pId) {
+      setPendingProposalId(pId);
+      setShowProjectPrompt(true);
+      window.history.replaceState({}, document.title, window.location.pathname);
+    } else if (paymentStatus === "failed" && errorMsg) {
+      setError("Payment failed: " + decodeURIComponent(errorMsg));
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, []);
+
   // ── Formatting ───────────────────────────────────────────────────
   const formatDuration = (days) => {
     if (!days) return 'Duration TBD';
@@ -163,16 +179,74 @@ function ClientTaskDetailPage() {
   }
 
   /** Client clicks Approve on a proposal (can be a plain proposal or a counter from expert) */
-  const handleAcceptProposal = (proposalId) => {
-    setPendingProposalId(proposalId);
-    setShowProjectPrompt(true);
+  const handleAcceptProposal = async (proposalId) => {
+    const proposal = proposals.find(p => (p._id || p.id) === proposalId);
+    if (!proposal) return;
+
+    const bidAmount = (proposal.status === "countered" && proposal.counter_bid_amount)
+      ? parseFloat(proposal.counter_bid_amount)
+      : parseFloat(proposal.bid_amount);
+
+    const clientBudget = parseFloat(job?.client_budget ?? job?.clientBudget ?? 0);
+
+    if (clientBudget < bidAmount) {
+      setError("Your budget is not enough to choose this proposal");
+      // Scroll to top to see error message
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+
+    setActingProposal(proposalId);
+    try {
+      setError("");
+      const result = await initiateProposalPayment(proposalId);
+      if (result.redirectUrl) {
+        window.location.href = result.redirectUrl;
+      } else {
+        throw new Error("Failed to generate payment redirect link");
+      }
+    } catch (err) {
+      setError(err.message || "Failed to initiate payment session");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } finally {
+      setActingProposal(null);
+    }
   };
 
   /** Confirm from the "Start Project?" dialog */
   const confirmProposalAcceptance = async (startProject) => {
     setShowProjectPrompt(false);
     const proposalId = pendingProposalId;
-    if (!proposalId || actingProposal) return;
+    if (!proposalId) return;
+
+    // Check if the proposal in our state is already accepted (from successful payment redirect)
+    const proposal = proposals.find(p => (p._id || p.id) === proposalId);
+    if (proposal && (proposal.status === "accepted" || job?.status === "closed")) {
+      if (startProject) {
+        setActingProposal(proposalId);
+        try {
+          setError("");
+          const result = await createProject(jobId);
+          if (result.project?.id) {
+            navigate(`/projects/${result.project.id}`);
+          } else {
+            navigate("/client/projects");
+          }
+        } catch (err) {
+          setError(err.message || "Failed to start project");
+        } finally {
+          setActingProposal(null);
+          setPendingProposalId(null);
+        }
+      } else {
+        // User paid but declined immediate project start, just reload details
+        setPendingProposalId(null);
+        fetchDetail();
+      }
+      return;
+    }
+
+    // Fallback/Legacy code pathway (for other states, safety only)
     setActingProposal(proposalId);
     try {
       setError("");

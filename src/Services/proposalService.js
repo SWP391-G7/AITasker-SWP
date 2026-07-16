@@ -177,3 +177,25 @@ export const counterProposal = async ({ proposalId, bidAmount, coverLetter }) =>
 
   return result.proposal || result.data || result;
 };
+
+export const initiateProposalPayment = async (proposalId) => {
+  const token = localStorage.getItem('token');
+  if (!token) {
+    throw new Error('No authentication token found. Please log in first.');
+  }
+
+  const response = await fetch(`${API_BASE_URL}/payment/pay-proposal/${proposalId}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  const result = await response.json();
+  if (!response.ok) {
+    throw new Error(result.message || 'Failed to initiate proposal payment.');
+  }
+
+  return result;
+};

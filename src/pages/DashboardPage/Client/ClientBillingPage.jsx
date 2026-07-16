@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   CreditCard,
@@ -14,6 +14,7 @@ import ClientHeader from "../../../Components/Dashboard/Client/ClientHeader";
 import Footer from "../../../Components/Footer/Footer";
 import { useClientUser } from "../../../Components/Dashboard/Client/user";
 import { logout } from "../../../Services/authService";
+import { getUserProfile } from "../../../Services/profileService";
 import "../Style/AdminDashboardPage.css";
 import "./ClientMarketplace.css";
 
@@ -58,6 +59,22 @@ function ClientBillingPage() {
   const [notifications, setNotifications] = useState(2);
   const user = useClientUser();
   const clientName = user?.fullName || user?.name || "Client User";
+  const [budget, setBudget] = useState(null);
+
+  useEffect(() => {
+    const userId = user?.id || user?._id;
+    if (userId) {
+      getUserProfile(userId)
+        .then((data) => {
+          if (data.clientProfile && data.clientProfile.budget !== undefined) {
+            setBudget(parseFloat(data.clientProfile.budget));
+          }
+        })
+        .catch((err) => {
+          console.error("Failed to load client budget:", err);
+        });
+    }
+  }, [user]);
 
   const handleLogout = () => {
     logout();
@@ -101,9 +118,9 @@ function ClientBillingPage() {
 
           <div className="billing-stat-card">
             <div>
-              <span>THIS MONTH</span>
-              <strong>$14,280.00</strong>
-              <p>Total AI service spending</p>
+              <span>WALLET BALANCE</span>
+              <strong>{budget !== null ? `$${budget.toLocaleString(undefined, { minimumFractionDigits: 2 })}` : "$0.00"}</strong>
+              <p>Available balance for funding tasks</p>
             </div>
 
             <div className="billing-icon green">
