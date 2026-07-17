@@ -294,7 +294,7 @@ function MockPaymentGateway() {
 
             {requiresCard && <div style={styles.alertNote}>
               <p style={{ margin: 0, fontSize: "0.8rem", color: "#9ca3af", lineHeight: "1.4" }}>
-                <strong>Tip:</strong> For testing failures, input CVV <code>999</code> (suspected fraud simulation) or card number <code>4111 1111 1111 1111</code> (insufficient funds simulation). Any other valid card detail will succeed.
+                <strong>Sandbox cards:</strong> Use <code>4242 4242 4242 4242</code> for success, CVV <code>999</code> for a fraud decline, or <code>4111 1111 1111 1111</code> for insufficient funds. Other card numbers are rejected.
               </p>
             </div>}
           </section>
