@@ -136,6 +136,17 @@ function ProfilePage() {
     }
   }
 
+  const handleViewAllProfileItems = () => {
+    if (isOwnProfile) {
+      navigate(activeTab === "expert" ? "/expert/projects" : "/client/projects");
+      return;
+    }
+
+    navigate(`/profile/${userId}/${activeTab === "expert" ? "services" : "projects"}`, {
+      state: { backgroundLocation: location },
+    });
+  }
+
   const refreshProfileData = async () => {
     const data = await getUserProfile(userId)
     setProfileData(data)
@@ -454,8 +465,9 @@ function ProfilePage() {
     return avgBudget(b) - avgBudget(a);
   });
   const profileProjects = getClientProjectsFromApi(sortedProjects);
-  const visibleProfileServices = profileServices.slice(0, 5);
-  const visibleProfileProjects = profileProjects.slice(0, 5);
+  const visibleProfileServices = profileServices.slice(0, 2);
+  const visibleProfileProjects = profileProjects.slice(0, 2);
+  const hasMoreProfileItems = isExpertView ? profileServices.length > 2 : profileProjects.length > 2;
   const skills = isExpertView ? getSkills(expertProfile?.skills) : [];
   const expertRating = Number(expertProfile?.avgRating);
   const displayRating = Number.isFinite(expertRating) ? expertRating.toFixed(1) : "Not rated";
@@ -727,6 +739,7 @@ function ProfilePage() {
                     {/* API data: render only the services/projects owned by this profile user. */}
                     {isExpertView && visibleProfileServices.length > 0 && visibleProfileServices.map(renderServiceCard)}
                     {!isExpertView && visibleProfileProjects.length > 0 && visibleProfileProjects.map(renderProjectCard)}
+                    {hasMoreProfileItems && <p className="profile-more-indicator">...</p>}
                     {isExpertView && profileServices.length === 0 && (
                       <p>This expert has not published any services yet.</p>
                     )}
@@ -734,6 +747,9 @@ function ProfilePage() {
                       <p>This client has not posted any projects yet.</p>
                     )}
                   </div>
+                  <button className="view-all-btn" type="button" onClick={handleViewAllProfileItems}>
+                    {isExpertView ? "View All Services" : "View All Projects"}
+                  </button>
                 </article>
               </aside>
             </div>
