@@ -51,6 +51,11 @@
   display: inline-block;
 }
 
+.hero-title-white {
+  color: #fff;
+  -webkit-text-fill-color: #fff;
+}
+
 .gradient-text {
   background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-sky) 100%);
   -webkit-background-clip: text;

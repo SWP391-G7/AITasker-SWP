@@ -278,7 +278,7 @@ const LandingPages = () => {
           <div className="row justify-content-center">
             <div className="col-12 col-md-10 col-lg-9">
               <h1 className="hero-title mb-4">
-                Automate Your Business with <br />
+                <span className="hero-title-white">Automate Your Business with</span> <br />
                 <span className="gradient-text">Top AI Experts</span>
               </h1>
 
