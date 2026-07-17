@@ -259,6 +259,12 @@ export default function ProjectDetailPage() {
       if (!d.amount || parseFloat(d.amount) <= 0) { setActionErr(`Milestone ${i + 1}: enter a valid amount.`); return; }
       if (!d.delivery_days || parseInt(d.delivery_days, 10) <= 0) { setActionErr(`Milestone ${i + 1}: enter valid delivery days.`); return; }
     }
+    const projectTotal = parseFloat(project?.total_amount || 0);
+    const planTotal = drafts.reduce((sum, draft) => sum + parseFloat(draft.amount || 0), 0);
+    if (projectTotal > 0 && Math.abs(planTotal - projectTotal) > 0.01) {
+      setActionErr(`Milestone amounts must total ${fmtMoney(projectTotal)}. Current total: ${fmtMoney(planTotal)}.`);
+      return;
+    }
     wrap(() => submitMilestonePlan(projectId, drafts.map(d => ({
       title: d.title.trim(),
       content: d.content.trim(),
@@ -296,7 +302,7 @@ export default function ProjectDetailPage() {
   };
 
   const handleApproveDeliverable = (id) => {
-    if (!window.confirm('Approve this deliverable and move to payment?')) return;
+    if (!window.confirm('Approve this deliverable and release its agreed milestone amount from escrow?')) return;
     wrap(() => approveDeliverable(id));
   };
 
@@ -439,6 +445,7 @@ export default function ProjectDetailPage() {
               {isExp && (phase === 'empty' || phase === 'planning') && (
                 <DraftBuilder
                   drafts={drafts}
+                  projectTotal={parseFloat(project?.total_amount || 0)}
                   phase={phase}
                   addDraft={addDraft}
                   removeDraft={removeDraft}
@@ -600,8 +607,9 @@ function ModalHeader({ title, onClose }) {
 }
 
 /** Expert's local draft builder — used for both empty state and re-planning after change_requested */
-function DraftBuilder({ drafts, phase, addDraft, removeDraft, editDraft, onSubmit, busy }) {
+function DraftBuilder({ drafts, projectTotal, phase, addDraft, removeDraft, editDraft, onSubmit, busy }) {
   const hasNotes = drafts.some(d => d.change_request_note);
+  const draftTotal = drafts.reduce((sum, draft) => sum + parseFloat(draft.amount || 0), 0);
   return (
     <div>
       <div style={{ marginBottom: '24px' }}>
@@ -662,7 +670,7 @@ function DraftBuilder({ drafts, phase, addDraft, removeDraft, editDraft, onSubmi
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
               <div>
-                <label style={labelSt}>AMOUNT ($) *</label>
+                <label style={labelSt}>AMOUNT ($) * {projectTotal > 0 && d.amount ? `· ${((parseFloat(d.amount) / projectTotal) * 100).toFixed(1)}%` : ''}</label>
                 <input style={inputSt} type="number" min="1" placeholder="e.g. 500" value={d.amount} onChange={e => editDraft(d.localId, 'amount', e.target.value)} />
               </div>
               <div>
@@ -674,6 +682,10 @@ function DraftBuilder({ drafts, phase, addDraft, removeDraft, editDraft, onSubmi
         ))}
       </div>
 
+      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, padding: '14px 16px', marginBottom: 14, borderRadius: 9, background: 'rgba(99,102,241,.08)', border: '1px solid rgba(99,102,241,.18)', color: '#c7d2fe' }}>
+        <span>Proposed release total</span>
+        <strong>{fmtMoney(draftTotal)} / {fmtMoney(projectTotal)} {projectTotal > 0 ? `(${((draftTotal / projectTotal) * 100).toFixed(1)}%)` : ''}</strong>
+      </div>
       <div style={{ display: 'flex', gap: '12px', borderTop: '1px solid rgba(255,255,255,0.07)', paddingTop: '20px' }}>
         <button style={btnOutline} onClick={addDraft} disabled={busy}>
           <Plus size={15} style={{ marginRight: '4px', display: 'inline' }} /> Add Milestone
