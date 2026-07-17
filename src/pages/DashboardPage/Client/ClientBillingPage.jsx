@@ -393,7 +393,9 @@ function ClientBillingPage() {
                               {transaction.normalizedStatus === "completed" && <CheckCircle2 size={13} />}
                               {transaction.normalizedStatus === "pending" && <Clock3 size={13} />}
                               {transaction.normalizedStatus === "failed" && <AlertCircle size={13} />}
-                              {STATUS_LABELS[transaction.normalizedStatus] || transaction.normalizedStatus}
+                              {transaction.normalizedType === "escrow_deposit" && transaction.normalizedStatus === "completed"
+                                ? "Secured"
+                                : STATUS_LABELS[transaction.normalizedStatus] || transaction.normalizedStatus}
                             </span>
                           </td>
                           <td>
