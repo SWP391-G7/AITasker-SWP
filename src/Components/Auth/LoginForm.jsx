@@ -61,9 +61,11 @@ function LoginForm() {
 
       console.log("Login success:", result)
 
-      // Navigate to dashboard; ProtectedRoute will redirect unverified
-      // users to /verify automatically based on their isVerified status.
-      navigate("/")
+      if (result.user && !result.user.isVerified) {
+        navigate("/verify")
+      } else {
+        navigate("/")
+      }
     } catch (err) {
       setError(err.message || "Login failed. Please check your email or password.")
     } finally {
@@ -78,7 +80,11 @@ function LoginForm() {
         setIsLoading(true)
         const result = await googleLogin({ accessToken: tokenResponse.access_token })
         console.log("Google Login success:", result)
-        navigate("/")
+        if (result.user && !result.user.isVerified) {
+          navigate("/verify")
+        } else {
+          navigate("/")
+        }
       } catch (err) {
         setError(err.message || "Google Login failed. Please try again.")
       } finally {

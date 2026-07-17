@@ -92,7 +92,11 @@ function RegisterForm() {
         setIsLoading(true)
         const result = await googleLogin({ accessToken: tokenResponse.access_token })
         console.log("Google Login success:", result)
-        navigate("/")
+        if (result.user && !result.user.isVerified) {
+          navigate("/verify")
+        } else {
+          navigate("/")
+        }
       } catch (err) {
         setError(err.message || "Google Login failed. Please try again.")
       } finally {
