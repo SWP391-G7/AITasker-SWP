@@ -292,3 +292,25 @@ export const requestRevision = async (milestoneId, note) => {
   return result;
 };
 
+export const requestMilestoneExtension = async (milestoneId, additionalDays, reason) => {
+  const response = await fetch(`${API_BASE_URL}/milestones/${milestoneId}/request-extension`, {
+    method: 'PUT',
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ additional_days: additionalDays, reason })
+  });
+  const result = await response.json();
+  if (!response.ok) throw new Error(result.message || 'Failed to request deadline extension.');
+  return result;
+};
+
+export const respondMilestoneExtension = async (milestoneId, action, note = '') => {
+  const response = await fetch(`${API_BASE_URL}/milestones/${milestoneId}/respond-extension`, {
+    method: 'PUT',
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ action, note })
+  });
+  const result = await response.json();
+  if (!response.ok) throw new Error(result.message || 'Failed to respond to deadline extension.');
+  return result;
+};
+

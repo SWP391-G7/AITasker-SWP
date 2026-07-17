@@ -30,6 +30,8 @@ import {
   submitDeliverable,
   approveDeliverable,
   requestRevision,
+  requestMilestoneExtension,
+  respondMilestoneExtension,
 } from '../../Services/projectService';
 import '../DashboardPage/Client/ClientMarketplace.css';
 
@@ -341,6 +343,36 @@ export default function ProjectDetailPage() {
     });
   };
 
+  const handleRequestExtension = (id) => {
+    const daysInput = window.prompt('How many additional days do you need? (1-90)');
+    if (daysInput === null) return;
+    const additionalDays = parseInt(daysInput, 10);
+    if (!Number.isInteger(additionalDays) || additionalDays < 1 || additionalDays > 90) {
+      setActionErr('Additional days must be between 1 and 90.');
+      return;
+    }
+    const reason = window.prompt('Explain why the extension is needed (at least 10 characters):');
+    if (reason === null) return;
+    if (reason.trim().length < 10) {
+      setActionErr('Extension reason must be at least 10 characters.');
+      return;
+    }
+    wrap(() => requestMilestoneExtension(id, additionalDays, reason.trim()));
+  };
+
+  const handleRespondExtension = (id, action) => {
+    const milestone = milestones.find(item => item.id === id);
+    const days = milestone?.extension_requested_days || 0;
+    if (action === 'approve') {
+      if (!window.confirm(`Approve ${days} additional day(s)? This updates the milestone deadline and project duration.`)) return;
+      wrap(() => respondMilestoneExtension(id, 'approve'));
+      return;
+    }
+    const note = window.prompt('Why are you rejecting this extension request?');
+    if (note === null) return;
+    wrap(() => respondMilestoneExtension(id, 'reject', note.trim()));
+  };
+
   const handlePay = (id) => {
     if (!window.confirm('Confirm payment for this milestone?')) return;
     wrap(async () => {
@@ -512,6 +544,8 @@ export default function ProjectDetailPage() {
                   onOpenDeliverable={(id) => { setDeliverableModal({ open: true, milestoneId: id }); setDeliverableForm({ url: '', note: '' }); setActionErr(''); }}
                   onApproveDeliverable={handleApproveDeliverable}
                   onOpenRevision={(id) => { setRevisionModal({ open: true, milestoneId: id }); setRevisionNote(''); setActionErr(''); }}
+                  onRequestExtension={handleRequestExtension}
+                  onRespondExtension={handleRespondExtension}
                   onPay={handlePay}
                   busy={busy}
                 />
@@ -832,7 +866,7 @@ function PlanReview({ milestones, projectTotal, projectDuration, onApprove, onRe
 }
 
 /** Active milestone table — shown once plan is approved and work begins */
-function MilestoneTable({ milestones, role, startable, onStart, onOpenDeliverable, onApproveDeliverable, onOpenRevision, onPay, busy }) {
+function MilestoneTable({ milestones, role, startable, onStart, onOpenDeliverable, onApproveDeliverable, onOpenRevision, onRequestExtension, onRespondExtension, onPay, busy }) {
   const isExp = role === 'expert';
   const isCli = role === 'client';
 
@@ -889,6 +923,11 @@ function MilestoneTable({ milestones, role, startable, onStart, onOpenDeliverabl
                       -{fmtMoney(getMilestoneSettlement(m).penaltyAmount)} ({getMilestoneSettlement(m).lateDays}d late)
                     </span>
                   )}
+                  {m.extension_status && (
+                    <div style={{ marginTop: '7px', background: m.extension_status === 'pending' ? 'rgba(245,158,11,0.1)' : m.extension_status === 'approved' ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '6px', padding: '7px 11px', color: m.extension_status === 'pending' ? '#fbbf24' : m.extension_status === 'approved' ? '#34d399' : '#f87171', fontSize: '0.79rem', lineHeight: '1.4' }}>
+                      Extension {m.extension_status}: {m.extension_requested_days} day(s). {m.extension_reason}
+                    </div>
+                  )}
                   {m.status === 'finished' && m.released_amount != null && (
                     <span style={{ display: 'block', color: '#34d399', fontSize: '0.73rem', marginTop: 3, fontWeight: 600 }}>
                       Released {fmtMoney(m.released_amount)}
@@ -909,9 +948,16 @@ function MilestoneTable({ milestones, role, startable, onStart, onOpenDeliverabl
                       </button>
                     )}
                     {isExp && ['ongoing', 'revision_requested'].includes(m.status) && (
-                      <button style={{ ...btnPurple, padding: '6px 14px', fontSize: '0.83rem' }} onClick={() => onOpenDeliverable(m.id)} disabled={busy}>
-                        <Send size={13} /> Submit Deliverable
-                      </button>
+                      <>
+                        <button style={{ ...btnPurple, padding: '6px 14px', fontSize: '0.83rem' }} onClick={() => onOpenDeliverable(m.id)} disabled={busy}>
+                          <Send size={13} /> Submit Deliverable
+                        </button>
+                        {m.extension_status !== 'pending' && (
+                          <button style={{ ...btnAmber, padding: '6px 14px', fontSize: '0.83rem' }} onClick={() => onRequestExtension(m.id)} disabled={busy}>
+                            Request More Time
+                          </button>
+                        )}
+                      </>
                     )}
 
                     {/* CLIENT actions */}
@@ -927,6 +973,12 @@ function MilestoneTable({ milestones, role, startable, onStart, onOpenDeliverabl
                         >
                           Request Revision
                         </button>
+                      </>
+                    )}
+                    {isCli && m.extension_status === 'pending' && (
+                      <>
+                        <button style={{ ...btnGreen, padding: '6px 14px', fontSize: '0.83rem' }} onClick={() => onRespondExtension(m.id, 'approve')} disabled={busy}>Approve Extension</button>
+                        <button style={{ ...btnRed, padding: '6px 14px', fontSize: '0.83rem' }} onClick={() => onRespondExtension(m.id, 'reject')} disabled={busy}>Reject Extension</button>
                       </>
                     )}
                     {isCli && m.status === 'pending_payment' && (
