@@ -54,12 +54,30 @@ function MockPaymentGateway() {
 
   // Expiry formatter: adds slash MM/YY
   const handleExpiryChange = (e) => {
-    let value = e.target.value.replace(/\D/g, "");
-    if (value.length > 4) value = value.slice(0, 4);
-    if (value.length > 2) {
-      value = `${value.slice(0, 2)}/${value.slice(2)}`;
+    let digits = e.target.value.replace(/\D/g, "");
+    const previousDigits = expiry.replace(/\D/g, "");
+
+    // Browsers may visually autofill an old expiry without updating React
+    // state. If the user then types/pastes a new date, the DOM value can look
+    // like 11231230. Keep the newly entered final four digits (1230), rather
+    // than truncating back to the autofilled first four (1123).
+    if (digits.length > 4) {
+      const appendedDigits = previousDigits && digits.startsWith(previousDigits)
+        ? digits.slice(previousDigits.length)
+        : digits.slice(-4);
+      digits = appendedDigits.length >= 4 ? appendedDigits.slice(-4) : digits.slice(-4);
     }
-    setExpiry(value);
+
+    const formatted = digits.length > 2
+      ? `${digits.slice(0, 2)}/${digits.slice(2, 4)}`
+      : digits;
+    setExpiry(formatted);
+  };
+
+  const handleExpiryFocus = (e) => {
+    setActiveInput("expiry");
+    // Selecting the autofilled value makes the next typed date replace it.
+    requestAnimationFrame(() => e.target.select());
   };
 
   // CVV input: 3 digits limit
@@ -237,9 +255,13 @@ function MockPaymentGateway() {
                     type="text"
                     required
                     placeholder="MM/YY"
+                    name="card-expiry"
+                    inputMode="numeric"
+                    autoComplete="cc-exp"
+                    maxLength={5}
                     value={expiry}
                     onChange={handleExpiryChange}
-                    onFocus={() => setActiveInput("expiry")}
+                    onFocus={handleExpiryFocus}
                     onBlur={() => setActiveInput(null)}
                     style={{
                       ...styles.input,
