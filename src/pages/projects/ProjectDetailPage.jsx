@@ -265,6 +265,12 @@ export default function ProjectDetailPage() {
       setActionErr(`Milestone amounts must total ${fmtMoney(projectTotal)}. Current total: ${fmtMoney(planTotal)}.`);
       return;
     }
+    const projectDuration = parseInt(project?.duration_days, 10);
+    const planDuration = drafts.reduce((sum, draft) => sum + parseInt(draft.delivery_days || 0, 10), 0);
+    if (!isNaN(projectDuration) && projectDuration > 0 && planDuration > projectDuration) {
+      setActionErr(`Milestone delivery time cannot exceed ${projectDuration} days. Current total: ${planDuration} days.`);
+      return;
+    }
     wrap(() => submitMilestonePlan(projectId, drafts.map(d => ({
       title: d.title.trim(),
       content: d.content.trim(),
@@ -422,6 +428,12 @@ export default function ProjectDetailPage() {
                     {fmtDate(project.start_date)}
                   </span>
                 </div>
+                <div>
+                  <span style={labelSt}>PROJECT DURATION</span>
+                  <strong style={{ color: '#fff', display: 'block' }}>
+                    {project.duration_days ? `${project.duration_days} days` : 'Not specified'}
+                  </strong>
+                </div>
               </div>
 
               {/* Progress bar */}
@@ -446,6 +458,7 @@ export default function ProjectDetailPage() {
                 <DraftBuilder
                   drafts={drafts}
                   projectTotal={parseFloat(project?.total_amount || 0)}
+                  projectDuration={parseInt(project?.duration_days || 0, 10)}
                   phase={phase}
                   addDraft={addDraft}
                   removeDraft={removeDraft}
@@ -459,6 +472,8 @@ export default function ProjectDetailPage() {
               {isCli && phase === 'planning' && (
                 <PlanReview
                   milestones={planMilestones}
+                  projectTotal={parseFloat(project?.total_amount || 0)}
+                  projectDuration={parseInt(project?.duration_days || 0, 10)}
                   onApprove={handleApprovePlan}
                   onRequestChanges={() => setChangesModal(true)}
                   busy={busy}
@@ -607,9 +622,18 @@ function ModalHeader({ title, onClose }) {
 }
 
 /** Expert's local draft builder — used for both empty state and re-planning after change_requested */
-function DraftBuilder({ drafts, projectTotal, phase, addDraft, removeDraft, editDraft, onSubmit, busy }) {
+function DraftBuilder({ drafts, projectTotal, projectDuration, phase, addDraft, removeDraft, editDraft, onSubmit, busy }) {
   const hasNotes = drafts.some(d => d.change_request_note);
   const draftTotal = drafts.reduce((sum, draft) => sum + parseFloat(draft.amount || 0), 0);
+  const draftDays = drafts.reduce((sum, draft) => sum + parseInt(draft.delivery_days || 0, 10), 0);
+  const amountMatches = projectTotal <= 0 || Math.abs(draftTotal - projectTotal) <= 0.01;
+  const durationValid = projectDuration <= 0 || draftDays <= projectDuration;
+  const fieldsValid = drafts.every(d =>
+    d.title.trim()
+    && parseFloat(d.amount) > 0
+    && parseInt(d.delivery_days, 10) > 0
+  );
+  const canSubmit = fieldsValid && amountMatches && durationValid;
   return (
     <div>
       <div style={{ marginBottom: '24px' }}>
@@ -672,25 +696,53 @@ function DraftBuilder({ drafts, projectTotal, phase, addDraft, removeDraft, edit
               <div>
                 <label style={labelSt}>AMOUNT ($) * {projectTotal > 0 && d.amount ? `· ${((parseFloat(d.amount) / projectTotal) * 100).toFixed(1)}%` : ''}</label>
                 <input style={inputSt} type="number" min="1" placeholder="e.g. 500" value={d.amount} onChange={e => editDraft(d.localId, 'amount', e.target.value)} />
+                {projectTotal > 0 && parseFloat(d.amount || 0) > projectTotal && (
+                  <span style={{ color: '#f87171', fontSize: '0.78rem', display: 'block', marginTop: 6 }}>
+                    This milestone exceeds the entire project budget of {fmtMoney(projectTotal)}.
+                  </span>
+                )}
               </div>
               <div>
                 <label style={labelSt}>DELIVERY TIME (DAYS) *</label>
                 <input style={inputSt} type="number" min="1" step="1" placeholder="e.g. 14" value={d.delivery_days} onChange={e => editDraft(d.localId, 'delivery_days', e.target.value)} />
+                {projectDuration > 0 && parseInt(d.delivery_days || 0, 10) > projectDuration && (
+                  <span style={{ color: '#f87171', fontSize: '0.78rem', display: 'block', marginTop: 6 }}>
+                    This milestone alone exceeds the {projectDuration}-day project duration.
+                  </span>
+                )}
               </div>
             </div>
           </div>
         ))}
       </div>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, padding: '14px 16px', marginBottom: 14, borderRadius: 9, background: 'rgba(99,102,241,.08)', border: '1px solid rgba(99,102,241,.18)', color: '#c7d2fe' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, padding: '14px 16px', marginBottom: 10, borderRadius: 9, background: amountMatches ? 'rgba(99,102,241,.08)' : 'rgba(239,68,68,.08)', border: `1px solid ${amountMatches ? 'rgba(99,102,241,.18)' : 'rgba(239,68,68,.28)'}`, color: amountMatches ? '#c7d2fe' : '#fca5a5' }}>
         <span>Proposed release total</span>
         <strong>{fmtMoney(draftTotal)} / {fmtMoney(projectTotal)} {projectTotal > 0 ? `(${((draftTotal / projectTotal) * 100).toFixed(1)}%)` : ''}</strong>
       </div>
+      {!amountMatches && (
+        <p style={{ color: '#f87171', fontSize: '0.8rem', margin: '0 0 10px' }}>
+          {draftTotal > projectTotal
+            ? `Reduce milestone amounts by ${fmtMoney(draftTotal - projectTotal)}.`
+            : `Allocate the remaining ${fmtMoney(projectTotal - draftTotal)} before submitting.`}
+        </p>
+      )}
+      {projectDuration > 0 && (
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, padding: '14px 16px', marginBottom: 10, borderRadius: 9, background: durationValid ? 'rgba(16,185,129,.07)' : 'rgba(239,68,68,.08)', border: `1px solid ${durationValid ? 'rgba(16,185,129,.2)' : 'rgba(239,68,68,.28)'}`, color: durationValid ? '#a7f3d0' : '#fca5a5' }}>
+          <span>Planned delivery time</span>
+          <strong>{draftDays} / {projectDuration} days</strong>
+        </div>
+      )}
+      {!durationValid && (
+        <p style={{ color: '#f87171', fontSize: '0.8rem', margin: '0 0 10px' }}>
+          Reduce the milestone schedule by {draftDays - projectDuration} day{draftDays - projectDuration !== 1 ? 's' : ''}.
+        </p>
+      )}
       <div style={{ display: 'flex', gap: '12px', borderTop: '1px solid rgba(255,255,255,0.07)', paddingTop: '20px' }}>
         <button style={btnOutline} onClick={addDraft} disabled={busy}>
           <Plus size={15} style={{ marginRight: '4px', display: 'inline' }} /> Add Milestone
         </button>
-        <button style={{ ...btnGreen, marginLeft: 'auto' }} onClick={onSubmit} disabled={busy}>
+        <button style={{ ...btnGreen, marginLeft: 'auto', opacity: canSubmit && !busy ? 1 : 0.55 }} onClick={onSubmit} disabled={busy || !canSubmit}>
           {busy ? <Loader2 size={15} className="animate-spin" /> : <Send size={15} />}
           Submit Plan
         </button>
@@ -700,7 +752,12 @@ function DraftBuilder({ drafts, projectTotal, phase, addDraft, removeDraft, edit
 }
 
 /** Client's read-only plan review with approve / request-changes buttons */
-function PlanReview({ milestones, onApprove, onRequestChanges, busy }) {
+function PlanReview({ milestones, projectTotal, projectDuration, onApprove, onRequestChanges, busy }) {
+  const planTotal = milestones.reduce((sum, milestone) => sum + parseFloat(milestone.amount || 0), 0);
+  const planDays = milestones.reduce((sum, milestone) => sum + parseInt(milestone.delivery_days || 0, 10), 0);
+  const amountValid = projectTotal <= 0 || Math.abs(planTotal - projectTotal) <= 0.01;
+  const durationValid = projectDuration <= 0 || planDays <= projectDuration;
+  const planValid = amountValid && durationValid;
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px', marginBottom: '24px' }}>
@@ -710,7 +767,7 @@ function PlanReview({ milestones, onApprove, onRequestChanges, busy }) {
         </div>
         <div style={{ display: 'flex', gap: '10px' }}>
           <button style={btnRed} onClick={onRequestChanges} disabled={busy}>Request Changes</button>
-          <button style={btnGreen} onClick={onApprove} disabled={busy}>
+          <button style={{ ...btnGreen, opacity: planValid && !busy ? 1 : 0.55 }} onClick={onApprove} disabled={busy || !planValid}>
             {busy ? <Loader2 size={15} className="animate-spin" /> : <CheckCircle2 size={15} />} Approve Plan
           </button>
         </div>
@@ -733,9 +790,20 @@ function PlanReview({ milestones, onApprove, onRequestChanges, busy }) {
         ))}
       </div>
 
-      <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.82rem', marginTop: '20px', textAlign: 'right' }}>
-        Total: {fmtMoney(milestones.reduce((s, m) => s + parseFloat(m.amount || 0), 0))} across {milestones.length} milestones
-      </p>
+      <div style={{ marginTop: '20px', padding: '14px 16px', borderRadius: 9, background: planValid ? 'rgba(16,185,129,.07)' : 'rgba(239,68,68,.08)', border: `1px solid ${planValid ? 'rgba(16,185,129,.2)' : 'rgba(239,68,68,.28)'}`, color: planValid ? '#a7f3d0' : '#fca5a5', fontSize: '0.84rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
+          <span>Release allocation</span>
+          <strong>{fmtMoney(planTotal)} / {fmtMoney(projectTotal)}</strong>
+        </div>
+        {projectDuration > 0 && (
+          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginTop: 7 }}>
+            <span>Delivery schedule</span>
+            <strong>{planDays} / {projectDuration} days</strong>
+          </div>
+        )}
+        {!durationValid && <div style={{ marginTop: 8 }}>This plan exceeds the project duration by {planDays - projectDuration} day{planDays - projectDuration !== 1 ? 's' : ''}. Ask the expert to revise it.</div>}
+        {!amountValid && <div style={{ marginTop: 8 }}>Milestone amounts must equal the full project budget before approval.</div>}
+      </div>
     </div>
   );
 }
@@ -815,14 +883,14 @@ function MilestoneTable({ milestones, role, startable, onStart, onOpenDeliverabl
                     {isCli && ['submitted', 'submitted_for_review', 'under_review'].includes(m.status) && (
                       <>
                         <button style={{ ...btnGreen, padding: '6px 14px', fontSize: '0.83rem' }} onClick={() => onApproveDeliverable(m.id)} disabled={busy}>
-                          <CheckCircle2 size={13} /> Approve
+                          <CheckCircle2 size={13} /> Approve & Release
                         </button>
                         <button
                           style={{ background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.25)', color: '#fbbf24', borderRadius: '8px', padding: '6px 14px', fontSize: '0.83rem', fontWeight: '600', cursor: 'pointer' }}
                           onClick={() => onOpenRevision(m.id)}
                           disabled={busy}
                         >
-                          Revise
+                          Request Revision
                         </button>
                       </>
                     )}
