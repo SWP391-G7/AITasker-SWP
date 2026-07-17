@@ -207,10 +207,11 @@ export const submitMilestonePlan = async (projectId, milestones) => {
 /**
  * Client approves the submitted milestone plan (all planning → planned)
  */
-export const approveMilestonePlan = async (projectId) => {
+export const approveMilestonePlan = async (projectId, approveDurationExtension = false) => {
   const response = await fetch(`${API_BASE_URL}/milestones/project/${projectId}/approve-plan`, {
     method: 'PUT',
-    headers: getAuthHeaders()
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ approve_duration_extension: approveDurationExtension })
   });
   const result = await response.json();
   if (!response.ok) throw new Error(result.message || 'Failed to approve milestone plan.');

@@ -124,6 +124,23 @@ const btnIndigo = { ...btnGreen, backgroundColor: '#4f46e5' };
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const fmtDate  = (d) => d ? new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
 const fmtMoney = (v) => `$${parseFloat(v || 0).toLocaleString()}`;
+const getMilestoneSettlement = (milestone) => {
+  const amount = parseFloat(milestone?.amount || 0);
+  if (milestone?.status === 'finished' && milestone.released_amount != null) {
+    return {
+      lateDays: parseInt(milestone.late_days || 0, 10),
+      penaltyAmount: parseFloat(milestone.penalty_amount || 0),
+      releasedAmount: parseFloat(milestone.released_amount || 0),
+    };
+  }
+  const submittedAt = milestone?.submitted_at ? new Date(milestone.submitted_at) : null;
+  const deadline = milestone?.deadline ? new Date(milestone.deadline) : null;
+  const lateDays = submittedAt && deadline && submittedAt > deadline
+    ? Math.ceil((submittedAt.getTime() - deadline.getTime()) / (24 * 60 * 60 * 1000))
+    : 0;
+  const penaltyAmount = Math.round(amount * Math.min(lateDays * 0.01, 0.2) * 100) / 100;
+  return { lateDays, penaltyAmount, releasedAmount: amount - penaltyAmount };
+};
 const labelSt  = { fontSize: '0.77rem', color: 'rgba(255,255,255,0.42)', fontWeight: '700', display: 'block', marginBottom: '5px', letterSpacing: '0.04em' };
 
 // ── Main Component ────────────────────────────────────────────────────────────
@@ -265,12 +282,6 @@ export default function ProjectDetailPage() {
       setActionErr(`Milestone amounts must total ${fmtMoney(projectTotal)}. Current total: ${fmtMoney(planTotal)}.`);
       return;
     }
-    const projectDuration = parseInt(project?.duration_days, 10);
-    const planDuration = drafts.reduce((sum, draft) => sum + parseInt(draft.delivery_days || 0, 10), 0);
-    if (!isNaN(projectDuration) && projectDuration > 0 && planDuration > projectDuration) {
-      setActionErr(`Milestone delivery time cannot exceed ${projectDuration} days. Current total: ${planDuration} days.`);
-      return;
-    }
     wrap(() => submitMilestonePlan(projectId, drafts.map(d => ({
       title: d.title.trim(),
       content: d.content.trim(),
@@ -280,8 +291,14 @@ export default function ProjectDetailPage() {
   };
 
   const handleApprovePlan = () => {
-    if (!window.confirm('Approve the milestone plan? The expert will be able to start working.')) return;
-    wrap(() => approveMilestonePlan(projectId));
+    const projectDuration = parseInt(project?.duration_days || 0, 10);
+    const planDuration = planMilestones.reduce((sum, milestone) => sum + parseInt(milestone.delivery_days || 0, 10), 0);
+    const approvesExtension = projectDuration > 0 && planDuration > projectDuration;
+    const message = approvesExtension
+      ? `This plan requests an extension from ${projectDuration} to ${planDuration} days. Approve both the plan and extension?`
+      : 'Approve the milestone plan? The expert will be able to start working.';
+    if (!window.confirm(message)) return;
+    wrap(() => approveMilestonePlan(projectId, approvesExtension));
   };
 
   const handleRequestChanges = () => {
@@ -308,7 +325,12 @@ export default function ProjectDetailPage() {
   };
 
   const handleApproveDeliverable = (id) => {
-    if (!window.confirm('Approve this deliverable and release its agreed milestone amount from escrow?')) return;
+    const milestone = milestones.find(item => item.id === id);
+    const settlement = getMilestoneSettlement(milestone);
+    const message = settlement.lateDays > 0
+      ? `This deliverable is ${settlement.lateDays} day(s) late. Approving deducts ${fmtMoney(settlement.penaltyAmount)} and releases ${fmtMoney(settlement.releasedAmount)} to the expert. Continue?`
+      : 'Approve this deliverable and release its agreed milestone amount from escrow?';
+    if (!window.confirm(message)) return;
     wrap(() => approveDeliverable(id));
   };
 
@@ -627,13 +649,13 @@ function DraftBuilder({ drafts, projectTotal, projectDuration, phase, addDraft, 
   const draftTotal = drafts.reduce((sum, draft) => sum + parseFloat(draft.amount || 0), 0);
   const draftDays = drafts.reduce((sum, draft) => sum + parseInt(draft.delivery_days || 0, 10), 0);
   const amountMatches = projectTotal <= 0 || Math.abs(draftTotal - projectTotal) <= 0.01;
-  const durationValid = projectDuration <= 0 || draftDays <= projectDuration;
+  const durationExceeded = projectDuration > 0 && draftDays > projectDuration;
   const fieldsValid = drafts.every(d =>
     d.title.trim()
     && parseFloat(d.amount) > 0
     && parseInt(d.delivery_days, 10) > 0
   );
-  const canSubmit = fieldsValid && amountMatches && durationValid;
+  const canSubmit = fieldsValid && amountMatches;
   return (
     <div>
       <div style={{ marginBottom: '24px' }}>
@@ -728,14 +750,14 @@ function DraftBuilder({ drafts, projectTotal, projectDuration, phase, addDraft, 
         </p>
       )}
       {projectDuration > 0 && (
-        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, padding: '14px 16px', marginBottom: 10, borderRadius: 9, background: durationValid ? 'rgba(16,185,129,.07)' : 'rgba(239,68,68,.08)', border: `1px solid ${durationValid ? 'rgba(16,185,129,.2)' : 'rgba(239,68,68,.28)'}`, color: durationValid ? '#a7f3d0' : '#fca5a5' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, padding: '14px 16px', marginBottom: 10, borderRadius: 9, background: durationExceeded ? 'rgba(245,158,11,.08)' : 'rgba(16,185,129,.07)', border: `1px solid ${durationExceeded ? 'rgba(245,158,11,.28)' : 'rgba(16,185,129,.2)'}`, color: durationExceeded ? '#fbbf24' : '#a7f3d0' }}>
           <span>Planned delivery time</span>
           <strong>{draftDays} / {projectDuration} days</strong>
         </div>
       )}
-      {!durationValid && (
-        <p style={{ color: '#f87171', fontSize: '0.8rem', margin: '0 0 10px' }}>
-          Reduce the milestone schedule by {draftDays - projectDuration} day{draftDays - projectDuration !== 1 ? 's' : ''}.
+      {durationExceeded && (
+        <p style={{ color: '#fbbf24', fontSize: '0.8rem', margin: '0 0 10px' }}>
+          This submits a request to extend the project by {draftDays - projectDuration} day{draftDays - projectDuration !== 1 ? 's' : ''}. The client must approve it.
         </p>
       )}
       <div style={{ display: 'flex', gap: '12px', borderTop: '1px solid rgba(255,255,255,0.07)', paddingTop: '20px' }}>
@@ -756,8 +778,8 @@ function PlanReview({ milestones, projectTotal, projectDuration, onApprove, onRe
   const planTotal = milestones.reduce((sum, milestone) => sum + parseFloat(milestone.amount || 0), 0);
   const planDays = milestones.reduce((sum, milestone) => sum + parseInt(milestone.delivery_days || 0, 10), 0);
   const amountValid = projectTotal <= 0 || Math.abs(planTotal - projectTotal) <= 0.01;
-  const durationValid = projectDuration <= 0 || planDays <= projectDuration;
-  const planValid = amountValid && durationValid;
+  const durationExtensionRequested = projectDuration > 0 && planDays > projectDuration;
+  const planValid = amountValid;
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px', marginBottom: '24px' }}>
@@ -768,7 +790,8 @@ function PlanReview({ milestones, projectTotal, projectDuration, onApprove, onRe
         <div style={{ display: 'flex', gap: '10px' }}>
           <button style={btnRed} onClick={onRequestChanges} disabled={busy}>Request Changes</button>
           <button style={{ ...btnGreen, opacity: planValid && !busy ? 1 : 0.55 }} onClick={onApprove} disabled={busy || !planValid}>
-            {busy ? <Loader2 size={15} className="animate-spin" /> : <CheckCircle2 size={15} />} Approve Plan
+            {busy ? <Loader2 size={15} className="animate-spin" /> : <CheckCircle2 size={15} />}
+            {durationExtensionRequested ? 'Approve Plan & Extension' : 'Approve Plan'}
           </button>
         </div>
       </div>
@@ -790,7 +813,7 @@ function PlanReview({ milestones, projectTotal, projectDuration, onApprove, onRe
         ))}
       </div>
 
-      <div style={{ marginTop: '20px', padding: '14px 16px', borderRadius: 9, background: planValid ? 'rgba(16,185,129,.07)' : 'rgba(239,68,68,.08)', border: `1px solid ${planValid ? 'rgba(16,185,129,.2)' : 'rgba(239,68,68,.28)'}`, color: planValid ? '#a7f3d0' : '#fca5a5', fontSize: '0.84rem' }}>
+      <div style={{ marginTop: '20px', padding: '14px 16px', borderRadius: 9, background: !planValid ? 'rgba(239,68,68,.08)' : durationExtensionRequested ? 'rgba(245,158,11,.08)' : 'rgba(16,185,129,.07)', border: `1px solid ${!planValid ? 'rgba(239,68,68,.28)' : durationExtensionRequested ? 'rgba(245,158,11,.28)' : 'rgba(16,185,129,.2)'}`, color: !planValid ? '#fca5a5' : durationExtensionRequested ? '#fbbf24' : '#a7f3d0', fontSize: '0.84rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
           <span>Release allocation</span>
           <strong>{fmtMoney(planTotal)} / {fmtMoney(projectTotal)}</strong>
@@ -801,7 +824,7 @@ function PlanReview({ milestones, projectTotal, projectDuration, onApprove, onRe
             <strong>{planDays} / {projectDuration} days</strong>
           </div>
         )}
-        {!durationValid && <div style={{ marginTop: 8 }}>This plan exceeds the project duration by {planDays - projectDuration} day{planDays - projectDuration !== 1 ? 's' : ''}. Ask the expert to revise it.</div>}
+        {durationExtensionRequested && <div style={{ marginTop: 8 }}>The expert requests {planDays - projectDuration} extra day{planDays - projectDuration !== 1 ? 's' : ''}. Approving updates the project duration to {planDays} days; otherwise request changes.</div>}
         {!amountValid && <div style={{ marginTop: 8 }}>Milestone amounts must equal the full project budget before approval.</div>}
       </div>
     </div>
@@ -859,7 +882,19 @@ function MilestoneTable({ milestones, role, startable, onStart, onOpenDeliverabl
                   )}
                 </td>
 
-                <td style={{ padding: '18px 12px', fontWeight: '700', color: '#fff', whiteSpace: 'nowrap' }}>{fmtMoney(m.amount)}</td>
+                <td style={{ padding: '18px 12px', fontWeight: '700', color: '#fff', whiteSpace: 'nowrap' }}>
+                  {fmtMoney(m.amount)}
+                  {getMilestoneSettlement(m).lateDays > 0 && (
+                    <span style={{ display: 'block', color: '#f87171', fontSize: '0.73rem', marginTop: 4, fontWeight: 600 }}>
+                      -{fmtMoney(getMilestoneSettlement(m).penaltyAmount)} ({getMilestoneSettlement(m).lateDays}d late)
+                    </span>
+                  )}
+                  {m.status === 'finished' && m.released_amount != null && (
+                    <span style={{ display: 'block', color: '#34d399', fontSize: '0.73rem', marginTop: 3, fontWeight: 600 }}>
+                      Released {fmtMoney(m.released_amount)}
+                    </span>
+                  )}
+                </td>
                 <td style={{ padding: '18px 12px', color: 'rgba(255,255,255,0.55)', whiteSpace: 'nowrap' }}>{m.delivery_days}d</td>
                 <td style={{ padding: '18px 12px', color: 'rgba(255,255,255,0.55)', fontSize: '0.86rem', whiteSpace: 'nowrap' }}>{fmtDate(m.deadline)}</td>
                 <td style={{ padding: '18px 12px' }}><StatusBadge status={m.status} /></td>
@@ -883,7 +918,7 @@ function MilestoneTable({ milestones, role, startable, onStart, onOpenDeliverabl
                     {isCli && ['submitted', 'submitted_for_review', 'under_review'].includes(m.status) && (
                       <>
                         <button style={{ ...btnGreen, padding: '6px 14px', fontSize: '0.83rem' }} onClick={() => onApproveDeliverable(m.id)} disabled={busy}>
-                          <CheckCircle2 size={13} /> Approve & Release
+                          <CheckCircle2 size={13} /> Approve & Release {fmtMoney(getMilestoneSettlement(m).releasedAmount)}
                         </button>
                         <button
                           style={{ background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.25)', color: '#fbbf24', borderRadius: '8px', padding: '6px 14px', fontSize: '0.83rem', fontWeight: '600', cursor: 'pointer' }}
