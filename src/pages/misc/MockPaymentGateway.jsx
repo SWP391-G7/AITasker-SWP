@@ -21,6 +21,7 @@ function MockPaymentGateway() {
   const [success, setSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [activeInput, setActiveInput] = useState(null); // 'number' | 'name' | 'expiry' | 'cvv'
+  const requiresCard = Number(payload?.cardAmount ?? payload?.amount ?? 0) > 0;
 
   useEffect(() => {
     try {
@@ -182,10 +183,11 @@ function MockPaymentGateway() {
               Cancel and Return
             </button>
 
-            <h2 style={styles.sectionTitle}>Secure Payment Method</h2>
-            <p style={styles.sectionSubtitle}>Select credit card details to fund the project escrow.</p>
+            <h2 style={styles.sectionTitle}>{requiresCard ? 'Secure Payment Method' : 'Confirm Wallet Payment'}</h2>
+            <p style={styles.sectionSubtitle}>{requiresCard ? 'Enter card details for the external portion of this escrow deposit.' : 'The full amount will be funded from your available wallet balance.'}</p>
 
             <form onSubmit={handleSubmit} style={styles.form}>
+              {requiresCard ? <>
               <div style={styles.inputGroup}>
                 <label style={styles.label}>CARDHOLDER NAME</label>
                 <input
@@ -263,6 +265,11 @@ function MockPaymentGateway() {
                   />
                 </div>
               </div>
+              </> : (
+                <div style={{ padding: '22px', borderRadius: '12px', background: 'rgba(16,185,129,.08)', border: '1px solid rgba(16,185,129,.22)', color: '#d1fae5', lineHeight: 1.55 }}>
+                  No card charge is required. Confirm below to move <strong>${parseFloat(payload.walletAmount || payload.amount).toLocaleString(undefined, { minimumFractionDigits: 2 })}</strong> from your available wallet balance into project escrow.
+                </div>
+              )}
 
               {errorMessage && <div style={styles.errorBanner}>{errorMessage}</div>}
 
@@ -274,7 +281,9 @@ function MockPaymentGateway() {
                       Securing Funds...
                     </>
                   ) : (
-                    `Pay $${parseFloat(payload.amount).toLocaleString(undefined, { minimumFractionDigits: 2 })}`
+                    requiresCard
+                      ? `Pay $${parseFloat(payload.cardAmount ?? payload.amount).toLocaleString(undefined, { minimumFractionDigits: 2 })}`
+                      : `Confirm ${parseFloat(payload.amount).toLocaleString(undefined, { style: 'currency', currency: 'USD' })}`
                   )}
                 </button>
                 <button type="button" onClick={handleDecline} disabled={loading} style={styles.declineBtn}>
@@ -283,11 +292,11 @@ function MockPaymentGateway() {
               </div>
             </form>
 
-            <div style={styles.alertNote}>
+            {requiresCard && <div style={styles.alertNote}>
               <p style={{ margin: 0, fontSize: "0.8rem", color: "#9ca3af", lineHeight: "1.4" }}>
                 <strong>Tip:</strong> For testing failures, input CVV <code>999</code> (suspected fraud simulation) or card number <code>4111 1111 1111 1111</code> (insufficient funds simulation). Any other valid card detail will succeed.
               </p>
-            </div>
+            </div>}
           </section>
 
           {/* Right panel: Dynamic Card preview & Order details */}
@@ -321,8 +330,16 @@ function MockPaymentGateway() {
                 <span style={styles.summaryValue}>{payload.clientId ? "Verified Client" : "Unknown"}</span>
               </div>
               <div style={styles.summaryRow}>
-                <span style={styles.summaryLabel}>{payload.type === 'invitation' ? 'Service Request' : 'Associated Job'}</span>
-                <span style={styles.summaryValue}>{payload.jobTitle || (payload.type === 'invitation' ? 'Service' : 'Job Post')}</span>
+                <span style={styles.summaryLabel}>{payload.type === 'invitation' || payload.paymentKind === 'invitation' ? 'Service Request' : 'Associated Job'}</span>
+                <span style={styles.summaryValue}>{payload.jobTitle || payload.serviceTitle || "Project"}</span>
+              </div>
+              <div style={styles.summaryRow}>
+                <span style={styles.summaryLabel}>Wallet credit</span>
+                <span style={styles.summaryValue}>${parseFloat(payload.walletAmount || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+              </div>
+              <div style={styles.summaryRow}>
+                <span style={styles.summaryLabel}>Card charge</span>
+                <span style={styles.summaryValue}>${parseFloat(payload.cardAmount ?? payload.amount).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
               </div>
               <div style={styles.summaryDivider} />
               <div style={styles.summaryTotalRow}>

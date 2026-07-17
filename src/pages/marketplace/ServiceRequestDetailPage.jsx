@@ -15,6 +15,7 @@ import {
 import ClientSidebar from "../../Components/Dashboard/Client/ClientSidebar";
 import ExpertSidebar from "../../Components/Dashboard/Expert/ExpertSidebar";
 import Footer from "../../Components/Footer/Footer";
+import PaymentSourceDialog from "../../Components/Payment/PaymentSourceDialog";
 import {
   getInvitationById,
   updateInvitationStatus,
@@ -39,6 +40,7 @@ function ServiceRequestDetailPage() {
   const [error, setError] = useState("");
   const [actionError, setActionError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [showPaymentDialog, setShowPaymentDialog] = useState(false);
 
   // Countering state (for when countering a proposal)
   const [isCountering, setIsCountering] = useState(false);
@@ -248,7 +250,11 @@ function ServiceRequestDetailPage() {
 
   // Handle Client start project
   const handleStartProject = async () => {
-    if (!window.confirm("Are you ready to fund and start this project contract?")) return;
+    if (invitation?.payment_status !== 'funded') {
+      setShowPaymentDialog(true);
+      return;
+    }
+    if (!window.confirm("Create the project using the funds already secured in escrow?")) return;
 
     try {
       setSubmitting(true);
@@ -259,6 +265,19 @@ function ServiceRequestDetailPage() {
     } catch (err) {
       setActionError(err.message || "Failed to start project.");
     } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handlePaymentSource = async (paymentSource) => {
+    try {
+      setSubmitting(true);
+      setActionError("");
+      const result = await initiateInvitationPayment(invitation.id, paymentSource);
+      if (!result.redirectUrl) throw new Error('Failed to generate payment redirect link');
+      window.location.href = result.redirectUrl;
+    } catch (err) {
+      setActionError(err.message || 'Failed to initiate service payment.');
       setSubmitting(false);
     }
   };
@@ -329,7 +348,7 @@ function ServiceRequestDetailPage() {
                         onClick={handleStartProject}
                         disabled={submitting}
                       >
-                        Create Project
+                        {invitation.payment_status === 'funded' ? 'Create Project' : 'Fund Escrow'}
                       </button>
                     )}
                     <button
@@ -651,6 +670,15 @@ function ServiceRequestDetailPage() {
 
           </div>
         )}
+
+        <PaymentSourceDialog
+          open={showPaymentDialog}
+          title={`Fund ${invitation?.service_title || 'service request'}`}
+          amount={invitation?.bid_amount}
+          busy={submitting}
+          onClose={() => !submitting && setShowPaymentDialog(false)}
+          onSelect={handlePaymentSource}
+        />
 
         <Footer variant="dashboard" />
       </main>

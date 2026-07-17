@@ -178,7 +178,7 @@ export const counterProposal = async ({ proposalId, bidAmount, coverLetter }) =>
   return result.proposal || result.data || result;
 };
 
-export const initiateProposalPayment = async (proposalId) => {
+export const initiateProposalPayment = async (proposalId, paymentSource = 'card') => {
   const token = localStorage.getItem('token');
   if (!token) {
     throw new Error('No authentication token found. Please log in first.');
@@ -190,6 +190,7 @@ export const initiateProposalPayment = async (proposalId) => {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
     },
+    body: JSON.stringify({ payment_source: paymentSource }),
   });
 
   const result = await response.json();

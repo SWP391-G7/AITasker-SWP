@@ -19,6 +19,7 @@ import { getJobById, getJobProposals } from "../../../Services/jobService";
 import { updateProposalStatus, counterProposal, initiateProposalPayment } from "../../../Services/proposalService";
 import { createProject } from "../../../Services/projectService";
 import { getOrCreateConversation } from "../../../Services/messageService";
+import PaymentSourceDialog from "../../../Components/Payment/PaymentSourceDialog";
 import "./ClientMarketplace.css";
 
 const getFirstArray = (result, keys) => {
@@ -70,6 +71,7 @@ function ClientTaskDetailPage() {
   // ── Modal / action state ─────────────────────────────────────────
   const [selectedProposal, setSelectedProposal] = useState(null);
   const [actingProposal, setActingProposal] = useState(null);
+  const [paymentProposal, setPaymentProposal] = useState(null);
 
   // Counter-offer form state (inside the proposal modal)
   const [showCounterForm, setShowCounterForm] = useState(false);
@@ -179,27 +181,19 @@ function ClientTaskDetailPage() {
   }
 
   /** Client clicks Approve on a proposal (can be a plain proposal or a counter from expert) */
-  const handleAcceptProposal = async (proposalId) => {
+  const handleAcceptProposal = (proposalId) => {
     const proposal = proposals.find(p => (p._id || p.id) === proposalId);
     if (!proposal) return;
+    setPaymentProposal(proposal);
+  };
 
-    const bidAmount = (proposal.status === "countered" && proposal.counter_bid_amount)
-      ? parseFloat(proposal.counter_bid_amount)
-      : parseFloat(proposal.bid_amount);
-
-    const clientBudget = parseFloat(job?.client_budget ?? job?.clientBudget ?? 0);
-
-    if (clientBudget < bidAmount) {
-      setError("Your budget is not enough to choose this proposal");
-      // Scroll to top to see error message
-      window.scrollTo({ top: 0, behavior: "smooth" });
-      return;
-    }
-
+  const handlePaymentSource = async (paymentSource) => {
+    const proposalId = paymentProposal?._id || paymentProposal?.id;
+    if (!proposalId) return;
     setActingProposal(proposalId);
     try {
       setError("");
-      const result = await initiateProposalPayment(proposalId);
+      const result = await initiateProposalPayment(proposalId, paymentSource);
       if (result.redirectUrl) {
         window.location.href = result.redirectUrl;
       } else {
@@ -359,6 +353,14 @@ function ClientTaskDetailPage() {
     }
 
     if (proposal.status === "accepted") {
+      if (proposal.payment_status !== "funded") {
+        return (
+          <button type="button" className="btn btn-sm btn-success px-3 py-2 fw-semibold" style={{ borderRadius: "8px" }} onClick={() => handleAcceptProposal(pid)} disabled={busy}>
+            {busy ? <Loader2 className="animate-spin me-1 d-inline" size={14} /> : null}
+            Fund Escrow
+          </button>
+        );
+      }
       return (
         <span className="project-status accepted-status d-flex align-items-center py-2 px-3">
           <Check size={14} className="me-1" /> Accepted
@@ -809,6 +811,16 @@ function ClientTaskDetailPage() {
             )}
 
             {/* ── Start Project? prompt ────────────────────────────── */}
+            <PaymentSourceDialog
+              open={Boolean(paymentProposal)}
+              title={paymentProposal ? `Fund proposal from ${getExpertName(paymentProposal)}` : ''}
+              amount={paymentProposal?.status === 'countered' && paymentProposal?.counter_bid_amount ? paymentProposal.counter_bid_amount : paymentProposal?.bid_amount}
+              availableBalance={job?.client_budget ?? job?.clientBudget}
+              busy={Boolean(actingProposal)}
+              onClose={() => !actingProposal && setPaymentProposal(null)}
+              onSelect={handlePaymentSource}
+            />
+
             {showProjectPrompt && (
               <div className="modal-overlay" onClick={() => setShowProjectPrompt(false)}>
                 <div
