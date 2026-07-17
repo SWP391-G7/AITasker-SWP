@@ -157,7 +157,7 @@ export default function ProjectDetailPage() {
 
   // User identity from localStorage
   const user  = useMemo(() => { try { return JSON.parse(localStorage.getItem('user') || 'null'); } catch { return null; } }, []);
-  const role  = user?.role ?? null;
+  const role  = String(user?.role || '').toLowerCase();
   const isExp = role === 'expert';
   const isCli = role === 'client';
 

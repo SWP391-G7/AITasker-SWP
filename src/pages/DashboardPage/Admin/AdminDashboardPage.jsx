@@ -78,7 +78,7 @@ const AdminDashboardPage = ({ onLogout }) => {
       const parts = id.split('-');
       const type = parts[0];
       const itemId = parts.slice(1).join('-');
-      await updateContentStatus(type, itemId, 'rejected');
+      await updateContentStatus(type, itemId, 'removed');
       setModerations((prev) => prev.filter((item) => item.id !== id));
     } catch (err) {
       console.error(err);
