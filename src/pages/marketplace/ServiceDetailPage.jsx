@@ -1,30 +1,55 @@
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useState, useEffect, useCallback } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, CheckCircle2, Clock, Loader2, AlertCircle, Star, XCircle, Send } from 'lucide-react';
 import Footer from '../../Components/Footer/Footer';
 import { getServiceById } from '../../Services/serviceService';
 import { updateContentStatus } from '../../Services/adminDashboardService';
 import { getStoredUser } from '../../Services/checkLogin';
 import DetailCarousel from '../../Components/marketplace/DetailCarousel';
+import ReviewList from '../../Components/review/ReviewList';
+import ReviewForm from '../../Components/review/ReviewForm';
+import { getReviewsByTargetId, createReview, checkCanReview } from '../../Services/reviewService';
 import '../../Components/marketplace/Marketplace.css';
 import '../Style/ServiceDetail.css';
 
 const ServiceDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const location = useLocation();
-  const fromProfile = location.state?.fromProfile;
-  const fromLanding = location.state?.fromLanding;
-  const backLabel = fromProfile ? "Back to Profile" : fromLanding ? "Back to Home" : "Back to Marketplace";
+
   const [service, setService] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [moderationAction, setModerationAction] = useState('');
   const [moderationError, setModerationError] = useState('');
 
+  const [reviews, setReviews] = useState([]);
+  const [avgStars, setAvgStars] = useState(null);
+  const [totalReviews, setTotalReviews] = useState(0);
+  const [reviewsLoading, setReviewsLoading] = useState(true);
+  const [canReview, setCanReview] = useState(false);
+  const [hasReviewed, setHasReviewed] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
   const currentUser = getStoredUser();
   const isAdmin = currentUser?.role === 'admin';
   const canModerateService = isAdmin && service?.status === 'pending';
+  const currentUserId = currentUser?.id || null;
+  const currentUserRole = currentUser?.role || null;
+
+  const fetchReviews = useCallback(async (serviceId) => {
+    if (!serviceId) return;
+    try {
+      setReviewsLoading(true);
+      const data = await getReviewsByTargetId(serviceId);
+      setReviews(data.reviews || []);
+      setAvgStars(data.avg_stars);
+      setTotalReviews(data.total_reviews || 0);
+    } catch {
+      setReviews([]);
+    } finally {
+      setReviewsLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     const fetchDetail = async () => {
@@ -33,6 +58,14 @@ const ServiceDetailPage = () => {
         setError(null);
         const data = await getServiceById(id);
         setService(data);
+
+        fetchReviews(data.id);
+
+        if (currentUserRole === 'client') {
+          const { canReview: cr, hasReviewed: hr } = await checkCanReview(data.id);
+          setCanReview(cr);
+          setHasReviewed(hr);
+        }
       } catch (err) {
         setError(err.message || 'Failed to load service details.');
       } finally {
@@ -40,7 +73,19 @@ const ServiceDetailPage = () => {
       }
     };
     fetchDetail();
-  }, [id]);
+  }, [id, currentUserRole, fetchReviews]);
+
+  const handleReviewSubmit = async ({ target_id, stars, review }) => {
+    setSubmitting(true);
+    try {
+      await createReview({ target_id, stars, review });
+      setHasReviewed(true);
+      setCanReview(false);
+      fetchReviews(target_id);
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   const handleModerateService = async (status) => {
     try {
@@ -110,6 +155,27 @@ const ServiceDetailPage = () => {
                 <h3 className="section-header">About This Service</h3>
                 <p className="detail-description">{service.description || 'No detailed description provided.'}</p>
               </div>
+
+              {canReview && (
+                <ReviewForm
+                  serviceId={service.id}
+                  onSubmit={handleReviewSubmit}
+                  submitting={submitting}
+                />
+              )}
+
+              {hasReviewed && (
+                <div className="reviewed-notice glass-card">
+                  You have already reviewed this service.
+                </div>
+              )}
+
+              <ReviewList
+                reviews={reviews}
+                avgStars={avgStars}
+                totalReviews={totalReviews}
+                loading={reviewsLoading}
+              />
             </div>
 
             <div className="detail-sidebar">
@@ -126,7 +192,7 @@ const ServiceDetailPage = () => {
                   </div>
                 </div>
 
-                {currentUser && currentUser.role === 'client' && currentUser.id !== service.expert_id && (
+                {currentUserRole === 'client' && currentUserId !== service.expert_id && (
                   <button 
                     className="order-btn" 
                     type="button"
@@ -180,4 +246,3 @@ const ServiceDetailPage = () => {
 };
 
 export default ServiceDetailPage;
-
