@@ -800,7 +800,7 @@ function MilestoneTable({ milestones, role, startable, onStart, onOpenDeliverabl
                     )}
 
                     {/* CLIENT actions */}
-                    {isCli && m.status === 'submitted' && (
+                    {isCli && ['submitted', 'submitted_for_review', 'under_review'].includes(m.status) && (
                       <>
                         <button style={{ ...btnGreen, padding: '6px 14px', fontSize: '0.83rem' }} onClick={() => onApproveDeliverable(m.id)} disabled={busy}>
                           <CheckCircle2 size={13} /> Approve

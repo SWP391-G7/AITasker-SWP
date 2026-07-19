@@ -4,6 +4,7 @@ import {
   ArrowLeft,
   Check,
   Clock,
+  CreditCard,
   DollarSign,
   Loader2,
   RefreshCcw,
@@ -18,7 +19,8 @@ import {
   getInvitationById,
   updateInvitationStatus,
   counterInvitation,
-  startProjectFromInvitation
+  startProjectFromInvitation,
+  initiateInvitationPayment
 } from "../../Services/invitationService";
 import { getStoredUser } from "../../Services/checkLogin";
 import "../DashboardPage/Style/AdminDashboardPage.css";
@@ -88,6 +90,23 @@ function ServiceRequestDetailPage() {
     fetchRequestDetail();
   }, [fetchRequestDetail]);
 
+  // Handle payment redirect back to this page
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const paymentStatus = params.get("payment");
+    const errorMsg = params.get("error");
+
+    if (paymentStatus === "success") {
+      // Clear the query params and refresh data to reflect paid_at update
+      window.history.replaceState({}, document.title, window.location.pathname);
+      fetchRequestDetail();
+    } else if (paymentStatus === "failed" && errorMsg) {
+      setError("Payment failed: " + decodeURIComponent(errorMsg));
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const handleTabChange = (tabId) => {
     if (isExpert) {
       if (tabId === "dashboard") navigate("/expert/dashboard");
@@ -111,9 +130,16 @@ function ServiceRequestDetailPage() {
     return false;
   }, [invitation, isExpert, currentUser]);
 
+  const showPayNowButton = useMemo(() => {
+    if (!invitation) return false;
+    // Client can pay when expert has accepted but payment hasn't been made yet
+    return !isExpert && invitation.status === 'accepted' && !invitation.paid_at;
+  }, [invitation, isExpert]);
+
   const showStartProjectButton = useMemo(() => {
     if (!invitation) return false;
-    return !isExpert && invitation.status === 'accepted';
+    // Client can start project once payment has been made (paid_at is set)
+    return !isExpert && invitation.status === 'accepted' && !!invitation.paid_at;
   }, [invitation, isExpert]);
 
   // Handle Accept request or counter offer
@@ -133,11 +159,30 @@ function ServiceRequestDetailPage() {
         alert("Request accepted and project contract successfully initialized!");
         navigate(`/projects/${res.project.id}`);
       } else {
-        alert("Request approved successfully.");
+        alert("Request approved! The client will now be prompted to fund the escrow.");
         fetchRequestDetail();
       }
     } catch (err) {
       setActionError(err.message || "Failed to approve request.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  // Handle client initiating payment (escrow deposit)
+  const handlePayNow = async () => {
+    if (!invitation) return;
+    setSubmitting(true);
+    setActionError("");
+    try {
+      const result = await initiateInvitationPayment(invitation.id);
+      if (result.redirectUrl) {
+        window.location.href = result.redirectUrl;
+      } else {
+        throw new Error("Failed to generate payment redirect link");
+      }
+    } catch (err) {
+      setActionError(err.message || "Failed to initiate payment session");
     } finally {
       setSubmitting(false);
     }
@@ -264,6 +309,18 @@ function ServiceRequestDetailPage() {
                     </h2>
                   </div>
                   <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                    {showPayNowButton && (
+                      <button
+                        className="btn fw-bold"
+                        style={{ borderRadius: "8px", padding: "8px 16px", background: "linear-gradient(to right, #6366f1, #4f46e5)", border: "none", color: "#fff", cursor: "pointer", display: "flex", alignItems: "center", gap: "6px", boxShadow: "0 4px 12px rgba(99,102,241,0.3)" }}
+                        type="button"
+                        onClick={handlePayNow}
+                        disabled={submitting}
+                      >
+                        {submitting ? <Loader2 size={16} className="animate-spin" /> : <CreditCard size={16} />}
+                        Pay Now
+                      </button>
+                    )}
                     {showStartProjectButton && (
                       <button
                         className="btn btn-success fw-bold"
@@ -540,7 +597,57 @@ function ServiceRequestDetailPage() {
                   </div>
                 </div>
               </div>
+
+              {/* Payment status section (only when accepted) */}
+              {invitation.status === 'accepted' && !isExpert && (
+                <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: "16px" }}>
+                  <span style={{ fontSize: "0.8rem", color: "rgba(255,255,255,0.4)", fontWeight: "600" }}>ESCROW PAYMENT</span>
+                  {invitation.paid_at ? (
+                    <div style={{ marginTop: "8px", background: "rgba(16, 185, 129, 0.08)", border: "1px solid rgba(16, 185, 129, 0.2)", borderRadius: "8px", padding: "12px" }}>
+                      <span style={{ color: "#10b981", fontWeight: "600", fontSize: "0.85rem" }}>✓ Funds Secured in Escrow</span>
+                      <p style={{ margin: "4px 0 0 0", color: "rgba(255,255,255,0.5)", fontSize: "0.75rem" }}>
+                        Paid on {new Date(invitation.paid_at).toLocaleDateString()}
+                      </p>
+                    </div>
+                  ) : (
+                    <div style={{ marginTop: "8px" }}>
+                      <div style={{ background: "rgba(245, 158, 11, 0.08)", border: "1px solid rgba(245, 158, 11, 0.2)", borderRadius: "8px", padding: "12px", marginBottom: "12px" }}>
+                        <span style={{ color: "#f59e0b", fontWeight: "600", fontSize: "0.85rem" }}>⚠ Payment Required</span>
+                        <p style={{ margin: "4px 0 0 0", color: "rgba(255,255,255,0.5)", fontSize: "0.75rem" }}>
+                          The expert has accepted. Fund the escrow to start the project.
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handlePayNow}
+                        disabled={submitting}
+                        style={{ width: "100%", background: "linear-gradient(to right, #6366f1, #4f46e5)", border: "none", borderRadius: "8px", padding: "10px 16px", color: "#fff", fontWeight: "600", fontSize: "0.9rem", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", boxShadow: "0 4px 12px rgba(99,102,241,0.3)" }}
+                      >
+                        {submitting ? <Loader2 size={16} className="animate-spin" /> : <CreditCard size={16} />}
+                        Pay ${invitation.bid_amount} Now
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {invitation.status === 'accepted' && isExpert && (
+                <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: "16px" }}>
+                  <span style={{ fontSize: "0.8rem", color: "rgba(255,255,255,0.4)", fontWeight: "600" }}>ESCROW PAYMENT</span>
+                  <div style={{ marginTop: "8px", background: invitation.paid_at ? "rgba(16, 185, 129, 0.08)" : "rgba(59, 130, 246, 0.08)", border: `1px solid ${invitation.paid_at ? "rgba(16, 185, 129, 0.2)" : "rgba(59, 130, 246, 0.2)"}`, borderRadius: "8px", padding: "12px" }}>
+                    <span style={{ color: invitation.paid_at ? "#10b981" : "#3b82f6", fontWeight: "600", fontSize: "0.85rem" }}>
+                      {invitation.paid_at ? "✓ Payment Received" : "⏳ Awaiting Client Payment"}
+                    </span>
+                    <p style={{ margin: "4px 0 0 0", color: "rgba(255,255,255,0.5)", fontSize: "0.75rem" }}>
+                      {invitation.paid_at
+                        ? `Client funded escrow on ${new Date(invitation.paid_at).toLocaleDateString()}`
+                        : "The client needs to complete the escrow payment before the project can start."}
+                    </p>
+                  </div>
+                </div>
+              )}
             </aside>
+
 
           </div>
         )}

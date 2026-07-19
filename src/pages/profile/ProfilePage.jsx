@@ -377,6 +377,14 @@ function ProfilePage() {
     </article>
   );
 
+  const handleViewAllProfileItems = () => {
+    if (isExpertView) {
+      navigate(`/profile/${userId}/services`);
+    } else {
+      navigate(`/profile/${userId}/projects`);
+    }
+  };
+
   if (loading) {
     return (
       <div className="profile-shell">

@@ -73,8 +73,12 @@ function MockPaymentGateway() {
       navigate("/");
       return;
     }
-    // Redirect back to task details page with failed state
-    window.location.href = `/client/projects/${payload.jobId}?payment=failed&error=Payment%20cancelled%20by%20client`;
+    // Redirect back to the appropriate page based on payment type
+    if (payload.type === 'invitation') {
+      window.location.href = `/service-requests/${payload.invitationId}?payment=failed&error=Payment%20cancelled%20by%20client`;
+    } else {
+      window.location.href = `/client/projects/${payload.jobId}?payment=failed&error=Payment%20cancelled%20by%20client`;
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -317,8 +321,8 @@ function MockPaymentGateway() {
                 <span style={styles.summaryValue}>{payload.clientId ? "Verified Client" : "Unknown"}</span>
               </div>
               <div style={styles.summaryRow}>
-                <span style={styles.summaryLabel}>Associated Job</span>
-                <span style={styles.summaryValue}>{payload.jobTitle || "Job Post"}</span>
+                <span style={styles.summaryLabel}>{payload.type === 'invitation' ? 'Service Request' : 'Associated Job'}</span>
+                <span style={styles.summaryValue}>{payload.jobTitle || (payload.type === 'invitation' ? 'Service' : 'Job Post')}</span>
               </div>
               <div style={styles.summaryDivider} />
               <div style={styles.summaryTotalRow}>

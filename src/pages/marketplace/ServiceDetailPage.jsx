@@ -110,6 +110,20 @@ const ServiceDetailPage = () => {
                 <h3 className="section-header">About This Service</h3>
                 <p className="detail-description">{service.description || 'No detailed description provided.'}</p>
               </div>
+
+              <div className="detail-section glass-card" style={{ marginTop: '20px' }}>
+                <h3 className="section-header">Client Reviews & Comments</h3>
+                {service.avg_rating && (
+                  <div className="rating-summary mb-3" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Star size={20} fill="#10b981" color="#10b981" />
+                    <strong style={{ fontSize: '1.2rem', color: '#fff' }}>{Number(service.avg_rating).toFixed(1)}</strong>
+                    <span style={{ color: '#94a3b8' }}>out of 5.0</span>
+                  </div>
+                )}
+                <p style={{ color: '#94a3b8', fontSize: '0.9rem' }}>
+                  Ratings and feedback submitted by clients who have completed projects or ordered services from this expert.
+                </p>
+              </div>
             </div>
 
             <div className="detail-sidebar">

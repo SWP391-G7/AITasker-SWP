@@ -52,14 +52,16 @@
 }
 
 .hero-title-white {
-  color: #fff;
-  -webkit-text-fill-color: #fff;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  display: inline-block;
 }
 
 .gradient-text {
-  background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-sky) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  background: linear-gradient(135deg, #10b981 0%, #3b82f6 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
   display: inline-block;
 }
 

@@ -146,3 +146,26 @@ export const startProjectFromInvitation = async (invitationId) => {
 
   return result.project;
 };
+
+export const initiateInvitationPayment = async (invitationId) => {
+  const token = localStorage.getItem('token');
+  if (!token) {
+    throw new Error('No authentication token found. Please log in first.');
+  }
+
+  const response = await fetch(`${API_BASE_URL}/payment/pay-invitation/${invitationId}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  const result = await response.json();
+  if (!response.ok) {
+    throw new Error(result.message || 'Failed to initiate payment for service request.');
+  }
+
+  return result;
+};
+

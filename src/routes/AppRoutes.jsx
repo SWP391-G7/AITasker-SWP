@@ -218,18 +218,18 @@ function AppRoutes() {
       <Route
         path="/marketplace"
         element={
-          <ProtectedRoute>
+          <>
             <AISolutionMarketplacePage />
-          </ProtectedRoute>
+          </>
         }
       />
       <Route
         path="/marketplace/service/:id"
         element={
-          <ProtectedRoute>
+          <>
             <HeaderCom />
             <ServiceDetailPage />
-          </ProtectedRoute>
+          </>
         }
       />
       <Route
@@ -244,16 +244,16 @@ function AppRoutes() {
       <Route
         path="/marketplace/task/:id"
         element={
-          <ProtectedRoute>
+          <>
             <HeaderCom />
             <MarketplaceTaskDetailPage />
-          </ProtectedRoute>
+          </>
         }
       />
       <Route
         path="/marketplace/task/:id/proposal"
         element={
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={["expert"]}>
             <HeaderCom />
             <MarketplaceProposalPage />
           </ProtectedRoute>
@@ -262,9 +262,10 @@ function AppRoutes() {
       <Route
         path="/clients-experts"
         element={
-          <ProtectedRoute>
+          <>
+            <HeaderCom />
             <ClientExpertSearchPage />
-          </ProtectedRoute>
+          </>
         }
       />
 
@@ -305,11 +306,11 @@ function AppRoutes() {
       <Route path="/expert/earnings" element={<ProtectedRoute allowedRoles={["expert"]}><EarningsPage /></ProtectedRoute>} />
       <Route path="/expert/messages" element={<ProtectedRoute allowedRoles={["expert"]}><ExpertMessagesPage /></ProtectedRoute>} />
       <Route path="/expert/settings" element={<ProtectedRoute allowedRoles={["expert"]}><ExpertSettingsPage /></ProtectedRoute>} />
-      <Route path="/profile/:userId" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-      <Route path="/profile/:userId/projects" element={<ProtectedRoute><ViewAllProjectPage /></ProtectedRoute>} />
-      <Route path="/profile/:userId/services" element={<ProtectedRoute><ViewAllServicePage /></ProtectedRoute>} />
-      <Route path="/client/experts/:userId" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-      <Route path="/client/clients/:userId" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+      <Route path="/profile/:userId" element={<ProfilePage />} />
+      <Route path="/profile/:userId/projects" element={<ViewAllProjectPage />} />
+      <Route path="/profile/:userId/services" element={<ViewAllServicePage />} />
+      <Route path="/client/experts/:userId" element={<ProfilePage />} />
+      <Route path="/client/clients/:userId" element={<ProfilePage />} />
       <Route
         path="/projects/:projectId"
         element={
