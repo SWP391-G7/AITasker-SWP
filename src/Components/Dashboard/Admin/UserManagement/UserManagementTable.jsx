@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import Dropdown from 'react-bootstrap/Dropdown'
+import { Dropdown } from 'react-bootstrap'
 import { BadgeCheck, ChevronLeft, ChevronRight, SlidersHorizontal, UserPlus, Eye, Edit2, Trash2, ShieldAlert, ShieldCheck } from 'lucide-react'
 
 const statusClass = {
