@@ -15,6 +15,50 @@ export const getUserProfile = async (userId) => {
     if (!response.ok) {
       throw new Error(result.message || 'Failed to fetch profile');
     }
+
+    // Admin profile views need the canonical moderation status so approved/open
+    // content can expose the Unpublish action. Keep the public profile endpoint
+    // lightweight, then enrich its items only for an authenticated admin.
+    let storedUser = null;
+    try {
+      storedUser = JSON.parse(localStorage.getItem('user') || 'null');
+    } catch {
+      storedUser = null;
+    }
+
+    const isAdmin = String(storedUser?.role || '').toLowerCase().includes('admin');
+    if (token && isAdmin) {
+      try {
+        const moderationResponse = await fetch(`${API_BASE_URL}/admin/content?type=all&status=all`, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (moderationResponse.ok) {
+          const moderationData = await moderationResponse.json();
+          const serviceStatuses = new Map(
+            (moderationData.services || []).map((service) => [String(service.id), service.status])
+          );
+          const projectStatuses = new Map(
+            (moderationData.jobs || []).map((project) => [String(project.id), project.status])
+          );
+
+          result.services = (result.services || []).map((service) => ({
+            ...service,
+            status: serviceStatuses.get(String(service.id)) || service.status
+          }));
+          result.projects = (result.projects || []).map((project) => ({
+            ...project,
+            status: projectStatuses.get(String(project.id)) || project.status
+          }));
+        }
+      } catch (moderationError) {
+        console.error('Failed to enrich profile moderation statuses:', moderationError);
+      }
+    }
+
     return result;
   } catch (error) {
     console.error('Fetch profile error:', error);

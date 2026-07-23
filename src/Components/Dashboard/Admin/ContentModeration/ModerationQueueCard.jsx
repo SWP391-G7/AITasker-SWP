@@ -1,10 +1,13 @@
 import { Link } from 'react-router-dom'
-import { CheckCircle2, XCircle } from 'lucide-react'
+import { CheckCircle2, EyeOff, XCircle } from 'lucide-react'
 
 const actionableStatuses = ['pending']
+const publishedStatuses = ['approved', 'open']
 
-const ModerationQueueCard = ({ item, onApprove, onReject }) => {
-  const canModerate = actionableStatuses.includes(item.status || 'pending')
+const ModerationQueueCard = ({ item, onApprove, onReject, onUnpublish }) => {
+  const normalizedStatus = String(item.status || 'pending').toLowerCase()
+  const canModerate = actionableStatuses.includes(normalizedStatus)
+  const canUnpublish = publishedStatuses.includes(normalizedStatus)
 
   return (
     <article className="moderation-card">
@@ -67,6 +70,16 @@ const ModerationQueueCard = ({ item, onApprove, onReject }) => {
               Reject
             </button>
           </>
+        )}
+        {canUnpublish && (
+          <button
+            className="moderation-action-button unpublish"
+            type="button"
+            onClick={() => onUnpublish && onUnpublish(item.id)}
+          >
+            <EyeOff size={14} />
+            Unpublish
+          </button>
         )}
         <Link className="moderation-detail-link" to={item.detailPath}>
           View detail

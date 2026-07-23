@@ -199,21 +199,6 @@ const SettingPage = ({ isOpen, onClose, user, role = "Client", onLogout, onSwitc
             <button className="settings-add-payment" type="button">+ Add New Payment Method</button>
           </div>
 
-          {!isAdmin && (
-            <div className="settings-card settings-role-card">
-              <div>
-                <div className="settings-section-title">
-                  <RefreshCw size={18} />
-                  <h2>4. Change Role</h2>
-                </div>
-                <p className="settings-muted">Currently browsing as <strong>{role}</strong>.</p>
-              </div>
-              <button className="settings-outline-btn" type="button" onClick={onSwitchRole}>
-                Switch to {targetRole} View
-              </button>
-            </div>
-          )}
-
           <button className="settings-logout-btn" type="button" onClick={onLogout}>
             <LogOut size={16} />
             <span>Log Out</span>

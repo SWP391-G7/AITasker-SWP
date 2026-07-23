@@ -676,6 +676,33 @@
   font-weight: 800;
 }
 
+.profile-content-unpublish-btn {
+  align-items: center;
+  background: #dc2626;
+  border: 0;
+  border-radius: 6px;
+  color: #ffffff;
+  cursor: pointer;
+  display: flex;
+  font-size: 0.76rem;
+  font-weight: 800;
+  gap: 6px;
+  justify-content: center;
+  margin-top: 14px;
+  min-height: 34px;
+  padding: 0 12px;
+  width: 100%;
+}
+
+.profile-content-unpublish-btn:hover:not(:disabled) {
+  background: #b91c1c;
+}
+
+.profile-content-unpublish-btn:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
 .project-budget {
   color: var(--text-dark);
   margin: 10px 0 0;

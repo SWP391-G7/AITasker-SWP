@@ -298,6 +298,11 @@
   color: #ffffff;
 }
 
+.moderation-action-button.unpublish {
+  background: #dc2626;
+  color: #ffffff;
+}
+
 .moderation-detail-link {
   align-self: center;
   color: #60a5fa;

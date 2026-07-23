@@ -6,6 +6,7 @@ import {
   Briefcase,
   Building2,
   Edit2,
+  EyeOff,
   GraduationCap,
   Loader2,
   Mail,
@@ -19,6 +20,7 @@ import {
 } from "lucide-react";
 import HeaderCom from "../../Components/Navbar/HeaderCom";
 import Footer from "../../Components/Footer/Footer";
+import AdminModerationConfirmModal from "../../Components/Dashboard/Admin/AdminModerationConfirmModal";
 import { getUserProfile } from "../../Services/profileService";
 import { getStoredUser } from "../../Services/checkLogin";
 import { getExpertServicesFromApi } from "../../Components/Profile/Expert/ExpertService";
@@ -28,6 +30,7 @@ import {
   adminUpdateUser,
   adminDeleteUser,
   adminDeactivateUser,
+  updateContentStatus,
 } from "../../Services/adminDashboardService";
 import "./ProfilePage.css";
 
@@ -55,11 +58,12 @@ function ProfilePage() {
   const [adminActionError, setAdminActionError] = useState("")
   const [adminActionLoading, setAdminActionLoading] = useState("")
   const [confirmAction, setConfirmAction] = useState(null)
+  const [contentModerationConfirm, setContentModerationConfirm] = useState(null)
 
   const isOwnProfile = currentUser && String(currentUser.id) === String(userId)
   const currentRole = String(currentUser?.role || "").toLowerCase()
-  const isAdminViewer = currentRole === "admin"
-  const isAdminProfile = String(profileData?.user?.role || currentUser?.role || "").toLowerCase() === "admin"
+  const isAdminViewer = currentRole.includes("admin")
+  const isAdminProfile = String(profileData?.user?.role || currentUser?.role || "").toLowerCase().includes("admin")
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -335,6 +339,39 @@ function ProfilePage() {
     </div>
   );
 
+  const isPublishedContent = (status) =>
+    ["approved", "open"].includes(String(status || "").toLowerCase());
+
+  const openAdminUnpublishConfirm = (event, contentType, item) => {
+    event.stopPropagation();
+    setAdminActionError("");
+    setContentModerationConfirm({
+      action: "unpublish",
+      contentType,
+      contentId: item.id,
+      title: item.title,
+    });
+  };
+
+  const handleAdminUnpublish = async () => {
+    if (!contentModerationConfirm) return;
+    const { contentType, contentId } = contentModerationConfirm;
+    const loadingKey = `unpublish-${contentType}-${contentId}`;
+
+    try {
+      setAdminActionError("");
+      setAdminActionLoading(loadingKey);
+      await updateContentStatus(contentType, contentId, "removed");
+      await refreshProfileData();
+      setContentModerationConfirm(null);
+    } catch (err) {
+      setAdminActionError(err.message || "Failed to unpublish content");
+      setContentModerationConfirm(null);
+    } finally {
+      setAdminActionLoading("");
+    }
+  };
+
   const renderServiceCard = (item) => (
     <article
       className="profile-side-item"
@@ -352,6 +389,17 @@ function ProfilePage() {
           </span>
           <strong>From {item.price || item.budget}</strong>
         </div>
+        {isAdminViewer && isPublishedContent(item.status) && (
+          <button
+            className="profile-content-unpublish-btn"
+            type="button"
+            onClick={(event) => openAdminUnpublishConfirm(event, "service", item)}
+            disabled={adminActionLoading === `unpublish-service-${item.id}`}
+          >
+            {adminActionLoading === `unpublish-service-${item.id}` ? <Loader2 size={14} /> : <EyeOff size={14} />}
+            {adminActionLoading === `unpublish-service-${item.id}` ? "Unpublishing..." : "Unpublish"}
+          </button>
+        )}
       </div>
     </article>
   );
@@ -373,6 +421,17 @@ function ProfilePage() {
           </span>
           <strong>{item.budget}</strong>
         </div>
+        {isAdminViewer && isPublishedContent(item.status) && (
+          <button
+            className="profile-content-unpublish-btn"
+            type="button"
+            onClick={(event) => openAdminUnpublishConfirm(event, "job", item)}
+            disabled={adminActionLoading === `unpublish-job-${item.id}`}
+          >
+            {adminActionLoading === `unpublish-job-${item.id}` ? <Loader2 size={14} /> : <EyeOff size={14} />}
+            {adminActionLoading === `unpublish-job-${item.id}` ? "Unpublishing..." : "Unpublish"}
+          </button>
+        )}
       </div>  
     </article>
   );
@@ -736,6 +795,9 @@ function ProfilePage() {
 
                 <article className="profile-side-list-card">
                   <h2>{isExpertView ? "Services" : "Projects"}</h2>
+                  {adminActionError && isAdminViewer && (
+                    <p className="profile-admin-error">{adminActionError}</p>
+                  )}
                   <div className="profile-side-list">
                     {/* API data: render only the services/projects owned by this profile user. */}
                     {isExpertView && visibleProfileServices.length > 0 && visibleProfileServices.map(renderServiceCard)}
@@ -883,6 +945,13 @@ function ProfilePage() {
             </div>
           </div>
         )}
+        <AdminModerationConfirmModal
+          action={contentModerationConfirm?.action}
+          contentTitle={contentModerationConfirm?.title}
+          loading={Boolean(contentModerationConfirm && adminActionLoading.startsWith("unpublish-"))}
+          onCancel={() => setContentModerationConfirm(null)}
+          onConfirm={handleAdminUnpublish}
+        />
       </main>
 
       <Footer />

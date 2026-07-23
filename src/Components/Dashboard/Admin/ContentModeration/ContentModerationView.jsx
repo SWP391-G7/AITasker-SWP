@@ -8,7 +8,14 @@ import ModerationQueueList from './ModerationQueueList'
 const normalizeSeverity = (value = '') =>
   value.toLowerCase().replace(' severity', '').trim()
 
-const ContentModerationView = ({ searchQuery: externalSearchQuery, items = moderationItems, stats = moderationStats, onApprove, onReject }) => {
+const ContentModerationView = ({
+  searchQuery: externalSearchQuery,
+  items = moderationItems,
+  stats = moderationStats,
+  onApprove,
+  onReject,
+  onUnpublish
+}) => {
   const [activeFilter, setActiveFilter] = useState('All Types')
   const [severityFilter, setSeverityFilter] = useState('All Levels')
   const [currentPage, setCurrentPage] = useState(1)
@@ -68,7 +75,12 @@ const ContentModerationView = ({ searchQuery: externalSearchQuery, items = moder
         showReviewedOnly={showReviewedOnly}
         onToggleReviewedOnly={setShowReviewedOnly}
       />
-      <ModerationQueueList items={paginatedItems} onApprove={onApprove} onReject={onReject} />
+      <ModerationQueueList
+        items={paginatedItems}
+        onApprove={onApprove}
+        onReject={onReject}
+        onUnpublish={onUnpublish}
+      />
       <ContentModerationPagination 
         currentPage={currentPage}
         totalPages={totalPages}
