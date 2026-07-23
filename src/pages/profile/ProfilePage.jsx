@@ -199,6 +199,48 @@ function ProfilePage() {
     setShowOwnEditModal(true)
   }
 
+  useEffect(() => {
+    if (!profileData || !isOwnProfile || !location.state?.openEditProfile) return
+
+    const targetUser = profileData.user
+    const client = profileData.clientProfile
+    const expert = profileData.expertProfile
+    const nextState = { ...location.state }
+    delete nextState.openEditProfile
+
+    const openModalTimer = window.setTimeout(() => {
+      setOwnEditForm({
+        fullName: targetUser.fullName || "",
+        companyName: client?.companyName || "",
+        industry: client?.industry || "",
+        professionalTitle: expert?.professionalTitle || "",
+        skills: expert?.skills || "",
+        experience: expert?.experience || "",
+        portfolioUrl: expert?.portfolioUrl || "",
+        hourlyRate: expert?.hourlyRate ? String(expert.hourlyRate).replace(/[^0-9.]/g, "") : "",
+        bio: (activeTab === "expert" ? expert?.bio : client?.bio) || "",
+      })
+      setOwnAvatarFile(null)
+      setOwnAvatarPreview(targetUser.avatarUrl || "")
+      setOwnEditError("")
+      setShowOwnEditModal(true)
+      navigate(`${location.pathname}${location.search}`, {
+        replace: true,
+        state: nextState,
+      })
+    }, 0)
+
+    return () => window.clearTimeout(openModalTimer)
+  }, [
+    activeTab,
+    isOwnProfile,
+    location.pathname,
+    location.search,
+    location.state,
+    navigate,
+    profileData,
+  ])
+
   const handleOwnAvatarChange = (event) => {
     const file = event.target.files?.[0]
     if (!file) return

@@ -1,60 +1,16 @@
-import { useEffect, useMemo, useState, useRef } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   CreditCard,
   LogOut,
-  RefreshCw,
   ShieldCheck,
   UserRound,
   X,
 } from "lucide-react";
-import { uploadImage } from "../../Services/uploadService";
 
-const SettingPage = ({ isOpen, onClose, user, role = "Client", onLogout, onSwitchRole }) => {
+const SettingPage = ({ isOpen, onClose, user, role = "Client", onLogout }) => {
+  const navigate = useNavigate();
   const [isTwoFactorEnabled, setIsTwoFactorEnabled] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
-  const [uploadError, setUploadError] = useState("");
-  const fileInputRef = useRef(null);
-
-  const handleAvatarUpload = async (event) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    try {
-      setIsUploading(true);
-      setUploadError("");
-      const imageUrl = await uploadImage(file);
-
-      // Call API to update avatar
-      const token = localStorage.getItem('token');
-      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
-      const response = await fetch(`${API_BASE_URL}/users/update-avatar`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ avatarUrl: imageUrl })
-      });
-
-      const result = await response.json();
-      if (!response.ok) {
-        throw new Error(result.message || 'Failed to update avatar in database');
-      }
-
-      // Update user in localStorage
-      const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
-      storedUser.avatarUrl = imageUrl;
-      localStorage.setItem('user', JSON.stringify(storedUser));
-
-      // Reload page to reflect changes everywhere
-      window.location.reload();
-    } catch (error) {
-      console.error("Avatar upload failed:", error);
-      setUploadError(error.message || "Failed to upload avatar");
-    } finally {
-      setIsUploading(false);
-    }
-  };
 
   const profile = useMemo(() => {
     const displayName = user?.fullName || user?.name || (role === "Expert" ? "Expert User" : "Client User");
@@ -87,8 +43,14 @@ const SettingPage = ({ isOpen, onClose, user, role = "Client", onLogout, onSwitc
 
   if (!isOpen) return null;
 
-  const isAdmin = String(user?.role || role || "").toLowerCase() === "admin";
-  const targetRole = role === "expert" ? "Client" : "Expert";
+  const handleEditProfile = () => {
+    const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
+    const userId = user?.id || user?._id || storedUser.id || storedUser._id;
+    if (!userId) return;
+
+    onClose?.();
+    navigate(`/profile/${userId}`, { state: { openEditProfile: true } });
+  };
 
   return (
     <div className="settings-modal-backdrop" role="dialog" aria-modal="true" aria-label="Account settings">
@@ -106,54 +68,24 @@ const SettingPage = ({ isOpen, onClose, user, role = "Client", onLogout, onSwitc
 
             <div className="settings-account-row">
               <div className="settings-account-info">
-                <div 
-                  className="settings-avatar-wrapper" 
-                  onClick={() => !isUploading && fileInputRef.current?.click()} 
-                  style={{ position: 'relative', cursor: isUploading ? 'not-allowed' : 'pointer' }}
-                  title="Click to change avatar"
-                >
+                <div className="settings-avatar-wrapper">
                   {profile.avatarUrl ? (
                     <img src={profile.avatarUrl} alt={profile.displayName} className="settings-avatar-img" />
                   ) : (
                     <div className="settings-avatar">{profile.avatarLetter}</div>
                   )}
-                  <div className="avatar-edit-overlay" style={{
-                    position: 'absolute',
-                    inset: 0,
-                    background: 'rgba(2, 6, 23, 0.7)',
-                    borderRadius: '50%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    opacity: 0,
-                    transition: 'opacity 0.2s',
-                    color: 'white',
-                    fontSize: '11px',
-                    fontWeight: 'bold'
-                  }}>
-                    {isUploading ? "..." : "Edit"}
-                  </div>
                 </div>
                 <div>
                   <h3>{profile.displayName}</h3>
                   <p>{profile.email}</p>
-                  {uploadError && <p style={{ color: '#ef4444', fontSize: '10px', marginTop: '4px' }}>{uploadError}</p>}
                 </div>
               </div>
-              <input 
-                type="file" 
-                ref={fileInputRef} 
-                hidden 
-                accept="image/*" 
-                onChange={handleAvatarUpload} 
-              />
-              <button 
-                className="settings-primary-btn" 
+              <button
+                className="settings-primary-btn"
                 type="button"
-                disabled={isUploading}
-                onClick={() => fileInputRef.current?.click()}
+                onClick={handleEditProfile}
               >
-                {isUploading ? "Uploading..." : "Change Avatar"}
+                Edit Profile
               </button>
             </div>
           </div>
@@ -331,11 +263,6 @@ const SettingPage = ({ isOpen, onClose, user, role = "Client", onLogout, onSwitc
 
         .settings-avatar-wrapper {
           position: relative;
-          cursor: pointer;
-        }
-
-        .settings-avatar-wrapper:hover .avatar-edit-overlay {
-          opacity: 1 !important;
         }
 
         .settings-card h3 {
