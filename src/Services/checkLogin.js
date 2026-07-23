@@ -1,3 +1,10 @@
+/**
+ * Frontend module: Services/checkLogin.js
+ *
+ * Vai trò: Service check Login: lớp giao tiếp giữa UI và backend API.
+ * Luồng chính: Nhận dữ liệu từ component, gắn token/header, gọi endpoint, chuẩn hóa response và ném Error khi request thất bại.
+ * Lưu ý bảo trì: Component không nên lặp lại URL hoặc logic HTTP đã được đóng gói tại đây.
+ */
 import * as authService from './authService'
 
 export async function checkLogin() {

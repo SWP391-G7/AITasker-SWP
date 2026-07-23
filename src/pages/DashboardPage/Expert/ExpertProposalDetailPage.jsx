@@ -1,3 +1,10 @@
+/**
+ * Frontend module: pages/DashboardPage/Expert/ExpertProposalDetailPage.jsx
+ *
+ * Vai trò: Page Expert Proposal Detail Page: màn hình cấp route, điều phối dữ liệu và các component con cho một luồng nghiệp vụ hoàn chỉnh.
+ * Luồng chính: Đọc route/location, gọi service trong effect/handler, quản lý loading/error/form rồi truyền props xuống UI con.
+ * Lưu ý bảo trì: Giữ side effect trong handler/effect và không mutate trực tiếp state hoặc dữ liệu API.
+ */
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
@@ -26,6 +33,7 @@ import "../Style/AdminDashboardPage.css";
 import "../Style/ExpertDashboardPage.css";
 import "../Client/ClientMarketplace.css";
 
+// React component “Expert Proposal Detail Page” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
 function ExpertProposalDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -98,6 +106,7 @@ function ExpertProposalDetailPage() {
     fetchProposalDetail();
   }, [fetchProposalDetail]);
 
+  // Handler “handle tab change” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleTabChange = (tabId) => {
     if (tabId === "dashboard") navigate("/expert/dashboard");
     else navigate(`/expert/${tabId}`);

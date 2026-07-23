@@ -1,3 +1,10 @@
+/**
+ * Frontend module: Components/Dashboard/Admin/ContentModeration/ContentModerationView.jsx
+ *
+ * Vai trò: Component Content Moderation View: khối giao diện có thể tái sử dụng trong một hoặc nhiều page.
+ * Luồng chính: Nhận props, render trạng thái tương ứng và báo sự kiện lên component cha qua callback khi cần.
+ * Lưu ý bảo trì: Không thay đổi props; state cục bộ chỉ nên phục vụ hành vi thuộc phạm vi component.
+ */
 import { useMemo, useState, useEffect } from 'react'
 import ContentModerationFilters from './ContentModerationFilters'
 import ContentModerationPagination from './ContentModerationPagination'
@@ -5,9 +12,11 @@ import ContentModerationStats from './ContentModerationStats'
 import { moderationFilters, moderationItems, moderationStats } from './contentModerationData'
 import ModerationQueueList from './ModerationQueueList'
 
+// Chuyển đổi dữ liệu cho “normalize severity” thành định dạng mà lớp gọi hoặc giao diện cần.
 const normalizeSeverity = (value = '') =>
   value.toLowerCase().replace(' severity', '').trim()
 
+// React component “Content Moderation View” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
 const ContentModerationView = ({
   searchQuery: externalSearchQuery,
   items = moderationItems,
@@ -63,6 +72,7 @@ const ContentModerationView = ({
   const totalPages = Math.ceil(totalItems / pageSize)
 
   const paginatedItems = useMemo(() => {
+    // Thực hiện phần logic “start” trong phạm vi trách nhiệm của module hiện tại.
     const start = (currentPage - 1) * pageSize
     return filteredItems.slice(start, start + pageSize)
   }, [filteredItems, currentPage, pageSize])

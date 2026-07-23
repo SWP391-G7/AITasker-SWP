@@ -1,10 +1,19 @@
+/**
+ * Frontend module: Components/Dashboard/Admin/UserGrowthChart.jsx
+ *
+ * Vai trò: Component User Growth Chart: khối giao diện có thể tái sử dụng trong một hoặc nhiều page.
+ * Luồng chính: Nhận props, render trạng thái tương ứng và báo sự kiện lên component cha qua callback khi cần.
+ * Lưu ý bảo trì: Không thay đổi props; state cục bộ chỉ nên phục vụ hành vi thuộc phạm vi component.
+ */
 const DAYS_IN_CHART = 7
 const CHART_WIDTH = 700
 const CHART_HEIGHT = 220
 const CHART_PADDING = 28
 
+// Chuyển đổi dữ liệu cho “format date key” thành định dạng mà lớp gọi hoặc giao diện cần.
 const formatDateKey = (date) => date.toISOString().slice(0, 10)
 
+// Chuyển đổi dữ liệu cho “build last seven days” thành định dạng mà lớp gọi hoặc giao diện cần.
 const buildLastSevenDays = () => {
   const today = new Date()
   today.setHours(0, 0, 0, 0)
@@ -20,6 +29,7 @@ const buildLastSevenDays = () => {
   })
 }
 
+// Chuyển đổi dữ liệu cho “build growth points” thành định dạng mà lớp gọi hoặc giao diện cần.
 const buildGrowthPoints = (users = []) => {
   const days = buildLastSevenDays()
   const registrationCounts = days.reduce((counts, day) => {
@@ -60,6 +70,7 @@ const buildGrowthPoints = (users = []) => {
   })
 }
 
+// React component “User Growth Chart” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
 const UserGrowthChart = ({ users = [] }) => {
   const growthPoints = buildGrowthPoints(users)
   const totalNewUsers = growthPoints.reduce((sum, point) => sum + point.value, 0)

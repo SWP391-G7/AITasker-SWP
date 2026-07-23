@@ -1,3 +1,10 @@
+/**
+ * Frontend module: pages/DashboardPage/Expert/ExpertDashboardPage.jsx
+ *
+ * Vai trò: Page Expert Dashboard Page: màn hình cấp route, điều phối dữ liệu và các component con cho một luồng nghiệp vụ hoàn chỉnh.
+ * Luồng chính: Đọc route/location, gọi service trong effect/handler, quản lý loading/error/form rồi truyền props xuống UI con.
+ * Lưu ý bảo trì: Giữ side effect trong handler/effect và không mutate trực tiếp state hoặc dữ liệu API.
+ */
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { logout } from '../../../Services/authService'
@@ -16,6 +23,7 @@ import { getMyTransactionsAPI } from '../../../Services/transactionService'
 import '../Style/AdminDashboardPage.css'
 import '../Style/ExpertDashboardPage.css'
 
+// React component “Expert Dashboard Page” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
 const ExpertDashboardPage = ({ onLogout }) => {
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState('dashboard')
@@ -47,23 +55,27 @@ const ExpertDashboardPage = ({ onLogout }) => {
     navigate('/')
   })
 
+  // Handler “handle tab change” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleTabChange = (id) => {
     setActiveTab(id)
     if (id === 'dashboard') navigate('/expert/dashboard')
     else navigate(`/expert/${id}`)
   }
 
+  // Chuyển đổi dữ liệu cho “format currency” thành định dạng mà lớp gọi hoặc giao diện cần.
   const formatCurrency = (value) =>
     new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
     }).format(Number(value) || 0)
 
+  // Thực hiện phần logic “split csv” trong phạm vi trách nhiệm của module hiện tại.
   const splitCsv = (value) =>
     value
       ? String(value).split(',').map((item) => item.trim()).filter(Boolean)
       : []
 
+  // Đọc hoặc suy ra dữ liệu cho nghiệp vụ “fetch expert dashboard data”; không nên tạo side effect ngoài những request đọc đã nêu trong thân hàm.
   const fetchExpertDashboardData = async () => {
     try {
       setDashboardError('')
@@ -135,6 +147,7 @@ const ExpertDashboardPage = ({ onLogout }) => {
     fetchExpertDashboardData()
   }, [user?.id])
 
+  // Handler “handle accept invitation” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleAcceptInvitation = async (invitationId) => {
     try {
       await updateInvitationStatus({ invitationId, status: 'accepted', start_project: true })
@@ -144,6 +157,7 @@ const ExpertDashboardPage = ({ onLogout }) => {
     }
   }
 
+  // Handler “handle decline invitation” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleDeclineInvitation = async (invitationId) => {
     try {
       await updateInvitationStatus({ invitationId, status: 'rejected' })

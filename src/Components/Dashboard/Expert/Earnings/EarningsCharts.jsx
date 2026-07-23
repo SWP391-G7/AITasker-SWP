@@ -1,6 +1,14 @@
+/**
+ * Frontend module: Components/Dashboard/Expert/Earnings/EarningsCharts.jsx
+ *
+ * Vai trò: Component Earnings Charts: khối giao diện có thể tái sử dụng trong một hoặc nhiều page.
+ * Luồng chính: Nhận props, render trạng thái tương ứng và báo sự kiện lên component cha qua callback khi cần.
+ * Lưu ý bảo trì: Không thay đổi props; state cục bộ chỉ nên phục vụ hành vi thuộc phạm vi component.
+ */
 import React from 'react';
 import { ChevronDown } from 'lucide-react';
 
+// React component “Earnings Charts” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
 const EarningsCharts = ({ summary = {} }) => {
   const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN'];
   const values = [40, 65, 45, 80, 55, 90]; // Percentage heights for bars

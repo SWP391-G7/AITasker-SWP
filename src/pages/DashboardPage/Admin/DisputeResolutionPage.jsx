@@ -1,3 +1,10 @@
+/**
+ * Frontend module: pages/DashboardPage/Admin/DisputeResolutionPage.jsx
+ *
+ * Vai trò: Page Dispute Resolution Page: màn hình cấp route, điều phối dữ liệu và các component con cho một luồng nghiệp vụ hoàn chỉnh.
+ * Luồng chính: Đọc route/location, gọi service trong effect/handler, quản lý loading/error/form rồi truyền props xuống UI con.
+ * Lưu ý bảo trì: Giữ side effect trong handler/effect và không mutate trực tiếp state hoặc dữ liệu API.
+ */
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Scale } from 'lucide-react'
@@ -9,6 +16,7 @@ import Footer from '../../../Components/Footer/Footer'
 import '../Style/AdminDashboardPage.css'
 import '../Style/DisputeResolutionPage.css'
 
+// React component “Dispute Resolution Page” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
 const DisputeResolutionPage = ({ onLogout }) => {
   const navigate = useNavigate()
   const [searchQuery, setSearchQuery] = useState('')

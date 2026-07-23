@@ -1,7 +1,15 @@
+/**
+ * Frontend module: pages/misc/MockPaymentGateway.jsx
+ *
+ * Vai trò: Page Mock Payment Gateway: màn hình cấp route, điều phối dữ liệu và các component con cho một luồng nghiệp vụ hoàn chỉnh.
+ * Luồng chính: Đọc route/location, gọi service trong effect/handler, quản lý loading/error/form rồi truyền props xuống UI con.
+ * Lưu ý bảo trì: Giữ side effect trong handler/effect và không mutate trực tiếp state hoặc dữ liệu API.
+ */
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { CreditCard, ShieldCheck, Landmark, CheckCircle, AlertTriangle, Loader2, ArrowLeft } from "lucide-react";
 
+// React component “Mock Payment Gateway” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
 function MockPaymentGateway() {
   const { token } = useParams();
   const navigate = useNavigate();
@@ -74,6 +82,7 @@ function MockPaymentGateway() {
     setExpiry(formatted);
   };
 
+  // Handler “handle expiry focus” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleExpiryFocus = (e) => {
     setActiveInput("expiry");
     // Selecting the autofilled value makes the next typed date replace it.
@@ -87,6 +96,7 @@ function MockPaymentGateway() {
     setCvv(value);
   };
 
+  // Handler “handle decline” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleDecline = () => {
     if (!payload) {
       navigate("/");
@@ -100,6 +110,7 @@ function MockPaymentGateway() {
     }
   };
 
+  // Handler “handle submit” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMessage("");

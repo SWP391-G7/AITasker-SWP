@@ -1,3 +1,10 @@
+/**
+ * Frontend module: pages/DashboardPage/Client/ClientProjectsPage.jsx
+ *
+ * Vai trò: Page Client Projects Page: màn hình cấp route, điều phối dữ liệu và các component con cho một luồng nghiệp vụ hoàn chỉnh.
+ * Luồng chính: Đọc route/location, gọi service trong effect/handler, quản lý loading/error/form rồi truyền props xuống UI con.
+ * Lưu ý bảo trì: Giữ side effect trong handler/effect và không mutate trực tiếp state hoặc dữ liệu API.
+ */
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -18,13 +25,16 @@ import { getMyInvitations } from "../../../Services/invitationService";
 import "../Style/AdminDashboardPage.css";
 import "./ClientMarketplace.css";
 
+// Đọc hoặc suy ra dữ liệu cho nghiệp vụ “get job id”; không nên tạo side effect ngoài những request đọc đã nêu trong thân hàm.
 const getJobId = (job) => job?._id || job?.id || job?.jobId || job?.job_id;
 
+// Chuyển đổi dữ liệu cho “format date” thành định dạng mà lớp gọi hoặc giao diện cần.
 const formatDate = (dateValue) => {
   if (!dateValue) return "No deadline";
   return new Date(dateValue).toLocaleDateString();
 };
 
+// Chuyển đổi dữ liệu cho “format budget” thành định dạng mà lớp gọi hoặc giao diện cần.
 const formatBudget = (job) => {
   const min = job.budget_min ?? job.budgetMin;
   const max = job.budget_max ?? job.budgetMax ?? job.budget;
@@ -35,12 +45,14 @@ const formatBudget = (job) => {
   return "No budget";
 };
 
+// Đọc hoặc suy ra dữ liệu cho nghiệp vụ “get progress”; không nên tạo side effect ngoài những request đọc đã nêu trong thân hàm.
 const getProgress = (item) => {
   if (typeof item.progress === "number") return item.progress;
   if (item.status === "completed") return 100;
   return 0;
 };
 
+// React component “Client Projects Page” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
 function ClientProjectsPage() {
   const navigate = useNavigate();
   const [jobs, setJobs] = useState([]);
@@ -54,6 +66,7 @@ function ClientProjectsPage() {
   const [error, setError] = useState("");
   const user = useClientUser();
 
+  // Đọc hoặc suy ra dữ liệu cho nghiệp vụ “fetch dashboard data”; không nên tạo side effect ngoài những request đọc đã nêu trong thân hàm.
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
@@ -107,6 +120,7 @@ function ClientProjectsPage() {
     );
   }, [projects, searchQuery]);
 
+  // Handler “handle delete” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleDelete = async (event, jobId) => {
     event.stopPropagation();
 
@@ -130,6 +144,7 @@ function ClientProjectsPage() {
     }
   };
 
+  // Handler “handle logout” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleLogout = () => {
     logout();
     navigate("/");

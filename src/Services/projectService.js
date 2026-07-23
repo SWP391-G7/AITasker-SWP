@@ -1,3 +1,10 @@
+/**
+ * Frontend module: Services/projectService.js
+ *
+ * Vai trò: Service project Service: lớp giao tiếp giữa UI và backend API.
+ * Luồng chính: Nhận dữ liệu từ component, gắn token/header, gọi endpoint, chuẩn hóa response và ném Error khi request thất bại.
+ * Lưu ý bảo trì: Component không nên lặp lại URL hoặc logic HTTP đã được đóng gói tại đây.
+ */
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
 /**
@@ -292,6 +299,7 @@ export const requestRevision = async (milestoneId, note) => {
   return result;
 };
 
+// Thực hiện phần logic “request milestone extension” trong phạm vi trách nhiệm của module hiện tại.
 export const requestMilestoneExtension = async (milestoneId, additionalDays, reason) => {
   const response = await fetch(`${API_BASE_URL}/milestones/${milestoneId}/request-extension`, {
     method: 'PUT',
@@ -303,6 +311,7 @@ export const requestMilestoneExtension = async (milestoneId, additionalDays, rea
   return result;
 };
 
+// Thực hiện phần logic “respond milestone extension” trong phạm vi trách nhiệm của module hiện tại.
 export const respondMilestoneExtension = async (milestoneId, action, note = '') => {
   const response = await fetch(`${API_BASE_URL}/milestones/${milestoneId}/respond-extension`, {
     method: 'PUT',

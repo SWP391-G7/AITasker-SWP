@@ -1,3 +1,10 @@
+/**
+ * Frontend module: Components/onboarding/ExpertOnboardingForm.jsx
+ *
+ * Vai trò: Component Expert Onboarding Form: khối giao diện có thể tái sử dụng trong một hoặc nhiều page.
+ * Luồng chính: Nhận props, render trạng thái tương ứng và báo sự kiện lên component cha qua callback khi cần.
+ * Lưu ý bảo trì: Không thay đổi props; state cục bộ chỉ nên phục vụ hành vi thuộc phạm vi component.
+ */
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { submitExpertOnboarding } from "../../Services/onboardingService";
@@ -6,6 +13,7 @@ import AISkeletonLoader from "../AI/AISkeletonLoader";
 import Toast from "../Toast";
 import "./Onboarding.css";
 
+// React component “Expert Onboarding Form” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
 function ExpertOnboardingForm({ onBack }) {
   const navigate = useNavigate();
 
@@ -23,6 +31,7 @@ function ExpertOnboardingForm({ onBack }) {
   const [isAiOptimized, setIsAiOptimized] = useState(false);
   const [toastError, setToastError] = useState("");
 
+  // Handler “handle extend success” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleExtendSuccess = (data) => {
     setFormData((prev) => ({
       ...prev,
@@ -34,6 +43,7 @@ function ExpertOnboardingForm({ onBack }) {
     setIsAiOptimized(true);
   };
 
+  // Handler “handle change” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleChange = (event) => {
     const { name, value } = event.target;
 
@@ -43,6 +53,7 @@ function ExpertOnboardingForm({ onBack }) {
     });
   };
 
+  // React component “validate Form” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
   const validateForm = () => {
     if (!formData.professionalTitle.trim()) {
       return "Professional title is required";
@@ -67,6 +78,7 @@ function ExpertOnboardingForm({ onBack }) {
     return "";
   };
 
+  // Handler “handle submit” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleSubmit = async (event) => {
     event.preventDefault();
 

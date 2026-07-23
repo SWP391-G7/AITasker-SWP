@@ -1,5 +1,13 @@
+/**
+ * Frontend module: Components/Dashboard/Client/ClientActiveProjectsTable.jsx
+ *
+ * Vai trò: Component Client Active Projects Table: khối giao diện có thể tái sử dụng trong một hoặc nhiều page.
+ * Luồng chính: Nhận props, render trạng thái tương ứng và báo sự kiện lên component cha qua callback khi cần.
+ * Lưu ý bảo trì: Không thay đổi props; state cục bộ chỉ nên phục vụ hành vi thuộc phạm vi component.
+ */
 import { useNavigate } from "react-router-dom";
 
+// Đọc hoặc suy ra dữ liệu cho nghiệp vụ “get status class”; không nên tạo side effect ngoài những request đọc đã nêu trong thân hàm.
 const getStatusClass = (status) => {
   if (status === "In Progress") return "in-progress";
   if (status === "Under Review") return "under-review";
@@ -7,6 +15,7 @@ const getStatusClass = (status) => {
   return "";
 };
 
+// Đọc hoặc suy ra dữ liệu cho nghiệp vụ “get initials”; không nên tạo side effect ngoài những request đọc đã nêu trong thân hàm.
 const getInitials = (name) => {
   return name
     .split(" ")
@@ -17,6 +26,7 @@ const getInitials = (name) => {
     .toUpperCase();
 };
 
+// React component “Client Active Projects Table” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
 function ClientActiveProjectsTable({ projects }) {
   const navigate = useNavigate();
 

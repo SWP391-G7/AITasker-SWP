@@ -1,3 +1,10 @@
+/**
+ * Frontend module: pages/DashboardPage/Style/DisputeResolutionPage.css
+ *
+ * Vai trò: Page Dispute Resolution Page: màn hình cấp route, điều phối dữ liệu và các component con cho một luồng nghiệp vụ hoàn chỉnh.
+ * Luồng chính: Đọc route/location, gọi service trong effect/handler, quản lý loading/error/form rồi truyền props xuống UI con.
+ * Lưu ý bảo trì: Giữ side effect trong handler/effect và không mutate trực tiếp state hoặc dữ liệu API.
+ */
 .dispute-resolution-main {
   gap: 1.75rem;
 }

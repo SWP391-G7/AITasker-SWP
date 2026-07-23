@@ -1,27 +1,44 @@
-import React, { useState, useEffect, useRef } from 'react';
+/**
+ * Frontend module: Components/AI/AIExtendButton.jsx
+ *
+ * Vai trò: Component AIExtend Button: khối giao diện có thể tái sử dụng trong một hoặc nhiều page.
+ * Luồng chính: Nhận props, render trạng thái tương ứng và báo sự kiện lên component cha qua callback khi cần.
+ * Lưu ý bảo trì: Không thay đổi props; state cục bộ chỉ nên phục vụ hành vi thuộc phạm vi component.
+ */
+import { useState, useEffect, useRef } from 'react';
 import { Sparkles, Loader2 } from 'lucide-react';
 import { generateFormWithAI } from '../../Services/aiService';
 import './AIExtendButton.css';
 
+/**
+ * Nút AI dùng chung cho Onboarding, Job Post, Service và Edit Profile.
+ *
+ * Component không tự biết cấu trúc form. Màn hình cha truyền draftFields,
+ * type và callback; nhờ vậy cùng một nút có thể tái sử dụng cho nhiều schema.
+ */
 const AIExtendButton = ({
-  draftFields = [], // array of strings representing current draft fields
+  draftFields = [], // Các chuỗi draft hiện có của form cha.
   onExtendStart,
   onExtendSuccess,
   onExtendFailure,
   type,
   btnText = 'Generate Scope with AI',
-  onErrorToast, // callback to display error toast
+  onErrorToast, // Callback hiển thị lỗi theo hệ thống Toast của màn hình cha.
   context = '',
 }) => {
+  // Cooldown hạn chế spam request; loading phản ánh request hiện tại.
   const [cooldown, setCooldown] = useState(0);
   const [loading, setLoading] = useState(false);
+
+  // Giữ id interval để cleanup khi component unmount hoặc cooldown kết thúc.
   const timerRef = useRef(null);
 
-  // Check if at least one field is filled (trimmed length > 0)
+  // AI chỉ có ích khi người dùng cung cấp ít nhất một mẩu nội dung làm đầu vào.
   const isAnyFieldFilled = draftFields.some(
     (field) => typeof field === 'string' && field.trim().length > 0
   );
 
+  // Mỗi giây giảm cooldown; cleanup ngăn interval chạy sau khi component bị gỡ.
   useEffect(() => {
     if (cooldown > 0) {
       timerRef.current = setInterval(() => {
@@ -39,10 +56,16 @@ const AIExtendButton = ({
     };
   }, [cooldown]);
 
+  /**
+   * Điều phối trọn vòng đời request AI:
+   * ghép draft -> báo form cha bắt đầu -> gọi service -> trả data/error
+   * cho form cha -> bật cooldown -> luôn kết thúc loading.
+   */
   const handleGenerate = async () => {
+    // Guard bổ sung cho trường hợp click bằng script khi UI chưa có draft.
     if (!isAnyFieldFilled) return;
 
-    // Join all non-empty fields to send as context
+    // Bỏ field rỗng và ngăn cách từng phần để prompt backend dễ đọc.
     const textToSend = draftFields
       .filter((f) => typeof f === 'string' && f.trim().length > 0)
       .join('\n\n');
@@ -53,27 +76,30 @@ const AIExtendButton = ({
 
       const data = await generateFormWithAI(textToSend, type, context);
 
+      // Form cha quyết định field nào được cập nhật từ object phản hồi.
       if (onExtendSuccess) onExtendSuccess(data);
-      setCooldown(15); // 15 seconds cooldown
+      setCooldown(15); // Chặn gọi lại trong 15 giây sau một request thành công.
     } catch (err) {
+      // Form cha dùng callback này để tắt skeleton overlay.
       if (onExtendFailure) onExtendFailure();
 
+      // Safety error cần giữ nguyên hướng dẫn để người dùng sửa nội dung.
       let errorMsg = 'AI Core busy';
       if (err.message && err.message.includes('Safety filter matched')) {
         errorMsg = err.message; // E2: Content filter match
       }
 
+      // Ưu tiên Toast; alert là fallback cho màn hình chưa tích hợp Toast.
       if (onErrorToast) {
         onErrorToast(errorMsg);
       } else {
         alert(errorMsg);
       }
     } finally {
+      // Luôn mở khóa trạng thái request dù success hay error.
       setLoading(false);
     }
   };
-
-  const isButtonDisabled = cooldown > 0 || loading || !isAnyFieldFilled;
 
   return (
     <div className="ai-extend-button-container">
@@ -85,6 +111,7 @@ const AIExtendButton = ({
         onClick={handleGenerate}
         disabled={cooldown > 0 || loading}
       >
+        {/* Nội dung nút thay đổi theo ba trạng thái loại trừ nhau. */}
         {loading ? (
           <>
             <Loader2 className="animate-spin" size={14} />
@@ -101,7 +128,7 @@ const AIExtendButton = ({
           </>
         )}
 
-        {/* Tooltip to show when disabled because no fields are filled */}
+        {/* Giải thích vì sao chưa thể dùng AI khi form hoàn toàn trống. */}
         {!isAnyFieldFilled && (
           <span className="ai-tooltip">
             Please fill out at least one box so the AI knows what you need.

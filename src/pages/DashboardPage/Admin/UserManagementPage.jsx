@@ -1,3 +1,10 @@
+/**
+ * Frontend module: pages/DashboardPage/Admin/UserManagementPage.jsx
+ *
+ * Vai trò: Page User Management Page: màn hình cấp route, điều phối dữ liệu và các component con cho một luồng nghiệp vụ hoàn chỉnh.
+ * Luồng chính: Đọc route/location, gọi service trong effect/handler, quản lý loading/error/form rồi truyền props xuống UI con.
+ * Lưu ý bảo trì: Giữ side effect trong handler/effect và không mutate trực tiếp state hoặc dữ liệu API.
+ */
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { X, Loader2, Info, Trash2, ShieldAlert } from 'lucide-react'
@@ -18,6 +25,7 @@ import {
 import '../../../Components/Dashboard/Admin/UserManagement/UserManagement.css'
 import '../Style/AdminDashboardPage.css'
 
+// React component “User Management Page” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
 const UserManagementPage = ({ onLogout }) => {
   const navigate = useNavigate()
   const [searchQuery, setSearchQuery] = useState('')
@@ -55,6 +63,7 @@ const UserManagementPage = ({ onLogout }) => {
   })
   const [modalError, setModalError] = useState('')
 
+  // Đọc hoặc suy ra dữ liệu cho nghiệp vụ “fetch users”; không nên tạo side effect ngoài những request đọc đã nêu trong thân hàm.
   const fetchUsers = async () => {
     try {
       setUserError('')
@@ -104,6 +113,7 @@ const UserManagementPage = ({ onLogout }) => {
     setShowCreateModal(true)
   }
 
+  // Handler “handle create user” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleCreateUser = async (e) => {
     e.preventDefault()
     try {
@@ -116,6 +126,7 @@ const UserManagementPage = ({ onLogout }) => {
     }
   }
 
+  // Handler “handle open edit modal” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleOpenEditModal = (userId) => {
     const targetUser = users.find(u => u.id === userId)
     if (!targetUser) return
@@ -136,6 +147,7 @@ const UserManagementPage = ({ onLogout }) => {
     setShowEditModal(true)
   }
 
+  // Handler “handle update user” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleUpdateUser = async (e) => {
     e.preventDefault()
     try {
@@ -148,6 +160,7 @@ const UserManagementPage = ({ onLogout }) => {
     }
   }
 
+  // Handler “handle view user” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleViewUser = (userId) => {
     const targetUser = users.find(u => u.id === userId)
     if (targetUser) {
@@ -156,11 +169,13 @@ const UserManagementPage = ({ onLogout }) => {
     }
   }
 
+  // Handler “handle view profile” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleViewProfile = (userId) => {
     setShowViewModal(false)
     navigate(`/profile/${userId}`)
   }
 
+  // Handler “handle delete user” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleDeleteUser = async (userId) => {
     const targetUser = users.find(u => u.id === userId)
     if (!targetUser) return
@@ -170,6 +185,7 @@ const UserManagementPage = ({ onLogout }) => {
     setShowDeleteModal(true)
   }
 
+  // Handler “handle cancel delete” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleCancelDelete = () => {
     if (isDeleting) return
     setShowDeleteModal(false)
@@ -177,6 +193,7 @@ const UserManagementPage = ({ onLogout }) => {
     setDeleteError('')
   }
 
+  // Handler “handle confirm delete” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleConfirmDelete = async () => {
     if (!deleteTargetUser) return
 
@@ -194,6 +211,7 @@ const UserManagementPage = ({ onLogout }) => {
     }
   }
 
+  // Handler “handle toggle ban” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleToggleBan = async (userId, newStatus) => {
     const targetUser = users.find(u => u.id === userId)
     if (!targetUser) return
@@ -213,6 +231,7 @@ const UserManagementPage = ({ onLogout }) => {
     }
   }
 
+  // Handler “handle cancel deactivate” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleCancelDeactivate = () => {
     if (isDeactivating) return
     setShowDeactivateModal(false)
@@ -220,6 +239,7 @@ const UserManagementPage = ({ onLogout }) => {
     setDeactivateError('')
   }
 
+  // Handler “handle confirm deactivate” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleConfirmDeactivate = async () => {
     if (!deactivateTargetUser) return
 

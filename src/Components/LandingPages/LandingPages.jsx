@@ -1,3 +1,10 @@
+/**
+ * Frontend module: Components/LandingPages/LandingPages.jsx
+ *
+ * Vai trò: Component Landing Pages: khối giao diện có thể tái sử dụng trong một hoặc nhiều page.
+ * Luồng chính: Nhận props, render trạng thái tương ứng và báo sự kiện lên component cha qua callback khi cần.
+ * Lưu ý bảo trì: Không thay đổi props; state cục bộ chỉ nên phục vụ hành vi thuộc phạm vi component.
+ */
 import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import "./LandingPages.css"
@@ -60,6 +67,7 @@ const jobIconStyles = [
   },
 ]
 
+// Chuyển đổi dữ liệu cho “parse service tags” thành định dạng mà lớp gọi hoặc giao diện cần.
 const parseServiceTags = (tags) => {
   if (!tags) return []
   if (Array.isArray(tags)) return tags.filter(Boolean).slice(0, 2)
@@ -71,9 +79,12 @@ const parseServiceTags = (tags) => {
     .slice(0, 2)
 }
 
+// React component “Landing Pages” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
 const LandingPages = () => {
   const navigate = useNavigate()
+  // Thực hiện phần logic “default target by role” trong phạm vi trách nhiệm của module hiện tại.
   const defaultTargetByRole = () => {
+    // Thực hiện phần logic “role” trong phạm vi trách nhiệm của module hiện tại.
     const role = (getStoredUser()?.role || "").toLowerCase()
     return role === "expert" ? "client" : "expert"
   }
@@ -110,9 +121,11 @@ const LandingPages = () => {
 
   const storedUser = getStoredUser()
   const isLoggedInUser = isLoggedIn()
+  // Thực hiện phần logic “user role” trong phạm vi trách nhiệm của module hiện tại.
   const userRole = (storedUser?.role || "").toLowerCase()
   const isExpertUser = isLoggedInUser && userRole === "expert"
 
+  // Chuyển đổi dữ liệu cho “format job card” thành định dạng mà lớp gọi hoặc giao diện cần.
   const formatJobCard = (job, index) => {
     const style = jobIconStyles[index % jobIconStyles.length]
     const skills = parseServiceTags(job.required_skill)
@@ -130,6 +143,7 @@ const LandingPages = () => {
     }
   }
 
+  // Chuyển đổi dữ liệu cho “format service card” thành định dạng mà lớp gọi hoặc giao diện cần.
   const formatServiceCard = (service, index) => {
     const style = serviceIconStyles[index % serviceIconStyles.length]
     const tags = parseServiceTags(service.tags)
@@ -147,6 +161,7 @@ const LandingPages = () => {
   // Fetch services (always needed)
   useEffect(() => {
     let isMounted = true
+    // Đọc hoặc suy ra dữ liệu cho nghiệp vụ “fetch”; không nên tạo side effect ngoài những request đọc đã nêu trong thân hàm.
     const fetch = async () => {
       try {
         setServicesLoading(true)
@@ -167,6 +182,7 @@ const LandingPages = () => {
   useEffect(() => {
     if (isLoggedInUser && !isExpertUser) return
     let isMounted = true
+    // Đọc hoặc suy ra dữ liệu cho nghiệp vụ “fetch”; không nên tạo side effect ngoài những request đọc đã nêu trong thân hàm.
     const fetch = async () => {
       try {
         setJobsLoading(true)
@@ -187,6 +203,7 @@ const LandingPages = () => {
   useEffect(() => {
     if (isLoggedInUser && !isExpertUser) return
     let isMounted = true
+    // Đọc hoặc suy ra dữ liệu cho nghiệp vụ “fetch”; không nên tạo side effect ngoài những request đọc đã nêu trong thân hàm.
     const fetch = async () => {
       try {
         setClientsLoading(true)
@@ -204,6 +221,7 @@ const LandingPages = () => {
   useEffect(() => {
     if (isLoggedInUser && isExpertUser) return
     let isMounted = true
+    // Đọc hoặc suy ra dữ liệu cho nghiệp vụ “fetch”; không nên tạo side effect ngoài những request đọc đã nêu trong thân hàm.
     const fetch = async () => {
       try {
         setExpertsDataLoading(true)
@@ -217,6 +235,7 @@ const LandingPages = () => {
     return () => { isMounted = false }
   }, [isLoggedInUser, isExpertUser])
 
+  // Handler “handle filter change” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleFilterChange = (e) => {
     const { name, value } = e.target
     setFilters((prev) => ({
@@ -225,6 +244,7 @@ const LandingPages = () => {
     }))
   }
 
+  // Handler “handle search” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleSearch = (e) => {
     e.preventDefault()
 
@@ -261,6 +281,7 @@ const LandingPages = () => {
     requireLogin(() => navigate(path))
   }
 
+  // Thực hiện phần logic “require login” trong phạm vi trách nhiệm của module hiện tại.
   const requireLogin = (fallback) => {
     if (isLoggedIn()) {
       fallback()

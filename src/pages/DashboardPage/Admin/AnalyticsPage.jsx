@@ -1,3 +1,10 @@
+/**
+ * Frontend module: pages/DashboardPage/Admin/AnalyticsPage.jsx
+ *
+ * Vai trò: Page Analytics Page: màn hình cấp route, điều phối dữ liệu và các component con cho một luồng nghiệp vụ hoàn chỉnh.
+ * Luồng chính: Đọc route/location, gọi service trong effect/handler, quản lý loading/error/form rồi truyền props xuống UI con.
+ * Lưu ý bảo trì: Giữ side effect trong handler/effect và không mutate trực tiếp state hoặc dữ liệu API.
+ */
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { CalendarDays, Download } from 'lucide-react'
@@ -16,6 +23,7 @@ import '../Style/AnalyticsPage.css'
 const currentYear = new Date().getFullYear()
 const earliestAnalyticsYear = 2020
 
+// React component “Analytics Page” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
 const AnalyticsPage = ({ onLogout }) => {
   const navigate = useNavigate()
   const [searchQuery, setSearchQuery] = useState('')
@@ -45,6 +53,7 @@ const AnalyticsPage = ({ onLogout }) => {
 
     let ignoreResult = false
 
+    // Đọc hoặc suy ra dữ liệu cho nghiệp vụ “fetch analytics”; không nên tạo side effect ngoài những request đọc đã nêu trong thân hàm.
     const fetchAnalytics = async () => {
       try {
         setAnalyticsError('')
@@ -78,10 +87,12 @@ const AnalyticsPage = ({ onLogout }) => {
     }
   }, [selectedYear])
 
+  // Handler “handle year change” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleYearChange = (event) => {
     setSelectedYear(event.target.value.replace(/\D/g, '').slice(0, 4))
   }
 
+  // Chuyển đổi dữ liệu cho “normalize selected year” thành định dạng mà lớp gọi hoặc giao diện cần.
   const normalizeSelectedYear = () => {
     const numericYear = Number(selectedYear)
     if (!Number.isInteger(numericYear) || numericYear < earliestAnalyticsYear || numericYear > currentYear) {
@@ -89,6 +100,7 @@ const AnalyticsPage = ({ onLogout }) => {
     }
   }
 
+  // Handler “handle export pdf” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleExportPdf = async () => {
     try {
       setAnalyticsError('')

@@ -1,3 +1,10 @@
+/**
+ * Frontend module: pages/DashboardPage/Client/ClientTaskDetailPage.jsx
+ *
+ * Vai trò: Page Client Task Detail Page: màn hình cấp route, điều phối dữ liệu và các component con cho một luồng nghiệp vụ hoàn chỉnh.
+ * Luồng chính: Đọc route/location, gọi service trong effect/handler, quản lý loading/error/form rồi truyền props xuống UI con.
+ * Lưu ý bảo trì: Giữ side effect trong handler/effect và không mutate trực tiếp state hoặc dữ liệu API.
+ */
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
@@ -22,6 +29,7 @@ import { getOrCreateConversation } from "../../../Services/messageService";
 import PaymentSourceDialog from "../../../Components/Payment/PaymentSourceDialog";
 import "./ClientMarketplace.css";
 
+// Đọc hoặc suy ra dữ liệu cho nghiệp vụ “get first array”; không nên tạo side effect ngoài những request đọc đã nêu trong thân hàm.
 const getFirstArray = (result, keys) => {
   for (const key of keys) {
     if (Array.isArray(result?.[key])) return result[key];
@@ -31,6 +39,7 @@ const getFirstArray = (result, keys) => {
   return [];
 };
 
+// Đọc hoặc suy ra dữ liệu cho nghiệp vụ “get job payload”; không nên tạo side effect ngoài những request đọc đã nêu trong thân hàm.
 const getJobPayload = (result) =>
   result?.jobPost ||
   result?.job ||
@@ -40,6 +49,7 @@ const getJobPayload = (result) =>
   result?.project ||
   result;
 
+// Đọc hoặc suy ra dữ liệu cho nghiệp vụ “get expert name”; không nên tạo side effect ngoài những request đọc đã nêu trong thân hàm.
 const getExpertName = (proposal) =>
   proposal?.expert?.fullName ||
   proposal?.expert?.name ||
@@ -58,6 +68,7 @@ const statusColor = (status) => {
   }
 };
 
+// React component “Client Task Detail Page” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
 function ClientTaskDetailPage() {
   const { jobId } = useParams();
   const navigate = useNavigate();
@@ -152,6 +163,7 @@ function ClientTaskDetailPage() {
     return `${days} day${days !== 1 ? 's' : ''}`;
   };
 
+  // Chuyển đổi dữ liệu cho “format budget” thành định dạng mà lớp gọi hoặc giao diện cần.
   const formatBudget = (jobData) => {
     const min = jobData?.budget_min ?? jobData?.budgetMin;
     const max = jobData?.budget_max ?? jobData?.budgetMax ?? jobData?.budget;
@@ -170,6 +182,7 @@ function ClientTaskDetailPage() {
     proposal?.user?._id ||
     proposal?.user?.id;
 
+  // Handler “handle contact expert” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleContactExpert = async (proposal) => {
     const expertId =
       getProposalExpertId(proposal);
@@ -187,6 +200,7 @@ function ClientTaskDetailPage() {
     setPaymentProposal(proposal);
   };
 
+  // Handler “handle payment source” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handlePaymentSource = async (paymentSource) => {
     const proposalId = paymentProposal?._id || paymentProposal?.id;
     if (!proposalId) return;
@@ -322,6 +336,7 @@ function ClientTaskDetailPage() {
     }
   };
 
+  // Handler “open counter form” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const openCounterForm = () => {
     setCounterBid(
       selectedProposal?.counter_bid_amount || selectedProposal?.bid_amount || ""
@@ -331,6 +346,7 @@ function ClientTaskDetailPage() {
     setShowCounterForm(true);
   };
 
+  // Handler “close modal” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const closeModal = () => {
     setSelectedProposal(null);
     setShowCounterForm(false);

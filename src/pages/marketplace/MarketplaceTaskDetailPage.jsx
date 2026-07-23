@@ -1,3 +1,10 @@
+/**
+ * Frontend module: pages/marketplace/MarketplaceTaskDetailPage.jsx
+ *
+ * Vai trò: Page Marketplace Task Detail Page: màn hình cấp route, điều phối dữ liệu và các component con cho một luồng nghiệp vụ hoàn chỉnh.
+ * Luồng chính: Đọc route/location, gọi service trong effect/handler, quản lý loading/error/form rồi truyền props xuống UI con.
+ * Lưu ý bảo trì: Giữ side effect trong handler/effect và không mutate trực tiếp state hoặc dữ liệu API.
+ */
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
@@ -23,13 +30,16 @@ import '../../Components/marketplace/Marketplace.css';
 import { updateContentStatus } from '../../Services/adminDashboardService';
 import '../Style/ServiceDetail.css';
 
+// Chuyển đổi dữ liệu cho “parse money” thành định dạng mà lớp gọi hoặc giao diện cần.
 const parseMoney = (value) => {
   const parsed = Number(String(value || '0').replace(/[^0-9.]/g, ''));
   return Number.isFinite(parsed) ? parsed : 0;
 };
 
+// Chuyển đổi dữ liệu cho “format money” thành định dạng mà lớp gọi hoặc giao diện cần.
 const formatMoney = (value) => `$${parseMoney(value).toLocaleString()}`;
 
+// Chuyển đổi dữ liệu cho “format budget” thành định dạng mà lớp gọi hoặc giao diện cần.
 const formatBudget = (task) => {
   const min = parseMoney(task.budget_min ?? task.budgetMin);
   const max = parseMoney(task.budget_max ?? task.budgetMax ?? task.budget);
@@ -42,6 +52,7 @@ const formatBudget = (task) => {
 
 
 
+// React component “Marketplace Task Detail Page” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
 const MarketplaceTaskDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -56,6 +67,7 @@ const MarketplaceTaskDetailPage = () => {
   const isExpert = currentUser?.role === 'expert';
 
   useEffect(() => {
+    // Đọc hoặc suy ra dữ liệu cho nghiệp vụ “fetch task detail”; không nên tạo side effect ngoài những request đọc đã nêu trong thân hàm.
     const fetchTaskDetail = async () => {
       try {
         setLoading(true);
@@ -79,6 +91,7 @@ const MarketplaceTaskDetailPage = () => {
   const canRepublishTask = isAdmin && ['removed', 'rejected'].includes(taskStatus);
   const canSendProposal = isExpert && taskStatus === 'open';
 
+  // Handler “handle moderate task” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleModerateTask = async (status) => {
     try {
       setModerationAction(status);
@@ -93,6 +106,7 @@ const MarketplaceTaskDetailPage = () => {
     }
   };
 
+  // Thực hiện phần logic “confirm moderation action” trong phạm vi trách nhiệm của module hiện tại.
   const confirmModerationAction = () => {
     const status = ['approve', 'republish'].includes(moderationConfirmAction) ? 'approved' : 'removed';
     handleModerateTask(status);
