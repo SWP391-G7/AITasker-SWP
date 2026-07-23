@@ -850,6 +850,7 @@
   max-height: calc(100vh - 40px);
   max-width: 620px;
   overflow-y: auto;
+  position: relative;
 }
 
 .profile-owner-edit-modal textarea {
@@ -863,6 +864,43 @@
   padding: 10px 12px;
   resize: vertical;
   text-transform: none;
+  width: 100%;
+}
+
+.profile-ai-edit-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.profile-ai-edit-heading {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+}
+
+.profile-ai-edit-heading > label {
+  margin: 0;
+}
+
+.profile-ai-edit-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+@media (max-width: 560px) {
+  .profile-ai-edit-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .profile-ai-edit-actions {
+    justify-content: flex-start;
+  }
 }
 
 .profile-owner-edit-btn {

@@ -22,6 +22,9 @@ import {
 } from "lucide-react";
 import HeaderCom from "../../Components/Navbar/HeaderCom";
 import Footer from "../../Components/Footer/Footer";
+import AIExtendButton from "../../Components/AI/AIExtendButton";
+import AISkeletonLoader from "../../Components/AI/AISkeletonLoader";
+import Toast from "../../Components/Toast";
 import AdminModerationConfirmModal from "../../Components/Dashboard/Admin/AdminModerationConfirmModal";
 import { getUserProfile, updateOwnAvatar, updateOwnFullName } from "../../Services/profileService";
 import { submitClientOnboarding, submitExpertOnboarding } from "../../Services/onboardingService";
@@ -79,6 +82,9 @@ function ProfilePage() {
   const [ownAvatarPreview, setOwnAvatarPreview] = useState("")
   const [ownEditError, setOwnEditError] = useState("")
   const [ownEditLoading, setOwnEditLoading] = useState(false)
+  const [ownEditAiGenerating, setOwnEditAiGenerating] = useState(false)
+  const [ownEditAiOptimized, setOwnEditAiOptimized] = useState(false)
+  const [ownEditAiError, setOwnEditAiError] = useState("")
 
   const isOwnProfile = currentUser && String(currentUser.id) === String(userId)
   const currentRole = String(currentUser?.role || "").toLowerCase()
@@ -196,6 +202,9 @@ function ProfilePage() {
     setOwnAvatarFile(null)
     setOwnAvatarPreview(targetUser.avatarUrl || "")
     setOwnEditError("")
+    setOwnEditAiGenerating(false)
+    setOwnEditAiOptimized(false)
+    setOwnEditAiError("")
     setShowOwnEditModal(true)
   }
 
@@ -223,6 +232,9 @@ function ProfilePage() {
       setOwnAvatarFile(null)
       setOwnAvatarPreview(targetUser.avatarUrl || "")
       setOwnEditError("")
+      setOwnEditAiGenerating(false)
+      setOwnEditAiOptimized(false)
+      setOwnEditAiError("")
       setShowOwnEditModal(true)
       navigate(`${location.pathname}${location.search}`, {
         replace: true,
@@ -259,6 +271,26 @@ function ProfilePage() {
     const reader = new FileReader()
     reader.onload = () => setOwnAvatarPreview(String(reader.result || ""))
     reader.readAsDataURL(file)
+  }
+
+  const handleOwnEditAiSuccess = (data) => {
+    setOwnEditForm((previousForm) => (
+      activeTab === "expert"
+        ? {
+            ...previousForm,
+            professionalTitle: data.professionalTitle || previousForm.professionalTitle,
+            skills: data.skills || previousForm.skills,
+            bio: data.bio || previousForm.bio,
+          }
+        : {
+            ...previousForm,
+            companyName: data.companyName || previousForm.companyName,
+            industry: data.industry || previousForm.industry,
+            bio: data.bio || previousForm.bio,
+          }
+    ))
+    setOwnEditAiGenerating(false)
+    setOwnEditAiOptimized(true)
   }
 
   const handleOwnProfileUpdate = async (event) => {
@@ -1058,6 +1090,15 @@ function ProfilePage() {
         {showOwnEditModal && (
           <div className="profile-admin-modal-overlay" onClick={() => !ownEditLoading && setShowOwnEditModal(false)}>
             <div className="profile-admin-modal profile-owner-edit-modal" onClick={(event) => event.stopPropagation()}>
+              {ownEditAiGenerating && (
+                <AISkeletonLoader
+                  message={
+                    activeTab === "expert"
+                      ? "AI Engine is polishing your profile details..."
+                      : "AI Engine is polishing your company details..."
+                  }
+                />
+              )}
               <div className="profile-admin-modal-header">
                 <h3>Edit Profile</h3>
                 <button type="button" disabled={ownEditLoading} onClick={() => setShowOwnEditModal(false)}>
@@ -1150,14 +1191,41 @@ function ProfilePage() {
                         onChange={(event) => setOwnEditForm({ ...ownEditForm, hourlyRate: event.target.value })}
                       />
                     </label>
-                    <label>
-                      Short Bio
+                    <div className="profile-ai-edit-field">
+                      <div className="profile-ai-edit-heading">
+                        <label htmlFor="profile-expert-bio">Short Bio</label>
+                        <div className="profile-ai-edit-actions">
+                          {ownEditAiOptimized && (
+                            <span className="ai-sparkle-badge">✨ AI Optimized</span>
+                          )}
+                          <AIExtendButton
+                            draftFields={[
+                              ownEditForm.professionalTitle && `Professional title: ${ownEditForm.professionalTitle}`,
+                              ownEditForm.skills && `Skills: ${ownEditForm.skills}`,
+                              ownEditForm.bio && `Bio: ${ownEditForm.bio}`,
+                            ]}
+                            onExtendStart={() => {
+                              setOwnEditAiGenerating(true)
+                              setOwnEditAiOptimized(false)
+                            }}
+                            onExtendSuccess={handleOwnEditAiSuccess}
+                            onExtendFailure={() => setOwnEditAiGenerating(false)}
+                            type="profile_expert"
+                            btnText="Improve with AI"
+                            onErrorToast={setOwnEditAiError}
+                          />
+                        </div>
+                      </div>
                       <textarea
+                        id="profile-expert-bio"
                         rows="4"
                         value={ownEditForm.bio}
-                        onChange={(event) => setOwnEditForm({ ...ownEditForm, bio: event.target.value })}
+                        onChange={(event) => {
+                          setOwnEditForm({ ...ownEditForm, bio: event.target.value })
+                          setOwnEditAiOptimized(false)
+                        }}
                       />
-                    </label>
+                    </div>
                   </>
                 ) : (
                   <>
@@ -1179,14 +1247,41 @@ function ProfilePage() {
                         onChange={(event) => setOwnEditForm({ ...ownEditForm, industry: event.target.value })}
                       />
                     </label>
-                    <label>
-                      Company Bio
+                    <div className="profile-ai-edit-field">
+                      <div className="profile-ai-edit-heading">
+                        <label htmlFor="profile-client-bio">Company Bio</label>
+                        <div className="profile-ai-edit-actions">
+                          {ownEditAiOptimized && (
+                            <span className="ai-sparkle-badge">✨ AI Optimized</span>
+                          )}
+                          <AIExtendButton
+                            draftFields={[
+                              ownEditForm.companyName && `Company name: ${ownEditForm.companyName}`,
+                              ownEditForm.industry && `Industry: ${ownEditForm.industry}`,
+                              ownEditForm.bio && `Company bio: ${ownEditForm.bio}`,
+                            ]}
+                            onExtendStart={() => {
+                              setOwnEditAiGenerating(true)
+                              setOwnEditAiOptimized(false)
+                            }}
+                            onExtendSuccess={handleOwnEditAiSuccess}
+                            onExtendFailure={() => setOwnEditAiGenerating(false)}
+                            type="profile_client"
+                            btnText="Improve with AI"
+                            onErrorToast={setOwnEditAiError}
+                          />
+                        </div>
+                      </div>
                       <textarea
+                        id="profile-client-bio"
                         rows="4"
                         value={ownEditForm.bio}
-                        onChange={(event) => setOwnEditForm({ ...ownEditForm, bio: event.target.value })}
+                        onChange={(event) => {
+                          setOwnEditForm({ ...ownEditForm, bio: event.target.value })
+                          setOwnEditAiOptimized(false)
+                        }}
                       />
-                    </label>
+                    </div>
                   </>
                 )}
 
@@ -1206,6 +1301,9 @@ function ProfilePage() {
               </form>
             </div>
           </div>
+        )}
+        {ownEditAiError && (
+          <Toast message={ownEditAiError} onClose={() => setOwnEditAiError("")} />
         )}
 
         {showAdminEditModal && (
