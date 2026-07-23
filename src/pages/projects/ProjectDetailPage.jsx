@@ -180,8 +180,10 @@ export default function ProjectDetailPage() {
   const [revisionNote,  setRevisionNote]  = useState('');
 
   // Modal — file dispute
-  const [disputeModal, setDisputeModal] = useState({ open: false });
-  const [disputeForm,  setDisputeForm]  = useState({ title: '', type: 'Quality Issue', content: '', evidence_urls: '' });
+  const [disputeModal,    setDisputeModal]    = useState({ open: false });
+  const [disputeForm,     setDisputeForm]     = useState({ title: '', type: 'Quality Issue', content: '', evidence_urls: '' });
+  const [disputeInfo,     setDisputeInfo]     = useState(null);
+  const [viewDisputeModal,setViewDisputeModal] = useState(false);
 
 
   // User identity from localStorage
@@ -191,6 +193,10 @@ export default function ProjectDetailPage() {
   const isCli = role === 'client';
 
   // ── Derived state ──────────────────────────────────────────────────────────
+  const isDisputed   = useMemo(() => String(project?.status || '').toLowerCase() === 'disputed', [project]);
+  const isTerminated = useMemo(() => ['terminated', 'cancelled'].includes(String(project?.status || '').toLowerCase()), [project]);
+  const isInactive   = isDisputed || isTerminated;
+
   const sorted = useMemo(
     () => [...milestones].sort((a, b) => (a.position || 0) - (b.position || 0)),
     [milestones]
@@ -210,7 +216,7 @@ export default function ProjectDetailPage() {
 
   // First planned milestone the expert can start (all previous are finished/pending_payment)
   const startable = useMemo(() => {
-    if (!isExp) return null;
+    if (!isExp || isInactive) return null;
     for (const m of sorted) {
       if (m.status === 'planned') {
         const prevOk = sorted
@@ -221,7 +227,8 @@ export default function ProjectDetailPage() {
       if (!['finished', 'pending_payment'].includes(m.status)) return null;
     }
     return null;
-  }, [sorted, isExp]);
+  }, [sorted, isExp, isInactive]);
+
 
   const progressPct = useMemo(() => {
     if (sorted.length === 0) return 0;
@@ -239,6 +246,13 @@ export default function ProjectDetailPage() {
       setProject(data.project);
       const ms = (data.milestones || []).sort((a, b) => (a.position || 0) - (b.position || 0));
       setMilestones(ms);
+
+      try {
+        const dData = await getProjectDisputeStatus(projectId);
+        setDisputeInfo(dData);
+      } catch (dErr) {
+        setDisputeInfo(null);
+      }
 
       // Seed drafts from existing planning/change_requested milestones
       const seed = ms.filter(m => ['planning', 'change_requested'].includes(m.status));
@@ -265,6 +279,7 @@ export default function ProjectDetailPage() {
   }, [projectId]);
 
   useEffect(() => { fetchProjectData(); }, [fetchProjectData]);
+
 
   // ── Draft helpers ─────────────────────────────────────────────────────────
   const addDraft    = () => setDrafts(p => [...p, { localId: Date.now(), title: '', content: '', amount: '', delivery_days: '', change_request_note: null }]);
@@ -458,16 +473,7 @@ export default function ProjectDetailPage() {
         {error     && <div className="alert alert-danger" style={{ marginBottom: '20px' }}>{error}</div>}
         {actionErr && <div className="alert alert-danger" style={{ marginBottom: '20px' }}>{actionErr}</div>}
 
-        {isAbandoned ? (
-          <section style={{ ...CARD, textAlign: 'center', padding: '60px 40px' }}>
-            <AlertTriangle size={60} style={{ color: '#ef4444', marginBottom: '20px' }} />
-            <h2 style={{ color: '#fff', marginBottom: '10px' }}>Project Closed</h2>
-            <p style={{ color: 'rgba(255,255,255,0.55)', marginBottom: '28px' }}>This project has been terminated or closed.</p>
-            <button style={btnOutline} onClick={() => navigate(isCli ? '/client/projects' : '/expert/projects')}>
-              Return to Projects
-            </button>
-          </section>
-        ) : project && (
+        {project && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
 
             {/* ── PROJECT INFO CARD ──────────────────────────────────── */}
@@ -484,7 +490,12 @@ export default function ProjectDetailPage() {
                   <button style={btnOutline} onClick={fetchProjectData} disabled={busy}>
                     <RefreshCcw size={14} style={{ marginRight: '4px', display: 'inline' }} /> Refresh
                   </button>
-                  {String(project.status).toLowerCase() !== 'disputed' && String(project.status).toLowerCase() !== 'completed' && String(project.status).toLowerCase() !== 'terminated' && (
+                  {disputeInfo && (
+                    <button type="button" style={{ ...btnOutline, borderColor: 'rgba(239,68,68,0.4)', color: '#f87171' }} onClick={() => setViewDisputeModal(true)}>
+                      <ShieldAlert size={14} style={{ marginRight: '4px', display: 'inline' }} /> Dispute Details
+                    </button>
+                  )}
+                  {!isInactive && String(project.status).toLowerCase() !== 'completed' && (
                     <button style={btnRed} onClick={() => setDisputeModal({ open: true })} disabled={busy}>
                       <ShieldAlert size={14} style={{ marginRight: '4px', display: 'inline' }} /> Raise Dispute
                     </button>
@@ -496,16 +507,63 @@ export default function ProjectDetailPage() {
               </div>
 
               {String(project.status).toLowerCase() === 'disputed' && (
-                <div style={{ background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '12px', padding: '16px 20px', color: '#f87171', display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
-                  <AlertTriangle size={24} style={{ flexShrink: 0 }} />
-                  <div>
-                    <h4 style={{ margin: '0 0 4px 0', color: '#fff', fontSize: '1rem' }}>Project On Hold — Dispute Under Review</h4>
-                    <p style={{ margin: 0, fontSize: '0.88rem', color: 'rgba(255,255,255,0.7)' }}>
-                      A dispute has been filed for this project. Escrow funds and milestone operations are currently frozen while platform administration reviews evidence and chat logs.
-                    </p>
+                <div style={{ background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '12px', padding: '16px 20px', color: '#f87171', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', marginBottom: '20px', flexWrap: 'wrap' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, minWidth: '260px' }}>
+                    <AlertTriangle size={24} style={{ flexShrink: 0 }} />
+                    <div>
+                      <h4 style={{ margin: '0 0 4px 0', color: '#fff', fontSize: '1rem' }}>Project On Hold — Dispute Under Review</h4>
+                      <p style={{ margin: 0, fontSize: '0.88rem', color: 'rgba(255,255,255,0.7)' }}>
+                        A dispute has been filed for this project. Escrow funds and milestone operations are currently frozen while platform administration reviews evidence and chat logs. Both parties are restricted from modifying project milestones during this time.
+                      </p>
+                    </div>
+                  </div>
+                  {disputeInfo && (
+                    <button type="button" style={{ ...btnOutline, background: 'rgba(239,68,68,0.15)', borderColor: 'rgba(239,68,68,0.35)', color: '#fff', padding: '8px 16px', fontSize: '0.84rem' }} onClick={() => setViewDisputeModal(true)}>
+                      <ShieldAlert size={14} style={{ marginRight: '4px', display: 'inline' }} /> View Filed Dispute
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {isTerminated && !disputeInfo?.is_resolved && (
+                <div style={{ background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '12px', padding: '16px 20px', color: '#f87171', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', marginBottom: '20px', flexWrap: 'wrap' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, minWidth: '260px' }}>
+                    <AlertTriangle size={24} style={{ flexShrink: 0 }} />
+                    <div>
+                      <h4 style={{ margin: '0 0 4px 0', color: '#fff', fontSize: '1rem' }}>
+                        This project has been terminated
+                      </h4>
+                      <p style={{ margin: 0, fontSize: '0.88rem', color: 'rgba(255,255,255,0.7)' }}>
+                        This project is closed and read-only. You can view project details and milestone progress below, but all interaction controls have been disabled.
+                      </p>
+                    </div>
                   </div>
                 </div>
               )}
+
+              {disputeInfo && disputeInfo.is_resolved && (
+                <div style={{ background: disputeInfo.resolution_type === 'refund_client' ? 'rgba(59,130,246,0.12)' : 'rgba(16,185,129,0.12)', border: `1px solid ${disputeInfo.resolution_type === 'refund_client' ? 'rgba(59,130,246,0.3)' : 'rgba(16,185,129,0.3)'}`, borderRadius: '12px', padding: '16px 20px', color: '#fff', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                  <div style={{ flex: 1, minWidth: '260px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
+                      <CheckCircle2 size={20} style={{ color: disputeInfo.resolution_type === 'refund_client' ? '#60a5fa' : '#34d399' }} />
+                      <h4 style={{ margin: 0, fontSize: '1rem', color: '#fff' }}>
+                        This project has been terminated due to dispute resolution ({disputeInfo.resolution_type === 'refund_client' ? 'Client Win — Escrow Refunded' : 'Expert Win — Escrow Released'})
+                      </h4>
+                    </div>
+                    {disputeInfo.admin_notes && (
+                      <p style={{ margin: '6px 0 0 0', color: 'rgba(255,255,255,0.75)', fontSize: '0.88rem', lineHeight: '1.4' }}>
+                        <strong>Admin Explanation:</strong> "{disputeInfo.admin_notes}"
+                      </p>
+                    )}
+                  </div>
+                  <button type="button" style={{ ...btnOutline, background: 'rgba(255,255,255,0.05)', padding: '8px 16px', fontSize: '0.84rem' }} onClick={() => setViewDisputeModal(true)}>
+                    <ShieldAlert size={14} style={{ marginRight: '4px', display: 'inline' }} /> View Full Dispute Case
+                  </button>
+                </div>
+              )}
+
+
+
 
 
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: '20px', borderTop: '1px solid rgba(255,255,255,0.07)', paddingTop: '20px', marginBottom: '20px' }}>
@@ -570,6 +628,7 @@ export default function ProjectDetailPage() {
                   editDraft={editDraft}
                   onSubmit={handleSubmitPlan}
                   busy={busy}
+                  isDisputed={isInactive}
                 />
               )}
 
@@ -582,6 +641,7 @@ export default function ProjectDetailPage() {
                   onApprove={handleApprovePlan}
                   onRequestChanges={() => setChangesModal(true)}
                   busy={busy}
+                  isDisputed={isInactive}
                 />
               )}
 
@@ -599,8 +659,11 @@ export default function ProjectDetailPage() {
                   onRespondExtension={handleRespondExtension}
                   onPay={handlePay}
                   busy={busy}
+                  isDisputed={isInactive}
                 />
               )}
+
+
 
               {/* CLIENT — no milestones yet */}
               {isCli && phase === 'empty' && (
@@ -711,348 +774,8 @@ export default function ProjectDetailPage() {
           </div>
         </div>
       )}
-    </div>
-  );
-}
 
-// ── Sub-components ────────────────────────────────────────────────────────────
-
-function ModalHeader({ title, onClose }) {
-  return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '22px' }}>
-      <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: '700' }}>{title}</h3>
-      <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.5)', cursor: 'pointer' }}>
-        <X size={22} />
-      </button>
-    </div>
-  );
-}
-
-/** Expert's local draft builder — used for both empty state and re-planning after change_requested */
-function DraftBuilder({ drafts, projectTotal, projectDuration, phase, addDraft, removeDraft, editDraft, onSubmit, busy }) {
-  const hasNotes = drafts.some(d => d.change_request_note);
-  const draftTotal = drafts.reduce((sum, draft) => sum + parseFloat(draft.amount || 0), 0);
-  const draftDays = drafts.reduce((sum, draft) => sum + parseInt(draft.delivery_days || 0, 10), 0);
-  const amountMatches = projectTotal <= 0 || Math.abs(draftTotal - projectTotal) <= 0.01;
-  const durationExceeded = projectDuration > 0 && draftDays > projectDuration;
-  const fieldsValid = drafts.every(d =>
-    d.title.trim()
-    && parseFloat(d.amount) > 0
-    && parseInt(d.delivery_days, 10) > 0
-  );
-  const canSubmit = fieldsValid && amountMatches;
-  return (
-    <div>
-      <div style={{ marginBottom: '24px' }}>
-        <h3 style={{ color: '#fff', fontSize: '1.2rem', fontWeight: '700', margin: '0 0 6px 0' }}>
-          {phase === 'planning' ? (hasNotes ? '📋 Resubmit Milestone Plan' : '⏳ Plan Submitted — Awaiting Review') : '📋 Plan Your Milestones'}
-        </h3>
-        <p style={{ color: 'rgba(255,255,255,0.45)', margin: 0, fontSize: '0.88rem' }}>
-          {phase === 'planning'
-            ? hasNotes
-              ? 'The client has requested changes. Review their notes below, edit as needed, and resubmit.'
-              : 'Your plan is under client review. You may edit and resubmit at any time.'
-            : 'Define each stage of your project. Add all milestones, then submit for client approval.'}
-        </p>
-      </div>
-
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '20px' }}>
-        {drafts.map((d, idx) => (
-          <div
-            key={d.localId}
-            style={{
-              background: 'rgba(0,0,0,0.18)',
-              border: `1px solid ${d.change_request_note ? 'rgba(245,158,11,0.3)' : 'rgba(255,255,255,0.07)'}`,
-              borderRadius: '12px', padding: '20px',
-            }}
-          >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-              <span style={{ fontWeight: '700', color: '#fff', fontSize: '0.92rem' }}>Milestone #{idx + 1}</span>
-              {drafts.length > 1 && (
-                <button
-                  onClick={() => removeDraft(d.localId)}
-                  style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.22)', color: '#f87171', borderRadius: '6px', padding: '4px 10px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.82rem' }}
-                >
-                  <Trash2 size={13} /> Remove
-                </button>
-              )}
-            </div>
-
-            {d.change_request_note && (
-              <div style={{ background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.22)', borderRadius: '8px', padding: '10px 14px', marginBottom: '14px', color: '#fbbf24', fontSize: '0.83rem', lineHeight: '1.5' }}>
-                ⚠ Client note: {d.change_request_note}
-              </div>
-            )}
-
-            <div style={{ marginBottom: '12px' }}>
-              <label style={labelSt}>TITLE *</label>
-              <input style={inputSt} type="text" placeholder="e.g. Frontend UI Implementation" value={d.title} onChange={e => editDraft(d.localId, 'title', e.target.value)} />
-            </div>
-
-            <div style={{ marginBottom: '12px' }}>
-              <label style={labelSt}>DELIVERABLE DETAILS</label>
-              <textarea
-                style={{ ...inputSt, resize: 'vertical', minHeight: '68px', fontSize: '0.88rem' }}
-                placeholder="Describe what you will deliver in this milestone..."
-                value={d.content}
-                onChange={e => editDraft(d.localId, 'content', e.target.value)}
-              />
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
-              <div>
-                <label style={labelSt}>AMOUNT ($) * {projectTotal > 0 && d.amount ? `· ${((parseFloat(d.amount) / projectTotal) * 100).toFixed(1)}%` : ''}</label>
-                <input style={inputSt} type="number" min="1" placeholder="e.g. 500" value={d.amount} onChange={e => editDraft(d.localId, 'amount', e.target.value)} />
-                {projectTotal > 0 && parseFloat(d.amount || 0) > projectTotal && (
-                  <span style={{ color: '#f87171', fontSize: '0.78rem', display: 'block', marginTop: 6 }}>
-                    This milestone exceeds the entire project budget of {fmtMoney(projectTotal)}.
-                  </span>
-                )}
-              </div>
-              <div>
-                <label style={labelSt}>DELIVERY TIME (DAYS) *</label>
-                <input style={inputSt} type="number" min="1" step="1" placeholder="e.g. 14" value={d.delivery_days} onChange={e => editDraft(d.localId, 'delivery_days', e.target.value)} />
-                {projectDuration > 0 && parseInt(d.delivery_days || 0, 10) > projectDuration && (
-                  <span style={{ color: '#f87171', fontSize: '0.78rem', display: 'block', marginTop: 6 }}>
-                    This milestone alone exceeds the {projectDuration}-day project duration.
-                  </span>
-                )}
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, padding: '14px 16px', marginBottom: 10, borderRadius: 9, background: amountMatches ? 'rgba(99,102,241,.08)' : 'rgba(239,68,68,.08)', border: `1px solid ${amountMatches ? 'rgba(99,102,241,.18)' : 'rgba(239,68,68,.28)'}`, color: amountMatches ? '#c7d2fe' : '#fca5a5' }}>
-        <span>Proposed release total</span>
-        <strong>{fmtMoney(draftTotal)} / {fmtMoney(projectTotal)} {projectTotal > 0 ? `(${((draftTotal / projectTotal) * 100).toFixed(1)}%)` : ''}</strong>
-      </div>
-      {!amountMatches && (
-        <p style={{ color: '#f87171', fontSize: '0.8rem', margin: '0 0 10px' }}>
-          {draftTotal > projectTotal
-            ? `Reduce milestone amounts by ${fmtMoney(draftTotal - projectTotal)}.`
-            : `Allocate the remaining ${fmtMoney(projectTotal - draftTotal)} before submitting.`}
-        </p>
-      )}
-      {projectDuration > 0 && (
-        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, padding: '14px 16px', marginBottom: 10, borderRadius: 9, background: durationExceeded ? 'rgba(245,158,11,.08)' : 'rgba(16,185,129,.07)', border: `1px solid ${durationExceeded ? 'rgba(245,158,11,.28)' : 'rgba(16,185,129,.2)'}`, color: durationExceeded ? '#fbbf24' : '#a7f3d0' }}>
-          <span>Planned delivery time</span>
-          <strong>{draftDays} / {projectDuration} days</strong>
-        </div>
-      )}
-      {durationExceeded && (
-        <p style={{ color: '#fbbf24', fontSize: '0.8rem', margin: '0 0 10px' }}>
-          This submits a request to extend the project by {draftDays - projectDuration} day{draftDays - projectDuration !== 1 ? 's' : ''}. The client must approve it.
-        </p>
-      )}
-      <div style={{ display: 'flex', gap: '12px', borderTop: '1px solid rgba(255,255,255,0.07)', paddingTop: '20px' }}>
-        <button style={btnOutline} onClick={addDraft} disabled={busy}>
-          <Plus size={15} style={{ marginRight: '4px', display: 'inline' }} /> Add Milestone
-        </button>
-        <button style={{ ...btnGreen, marginLeft: 'auto', opacity: canSubmit && !busy ? 1 : 0.55 }} onClick={onSubmit} disabled={busy || !canSubmit}>
-          {busy ? <Loader2 size={15} className="animate-spin" /> : <Send size={15} />}
-          Submit Plan
-        </button>
-      </div>
-    </div>
-  );
-}
-
-/** Client's read-only plan review with approve / request-changes buttons */
-function PlanReview({ milestones, projectTotal, projectDuration, onApprove, onRequestChanges, busy }) {
-  const planTotal = milestones.reduce((sum, milestone) => sum + parseFloat(milestone.amount || 0), 0);
-  const planDays = milestones.reduce((sum, milestone) => sum + parseInt(milestone.delivery_days || 0, 10), 0);
-  const amountValid = projectTotal <= 0 || Math.abs(planTotal - projectTotal) <= 0.01;
-  const durationExtensionRequested = projectDuration > 0 && planDays > projectDuration;
-  const planValid = amountValid;
-  return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px', marginBottom: '24px' }}>
-        <div>
-          <h3 style={{ color: '#fff', fontSize: '1.2rem', fontWeight: '700', margin: '0 0 6px 0' }}>Expert's Milestone Plan</h3>
-          <p style={{ color: 'rgba(255,255,255,0.45)', margin: 0, fontSize: '0.88rem' }}>Review each milestone and approve or request changes.</p>
-        </div>
-        <div style={{ display: 'flex', gap: '10px' }}>
-          <button style={btnRed} onClick={onRequestChanges} disabled={busy}>Request Changes</button>
-          <button style={{ ...btnGreen, opacity: planValid && !busy ? 1 : 0.55 }} onClick={onApprove} disabled={busy || !planValid}>
-            {busy ? <Loader2 size={15} className="animate-spin" /> : <CheckCircle2 size={15} />}
-            {durationExtensionRequested ? 'Approve Plan & Extension' : 'Approve Plan'}
-          </button>
-        </div>
-      </div>
-
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-        {milestones.map((m, idx) => (
-          <div key={m.id} style={{ background: 'rgba(0,0,0,0.15)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '12px', padding: '18px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px' }}>
-              <div style={{ flex: 1 }}>
-                <strong style={{ color: '#fff', fontSize: '0.97rem' }}>#{idx + 1} {m.title}</strong>
-                {m.content && <p style={{ color: 'rgba(255,255,255,0.5)', margin: '5px 0 0 0', fontSize: '0.86rem', lineHeight: '1.5' }}>{m.content}</p>}
-              </div>
-              <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                <strong style={{ color: '#10b981', fontSize: '1.08rem', display: 'block' }}>{fmtMoney(m.amount)}</strong>
-                <span style={{ color: 'rgba(255,255,255,0.38)', fontSize: '0.8rem' }}>{m.delivery_days} day{m.delivery_days !== 1 ? 's' : ''}</span>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <div style={{ marginTop: '20px', padding: '14px 16px', borderRadius: 9, background: !planValid ? 'rgba(239,68,68,.08)' : durationExtensionRequested ? 'rgba(245,158,11,.08)' : 'rgba(16,185,129,.07)', border: `1px solid ${!planValid ? 'rgba(239,68,68,.28)' : durationExtensionRequested ? 'rgba(245,158,11,.28)' : 'rgba(16,185,129,.2)'}`, color: !planValid ? '#fca5a5' : durationExtensionRequested ? '#fbbf24' : '#a7f3d0', fontSize: '0.84rem' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
-          <span>Release allocation</span>
-          <strong>{fmtMoney(planTotal)} / {fmtMoney(projectTotal)}</strong>
-        </div>
-        {projectDuration > 0 && (
-          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginTop: 7 }}>
-            <span>Delivery schedule</span>
-            <strong>{planDays} / {projectDuration} days</strong>
-          </div>
-        )}
-        {durationExtensionRequested && <div style={{ marginTop: 8 }}>The expert requests {planDays - projectDuration} extra day{planDays - projectDuration !== 1 ? 's' : ''}. Approving updates the project duration to {planDays} days; otherwise request changes.</div>}
-        {!amountValid && <div style={{ marginTop: 8 }}>Milestone amounts must equal the full project budget before approval.</div>}
-      </div>
-    </div>
-  );
-}
-
-/** Active milestone table — shown once plan is approved and work begins */
-function MilestoneTable({ milestones, role, startable, onStart, onOpenDeliverable, onApproveDeliverable, onOpenRevision, onRequestExtension, onRespondExtension, onPay, busy }) {
-  const isExp = role === 'expert';
-  const isCli = role === 'client';
-
-  return (
-    <div>
-      <h3 style={{ color: '#fff', fontSize: '1.2rem', fontWeight: '700', marginBottom: '20px' }}>Milestone Breakdown</h3>
-      <div style={{ overflowX: 'auto' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', color: 'rgba(255,255,255,0.8)', minWidth: '720px' }}>
-          <thead>
-            <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.09)', textAlign: 'left', fontSize: '0.76rem', color: 'rgba(255,255,255,0.38)', fontWeight: '700', letterSpacing: '0.05em' }}>
-              <th style={{ padding: '10px 12px' }}>#</th>
-              <th style={{ padding: '10px 12px' }}>MILESTONE</th>
-              <th style={{ padding: '10px 12px' }}>AMOUNT</th>
-              <th style={{ padding: '10px 12px' }}>DURATION</th>
-              <th style={{ padding: '10px 12px' }}>DEADLINE</th>
-              <th style={{ padding: '10px 12px' }}>STATUS</th>
-              <th style={{ padding: '10px 12px', textAlign: 'right' }}>ACTIONS</th>
-            </tr>
-          </thead>
-          <tbody>
-            {milestones.map((m) => (
-              <tr key={m.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                <td style={{ padding: '18px 12px', color: 'rgba(255,255,255,0.28)', fontWeight: '700', fontSize: '0.9rem' }}>{m.position}</td>
-
-                <td style={{ padding: '18px 12px', maxWidth: '280px' }}>
-                  <strong style={{ color: '#fff', display: 'block', marginBottom: '3px' }}>{m.title}</strong>
-                  {m.content && <span style={{ color: 'rgba(255,255,255,0.42)', fontSize: '0.82rem', display: 'block', lineHeight: '1.4' }}>{m.content}</span>}
-                  {/* Change / revision note */}
-                  {m.change_request_note && (
-                    <div style={{ marginTop: '7px', background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.2)', borderRadius: '6px', padding: '7px 11px', color: '#fbbf24', fontSize: '0.79rem', lineHeight: '1.4' }}>
-                      ⚠ {m.change_request_note}
-                    </div>
-                  )}
-                  {/* Deliverable link */}
-                  {m.deliverable_url && ['submitted', 'revision_requested', 'pending_payment', 'finished'].includes(m.status) && (
-                    <a
-                      href={m.deliverable_url}
-                      target="_blank"
-                      rel="noreferrer"
-                      style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', marginTop: '6px', color: '#60a5fa', fontSize: '0.8rem', textDecoration: 'none' }}
-                    >
-                      <ExternalLink size={12} /> View Deliverable
-                    </a>
-                  )}
-                  {m.deliverable_note && ['submitted','revision_requested','pending_payment','finished'].includes(m.status) && (
-                    <p style={{ color: 'rgba(255,255,255,0.38)', fontSize: '0.79rem', margin: '3px 0 0 0' }}>{m.deliverable_note}</p>
-                  )}
-                </td>
-
-                <td style={{ padding: '18px 12px', fontWeight: '700', color: '#fff', whiteSpace: 'nowrap' }}>
-                  {fmtMoney(m.amount)}
-                  {getMilestoneSettlement(m).lateDays > 0 && (
-                    <span style={{ display: 'block', color: '#f87171', fontSize: '0.73rem', marginTop: 4, fontWeight: 600 }}>
-                      -{fmtMoney(getMilestoneSettlement(m).penaltyAmount)} ({getMilestoneSettlement(m).lateDays}d late)
-                    </span>
-                  )}
-                  {m.extension_status && (
-                    <div style={{ marginTop: '7px', background: m.extension_status === 'pending' ? 'rgba(245,158,11,0.1)' : m.extension_status === 'approved' ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '6px', padding: '7px 11px', color: m.extension_status === 'pending' ? '#fbbf24' : m.extension_status === 'approved' ? '#34d399' : '#f87171', fontSize: '0.79rem', lineHeight: '1.4' }}>
-                      Extension {m.extension_status}: {m.extension_requested_days} day(s). {m.extension_reason}
-                    </div>
-                  )}
-                  {m.status === 'finished' && m.released_amount != null && (
-                    <span style={{ display: 'block', color: '#34d399', fontSize: '0.73rem', marginTop: 3, fontWeight: 600 }}>
-                      Released {fmtMoney(m.released_amount)}
-                    </span>
-                  )}
-                </td>
-                <td style={{ padding: '18px 12px', color: 'rgba(255,255,255,0.55)', whiteSpace: 'nowrap' }}>{m.delivery_days}d</td>
-                <td style={{ padding: '18px 12px', color: 'rgba(255,255,255,0.55)', fontSize: '0.86rem', whiteSpace: 'nowrap' }}>{fmtDate(m.deadline)}</td>
-                <td style={{ padding: '18px 12px' }}><StatusBadge status={m.status} /></td>
-
-                <td style={{ padding: '18px 12px', textAlign: 'right' }}>
-                  <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
-
-                    {/* EXPERT actions */}
-                    {isExp && startable?.id === m.id && (
-                      <button style={{ ...btnGreen, padding: '6px 14px', fontSize: '0.83rem' }} onClick={() => onStart(m.id)} disabled={busy}>
-                        Start
-                      </button>
-                    )}
-                    {isExp && ['ongoing', 'revision_requested'].includes(m.status) && (
-                      <>
-                        <button style={{ ...btnPurple, padding: '6px 14px', fontSize: '0.83rem' }} onClick={() => onOpenDeliverable(m.id)} disabled={busy}>
-                          <Send size={13} /> Submit Deliverable
-                        </button>
-                        {m.extension_status !== 'pending' && (
-                          <button style={{ ...btnAmber, padding: '6px 14px', fontSize: '0.83rem' }} onClick={() => onRequestExtension(m.id)} disabled={busy}>
-                            Request More Time
-                          </button>
-                        )}
-                      </>
-                    )}
-
-                    {/* CLIENT actions */}
-                    {isCli && ['submitted', 'submitted_for_review', 'under_review'].includes(m.status) && (
-                      <>
-                        <button style={{ ...btnGreen, padding: '6px 14px', fontSize: '0.83rem' }} onClick={() => onApproveDeliverable(m.id)} disabled={busy}>
-                          <CheckCircle2 size={13} /> Approve & Release {fmtMoney(getMilestoneSettlement(m).releasedAmount)}
-                        </button>
-                        <button
-                          style={{ background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.25)', color: '#fbbf24', borderRadius: '8px', padding: '6px 14px', fontSize: '0.83rem', fontWeight: '600', cursor: 'pointer' }}
-                          onClick={() => onOpenRevision(m.id)}
-                          disabled={busy}
-                        >
-                          Request Revision
-                        </button>
-                      </>
-                    )}
-                    {isCli && m.extension_status === 'pending' && (
-                      <>
-                        <button style={{ ...btnGreen, padding: '6px 14px', fontSize: '0.83rem' }} onClick={() => onRespondExtension(m.id, 'approve')} disabled={busy}>Approve Extension</button>
-                        <button style={{ ...btnRed, padding: '6px 14px', fontSize: '0.83rem' }} onClick={() => onRespondExtension(m.id, 'reject')} disabled={busy}>Reject Extension</button>
-                      </>
-                    )}
-                    {isCli && m.status === 'pending_payment' && (
-                      <button style={{ ...btnIndigo, padding: '6px 14px', fontSize: '0.83rem' }} onClick={() => onPay(m.id)} disabled={busy}>
-                        <CreditCard size={13} /> Pay
-                      </button>
-                    )}
-
-                    {/* Finished indicator */}
-                    {m.status === 'finished' && (
-                      <span style={{ color: '#34d399', fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: '600' }}>
-                        <CheckCircle2 size={14} /> Paid
-                      </span>
-                    )}
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* DISPUTE FILING MODAL */}
+      {/* ── MODAL: File Dispute ───────────────────────────────────────── */}
       {disputeModal.open && (
         <div style={MODAL_OVERLAY} onClick={() => setDisputeModal({ open: false })}>
           <div style={MODAL_BOX} onClick={e => e.stopPropagation()}>
@@ -1127,6 +850,518 @@ function MilestoneTable({ milestones, role, startable, onStart, onOpenDeliverabl
           </div>
         </div>
       )}
+
+      {/* ── MODAL: View Dispute Details ───────────────────────────────── */}
+      {viewDisputeModal && disputeInfo && (
+        <ViewDisputeDetailsModal
+          dispute={disputeInfo}
+          onClose={() => setViewDisputeModal(false)}
+        />
+      )}
+
+    </div>
+  );
+}
+
+// ── Sub-components ────────────────────────────────────────────────────────────
+
+function ModalHeader({ title, onClose }) {
+  return (
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '22px' }}>
+      <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: '700' }}>{title}</h3>
+      <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.5)', cursor: 'pointer' }}>
+        <X size={22} />
+      </button>
+    </div>
+  );
+}
+
+/** View filed dispute details modal for Client and Expert */
+function ViewDisputeDetailsModal({ dispute, onClose }) {
+  if (!dispute) return null;
+
+  let evidenceList = [];
+  if (dispute.evidence_urls) {
+    if (Array.isArray(dispute.evidence_urls)) {
+      evidenceList = dispute.evidence_urls;
+    } else {
+      try {
+        const parsed = JSON.parse(dispute.evidence_urls);
+        evidenceList = Array.isArray(parsed) ? parsed : [dispute.evidence_urls];
+      } catch {
+        evidenceList = String(dispute.evidence_urls).split(',').map(s => s.trim()).filter(Boolean);
+      }
+    }
+  }
+
+  let messages = [];
+  if (dispute.message_log) {
+    try {
+      messages = typeof dispute.message_log === 'string' ? JSON.parse(dispute.message_log) : dispute.message_log;
+    } catch {
+      messages = [];
+    }
+  }
+
+  const isResolved = dispute.is_resolved;
+
+  return (
+    <div style={MODAL_OVERLAY} onClick={onClose}>
+      <div style={{ ...MODAL_BOX, maxWidth: '640px' }} onClick={e => e.stopPropagation()}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+          <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '8px', color: '#f87171' }}>
+            <ShieldAlert size={20} /> Dispute Case Details
+          </h3>
+          <button type="button" style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.5)', cursor: 'pointer' }} onClick={onClose}>
+            <X size={20} />
+          </button>
+        </div>
+
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', padding: '14px 18px', marginBottom: '20px' }}>
+          <div>
+            <span style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.4)', display: 'block' }}>CASE ID</span>
+            <strong style={{ color: '#fff', fontSize: '0.95rem' }}>#{String(dispute.id || '').slice(0, 8)}</strong>
+          </div>
+          <div>
+            <span style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.4)', display: 'block' }}>FILED ON</span>
+            <strong style={{ color: '#fff', fontSize: '0.9rem' }}>{fmtDate(dispute.created_at)}</strong>
+          </div>
+          <div>
+            <StatusBadge status={isResolved ? (dispute.resolution_type === 'refund_client' ? 'terminated' : 'completed') : 'disputed'} />
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '18px', maxHeight: '440px', overflowY: 'auto', paddingRight: '4px' }}>
+          <div>
+            <span style={labelSt}>CATEGORY & TITLE</span>
+            <span style={{ display: 'inline-block', background: 'rgba(239,68,68,0.15)', color: '#f87171', padding: '2px 8px', borderRadius: '4px', fontSize: '0.78rem', fontWeight: 600, marginBottom: '6px' }}>
+              {dispute.type || 'General Dispute'}
+            </span>
+            <h4 style={{ margin: 0, color: '#fff', fontSize: '1.05rem' }}>{dispute.title}</h4>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', background: 'rgba(0,0,0,0.2)', padding: '12px 14px', borderRadius: '8px' }}>
+            <div>
+              <span style={labelSt}>FILED BY</span>
+              <strong style={{ color: '#fff', fontSize: '0.9rem' }}>{dispute.creator_name || 'Participant'}</strong>
+            </div>
+            <div>
+              <span style={labelSt}>RESPONDENT</span>
+              <strong style={{ color: '#fff', fontSize: '0.9rem' }}>{dispute.target_name || 'Participant'}</strong>
+            </div>
+          </div>
+
+          <div>
+            <span style={labelSt}>FILED STATEMENT / DESCRIPTION</span>
+            <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '8px', padding: '12px 14px', color: 'rgba(255,255,255,0.85)', fontSize: '0.9rem', lineHeight: '1.5', whiteSpace: 'pre-wrap' }}>
+              {dispute.content}
+            </div>
+          </div>
+
+          <div>
+            <span style={labelSt}>ATTACHED EVIDENCE LINKS ({evidenceList.length})</span>
+            {evidenceList.length === 0 ? (
+              <p style={{ margin: 0, color: 'rgba(255,255,255,0.4)', fontSize: '0.85rem' }}>No external evidence links attached.</p>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {evidenceList.map((url, i) => (
+                  <a
+                    key={i}
+                    href={url}
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', color: '#60a5fa', fontSize: '0.85rem', textDecoration: 'none', background: 'rgba(59,130,246,0.1)', padding: '8px 12px', borderRadius: '6px' }}
+                  >
+                    <ExternalLink size={14} /> {url}
+                  </a>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {messages.length > 0 && (
+            <div>
+              <span style={labelSt}>LINKED CONVERSATION MESSAGES ({messages.length})</span>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '180px', overflowY: 'auto', background: 'rgba(0,0,0,0.2)', padding: '10px', borderRadius: '8px' }}>
+                {messages.map((m, idx) => (
+                  <div key={idx} style={{ fontSize: '0.82rem', padding: '6px 8px', background: 'rgba(255,255,255,0.03)', borderRadius: '6px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', color: '#60a5fa', marginBottom: '2px', fontWeight: 600 }}>
+                      <span>{m.sender_name}</span>
+                      <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.75rem' }}>{m.send_at ? new Date(m.send_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}</span>
+                    </div>
+                    <p style={{ margin: 0, color: 'rgba(255,255,255,0.8)' }}>{m.content}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {isResolved && (
+            <div style={{ background: dispute.resolution_type === 'refund_client' ? 'rgba(59,130,246,0.12)' : 'rgba(16,185,129,0.12)', border: `1px solid ${dispute.resolution_type === 'refund_client' ? 'rgba(59,130,246,0.3)' : 'rgba(16,185,129,0.3)'}`, borderRadius: '10px', padding: '14px 16px' }}>
+              <strong style={{ color: '#fff', display: 'block', marginBottom: '4px', fontSize: '0.93rem' }}>
+                ADMIN DECISION: {dispute.resolution_type === 'refund_client' ? 'Client Win (Escrow Refunded)' : 'Expert Win (Escrow Released)'}
+              </strong>
+              {dispute.admin_notes ? (
+                <p style={{ margin: 0, color: 'rgba(255,255,255,0.8)', fontSize: '0.86rem', lineHeight: '1.4' }}>
+                  <strong>Explanation:</strong> "{dispute.admin_notes}"
+                </p>
+              ) : (
+                <p style={{ margin: 0, color: 'rgba(255,255,255,0.5)', fontSize: '0.84rem' }}>No explanation notes provided by admin.</p>
+              )}
+            </div>
+          )}
+        </div>
+
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '16px' }}>
+          <button type="button" style={btnOutline} onClick={onClose}>Close</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
+/** Expert's local draft builder — used for both empty state and re-planning after change_requested */
+function DraftBuilder({ drafts, projectTotal, projectDuration, phase, addDraft, removeDraft, editDraft, onSubmit, busy, isDisputed }) {
+  const hasNotes = drafts.some(d => d.change_request_note);
+  const draftTotal = drafts.reduce((sum, draft) => sum + parseFloat(draft.amount || 0), 0);
+  const draftDays = drafts.reduce((sum, draft) => sum + parseInt(draft.delivery_days || 0, 10), 0);
+  const amountMatches = projectTotal <= 0 || Math.abs(draftTotal - projectTotal) <= 0.01;
+  const durationExceeded = projectDuration > 0 && draftDays > projectDuration;
+  const fieldsValid = drafts.every(d =>
+    d.title.trim()
+    && parseFloat(d.amount) > 0
+    && parseInt(d.delivery_days, 10) > 0
+  );
+  const canSubmit = fieldsValid && amountMatches && !isDisputed;
+  return (
+    <div>
+      <div style={{ marginBottom: '24px' }}>
+        <h3 style={{ color: '#fff', fontSize: '1.2rem', fontWeight: '700', margin: '0 0 6px 0' }}>
+          {phase === 'planning' ? (hasNotes ? '📋 Resubmit Milestone Plan' : '⏳ Plan Submitted — Awaiting Review') : '📋 Plan Your Milestones'}
+        </h3>
+        <p style={{ color: 'rgba(255,255,255,0.45)', margin: 0, fontSize: '0.88rem' }}>
+          {phase === 'planning'
+            ? hasNotes
+              ? 'The client has requested changes. Review their notes below, edit as needed, and resubmit.'
+              : 'Your plan is under client review. You may edit and resubmit at any time.'
+            : 'Define each stage of your project. Add all milestones, then submit for client approval.'}
+        </p>
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '20px' }}>
+        {drafts.map((d, idx) => (
+          <div
+            key={d.localId}
+            style={{
+              background: 'rgba(0,0,0,0.18)',
+              border: `1px solid ${d.change_request_note ? 'rgba(245,158,11,0.3)' : 'rgba(255,255,255,0.07)'}`,
+              borderRadius: '12px', padding: '20px',
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+              <span style={{ fontWeight: '700', color: '#fff', fontSize: '0.92rem' }}>Milestone #{idx + 1}</span>
+              {drafts.length > 1 && !isDisputed && (
+                <button
+                  onClick={() => removeDraft(d.localId)}
+                  style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.22)', color: '#f87171', borderRadius: '6px', padding: '4px 10px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.82rem' }}
+                >
+                  <Trash2 size={13} /> Remove
+                </button>
+              )}
+            </div>
+
+            {d.change_request_note && (
+              <div style={{ background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.22)', borderRadius: '8px', padding: '10px 14px', marginBottom: '14px', color: '#fbbf24', fontSize: '0.83rem', lineHeight: '1.5' }}>
+                ⚠ Client note: {d.change_request_note}
+              </div>
+            )}
+
+            <div style={{ marginBottom: '12px' }}>
+              <label style={labelSt}>TITLE *</label>
+              <input style={inputSt} type="text" placeholder="e.g. Frontend UI Implementation" value={d.title} onChange={e => editDraft(d.localId, 'title', e.target.value)} disabled={isDisputed} />
+            </div>
+
+            <div style={{ marginBottom: '12px' }}>
+              <label style={labelSt}>DELIVERABLE DETAILS</label>
+              <textarea
+                style={{ ...inputSt, resize: 'vertical', minHeight: '68px', fontSize: '0.88rem' }}
+                placeholder="Describe what you will deliver in this milestone..."
+                value={d.content}
+                onChange={e => editDraft(d.localId, 'content', e.target.value)}
+                disabled={isDisputed}
+              />
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+              <div>
+                <label style={labelSt}>AMOUNT ($) * {projectTotal > 0 && d.amount ? `· ${((parseFloat(d.amount) / projectTotal) * 100).toFixed(1)}%` : ''}</label>
+                <input style={inputSt} type="number" min="1" placeholder="e.g. 500" value={d.amount} onChange={e => editDraft(d.localId, 'amount', e.target.value)} disabled={isDisputed} />
+                {projectTotal > 0 && parseFloat(d.amount || 0) > projectTotal && (
+                  <span style={{ color: '#f87171', fontSize: '0.78rem', display: 'block', marginTop: 6 }}>
+                    This milestone exceeds the entire project budget of {fmtMoney(projectTotal)}.
+                  </span>
+                )}
+              </div>
+              <div>
+                <label style={labelSt}>DELIVERY TIME (DAYS) *</label>
+                <input style={inputSt} type="number" min="1" step="1" placeholder="e.g. 14" value={d.delivery_days} onChange={e => editDraft(d.localId, 'delivery_days', e.target.value)} disabled={isDisputed} />
+                {projectDuration > 0 && parseInt(d.delivery_days || 0, 10) > projectDuration && (
+                  <span style={{ color: '#f87171', fontSize: '0.78rem', display: 'block', marginTop: 6 }}>
+                    This milestone alone exceeds the {projectDuration}-day project duration.
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, padding: '14px 16px', marginBottom: 10, borderRadius: 9, background: amountMatches ? 'rgba(99,102,241,.08)' : 'rgba(239,68,68,.08)', border: `1px solid ${amountMatches ? 'rgba(99,102,241,.18)' : 'rgba(239,68,68,.28)'}`, color: amountMatches ? '#c7d2fe' : '#fca5a5' }}>
+        <span>Proposed release total</span>
+        <strong>{fmtMoney(draftTotal)} / {fmtMoney(projectTotal)} {projectTotal > 0 ? `(${((draftTotal / projectTotal) * 100).toFixed(1)}%)` : ''}</strong>
+      </div>
+      {!amountMatches && (
+        <p style={{ color: '#f87171', fontSize: '0.8rem', margin: '0 0 10px' }}>
+          {draftTotal > projectTotal
+            ? `Reduce milestone amounts by ${fmtMoney(draftTotal - projectTotal)}.`
+            : `Allocate the remaining ${fmtMoney(projectTotal - draftTotal)} before submitting.`}
+        </p>
+      )}
+      {projectDuration > 0 && (
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, padding: '14px 16px', marginBottom: 10, borderRadius: 9, background: durationExceeded ? 'rgba(245,158,11,.08)' : 'rgba(16,185,129,.07)', border: `1px solid ${durationExceeded ? 'rgba(245,158,11,.28)' : 'rgba(16,185,129,.2)'}`, color: durationExceeded ? '#fbbf24' : '#a7f3d0' }}>
+          <span>Planned delivery time</span>
+          <strong>{draftDays} / {projectDuration} days</strong>
+        </div>
+      )}
+      {durationExceeded && (
+        <p style={{ color: '#fbbf24', fontSize: '0.8rem', margin: '0 0 10px' }}>
+          This submits a request to extend the project by {draftDays - projectDuration} day{draftDays - projectDuration !== 1 ? 's' : ''}. The client must approve it.
+        </p>
+      )}
+
+      {!isDisputed ? (
+        <div style={{ display: 'flex', gap: '12px', borderTop: '1px solid rgba(255,255,255,0.07)', paddingTop: '20px' }}>
+          <button style={btnOutline} onClick={addDraft} disabled={busy}>
+            <Plus size={15} style={{ marginRight: '4px', display: 'inline' }} /> Add Milestone
+          </button>
+          <button style={{ ...btnGreen, marginLeft: 'auto', opacity: canSubmit && !busy ? 1 : 0.55 }} onClick={onSubmit} disabled={busy || !canSubmit}>
+            {busy ? <Loader2 size={15} className="animate-spin" /> : <Send size={15} />}
+            Submit Plan
+          </button>
+        </div>
+      ) : (
+        <div style={{ padding: '14px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: '10px', color: '#f87171', fontSize: '0.86rem', marginTop: '16px', textAlign: 'center', fontWeight: '600' }}>
+          🔒 Planning controls are disabled while project is on hold under dispute review.
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** Client's read-only plan review with approve / request-changes buttons */
+function PlanReview({ milestones, projectTotal, projectDuration, onApprove, onRequestChanges, busy, isDisputed }) {
+  const planTotal = milestones.reduce((sum, milestone) => sum + parseFloat(milestone.amount || 0), 0);
+  const planDays = milestones.reduce((sum, milestone) => sum + parseInt(milestone.delivery_days || 0, 10), 0);
+  const amountValid = projectTotal <= 0 || Math.abs(planTotal - projectTotal) <= 0.01;
+  const durationExtensionRequested = projectDuration > 0 && planDays > projectDuration;
+  const planValid = amountValid && !isDisputed;
+  return (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px', marginBottom: '24px' }}>
+        <div>
+          <h3 style={{ color: '#fff', fontSize: '1.2rem', fontWeight: '700', margin: '0 0 6px 0' }}>Expert's Milestone Plan</h3>
+          <p style={{ color: 'rgba(255,255,255,0.45)', margin: 0, fontSize: '0.88rem' }}>Review each milestone and approve or request changes.</p>
+        </div>
+        {!isDisputed ? (
+          <div style={{ display: 'flex', gap: '10px' }}>
+            <button style={btnRed} onClick={onRequestChanges} disabled={busy}>Request Changes</button>
+            <button style={{ ...btnGreen, opacity: planValid && !busy ? 1 : 0.55 }} onClick={onApprove} disabled={busy || !planValid}>
+              {busy ? <Loader2 size={15} className="animate-spin" /> : <CheckCircle2 size={15} />}
+              {durationExtensionRequested ? 'Approve Plan & Extension' : 'Approve Plan'}
+            </button>
+          </div>
+        ) : (
+          <span style={{ color: '#f87171', fontSize: '0.85rem', fontWeight: 600 }}>🔒 Plan approval disabled during dispute</span>
+        )}
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        {milestones.map((m, idx) => (
+          <div key={m.id} style={{ background: 'rgba(0,0,0,0.15)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '12px', padding: '18px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px' }}>
+              <div style={{ flex: 1 }}>
+                <strong style={{ color: '#fff', fontSize: '0.97rem' }}>#{idx + 1} {m.title}</strong>
+                {m.content && <p style={{ color: 'rgba(255,255,255,0.5)', margin: '5px 0 0 0', fontSize: '0.86rem', lineHeight: '1.5' }}>{m.content}</p>}
+              </div>
+              <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                <strong style={{ color: '#10b981', fontSize: '1.08rem', display: 'block' }}>{fmtMoney(m.amount)}</strong>
+                <span style={{ color: 'rgba(255,255,255,0.38)', fontSize: '0.8rem' }}>{m.delivery_days} day{m.delivery_days !== 1 ? 's' : ''}</span>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ marginTop: '20px', padding: '14px 16px', borderRadius: 9, background: !planValid ? 'rgba(239,68,68,.08)' : durationExtensionRequested ? 'rgba(245,158,11,.08)' : 'rgba(16,185,129,.07)', border: `1px solid ${!planValid ? 'rgba(239,68,68,.28)' : durationExtensionRequested ? 'rgba(245,158,11,.28)' : 'rgba(16,185,129,.2)'}`, color: !planValid ? '#fca5a5' : durationExtensionRequested ? '#fbbf24' : '#a7f3d0', fontSize: '0.84rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
+          <span>Release allocation</span>
+          <strong>{fmtMoney(planTotal)} / {fmtMoney(projectTotal)}</strong>
+        </div>
+        {projectDuration > 0 && (
+          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginTop: 7 }}>
+            <span>Delivery schedule</span>
+            <strong>{planDays} / {projectDuration} days</strong>
+          </div>
+        )}
+        {durationExtensionRequested && <div style={{ marginTop: 8 }}>The expert requests {planDays - projectDuration} extra day{planDays - projectDuration !== 1 ? 's' : ''}. Approving updates the project duration to {planDays} days; otherwise request changes.</div>}
+        {!amountValid && <div style={{ marginTop: 8 }}>Milestone amounts must equal the full project budget before approval.</div>}
+      </div>
+    </div>
+  );
+}
+
+/** Active milestone table — shown once plan is approved and work begins */
+function MilestoneTable({ milestones, role, startable, onStart, onOpenDeliverable, onApproveDeliverable, onOpenRevision, onRequestExtension, onRespondExtension, onPay, busy, isDisputed }) {
+  const isExp = role === 'expert';
+  const isCli = role === 'client';
+
+  return (
+    <div>
+      <h3 style={{ color: '#fff', fontSize: '1.2rem', fontWeight: '700', marginBottom: '20px' }}>Milestone Breakdown</h3>
+      <div style={{ overflowX: 'auto' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', color: 'rgba(255,255,255,0.8)', minWidth: '720px' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.09)', textAlign: 'left', fontSize: '0.76rem', color: 'rgba(255,255,255,0.38)', fontWeight: '700', letterSpacing: '0.05em' }}>
+              <th style={{ padding: '10px 12px' }}>#</th>
+              <th style={{ padding: '10px 12px' }}>MILESTONE</th>
+              <th style={{ padding: '10px 12px' }}>AMOUNT</th>
+              <th style={{ padding: '10px 12px' }}>DURATION</th>
+              <th style={{ padding: '10px 12px' }}>DEADLINE</th>
+              <th style={{ padding: '10px 12px' }}>STATUS</th>
+              <th style={{ padding: '10px 12px', textAlign: 'right' }}>ACTIONS</th>
+            </tr>
+          </thead>
+          <tbody>
+            {milestones.map((m) => (
+              <tr key={m.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                <td style={{ padding: '18px 12px', color: 'rgba(255,255,255,0.28)', fontWeight: '700', fontSize: '0.9rem' }}>{m.position}</td>
+
+                <td style={{ padding: '18px 12px', maxWidth: '280px' }}>
+                  <strong style={{ color: '#fff', display: 'block', marginBottom: '3px' }}>{m.title}</strong>
+                  {m.content && <span style={{ color: 'rgba(255,255,255,0.42)', fontSize: '0.82rem', display: 'block', lineHeight: '1.4' }}>{m.content}</span>}
+                  {/* Change / revision note */}
+                  {m.change_request_note && (
+                    <div style={{ marginTop: '7px', background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.2)', borderRadius: '6px', padding: '7px 11px', color: '#fbbf24', fontSize: '0.79rem', lineHeight: '1.4' }}>
+                      ⚠ {m.change_request_note}
+                    </div>
+                  )}
+                  {/* Deliverable link */}
+                  {m.deliverable_url && ['submitted', 'revision_requested', 'pending_payment', 'finished'].includes(m.status) && (
+                    <a
+                      href={m.deliverable_url}
+                      target="_blank"
+                      rel="noreferrer"
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', marginTop: '6px', color: '#60a5fa', fontSize: '0.8rem', textDecoration: 'none' }}
+                    >
+                      <ExternalLink size={12} /> View Deliverable
+                    </a>
+                  )}
+                  {m.deliverable_note && ['submitted','revision_requested','pending_payment','finished'].includes(m.status) && (
+                    <p style={{ color: 'rgba(255,255,255,0.38)', fontSize: '0.79rem', margin: '3px 0 0 0' }}>{m.deliverable_note}</p>
+                  )}
+                </td>
+
+                <td style={{ padding: '18px 12px', fontWeight: '700', color: '#fff', whiteSpace: 'nowrap' }}>
+                  {fmtMoney(m.amount)}
+                  {getMilestoneSettlement(m).lateDays > 0 && (
+                    <span style={{ display: 'block', color: '#f87171', fontSize: '0.73rem', marginTop: 4, fontWeight: 600 }}>
+                      -{fmtMoney(getMilestoneSettlement(m).penaltyAmount)} ({getMilestoneSettlement(m).lateDays}d late)
+                    </span>
+                  )}
+                  {m.extension_status && (
+                    <div style={{ marginTop: '7px', background: m.extension_status === 'pending' ? 'rgba(245,158,11,0.1)' : m.extension_status === 'approved' ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '6px', padding: '7px 11px', color: m.extension_status === 'pending' ? '#fbbf24' : m.extension_status === 'approved' ? '#34d399' : '#f87171', fontSize: '0.79rem', lineHeight: '1.4' }}>
+                      Extension {m.extension_status}: {m.extension_requested_days} day(s). {m.extension_reason}
+                    </div>
+                  )}
+                  {m.status === 'finished' && m.released_amount != null && (
+                    <span style={{ display: 'block', color: '#34d399', fontSize: '0.73rem', marginTop: 3, fontWeight: 600 }}>
+                      Released {fmtMoney(m.released_amount)}
+                    </span>
+                  )}
+                </td>
+                <td style={{ padding: '18px 12px', color: 'rgba(255,255,255,0.55)', whiteSpace: 'nowrap' }}>{m.delivery_days}d</td>
+                <td style={{ padding: '18px 12px', color: 'rgba(255,255,255,0.55)', fontSize: '0.86rem', whiteSpace: 'nowrap' }}>{fmtDate(m.deadline)}</td>
+                <td style={{ padding: '18px 12px' }}><StatusBadge status={m.status} /></td>
+
+                <td style={{ padding: '18px 12px', textAlign: 'right' }}>
+                  {isDisputed ? (
+                    <span style={{ color: '#f87171', fontSize: '0.82rem', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                      🔒 Actions Disabled
+                    </span>
+                  ) : (
+                    <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+
+                      {/* EXPERT actions */}
+                      {isExp && startable?.id === m.id && (
+                        <button style={{ ...btnGreen, padding: '6px 14px', fontSize: '0.83rem' }} onClick={() => onStart(m.id)} disabled={busy}>
+                          Start
+                        </button>
+                      )}
+                      {isExp && ['ongoing', 'revision_requested'].includes(m.status) && (
+                        <>
+                          <button style={{ ...btnPurple, padding: '6px 14px', fontSize: '0.83rem' }} onClick={() => onOpenDeliverable(m.id)} disabled={busy}>
+                            <Send size={13} /> Submit Deliverable
+                          </button>
+                          {m.extension_status !== 'pending' && (
+                            <button style={{ ...btnAmber, padding: '6px 14px', fontSize: '0.83rem' }} onClick={() => onRequestExtension(m.id)} disabled={busy}>
+                              Request More Time
+                            </button>
+                          )}
+                        </>
+                      )}
+
+                      {/* CLIENT actions */}
+                      {isCli && ['submitted', 'submitted_for_review', 'under_review'].includes(m.status) && (
+                        <>
+                          <button style={{ ...btnGreen, padding: '6px 14px', fontSize: '0.83rem' }} onClick={() => onApproveDeliverable(m.id)} disabled={busy}>
+                            <CheckCircle2 size={13} /> Approve & Release {fmtMoney(getMilestoneSettlement(m).releasedAmount)}
+                          </button>
+                          <button
+                            style={{ background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.25)', color: '#fbbf24', borderRadius: '8px', padding: '6px 14px', fontSize: '0.83rem', fontWeight: '600', cursor: 'pointer' }}
+                            onClick={() => onOpenRevision(m.id)}
+                            disabled={busy}
+                          >
+                            Request Revision
+                          </button>
+                        </>
+                      )}
+                      {isCli && m.extension_status === 'pending' && (
+                        <>
+                          <button style={{ ...btnGreen, padding: '6px 14px', fontSize: '0.83rem' }} onClick={() => onRespondExtension(m.id, 'approve')} disabled={busy}>Approve Extension</button>
+                          <button style={{ ...btnRed, padding: '6px 14px', fontSize: '0.83rem' }} onClick={() => onRespondExtension(m.id, 'reject')} disabled={busy}>Reject Extension</button>
+                        </>
+                      )}
+                      {isCli && m.status === 'pending_payment' && (
+                        <button style={{ ...btnIndigo, padding: '6px 14px', fontSize: '0.83rem' }} onClick={() => onPay(m.id)} disabled={busy}>
+                          <CreditCard size={13} /> Pay
+                        </button>
+                      )}
+
+                      {/* Finished indicator */}
+                      {m.status === 'finished' && (
+                        <span style={{ color: '#34d399', fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: '600' }}>
+                          <CheckCircle2 size={14} /> Paid
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
