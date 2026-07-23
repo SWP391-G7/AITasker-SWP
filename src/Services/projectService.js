@@ -314,3 +314,41 @@ export const respondMilestoneExtension = async (milestoneId, action, note = '') 
   return result;
 };
 
+/**
+ * File/raise a dispute for a project
+ */
+export const raiseProjectDispute = async (projectId, disputeData) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/projects/${projectId}/dispute`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(disputeData)
+    });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.message || 'Failed to file dispute.');
+    return result;
+  } catch (error) {
+    console.error('Raise project dispute error:', error);
+    throw error;
+  }
+};
+
+/**
+ * Get dispute details for a project if any
+ */
+export const getProjectDisputeStatus = async (projectId) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/projects/${projectId}/dispute`, {
+      method: 'GET',
+      headers: getAuthHeaders()
+    });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.message || 'Failed to retrieve dispute details.');
+    return result.dispute || null;
+  } catch (error) {
+    console.error('Get project dispute error:', error);
+    throw error;
+  }
+};
+
+

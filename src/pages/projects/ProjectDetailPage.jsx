@@ -13,6 +13,7 @@ import {
   Plus,
   RefreshCcw,
   Send,
+  ShieldAlert,
   Trash2,
   X,
 } from 'lucide-react';
@@ -32,6 +33,8 @@ import {
   requestRevision,
   requestMilestoneExtension,
   respondMilestoneExtension,
+  raiseProjectDispute,
+  getProjectDisputeStatus,
 } from '../../Services/projectService';
 import '../DashboardPage/Client/ClientMarketplace.css';
 
@@ -51,6 +54,7 @@ const STATUS_LABELS = {
   active:            'Active',
   completed:         'Completed',
   terminated:        'Terminated',
+  disputed:          'On Hold (Disputed)',
 };
 
 const STATUS_COLORS = {
@@ -67,6 +71,7 @@ const STATUS_COLORS = {
   active:            { bg: 'rgba(16,185,129,0.12)',  color: '#34d399' },
   completed:         { bg: 'rgba(16,185,129,0.2)',   color: '#10b981' },
   terminated:        { bg: 'rgba(239,68,68,0.14)',   color: '#f87171' },
+  disputed:          { bg: 'rgba(239,68,68,0.2)',    color: '#f87171' },
 };
 
 function StatusBadge({ status }) {
@@ -173,6 +178,11 @@ export default function ProjectDetailPage() {
   // Modal — client request deliverable revision
   const [revisionModal, setRevisionModal] = useState({ open: false, milestoneId: null });
   const [revisionNote,  setRevisionNote]  = useState('');
+
+  // Modal — file dispute
+  const [disputeModal, setDisputeModal] = useState({ open: false });
+  const [disputeForm,  setDisputeForm]  = useState({ title: '', type: 'Quality Issue', content: '', evidence_urls: '' });
+
 
   // User identity from localStorage
   const user  = useMemo(() => { try { return JSON.parse(localStorage.getItem('user') || 'null'); } catch { return null; } }, []);
@@ -386,6 +396,29 @@ export default function ProjectDetailPage() {
     wrap(() => closeProject(projectId));
   };
 
+  const handleRaiseDispute = () => {
+    if (!disputeForm.title.trim() || !disputeForm.content.trim()) {
+      setActionErr('Dispute title and description are required.');
+      return;
+    }
+    const evidenceArray = disputeForm.evidence_urls
+      .split(',')
+      .map(s => s.trim())
+      .filter(Boolean);
+
+    wrap(async () => {
+      await raiseProjectDispute(projectId, {
+        title: disputeForm.title.trim(),
+        type: disputeForm.type,
+        content: disputeForm.content.trim(),
+        evidence_urls: evidenceArray,
+      });
+      setDisputeModal({ open: false });
+      setDisputeForm({ title: '', type: 'Quality Issue', content: '', evidence_urls: '' });
+    });
+  };
+
+
   // ── Loading state ─────────────────────────────────────────────────────────
   if (loading && !project) {
     return (
@@ -451,11 +484,29 @@ export default function ProjectDetailPage() {
                   <button style={btnOutline} onClick={fetchProjectData} disabled={busy}>
                     <RefreshCcw size={14} style={{ marginRight: '4px', display: 'inline' }} /> Refresh
                   </button>
+                  {String(project.status).toLowerCase() !== 'disputed' && String(project.status).toLowerCase() !== 'completed' && String(project.status).toLowerCase() !== 'terminated' && (
+                    <button style={btnRed} onClick={() => setDisputeModal({ open: true })} disabled={busy}>
+                      <ShieldAlert size={14} style={{ marginRight: '4px', display: 'inline' }} /> Raise Dispute
+                    </button>
+                  )}
                   {isCli && project.status === 'active' && (
                     <button style={btnRed} onClick={handleCloseProject} disabled={busy}>Abandon Project</button>
                   )}
                 </div>
               </div>
+
+              {String(project.status).toLowerCase() === 'disputed' && (
+                <div style={{ background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '12px', padding: '16px 20px', color: '#f87171', display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
+                  <AlertTriangle size={24} style={{ flexShrink: 0 }} />
+                  <div>
+                    <h4 style={{ margin: '0 0 4px 0', color: '#fff', fontSize: '1rem' }}>Project On Hold — Dispute Under Review</h4>
+                    <p style={{ margin: 0, fontSize: '0.88rem', color: 'rgba(255,255,255,0.7)' }}>
+                      A dispute has been filed for this project. Escrow funds and milestone operations are currently frozen while platform administration reviews evidence and chat logs.
+                    </p>
+                  </div>
+                </div>
+              )}
+
 
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: '20px', borderTop: '1px solid rgba(255,255,255,0.07)', paddingTop: '20px', marginBottom: '20px' }}>
                 <div>
@@ -1000,7 +1051,84 @@ function MilestoneTable({ milestones, role, startable, onStart, onOpenDeliverabl
           </tbody>
         </table>
       </div>
+
+      {/* DISPUTE FILING MODAL */}
+      {disputeModal.open && (
+        <div style={MODAL_OVERLAY} onClick={() => setDisputeModal({ open: false })}>
+          <div style={MODAL_BOX} onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '8px', color: '#f87171' }}>
+                <ShieldAlert size={20} /> File Project Dispute
+              </h3>
+              <button type="button" style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.5)', cursor: 'pointer' }} onClick={() => setDisputeModal({ open: false })}>
+                <X size={20} />
+              </button>
+            </div>
+
+            <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.88rem', marginBottom: '20px', lineHeight: '1.5' }}>
+              Filing a dispute will place this project on hold and freeze all unreleased escrow payouts while an admin reviews your case, evidence, and conversation logs.
+            </p>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '24px' }}>
+              <div>
+                <label style={labelSt}>DISPUTE TITLE *</label>
+                <input
+                  type="text"
+                  style={inputSt}
+                  placeholder="e.g., Deliverable quality does not meet agreement"
+                  value={disputeForm.title}
+                  onChange={e => setDisputeForm(f => ({ ...f, title: e.target.value }))}
+                />
+              </div>
+
+              <div>
+                <label style={labelSt}>REASON / CATEGORY</label>
+                <select
+                  style={{ ...inputSt, background: '#070c14' }}
+                  value={disputeForm.type}
+                  onChange={e => setDisputeForm(f => ({ ...f, type: e.target.value }))}
+                >
+                  <option value="Quality Issue">Work / Deliverable Quality Issue</option>
+                  <option value="Missed Deadline">Missed Deadline / Abandonment</option>
+                  <option value="Communication Failure">Unresponsive / Communication Breakdown</option>
+                  <option value="Scope Disagreement">Scope / Milestone Disagreement</option>
+                  <option value="Other">Other Reason</option>
+                </select>
+              </div>
+
+              <div>
+                <label style={labelSt}>DETAILED DESCRIPTION *</label>
+                <textarea
+                  style={{ ...inputSt, minHeight: '90px', resize: 'vertical' }}
+                  placeholder="Provide a detailed explanation of the issue and why you are filing a dispute..."
+                  value={disputeForm.content}
+                  onChange={e => setDisputeForm(f => ({ ...f, content: e.target.value }))}
+                />
+              </div>
+
+              <div>
+                <label style={labelSt}>EVIDENCE ATTACHMENT LINKS (OPTIONAL, COMMA-SEPARATED)</label>
+                <input
+                  type="text"
+                  style={inputSt}
+                  placeholder="https://drive.google.com/..., https://imgur.com/..."
+                  value={disputeForm.evidence_urls}
+                  onChange={e => setDisputeForm(f => ({ ...f, evidence_urls: e.target.value }))}
+                />
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+              <button type="button" style={btnOutline} onClick={() => setDisputeModal({ open: false })} disabled={busy}>Cancel</button>
+              <button type="button" style={btnRed} onClick={handleRaiseDispute} disabled={busy}>
+                {busy ? <Loader2 size={16} className="animate-spin" /> : 'Submit Dispute'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+
 

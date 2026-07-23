@@ -296,3 +296,16 @@ export const buildAnalytics = ({ experts = [], clients = [], jobs = [], services
     })),
   }
 }
+
+// Lấy danh sách dispute từ backend cho Admin Dashboard
+export const getAdminDisputes = async () => {
+  const { data } = await adminDashboardApi.get('/admin/disputes')
+  return data.disputes || []
+}
+
+// Xử lý / giải quyết dispute
+export const resolveAdminDispute = async (disputeId, resolutionData) => {
+  const { data } = await adminDashboardApi.post(`/admin/disputes/${disputeId}/resolve`, resolutionData)
+  return data
+}
+
