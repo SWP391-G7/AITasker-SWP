@@ -22,6 +22,7 @@ const ServiceDetailPage = () => {
   const [error, setError] = useState(null)
   const [moderationAction, setModerationAction] = useState('')
   const [moderationError, setModerationError] = useState('')
+  const [moderationConfirmAction, setModerationConfirmAction] = useState('');
 
   const [reviews, setReviews] = useState([])
   const [avgStars, setAvgStars] = useState(null)
@@ -36,7 +37,6 @@ const ServiceDetailPage = () => {
   const canModerateService = isAdmin && service?.status === 'pending'
   const currentUserId = currentUser?.id || null
   const currentUserRole = currentUser?.role || null
-  const [moderationConfirmAction, setModerationConfirmAction] = useState('');
 
   const fetchReviews = useCallback(async (serviceId) => {
     if (!serviceId) return
