@@ -16,13 +16,16 @@ import {
   ShieldCheck,
   Star,
   BadgeCheck,
+  Camera,
   Trash2,
   X,
 } from "lucide-react";
 import HeaderCom from "../../Components/Navbar/HeaderCom";
 import Footer from "../../Components/Footer/Footer";
 import AdminModerationConfirmModal from "../../Components/Dashboard/Admin/AdminModerationConfirmModal";
-import { getUserProfile } from "../../Services/profileService";
+import { getUserProfile, updateOwnAvatar, updateOwnFullName } from "../../Services/profileService";
+import { submitClientOnboarding, submitExpertOnboarding } from "../../Services/onboardingService";
+import { uploadImage } from "../../Services/uploadService";
 import { getStoredUser } from "../../Services/checkLogin";
 import { getExpertServicesFromApi } from "../../Components/Profile/Expert/ExpertService";
 import { getClientProjectsFromApi } from "../../Components/Profile/Client/ClientProject";
@@ -60,6 +63,22 @@ function ProfilePage() {
   const [adminActionLoading, setAdminActionLoading] = useState("")
   const [confirmAction, setConfirmAction] = useState(null)
   const [contentModerationConfirm, setContentModerationConfirm] = useState(null)
+  const [showOwnEditModal, setShowOwnEditModal] = useState(false)
+  const [ownEditForm, setOwnEditForm] = useState({
+    fullName: "",
+    companyName: "",
+    industry: "",
+    professionalTitle: "",
+    skills: "",
+    experience: "",
+    portfolioUrl: "",
+    hourlyRate: "",
+    bio: "",
+  })
+  const [ownAvatarFile, setOwnAvatarFile] = useState(null)
+  const [ownAvatarPreview, setOwnAvatarPreview] = useState("")
+  const [ownEditError, setOwnEditError] = useState("")
+  const [ownEditLoading, setOwnEditLoading] = useState(false)
 
   const isOwnProfile = currentUser && String(currentUser.id) === String(userId)
   const currentRole = String(currentUser?.role || "").toLowerCase()
@@ -155,6 +174,113 @@ function ProfilePage() {
   const refreshProfileData = async () => {
     const data = await getUserProfile(userId)
     setProfileData(data)
+  }
+
+  const openOwnEditModal = () => {
+    const targetUser = profileData?.user
+    const client = profileData?.clientProfile
+    const expert = profileData?.expertProfile
+    if (!targetUser) return
+
+    setOwnEditForm({
+      fullName: targetUser.fullName || "",
+      companyName: client?.companyName || "",
+      industry: client?.industry || "",
+      professionalTitle: expert?.professionalTitle || "",
+      skills: expert?.skills || "",
+      experience: expert?.experience || "",
+      portfolioUrl: expert?.portfolioUrl || "",
+      hourlyRate: expert?.hourlyRate ? String(expert.hourlyRate).replace(/[^0-9.]/g, "") : "",
+      bio: (activeTab === "expert" ? expert?.bio : client?.bio) || "",
+    })
+    setOwnAvatarFile(null)
+    setOwnAvatarPreview(targetUser.avatarUrl || "")
+    setOwnEditError("")
+    setShowOwnEditModal(true)
+  }
+
+  const handleOwnAvatarChange = (event) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    if (!file.type.startsWith("image/")) {
+      setOwnEditError("Please select an image file.")
+      return
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setOwnEditError("Avatar image must be 5MB or smaller.")
+      return
+    }
+
+    setOwnAvatarFile(file)
+    setOwnEditError("")
+    const reader = new FileReader()
+    reader.onload = () => setOwnAvatarPreview(String(reader.result || ""))
+    reader.readAsDataURL(file)
+  }
+
+  const handleOwnProfileUpdate = async (event) => {
+    event.preventDefault()
+    const isEditingExpert = activeTab === "expert"
+
+    if (!ownEditForm.fullName.trim()) {
+      setOwnEditError("Full name is required.")
+      return
+    }
+    if (isEditingExpert && (!ownEditForm.professionalTitle.trim() || !ownEditForm.skills.trim() || !ownEditForm.experience || Number(ownEditForm.hourlyRate) <= 0)) {
+      setOwnEditError("Professional title, skills, experience, and a valid hourly rate are required.")
+      return
+    }
+    if (!isEditingExpert && (!ownEditForm.companyName.trim() || !ownEditForm.industry.trim())) {
+      setOwnEditError("Company name and industry are required.")
+      return
+    }
+
+    try {
+      setOwnEditLoading(true)
+      setOwnEditError("")
+
+      const profileUpdate = isEditingExpert
+        ? submitExpertOnboarding({
+            professionalTitle: ownEditForm.professionalTitle,
+            skills: ownEditForm.skills,
+            experience: ownEditForm.experience,
+            portfolioUrl: ownEditForm.portfolioUrl,
+            hourlyRate: ownEditForm.hourlyRate,
+            bio: ownEditForm.bio,
+          })
+        : submitClientOnboarding({
+            companyName: ownEditForm.companyName,
+            industry: ownEditForm.industry,
+            bio: ownEditForm.bio,
+          })
+
+      const [, updatedNameUser] = await Promise.all([
+        profileUpdate,
+        updateOwnFullName(ownEditForm.fullName.trim()),
+      ])
+
+      let updatedAvatarUser = null
+      if (ownAvatarFile) {
+        const avatarUrl = await uploadImage(ownAvatarFile)
+        updatedAvatarUser = await updateOwnAvatar(avatarUrl)
+      }
+
+      const storedUser = JSON.parse(localStorage.getItem("user") || "{}")
+      localStorage.setItem("user", JSON.stringify({
+        ...storedUser,
+        fullName: updatedNameUser?.fullName || ownEditForm.fullName.trim(),
+        avatarUrl: updatedAvatarUser?.avatarUrl || storedUser.avatarUrl,
+        isOnboarded: true,
+      }))
+
+      await refreshProfileData()
+      setShowOwnEditModal(false)
+    } catch (err) {
+      setOwnEditError(err.message || "Failed to update profile.")
+    } finally {
+      setOwnEditLoading(false)
+    }
   }
 
   const getProfileRoleValue = (role) => {
@@ -617,7 +743,7 @@ function ProfilePage() {
                 <article className="profile-hero-card">
                   <div className="avatar-large">
                     {user.avatarUrl ? (
-                      <img src={user.avatarUrl} alt={user.fullName} className="avatar-large-img" style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover" }} />
+                      <img src={user.avatarUrl} alt={user.fullName} className="avatar-large-img" />
                     ) : (
                       user.fullName ? user.fullName.charAt(0).toUpperCase() : "?"
                     )}
@@ -787,14 +913,26 @@ function ProfilePage() {
                   )}
 
                   {isOwnProfile ? (
-                    <button
-                      className="secondary-action-btn"
-                      type="button"
-                      onClick={handleBack}
-                    >
-                      <Send size={15} />
-                      Go to Dashboard
-                    </button>
+                    <>
+                      {!isAdminProfile && (
+                        <button
+                          className="profile-owner-edit-btn"
+                          type="button"
+                          onClick={openOwnEditModal}
+                        >
+                          <Edit2 size={15} />
+                          Edit Profile
+                        </button>
+                      )}
+                      <button
+                        className="secondary-action-btn"
+                        type="button"
+                        onClick={handleBack}
+                      >
+                        <Send size={15} />
+                        Go to Dashboard
+                      </button>
+                    </>
                   ) : null}
 
                   <div className="rate-list">
@@ -873,6 +1011,159 @@ function ProfilePage() {
               )}
             </div>
           </section>
+        )}
+
+        {showOwnEditModal && (
+          <div className="profile-admin-modal-overlay" onClick={() => !ownEditLoading && setShowOwnEditModal(false)}>
+            <div className="profile-admin-modal profile-owner-edit-modal" onClick={(event) => event.stopPropagation()}>
+              <div className="profile-admin-modal-header">
+                <h3>Edit Profile</h3>
+                <button type="button" disabled={ownEditLoading} onClick={() => setShowOwnEditModal(false)}>
+                  <X size={18} />
+                </button>
+              </div>
+
+              <form onSubmit={handleOwnProfileUpdate}>
+                {ownEditError && <p className="profile-admin-error">{ownEditError}</p>}
+
+                <div className="profile-owner-avatar-editor">
+                  <div className="profile-owner-avatar-preview">
+                    {ownAvatarPreview ? (
+                      <img src={ownAvatarPreview} alt="Avatar preview" />
+                    ) : (
+                      ownEditForm.fullName.trim().charAt(0).toUpperCase() || "?"
+                    )}
+                  </div>
+                  <label className="profile-owner-avatar-upload">
+                    <Camera size={16} />
+                    Change Avatar
+                    <input type="file" accept="image/*" onChange={handleOwnAvatarChange} />
+                  </label>
+                  <small>JPG, PNG or WebP. Maximum 5MB.</small>
+                </div>
+
+                <label>
+                  Full Name
+                  <input
+                    type="text"
+                    required
+                    value={ownEditForm.fullName}
+                    onChange={(event) => setOwnEditForm({ ...ownEditForm, fullName: event.target.value })}
+                  />
+                </label>
+
+                {activeTab === "expert" ? (
+                  <>
+                    <label>
+                      Professional Title
+                      <input
+                        type="text"
+                        required
+                        value={ownEditForm.professionalTitle}
+                        onChange={(event) => setOwnEditForm({ ...ownEditForm, professionalTitle: event.target.value })}
+                      />
+                    </label>
+                    <label>
+                      Main Skills
+                      <input
+                        type="text"
+                        required
+                        value={ownEditForm.skills}
+                        onChange={(event) => setOwnEditForm({ ...ownEditForm, skills: event.target.value })}
+                      />
+                    </label>
+                    <label>
+                      Years of Experience
+                      <select
+                        required
+                        value={ownEditForm.experience}
+                        onChange={(event) => setOwnEditForm({ ...ownEditForm, experience: event.target.value })}
+                      >
+                        <option value="">Select experience</option>
+                        {!["0-1", "1-3", "3-5", "over-5", ""].includes(ownEditForm.experience) && (
+                          <option value={ownEditForm.experience}>{ownEditForm.experience}</option>
+                        )}
+                        <option value="0-1">0 - 1 year</option>
+                        <option value="1-3">1 - 3 years</option>
+                        <option value="3-5">3 - 5 years</option>
+                        <option value="over-5">Over 5 years</option>
+                      </select>
+                    </label>
+                    <label>
+                      Portfolio URL
+                      <input
+                        type="url"
+                        value={ownEditForm.portfolioUrl}
+                        onChange={(event) => setOwnEditForm({ ...ownEditForm, portfolioUrl: event.target.value })}
+                      />
+                    </label>
+                    <label>
+                      Hourly Rate
+                      <input
+                        type="number"
+                        min="1"
+                        step="0.01"
+                        required
+                        value={ownEditForm.hourlyRate}
+                        onChange={(event) => setOwnEditForm({ ...ownEditForm, hourlyRate: event.target.value })}
+                      />
+                    </label>
+                    <label>
+                      Short Bio
+                      <textarea
+                        rows="4"
+                        value={ownEditForm.bio}
+                        onChange={(event) => setOwnEditForm({ ...ownEditForm, bio: event.target.value })}
+                      />
+                    </label>
+                  </>
+                ) : (
+                  <>
+                    <label>
+                      Company Name
+                      <input
+                        type="text"
+                        required
+                        value={ownEditForm.companyName}
+                        onChange={(event) => setOwnEditForm({ ...ownEditForm, companyName: event.target.value })}
+                      />
+                    </label>
+                    <label>
+                      Industry
+                      <input
+                        type="text"
+                        required
+                        value={ownEditForm.industry}
+                        onChange={(event) => setOwnEditForm({ ...ownEditForm, industry: event.target.value })}
+                      />
+                    </label>
+                    <label>
+                      Company Bio
+                      <textarea
+                        rows="4"
+                        value={ownEditForm.bio}
+                        onChange={(event) => setOwnEditForm({ ...ownEditForm, bio: event.target.value })}
+                      />
+                    </label>
+                  </>
+                )}
+
+                <div className="profile-admin-modal-actions">
+                  <button
+                    type="button"
+                    className="profile-modal-secondary"
+                    disabled={ownEditLoading}
+                    onClick={() => setShowOwnEditModal(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button type="submit" className="profile-modal-primary" disabled={ownEditLoading}>
+                    {ownEditLoading ? "Saving..." : "Save Changes"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
         )}
 
         {showAdminEditModal && (

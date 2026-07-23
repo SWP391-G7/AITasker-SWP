@@ -66,6 +66,33 @@ export const getUserProfile = async (userId) => {
   }
 };
 
+const updateOwnUserField = async (path, body) => {
+  const token = localStorage.getItem('token');
+  if (!token) throw new Error('No authentication token found');
+
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    body: JSON.stringify(body)
+  });
+
+  const result = await response.json();
+  if (!response.ok) {
+    throw new Error(result.message || 'Failed to update account profile');
+  }
+
+  return result.user;
+};
+
+export const updateOwnFullName = (fullName) =>
+  updateOwnUserField('/users/update-fullname', { fullName });
+
+export const updateOwnAvatar = (avatarUrl) =>
+  updateOwnUserField('/users/update-avatar', { avatarUrl });
+
 export const getReviewsByTargetId = async (targetId) => {
   try {
     const response = await fetch(`${API_BASE_URL}/reviews/target/${targetId}`);
