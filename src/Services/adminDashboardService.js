@@ -338,7 +338,7 @@ export const buildAnalytics = ({ experts = [], clients = [], jobs = [], services
 
 const clampPercentage = (value) => Math.min(100, Math.max(0, Number(value) || 0))
 const formatCurrency = (value) =>
-  Number(value || 0).toLocaleString(undefined, {
+  Number(value || 0).toLocaleString('en-US', {
     style: 'currency',
     currency: 'USD',
     maximumFractionDigits: 0,
@@ -355,6 +355,16 @@ export const buildLiveAnalytics = (data = {}) => {
   const activeMonth = selectedYear === now.getFullYear()
     ? `${selectedYear}-${String(now.getMonth() + 1).padStart(2, '0')}`
     : `${selectedYear}-12`
+  const rankedExperts = (data.topExperts || []).map((expert, index) => ({
+    id: expert.id,
+    rank: index + 1,
+    name: expert.name || 'AI Expert',
+    avatar: expert.avatarUrl || null,
+    specialization: expert.specialization || 'AI Specialist',
+    completion: `${clampPercentage(expert.completionRate).toFixed(1)}%`,
+    revenue: formatCurrency(expert.revenue),
+    status: expert.status || 'Active',
+  }))
 
   return {
     kpis: [
@@ -420,16 +430,9 @@ export const buildLiveAnalytics = (data = {}) => {
         tone: 'rose',
       },
     ],
-    // Keep the UI capped at five rows even if a future API version returns more experts.
-    topExperts: (data.topExperts || []).slice(0, 5).map((expert) => ({
-      id: expert.id,
-      name: expert.name || 'AI Expert',
-      avatar: expert.avatarUrl || null,
-      specialization: expert.specialization || 'AI Specialist',
-      completion: `${clampPercentage(expert.completionRate).toFixed(1)}%`,
-      revenue: formatCurrency(expert.revenue),
-      status: expert.status || 'Active',
-    })),
+    // The main analytics table stays compact while the modal receives the full ranking.
+    topExperts: rankedExperts.slice(0, 5),
+    allExperts: rankedExperts,
     period: data.period || {},
     definitions: data.definitions || {},
   }

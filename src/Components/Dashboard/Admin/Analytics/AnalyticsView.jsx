@@ -8,6 +8,7 @@ const AnalyticsView = ({
   revenueBars = [],
   engagementMetrics = [],
   experts = [],
+  allExperts = [],
   period = {},
   definitions = {},
 }) => (
@@ -19,7 +20,7 @@ const AnalyticsView = ({
       <RetentionMetricsPanel metrics={engagementMetrics} insight={definitions.engagement} />
     </section>
 
-    <TopExpertsTable experts={experts} />
+    <TopExpertsTable experts={experts} allExperts={allExperts} />
   </>
 )
 

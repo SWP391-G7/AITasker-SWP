@@ -26,6 +26,7 @@ const AnalyticsPage = ({ onLogout }) => {
     revenueBars: [],
     engagementMetrics: [],
     topExperts: [],
+    allExperts: [],
     period: {},
     definitions: {},
   })
@@ -64,6 +65,7 @@ const AnalyticsPage = ({ onLogout }) => {
           revenueBars: [],
           engagementMetrics: [],
           topExperts: [],
+          allExperts: [],
           period: {},
           definitions: {},
         })
@@ -84,6 +86,25 @@ const AnalyticsPage = ({ onLogout }) => {
     const numericYear = Number(selectedYear)
     if (!Number.isInteger(numericYear) || numericYear < earliestAnalyticsYear || numericYear > currentYear) {
       setSelectedYear(String(currentYear))
+    }
+  }
+
+  const handleExportPdf = async () => {
+    try {
+      setAnalyticsError('')
+      const loadedYear = analyticsData.period.from?.slice(0, 4)
+      if (loadedYear !== selectedYear) {
+        throw new Error('Please wait for the selected year analytics to finish loading.')
+      }
+
+      // Load the PDF library only when the admin exports a report.
+      const { downloadAnalyticsReportPdf } = await import('../../../Services/analyticsPdfService')
+      downloadAnalyticsReportPdf({
+        year: loadedYear,
+        analyticsData,
+      })
+    } catch (err) {
+      setAnalyticsError(err.message || 'Failed to export analytics PDF.')
     }
   }
 
@@ -123,7 +144,12 @@ const AnalyticsPage = ({ onLogout }) => {
                   onBlur={normalizeSelectedYear}
                 />
               </label>
-              <button className="btn-approve admin-header-action-button" type="button">
+              <button
+                className="btn-approve admin-header-action-button"
+                type="button"
+                disabled={analyticsData.period.from?.slice(0, 4) !== selectedYear}
+                onClick={handleExportPdf}
+              >
                 <Download size={16} />
                 Export
               </button>
@@ -142,6 +168,7 @@ const AnalyticsPage = ({ onLogout }) => {
           revenueBars={analyticsData.revenueBars}
           engagementMetrics={analyticsData.engagementMetrics}
           experts={analyticsData.topExperts}
+          allExperts={analyticsData.allExperts}
           period={analyticsData.period}
           definitions={analyticsData.definitions}
         />
