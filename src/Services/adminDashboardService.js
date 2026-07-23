@@ -29,6 +29,34 @@ adminDashboardApi.interceptors.request.use(
 // Chuyển các giá trị như price/count/rating từ API về number.
 const toNumber = (value) => Number(value) || 0
 
+const moderationVisualClasses = [
+  'service-visual-automation',
+  'service-visual-analytics',
+  'service-visual-network',
+]
+
+const getPrimaryContentImage = (images, legacyImageUrl = null) => {
+  if (Array.isArray(images)) {
+    return images.find((image) => typeof image === 'string' && image.trim()) || legacyImageUrl
+  }
+
+  if (typeof images === 'string' && images.trim()) {
+    try {
+      const parsedImages = JSON.parse(images)
+      if (Array.isArray(parsedImages)) {
+        return parsedImages.find((image) => typeof image === 'string' && image.trim()) || legacyImageUrl
+      }
+      if (typeof parsedImages === 'string' && parsedImages.trim()) {
+        return parsedImages
+      }
+    } catch {
+      return images.trim()
+    }
+  }
+
+  return legacyImageUrl
+}
+
 // Lấy toàn bộ dữ liệu nền cho các màn admin từ api thực tế
 export const getAdminDashboardData = async (status = 'pending') => {
   const [usersRes, contentRes] = await Promise.all([
@@ -139,7 +167,7 @@ export const buildAdminModerationItems = (jobs = [], services = []) => [
 //
 // Severity cao khi bài đăng/service thiếu description, vì item thiếu mô tả thường cần admin xử lý trước.
 export const buildModerationQueueItems = (jobs = [], services = []) => [
-  ...services.map((service) => ({
+  ...services.map((service, index) => ({
     id: `service-${service.id}`,
     detailPath: `/marketplace/service/${service.id}`,
     title: service.title || 'Untitled Service',
@@ -154,10 +182,11 @@ export const buildModerationQueueItems = (jobs = [], services = []) => [
     type: service.tags || 'AI Service',
     time: 'From API',
     // Ưu tiên ảnh service từ backend. Nếu chưa có ảnh thì dùng ảnh mẫu để card không bị vỡ layout.
-    image: service.image_url || 'https://images.unsplash.com/photo-1677442136019-21780ecad995?w=480&h=320&fit=crop',
+    image: getPrimaryContentImage(service.images, service.image_url || service.imageUrl),
+    imageClass: moderationVisualClasses[index % moderationVisualClasses.length],
     status: service.status || 'pending',
   })),
-  ...jobs.map((job) => ({
+  ...jobs.map((job, index) => ({
     id: `job-${job.id}`,
     detailPath: `/marketplace/task/${job.id}`,
     title: job.title || 'Untitled Client Task',
@@ -172,7 +201,8 @@ export const buildModerationQueueItems = (jobs = [], services = []) => [
     type: job.required_skill || 'Client Job',
     time: 'From API',
     // Job hiện chưa có image_url riêng nên dùng ảnh fallback cố định.
-    image: 'https://images.unsplash.com/photo-1551434678-e076c223a692?w=480&h=320&fit=crop',
+    image: getPrimaryContentImage(job.images, job.image_url || job.imageUrl),
+    imageClass: moderationVisualClasses[index % moderationVisualClasses.length],
     status: job.status || 'pending',
   })),
 ]

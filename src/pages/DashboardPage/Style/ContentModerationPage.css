@@ -189,6 +189,41 @@
   width: 100%;
 }
 
+.moderation-card-image-fallback {
+  overflow: hidden;
+  position: relative;
+}
+
+.moderation-card-image-fallback::after {
+  background-image:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.12) 1px, transparent 1px),
+    linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+  background-size: 18px 18px;
+  content: "";
+  inset: 0;
+  opacity: 0.32;
+  position: absolute;
+}
+
+.moderation-card-image-fallback.service-visual-automation {
+  background:
+    radial-gradient(circle at 22% 44%, rgba(34, 211, 238, 0.72), transparent 18%),
+    linear-gradient(135deg, rgba(8, 47, 73, 0.96), rgba(6, 78, 59, 0.82));
+}
+
+.moderation-card-image-fallback.service-visual-analytics {
+  background:
+    repeating-linear-gradient(90deg, rgba(96, 165, 250, 0.28) 0 4px, transparent 4px 18px),
+    linear-gradient(180deg, rgba(14, 165, 233, 0.44), rgba(15, 23, 42, 0.96));
+}
+
+.moderation-card-image-fallback.service-visual-network {
+  background:
+    radial-gradient(circle at 26% 42%, rgba(34, 211, 238, 0.65), transparent 15%),
+    radial-gradient(circle at 72% 32%, rgba(96, 165, 250, 0.6), transparent 18%),
+    linear-gradient(135deg, rgba(6, 95, 70, 0.78), rgba(15, 23, 42, 0.96));
+}
+
 .moderation-card-body {
   min-width: 0;
 }

@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { CheckCircle2, EyeOff, RefreshCcw, XCircle } from 'lucide-react'
 
@@ -6,6 +7,7 @@ const publishedStatuses = ['approved', 'open']
 const removedStatuses = ['removed', 'rejected']
 
 const ModerationQueueCard = ({ item, onApprove, onReject, onUnpublish, onRepublish }) => {
+  const [imageFailed, setImageFailed] = useState(false)
   const normalizedStatus = String(item.status || 'pending').toLowerCase()
   const canModerate = actionableStatuses.includes(normalizedStatus)
   const canUnpublish = publishedStatuses.includes(normalizedStatus)
@@ -13,7 +15,20 @@ const ModerationQueueCard = ({ item, onApprove, onReject, onUnpublish, onRepubli
 
   return (
     <article className="moderation-card">
-      <img src={item.image} alt="" className="moderation-card-image" />
+      {item.image && !imageFailed ? (
+        <img
+          src={item.image}
+          alt={item.title}
+          className="moderation-card-image"
+          onError={() => setImageFailed(true)}
+        />
+      ) : (
+        <div
+          className={`moderation-card-image moderation-card-image-fallback ${item.imageClass || 'service-visual-automation'}`}
+          role="img"
+          aria-label={`${item.title} default image`}
+        />
+      )}
 
       <div className="moderation-card-body">
         <div className="moderation-card-meta">
