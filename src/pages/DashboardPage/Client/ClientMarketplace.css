@@ -1,4 +1,4 @@
-﻿.market-client-layout {
+.market-client-layout {
   display: flex;
   min-height: 100vh;
   background: #071427;
@@ -1048,11 +1048,68 @@
   justify-content: flex-start;
 }
 
+.message-bubble-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 65%;
+}
+
+.message-bubble-wrapper.client {
+  flex-direction: row-reverse;
+}
+
+.message-bubble-wrapper.expert {
+  flex-direction: row;
+}
+
+.message-remove-btn {
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s ease;
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #f87171;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.message-bubble-wrapper:hover .message-remove-btn {
+  opacity: 1;
+  visibility: visible;
+}
+
+.message-remove-btn:hover {
+  background: #ef4444;
+  color: #ffffff;
+}
+
 .message-bubble {
-  max-width: 62%;
+  max-width: 100%;
   border-radius: 20px;
   padding: 16px 18px;
   border: 1px solid rgba(148, 163, 184, 0.18);
+}
+
+.message-bubble.removed {
+  background: rgba(30, 41, 59, 0.6) !important;
+  color: #94a3b8 !important;
+  border: 1px dashed rgba(148, 163, 184, 0.3) !important;
+}
+
+.message-bubble.removed p.removed-text {
+  font-style: italic;
+  display: flex;
+  align-items: center;
+  color: #94a3b8;
 }
 
 .message-row.expert .message-bubble {
@@ -1079,6 +1136,7 @@
   font-size: 12px;
   opacity: 0.7;
 }
+
 
 .chat-input-area {
   height: 88px;

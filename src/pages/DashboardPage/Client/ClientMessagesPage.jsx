@@ -6,7 +6,7 @@ import ConversationPanel from "../../../Components/Dashboard/Client/Messages/Con
 import ChatPanel from "../../../Components/Dashboard/Client/Messages/ChatPanel";
 import { useClientUser } from "../../../Components/Dashboard/Client/user";
 import { logout } from "../../../Services/authService";
-import { getConversations, getConversationMessages, sendMessage } from "../../../Services/messageService";
+import { getConversations, getConversationMessages, sendMessage, removeMessage } from "../../../Services/messageService";
 import useWebSocket from "../../../hooks/useWebSocket";
 import "../Style/AdminDashboardPage.css";
 import "./ClientMarketplace.css";
@@ -117,6 +117,16 @@ function ClientMessagesPage() {
           );
         });
       }
+    } else if (data.type === 'message_removed') {
+      const { conversationId, messageId } = data;
+      if (conversationId === activeConversationId) {
+        setMessages(prev => prev.map(m =>
+          m.id === messageId ? { ...m, is_removed: true, content: 'Message has been removed' } : m
+        ));
+      }
+      setConversations(prev => prev.map(c =>
+        c.id === conversationId ? { ...c, last_message: 'Message has been removed' } : c
+      ));
     }
   });
 
@@ -139,6 +149,22 @@ function ClientMessagesPage() {
       ));
     } catch (err) {
       console.error("Error sending message:", err);
+    }
+  };
+
+  // 5. Handle removing a message
+  const handleRemoveMessage = async (messageId) => {
+    if (!messageId) return;
+    try {
+      await removeMessage(messageId);
+      setMessages(prev => prev.map(m =>
+        m.id === messageId ? { ...m, is_removed: true, content: 'Message has been removed' } : m
+      ));
+      setConversations(prev => prev.map(c =>
+        c.id === activeConversationId ? { ...c, last_message: 'Message has been removed' } : c
+      ));
+    } catch (err) {
+      console.error("Error removing message:", err);
     }
   };
 
@@ -182,6 +208,7 @@ function ClientMessagesPage() {
                 conversation={activeConversation}
                 messages={messages}
                 onSendMessage={handleSendMessage}
+                onRemoveMessage={handleRemoveMessage}
               />
             </>
           )}
@@ -190,6 +217,7 @@ function ClientMessagesPage() {
     </div>
   );
 }
+
 
 export default ClientMessagesPage;
 

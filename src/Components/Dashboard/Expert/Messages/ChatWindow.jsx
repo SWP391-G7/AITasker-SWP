@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import { Send, MoreVertical, Phone, Video, Paperclip } from 'lucide-react';
+import { Send, MoreVertical, Phone, Video, Paperclip, Trash2 } from 'lucide-react';
 
-const ChatWindow = ({ conversation, messages = [], onSendMessage }) => {
+const ChatWindow = ({ conversation, messages = [], onSendMessage, onRemoveMessage }) => {
   const [inputText, setInputText] = useState("");
   const messagesEndRef = useRef(null);
   const shouldScrollAfterSend = useRef(false);
@@ -80,14 +80,35 @@ const ChatWindow = ({ conversation, messages = [], onSendMessage }) => {
           </div>
         ) : (
           messages.map((msg) => {
-            const isMe = msg.user_id === currentUser.id;
+            const currentUserId = currentUser?.id || currentUser?._id;
+            const isMe = Boolean(msg?.user_id && currentUserId && msg.user_id === currentUserId);
             const senderClass = isMe ? 'expert' : 'client';
-            
+            const isRemoved = Boolean(msg.is_removed || msg.content === "Message has been removed");
+
             return (
               <div key={msg.id} className={`message-row ${senderClass}`}>
-                <div className="message-bubble">
-                  <p>{msg.content}</p>
-                  <span>{formatMessageTime(msg.send_at || msg.time)}</span>
+                <div className={`message-bubble-wrapper ${senderClass}`}>
+                  {isMe && !isRemoved && onRemoveMessage && (
+                    <button
+                      type="button"
+                      className="message-remove-btn"
+                      title="Remove message"
+                      onClick={() => onRemoveMessage(msg.id)}
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  )}
+                  <div className={`message-bubble ${isRemoved ? 'removed' : ''}`}>
+                    {isRemoved ? (
+                      <p className="removed-text">
+                        <Trash2 size={13} style={{ marginRight: '6px', opacity: 0.8, verticalAlign: 'middle' }} />
+                        <em>Message has been removed</em>
+                      </p>
+                    ) : (
+                      <p>{msg.content}</p>
+                    )}
+                    <span>{formatMessageTime(msg.send_at || msg.time)}</span>
+                  </div>
                 </div>
               </div>
             );
@@ -95,6 +116,7 @@ const ChatWindow = ({ conversation, messages = [], onSendMessage }) => {
         )}
         <div ref={messagesEndRef} />
       </div>
+
 
       <footer className="chat-input-footer">
         <button type="button" className="attach-button">

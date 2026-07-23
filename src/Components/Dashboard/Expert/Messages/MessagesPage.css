@@ -327,14 +327,72 @@
   justify-content: flex-end;
 }
 
-.messages-layout-container .message-row .message-bubble {
+.messages-layout-container .message-bubble-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
   max-width: 80%;
+}
+
+.messages-layout-container .message-bubble-wrapper.expert {
+  flex-direction: row-reverse;
+}
+
+.messages-layout-container .message-bubble-wrapper.client {
+  flex-direction: row;
+}
+
+.messages-layout-container .message-remove-btn {
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s ease;
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #f87171;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.messages-layout-container .message-bubble-wrapper:hover .message-remove-btn {
+  opacity: 1;
+  visibility: visible;
+}
+
+.messages-layout-container .message-remove-btn:hover {
+  background: #ef4444;
+  color: #ffffff;
+}
+
+.messages-layout-container .message-row .message-bubble {
+  max-width: 100%;
   padding: 14px 16px;
   border-radius: 18px;
   font-size: 0.88rem;
   line-height: 1.5;
   border: 1px solid rgba(148, 163, 184, 0.16);
 }
+
+.messages-layout-container .message-row .message-bubble.removed {
+  background: rgba(30, 41, 59, 0.6) !important;
+  color: #94a3b8 !important;
+  border: 1px dashed rgba(148, 163, 184, 0.3) !important;
+}
+
+.messages-layout-container .message-row .message-bubble.removed p.removed-text {
+  font-style: italic;
+  display: flex;
+  align-items: center;
+  color: #94a3b8;
+}
+
 
 .messages-layout-container .message-row.client .message-bubble {
   background: rgba(15, 30, 53, 0.92);
