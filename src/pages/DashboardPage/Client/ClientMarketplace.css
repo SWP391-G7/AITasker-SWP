@@ -2114,12 +2114,68 @@
   border: 1px solid rgba(34, 197, 94, 0.25);
   text-transform: capitalize;
   font-weight: 700;
+  font-size: 0.78rem;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
 }
 
-.project-status.rejected {
+/* ── Green: positive / live states ───────────────────────────────── */
+.project-status.open,
+.project-status.active,
+.project-status.accepted,
+.project-status.completed,
+.project-status.resolved,
+.project-status.approved,
+.project-status.published {
+  background: rgba(34, 197, 94, 0.15);
+  color: #86efac !important;
+  border-color: rgba(34, 197, 94, 0.28);
+}
+
+/* ── Amber: in-progress / waiting states ─────────────────────────── */
+.project-status.pending,
+.project-status.in_progress,
+.project-status.in-progress,
+.project-status.under_review,
+.project-status.under-review,
+.project-status.review,
+.project-status.processing,
+.project-status.submitted {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fcd34d !important;
+  border-color: rgba(245, 158, 11, 0.28);
+}
+
+/* ── Red: terminal / negative states ─────────────────────────────── */
+.project-status.rejected,
+.project-status.terminated,
+.project-status.removed,
+.project-status.failed,
+.project-status.cancelled,
+.project-status.canceled,
+.project-status.closed,
+.project-status.withdrawn,
+.project-status.suspended,
+.project-status.banned,
+.project-status.escalated,
+.project-status.dispute {
   background: rgba(239, 68, 68, 0.15);
   color: #fca5a5 !important;
-  border-color: rgba(239, 68, 68, 0.25);
+  border-color: rgba(239, 68, 68, 0.28);
+}
+
+/* ── Blue / Slate: neutral hold states ───────────────────────────── */
+.project-status.on_hold,
+.project-status.on-hold,
+.project-status.paused,
+.project-status.draft,
+.project-status.archived {
+  background: rgba(99, 102, 241, 0.15);
+  color: #a5b4fc !important;
+  border-color: rgba(99, 102, 241, 0.28);
 }
 
 .project-description {

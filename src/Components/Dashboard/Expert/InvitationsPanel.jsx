@@ -27,7 +27,7 @@ const InvitationsPanel = ({ invitations, onAccept, onDecline }) => (
                   <button className="btn-reject" onClick={() => onDecline && onDecline(item.id)}>Decline</button>
                 </>
               ) : (
-                <span className="dispute-tag tag-review" style={{ textTransform: 'capitalize', fontSize: '0.75rem', padding: '3px 8px', borderRadius: '4px' }}>
+                <span className={`project-status ${item.status}`} style={{ fontSize: '0.75rem', padding: '3px 8px', borderRadius: '4px' }}>
                   {item.status}
                 </span>
               )}
