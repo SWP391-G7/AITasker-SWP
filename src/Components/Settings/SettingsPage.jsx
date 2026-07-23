@@ -101,7 +101,7 @@ const SettingPage = ({ isOpen, onClose, user, role = "Client", onLogout }) => {
                 <h3>Change Password</h3>
                 <p>Update your password regularly to keep your account secure.</p>
               </div>
-              <button className="settings-outline-btn" type="button">Update</button>
+              <button className="settings-outline-btn" type="button" onClick={() => navigate('/update-password')}>Update</button>
             </div>
 
             <div className="settings-divider" />
