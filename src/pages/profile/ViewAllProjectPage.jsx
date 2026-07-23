@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { CalendarDays, ChevronRight, DollarSign, EyeOff, Layers, UserRound, X } from "lucide-react";
+import { CalendarDays, ChevronRight, DollarSign, EyeOff, Layers, RefreshCcw, UserRound, X } from "lucide-react";
 import { getUserProfile } from "../../Services/profileService";
 import { getStoredUser } from "../../Services/checkLogin";
 import { getClientProjectsFromApi } from "../../Components/Profile/Client/ClientProject";
@@ -79,20 +79,21 @@ function ViewAllProjectPage() {
     navigate(`/marketplace/task/${projectId}`);
   };
 
-  const handleUnpublish = async (projectId) => {
+  const handleUnpublish = async (projectId, action = "unpublish") => {
+    const nextStatus = action === "republish" ? "open" : "removed";
     try {
       setActionError("");
       setUnpublishingId(projectId);
-      await updateContentStatus("job", projectId, "removed");
+      await updateContentStatus("job", projectId, action === "republish" ? "approved" : "removed");
       setProfileData((current) => ({
         ...current,
         projects: (current?.projects || []).map((project) =>
-          project.id === projectId ? { ...project, status: "removed" } : project
+          project.id === projectId ? { ...project, status: nextStatus } : project
         ),
       }));
       setUnpublishConfirm(null);
     } catch (err) {
-      setActionError(err.message || "Failed to unpublish project.");
+      setActionError(err.message || "Failed to update project.");
       setUnpublishConfirm(null);
     } finally {
       setUnpublishingId(null);
@@ -185,11 +186,22 @@ function ViewAllProjectPage() {
                         <button
                           className="view-all-action-btn is-unpublish"
                           type="button"
-                          onClick={() => setUnpublishConfirm({ id: project.id, title: project.title })}
+                          onClick={() => setUnpublishConfirm({ action: "unpublish", id: project.id, title: project.title })}
                           disabled={unpublishingId === project.id}
                         >
                           <EyeOff size={14} />
                           {unpublishingId === project.id ? "Unpublishing..." : "Unpublish"}
+                        </button>
+                      )}
+                      {isAdminViewer && ["removed", "rejected"].includes(String(rawProject.status || "").toLowerCase()) && (
+                        <button
+                          className="view-all-action-btn is-republish"
+                          type="button"
+                          onClick={() => setUnpublishConfirm({ action: "republish", id: project.id, title: project.title })}
+                          disabled={unpublishingId === project.id}
+                        >
+                          <RefreshCcw size={14} />
+                          {unpublishingId === project.id ? "Publishing..." : "Publish Again"}
                         </button>
                       )}
                       <ChevronRight size={24} className="view-all-chevron" />
@@ -202,11 +214,11 @@ function ViewAllProjectPage() {
         </div>
       </section>
       <AdminModerationConfirmModal
-        action={unpublishConfirm ? "unpublish" : ""}
+        action={unpublishConfirm?.action}
         contentTitle={unpublishConfirm?.title}
         loading={unpublishingId === unpublishConfirm?.id}
         onCancel={() => setUnpublishConfirm(null)}
-        onConfirm={() => handleUnpublish(unpublishConfirm?.id)}
+        onConfirm={() => handleUnpublish(unpublishConfirm?.id, unpublishConfirm?.action)}
       />
     </div>
   );

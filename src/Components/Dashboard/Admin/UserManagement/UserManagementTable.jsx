@@ -36,6 +36,8 @@ const UserManagementTable = ({
 }) => {
   const [roleFilter, setRoleFilter] = useState('all')
   const [statusFilter, setStatusFilter] = useState('all')
+  const [currentPage, setCurrentPage] = useState(1)
+  const pageSize = 10
 
   const filteredUsers = users.filter((user) => {
     const query = searchQuery.toLowerCase()
@@ -50,6 +52,17 @@ const UserManagementTable = ({
 
     return matchesSearch && matchesRole && matchesStatus
   })
+
+  const totalPages = Math.max(1, Math.ceil(filteredUsers.length / pageSize))
+  const effectivePage = Math.min(currentPage, totalPages)
+  const pageStart = (effectivePage - 1) * pageSize
+  const paginatedUsers = filteredUsers.slice(pageStart, pageStart + pageSize)
+  const firstVisibleUser = filteredUsers.length === 0 ? 0 : pageStart + 1
+  const lastVisibleUser = Math.min(pageStart + pageSize, filteredUsers.length)
+
+  const changePage = (page) => {
+    setCurrentPage(Math.min(Math.max(page, 1), totalPages))
+  }
 
   return (
   <section className="user-table-panel">
@@ -73,7 +86,10 @@ const UserManagementTable = ({
                 as="button"
                 className="user-filter-item"
                 key={role.value}
-                onClick={() => setRoleFilter(role.value)}
+                onClick={() => {
+                  setRoleFilter(role.value)
+                  setCurrentPage(1)
+                }}
               >
                 <input type="radio" checked={roleFilter === role.value} readOnly />
                 <span>{role.label}</span>
@@ -86,7 +102,10 @@ const UserManagementTable = ({
                 as="button"
                 className="user-filter-item"
                 key={status.value}
-                onClick={() => setStatusFilter(status.value)}
+                onClick={() => {
+                  setStatusFilter(status.value)
+                  setCurrentPage(1)
+                }}
               >
                 <input type="radio" checked={statusFilter === status.value} readOnly />
                 <span>{status.label}</span>
@@ -114,7 +133,7 @@ const UserManagementTable = ({
           </tr>
         </thead>
         <tbody>
-          {filteredUsers.map((user) => (
+          {paginatedUsers.map((user) => (
             <tr key={user.id}>
               <td>
                 <div className="user-cell">
@@ -200,12 +219,36 @@ const UserManagementTable = ({
     </div>
 
     <footer className="user-table-footer">
-      <span>Showing {filteredUsers.length} user{filteredUsers.length !== 1 ? 's' : ''}</span>
+      <span>
+        Showing {firstVisibleUser}-{lastVisibleUser} of {filteredUsers.length} user{filteredUsers.length !== 1 ? 's' : ''}
+      </span>
       <div className="pagination-controls">
-        <button type="button" aria-label="Previous page">
+        <button
+          type="button"
+          aria-label="Previous page"
+          disabled={effectivePage === 1}
+          onClick={() => changePage(effectivePage - 1)}
+        >
           <ChevronLeft size={16} />
         </button>
-        <button type="button" aria-label="Next page">
+        {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
+          <button
+            type="button"
+            className={page === effectivePage ? 'active' : ''}
+            aria-label={`Page ${page}`}
+            aria-current={page === effectivePage ? 'page' : undefined}
+            key={page}
+            onClick={() => changePage(page)}
+          >
+            {page}
+          </button>
+        ))}
+        <button
+          type="button"
+          aria-label="Next page"
+          disabled={effectivePage === totalPages}
+          onClick={() => changePage(effectivePage + 1)}
+        >
           <ChevronRight size={16} />
         </button>
       </div>

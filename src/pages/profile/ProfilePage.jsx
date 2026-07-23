@@ -10,6 +10,7 @@ import {
   GraduationCap,
   Loader2,
   Mail,
+  RefreshCcw,
   Send,
   ShieldAlert,
   ShieldCheck,
@@ -341,31 +342,34 @@ function ProfilePage() {
 
   const isPublishedContent = (status) =>
     ["approved", "open"].includes(String(status || "").toLowerCase());
+  const isRemovedContent = (status) =>
+    ["removed", "rejected"].includes(String(status || "").toLowerCase());
 
-  const openAdminUnpublishConfirm = (event, contentType, item) => {
+  const openAdminContentConfirm = (event, action, contentType, item) => {
     event.stopPropagation();
     setAdminActionError("");
     setContentModerationConfirm({
-      action: "unpublish",
+      action,
       contentType,
       contentId: item.id,
       title: item.title,
     });
   };
 
-  const handleAdminUnpublish = async () => {
+  const handleAdminContentAction = async () => {
     if (!contentModerationConfirm) return;
-    const { contentType, contentId } = contentModerationConfirm;
-    const loadingKey = `unpublish-${contentType}-${contentId}`;
+    const { action, contentType, contentId } = contentModerationConfirm;
+    const loadingKey = `${action}-${contentType}-${contentId}`;
+    const nextStatus = action === "republish" ? "approved" : "removed";
 
     try {
       setAdminActionError("");
       setAdminActionLoading(loadingKey);
-      await updateContentStatus(contentType, contentId, "removed");
+      await updateContentStatus(contentType, contentId, nextStatus);
       await refreshProfileData();
       setContentModerationConfirm(null);
     } catch (err) {
-      setAdminActionError(err.message || "Failed to unpublish content");
+      setAdminActionError(err.message || "Failed to update content");
       setContentModerationConfirm(null);
     } finally {
       setAdminActionLoading("");
@@ -393,11 +397,22 @@ function ProfilePage() {
           <button
             className="profile-content-unpublish-btn"
             type="button"
-            onClick={(event) => openAdminUnpublishConfirm(event, "service", item)}
+            onClick={(event) => openAdminContentConfirm(event, "unpublish", "service", item)}
             disabled={adminActionLoading === `unpublish-service-${item.id}`}
           >
             {adminActionLoading === `unpublish-service-${item.id}` ? <Loader2 size={14} /> : <EyeOff size={14} />}
             {adminActionLoading === `unpublish-service-${item.id}` ? "Unpublishing..." : "Unpublish"}
+          </button>
+        )}
+        {isAdminViewer && isRemovedContent(item.status) && (
+          <button
+            className="profile-content-unpublish-btn is-republish"
+            type="button"
+            onClick={(event) => openAdminContentConfirm(event, "republish", "service", item)}
+            disabled={adminActionLoading === `republish-service-${item.id}`}
+          >
+            {adminActionLoading === `republish-service-${item.id}` ? <Loader2 size={14} /> : <RefreshCcw size={14} />}
+            {adminActionLoading === `republish-service-${item.id}` ? "Publishing..." : "Publish Again"}
           </button>
         )}
       </div>
@@ -425,11 +440,22 @@ function ProfilePage() {
           <button
             className="profile-content-unpublish-btn"
             type="button"
-            onClick={(event) => openAdminUnpublishConfirm(event, "job", item)}
+            onClick={(event) => openAdminContentConfirm(event, "unpublish", "job", item)}
             disabled={adminActionLoading === `unpublish-job-${item.id}`}
           >
             {adminActionLoading === `unpublish-job-${item.id}` ? <Loader2 size={14} /> : <EyeOff size={14} />}
             {adminActionLoading === `unpublish-job-${item.id}` ? "Unpublishing..." : "Unpublish"}
+          </button>
+        )}
+        {isAdminViewer && isRemovedContent(item.status) && (
+          <button
+            className="profile-content-unpublish-btn is-republish"
+            type="button"
+            onClick={(event) => openAdminContentConfirm(event, "republish", "job", item)}
+            disabled={adminActionLoading === `republish-job-${item.id}`}
+          >
+            {adminActionLoading === `republish-job-${item.id}` ? <Loader2 size={14} /> : <RefreshCcw size={14} />}
+            {adminActionLoading === `republish-job-${item.id}` ? "Publishing..." : "Publish Again"}
           </button>
         )}
       </div>  
@@ -948,9 +974,9 @@ function ProfilePage() {
         <AdminModerationConfirmModal
           action={contentModerationConfirm?.action}
           contentTitle={contentModerationConfirm?.title}
-          loading={Boolean(contentModerationConfirm && adminActionLoading.startsWith("unpublish-"))}
+          loading={Boolean(contentModerationConfirm && adminActionLoading)}
           onCancel={() => setContentModerationConfirm(null)}
-          onConfirm={handleAdminUnpublish}
+          onConfirm={handleAdminContentAction}
         />
       </main>
 

@@ -1,6 +1,6 @@
 import ModerationQueueCard from './ModerationQueueCard'
 
-const ModerationQueueList = ({ items, onApprove, onReject, onUnpublish }) => (
+const ModerationQueueList = ({ items, onApprove, onReject, onUnpublish, onRepublish }) => (
   <section className="moderation-list">
     {items.map((item) => (
       <ModerationQueueCard
@@ -9,6 +9,7 @@ const ModerationQueueList = ({ items, onApprove, onReject, onUnpublish }) => (
         onApprove={onApprove}
         onReject={onReject}
         onUnpublish={onUnpublish}
+        onRepublish={onRepublish}
       />
     ))}
   </section>

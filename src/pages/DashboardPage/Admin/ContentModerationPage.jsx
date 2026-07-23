@@ -69,11 +69,12 @@ const ContentModerationPage = ({ onLogout }) => {
       const parts = id.split('-')
       const type = parts[0]
       const itemId = parts.slice(1).join('-')
-      const nextStatus = action === 'approve' ? 'approved' : 'removed'
+      const nextStatus = ['approve', 'republish'].includes(action) ? 'approved' : 'removed'
 
-      await updateContentStatus(type, itemId, nextStatus)
+      const updatedContent = await updateContentStatus(type, itemId, nextStatus)
+      const updatedStatus = updatedContent?.status || nextStatus
       setModerationItems((prev) =>
-        prev.map((item) => item.id === id ? { ...item, status: nextStatus } : item)
+        prev.map((item) => item.id === id ? { ...item, status: updatedStatus } : item)
       )
       setModerationConfirm(null)
     } catch (err) {
@@ -119,6 +120,7 @@ const ContentModerationPage = ({ onLogout }) => {
           onApprove={(id) => requestModerationAction('approve', id)}
           onReject={(id) => requestModerationAction('reject', id)}
           onUnpublish={(id) => requestModerationAction('unpublish', id)}
+          onRepublish={(id) => requestModerationAction('republish', id)}
         />
         <Footer variant="dashboard" />
       </main>

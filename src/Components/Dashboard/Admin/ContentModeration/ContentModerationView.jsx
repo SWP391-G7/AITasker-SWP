@@ -14,25 +14,29 @@ const ContentModerationView = ({
   stats = moderationStats,
   onApprove,
   onReject,
-  onUnpublish
+  onUnpublish,
+  onRepublish
 }) => {
   const [activeFilter, setActiveFilter] = useState('All Types')
   const [severityFilter, setSeverityFilter] = useState('All Levels')
   const [currentPage, setCurrentPage] = useState(1)
-  const [showReviewedOnly, setShowReviewedOnly] = useState(false)
+  const [reviewStatusFilter, setReviewStatusFilter] = useState('all')
   const searchQuery = externalSearchQuery ?? ''
 
   // Reset page when filters or search terms change
   useEffect(() => {
     setCurrentPage(1)
-  }, [activeFilter, severityFilter, searchQuery, showReviewedOnly])
+  }, [activeFilter, severityFilter, searchQuery, reviewStatusFilter])
 
   const filteredItems = useMemo(() => {
     return items.filter((item) => {
       // Filter by moderation reviewed status
-      const isPending = item.status === 'pending'
-      const matchesReviewed = showReviewedOnly ? !isPending : isPending
-      if (!matchesReviewed) return false
+      const isPending = String(item.status || 'pending').toLowerCase() === 'pending'
+      const matchesReviewStatus =
+        reviewStatusFilter === 'all' ||
+        (reviewStatusFilter === 'reviewed' && !isPending) ||
+        (reviewStatusFilter === 'unreviewed' && isPending)
+      if (!matchesReviewStatus) return false
 
       let matchesType = false
       if (activeFilter === 'All Types') {
@@ -52,7 +56,7 @@ const ContentModerationView = ({
 
       return matchesType && matchesSeverity && matchesSearch
     })
-  }, [activeFilter, items, searchQuery, severityFilter, showReviewedOnly])
+  }, [activeFilter, items, searchQuery, severityFilter, reviewStatusFilter])
 
   const pageSize = 5
   const totalItems = filteredItems.length
@@ -72,14 +76,15 @@ const ContentModerationView = ({
         onFilterChange={setActiveFilter}
         onSeverityChange={setSeverityFilter}
         severityFilter={severityFilter}
-        showReviewedOnly={showReviewedOnly}
-        onToggleReviewedOnly={setShowReviewedOnly}
+        reviewStatusFilter={reviewStatusFilter}
+        onReviewStatusChange={setReviewStatusFilter}
       />
       <ModerationQueueList
         items={paginatedItems}
         onApprove={onApprove}
         onReject={onReject}
         onUnpublish={onUnpublish}
+        onRepublish={onRepublish}
       />
       <ContentModerationPagination 
         currentPage={currentPage}

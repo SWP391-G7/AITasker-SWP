@@ -458,6 +458,17 @@
   width: 30px;
 }
 
+.pagination-controls button.active {
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+  border-color: rgba(96, 165, 250, 0.48);
+  color: #ffffff;
+}
+
+.pagination-controls button:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
 @media (max-width: 1200px) {
   .user-management-stats {
     grid-template-columns: repeat(2, minmax(0, 1fr));

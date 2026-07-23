@@ -9,6 +9,7 @@ import {
   DollarSign,
   EyeOff,
   Loader2,
+  RefreshCcw,
   Send,
   XCircle,
 } from 'lucide-react';
@@ -75,6 +76,7 @@ const MarketplaceTaskDetailPage = () => {
   const taskStatus = String(task?.status || 'open').toLowerCase();
   const canModerateTask = isAdmin && taskStatus === 'pending';
   const canUnpublishTask = isAdmin && taskStatus === 'open';
+  const canRepublishTask = isAdmin && ['removed', 'rejected'].includes(taskStatus);
   const canSendProposal = isExpert && taskStatus === 'open';
 
   const handleModerateTask = async (status) => {
@@ -92,7 +94,8 @@ const MarketplaceTaskDetailPage = () => {
   };
 
   const confirmModerationAction = () => {
-    handleModerateTask(moderationConfirmAction === 'approve' ? 'approved' : 'removed');
+    const status = ['approve', 'republish'].includes(moderationConfirmAction) ? 'approved' : 'removed';
+    handleModerateTask(status);
   };
 
   return (
@@ -208,6 +211,19 @@ const MarketplaceTaskDetailPage = () => {
                     >
                       <EyeOff size={16} />
                       {moderationAction === 'removed' ? 'Unpublishing...' : 'Unpublish'}
+                    </button>
+                    {moderationError && <p className="service-moderation-error">{moderationError}</p>}
+                  </div>
+                ) : canRepublishTask ? (
+                  <div className="admin-service-moderation">
+                    <button
+                      className="service-moderation-btn approve"
+                      type="button"
+                      disabled={Boolean(moderationAction)}
+                      onClick={() => setModerationConfirmAction('republish')}
+                    >
+                      <RefreshCcw size={16} />
+                      {moderationAction === 'approved' ? 'Publishing...' : 'Publish Again'}
                     </button>
                     {moderationError && <p className="service-moderation-error">{moderationError}</p>}
                   </div>

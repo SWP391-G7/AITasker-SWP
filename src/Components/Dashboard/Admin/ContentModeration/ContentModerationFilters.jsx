@@ -4,8 +4,8 @@ const ContentModerationFilters = ({
   onFilterChange,
   onSeverityChange,
   severityFilter,
-  showReviewedOnly,
-  onToggleReviewedOnly
+  reviewStatusFilter,
+  onReviewStatusChange
 }) => (
   <section className="moderation-toolbar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
     <div className="moderation-filter-tabs">
@@ -22,19 +22,16 @@ const ContentModerationFilters = ({
     </div>
 
     <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
-      <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '0.9rem', color: '#a8b3c5', fontWeight: '500' }}>
-        <input 
-          type="checkbox" 
-          checked={showReviewedOnly} 
-          onChange={(e) => onToggleReviewedOnly && onToggleReviewedOnly(e.target.checked)}
-          style={{ 
-            accentColor: '#6366f1',
-            width: '16px',
-            height: '16px',
-            cursor: 'pointer'
-          }} 
-        />
-        <span>Show Reviewed Items</span>
+      <label className="moderation-severity-filter">
+        <span>Status:</span>
+        <select
+          value={reviewStatusFilter}
+          onChange={(event) => onReviewStatusChange(event.target.value)}
+        >
+          <option value="all">All</option>
+          <option value="reviewed">Show Reviewed Items</option>
+          <option value="unreviewed">Show Unreviewed Items</option>
+        </select>
       </label>
 
       <label className="moderation-severity-filter">

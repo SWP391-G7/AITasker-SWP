@@ -26,6 +26,14 @@ const actionConfig = {
     icon: EyeOff,
     tone: 'danger',
   },
+  republish: {
+    title: 'Publish Content Again',
+    message: 'Are you sure you want to publish this content again? It will become available on the marketplace.',
+    confirmLabel: 'Publish Again',
+    loadingLabel: 'Publishing...',
+    icon: CheckCircle2,
+    tone: 'approve',
+  },
 }
 
 const AdminModerationConfirmModal = ({

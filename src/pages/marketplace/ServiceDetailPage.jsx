@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, CheckCircle2, Clock, EyeOff, Loader2, AlertCircle, Star, XCircle, Send } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, Clock, EyeOff, Loader2, AlertCircle, RefreshCcw, Star, XCircle, Send } from 'lucide-react';
 import Footer from '../../Components/Footer/Footer';
 import { getServiceById } from '../../Services/serviceService';
 import { updateContentStatus } from '../../Services/adminDashboardService';
@@ -25,6 +25,7 @@ const ServiceDetailPage = () => {
   const serviceStatus = String(service?.status || '').toLowerCase();
   const canModerateService = isAdmin && serviceStatus === 'pending';
   const canUnpublishService = isAdmin && ['approved', 'open'].includes(serviceStatus);
+  const canRepublishService = isAdmin && ['removed', 'rejected'].includes(serviceStatus);
 
   useEffect(() => {
     const fetchDetail = async () => {
@@ -57,7 +58,8 @@ const ServiceDetailPage = () => {
   };
 
   const confirmModerationAction = () => {
-    handleModerateService(moderationConfirmAction === 'approve' ? 'approved' : 'removed');
+    const status = ['approve', 'republish'].includes(moderationConfirmAction) ? 'approved' : 'removed';
+    handleModerateService(status);
   };
 
   return (
@@ -192,6 +194,21 @@ const ServiceDetailPage = () => {
                     >
                       <EyeOff size={16} />
                       {moderationAction === 'removed' ? 'Unpublishing...' : 'Unpublish'}
+                    </button>
+                    {moderationError && <p className="service-moderation-error">{moderationError}</p>}
+                  </div>
+                )}
+
+                {canRepublishService && (
+                  <div className="admin-service-moderation">
+                    <button
+                      className="service-moderation-btn approve"
+                      type="button"
+                      disabled={Boolean(moderationAction)}
+                      onClick={() => setModerationConfirmAction('republish')}
+                    >
+                      <RefreshCcw size={16} />
+                      {moderationAction === 'approved' ? 'Publishing...' : 'Publish Again'}
                     </button>
                     {moderationError && <p className="service-moderation-error">{moderationError}</p>}
                   </div>
