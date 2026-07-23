@@ -11,6 +11,7 @@ import ReviewForm from '../../Components/review/ReviewForm'
 import { getReviewsByTargetId, createReview, checkCanReview } from '../../Services/reviewService'
 import '../../Components/marketplace/Marketplace.css'
 import '../Style/ServiceDetail.css'
+import AdminModerationConfirmModal from '../../Components/Dashboard/Admin/AdminModerationConfirmModal'
 
 const ServiceDetailPage = () => {
   const { id } = useParams()
