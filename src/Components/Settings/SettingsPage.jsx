@@ -106,7 +106,7 @@ const SettingPage = ({ isOpen, onClose, user, role = "Client", onLogout }) => {
 
             <div className="settings-divider" />
 
-            <div className="settings-action-row">
+            {/* <div className="settings-action-row">
               <div>
                 <h3>Two-Factor Authentication (2FA)</h3>
                 <p>Add an extra layer of security to your account.</p>
@@ -119,7 +119,7 @@ const SettingPage = ({ isOpen, onClose, user, role = "Client", onLogout }) => {
               >
                 <span />
               </button>
-            </div>
+            </div> */}
           </div>
 
           <div className="settings-card">

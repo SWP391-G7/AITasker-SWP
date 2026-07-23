@@ -272,7 +272,7 @@ function AppRoutes() {
 
       <Route path="/login" element={<GuestOnly><LoginPage /></GuestOnly>} />
       <Route path="/register" element={<GuestOnly><RegisterPage /></GuestOnly>} />
-      <Route path="/forgot-password" element={<GuestOnly><ForgotPasswordPage /></GuestOnly>} />
+      <Route path="/update-password" element={<ForgotPasswordPage />} />
       <Route path="/verify" element={<VerifyOnly><EmailVerificationPage /></VerifyOnly>} />
       <Route path="/deactivated" element={<DeactivatedPage />} />
       <Route path="/privacy" element={<PrivacyPolicy />} />

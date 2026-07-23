@@ -154,7 +154,7 @@ function LoginForm() {
       <button
         className="forgot-btn"
         type="button"
-        onClick={() => navigate("/forgot-password")}
+        onClick={() => navigate("/update-password")}
         disabled={isLoading}
       >
         Forgot password?
