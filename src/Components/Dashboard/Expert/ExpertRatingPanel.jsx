@@ -9,7 +9,12 @@ const ExpertRatingPanel = ({ rating = 5.0, projectCount = 342 }) => (
       <div>
         <div className="stat-trend expert-stars">
           {[...Array(5)].map((_, index) => (
-            <Star key={index} size={14} fill="currentColor" />
+            <Star
+              key={index}
+              size={14}
+              fill={index < Math.round(Number(rating || 0)) ? "currentColor" : "none"}
+              style={{ opacity: index < Math.round(Number(rating || 0)) ? 1 : 0.4 }}
+            />
           ))}
         </div>
         <div className="item-reason">From {projectCount} successful projects</div>

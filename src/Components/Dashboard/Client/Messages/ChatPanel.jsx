@@ -7,7 +7,12 @@ export default function ChatPanel({ conversation, messages = [], onSendMessage }
   const messagesEndRef = useRef(null);
   const shouldScrollAfterSend = useRef(false);
 
-  const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+  let currentUser = {};
+  try {
+    currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+  } catch (err) {
+    currentUser = {};
+  }
 
   useEffect(() => {
     if (!shouldScrollAfterSend.current) return;
@@ -94,7 +99,8 @@ export default function ChatPanel({ conversation, messages = [], onSendMessage }
           </div>
         ) : (
           messages.map((message) => {
-            const isMe = message.user_id === currentUser.id;
+            const currentUserId = currentUser?.id || currentUser?._id;
+            const isMe = Boolean(message?.user_id && currentUserId && message.user_id === currentUserId);
             const senderClass = isMe ? "client" : "expert";
 
             return (

@@ -4,7 +4,7 @@ const InvitationsPanel = ({ invitations, onAccept, onDecline }) => (
   <div className="admin-panel-card expert-invitations-panel">
     <div className="panel-header">
       <h2 className="panel-title">New Invitations</h2>
-      <span className="dispute-tag tag-review">{invitations.length} New</span>
+      <span className="dispute-tag tag-review">{invitations?.length || 0} New</span>
     </div>
 
     <div className="panel-list">

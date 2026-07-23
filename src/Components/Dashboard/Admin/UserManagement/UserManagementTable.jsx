@@ -37,13 +37,19 @@ const UserManagementTable = ({
   const [roleFilter, setRoleFilter] = useState('all')
   const [statusFilter, setStatusFilter] = useState('all')
 
-  const filteredUsers = users.filter((user) => {
-    const query = searchQuery.toLowerCase()
+  const filteredUsers = (users || []).filter((user) => {
+    if (!user) return false
+    const query = (searchQuery || '').toLowerCase()
+    const userName = (user.name || user.full_name || '').toLowerCase()
+    const userEmail = (user.email || '').toLowerCase()
+    const userRole = (user.role || '').toLowerCase()
+    const userStatus = (user.status || user.acc_status || '').toString().toLowerCase()
+
     const matchesSearch = (
-      user.name.toLowerCase().includes(query) ||
-      user.email.toLowerCase().includes(query) ||
-      user.role.toLowerCase().includes(query) ||
-      user.status.toLowerCase().includes(query)
+      userName.includes(query) ||
+      userEmail.includes(query) ||
+      userRole.includes(query) ||
+      userStatus.includes(query)
     )
     const matchesRole = roleFilter === 'all' || user.role === roleFilter
     const matchesStatus = statusFilter === 'all' || user.status === statusFilter

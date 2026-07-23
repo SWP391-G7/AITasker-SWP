@@ -4,8 +4,9 @@ import { FileText } from 'lucide-react'
 const PREVIEW_LIMIT = 5
 
 const ModerationPanel = ({ moderations, onApprove, onReject }) => {
-  const previewModerations = moderations.slice(0, PREVIEW_LIMIT)
-  const remainingCount = Math.max(moderations.length - PREVIEW_LIMIT, 0)
+  const safeModerations = Array.isArray(moderations) ? moderations : []
+  const previewModerations = safeModerations.slice(0, PREVIEW_LIMIT)
+  const remainingCount = Math.max(safeModerations.length - PREVIEW_LIMIT, 0)
   const viewMoreLabel = remainingCount > 0 ? `View ${remainingCount} more` : 'View all'
 
   return (

@@ -7,7 +7,7 @@ import useHandleClickOutside from '../HandleClickOutside'
 import NotificationBell from '../../Navbar/NotificationBell'
 import '../../Navbar/HeaderCom.css'
 
-const ExpertHeader = ({ title, subtitle, headerActions, notifications, onClearNotifications, searchQuery, onSearchChange, user, onLogout }) => {
+const ExpertHeader = ({ title, subtitle, headerActions, notifications, onClearNotifications, searchQuery = '', onSearchChange = () => {}, user, onLogout = () => {} }) => {
   const { isProfileOpen, setIsProfileOpen, dropdownRef } = useHandleClickOutside()
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const navigate = useNavigate()
@@ -50,7 +50,7 @@ const ExpertHeader = ({ title, subtitle, headerActions, notifications, onClearNo
               type="text"
               placeholder="Search projects, tasks..."
               value={searchQuery}
-              onChange={(event) => onSearchChange(event.target.value)}
+              onChange={(event) => onSearchChange?.(event.target.value)}
             />
           </div>
 
@@ -101,7 +101,7 @@ const ExpertHeader = ({ title, subtitle, headerActions, notifications, onClearNo
                 <button
                   className="dropdown-item logout-item"
                   type="button"
-                  onClick={onLogout}
+                  onClick={() => onLogout?.()}
                 >
                   <LogOut size={16} />
                   <span>Log out</span>

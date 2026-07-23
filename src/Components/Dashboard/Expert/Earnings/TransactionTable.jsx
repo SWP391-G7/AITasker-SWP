@@ -31,7 +31,8 @@ const TransactionTable = ({ transactions }) => {
           </tr>
         </thead>
         <tbody>
-          {transactions.map((tx) => (
+          {Array.isArray(transactions) && transactions.length > 0 ? (
+            transactions.map((tx) => (
             <tr key={tx.id}>
               <td>
                 <div className="project-cell">
@@ -54,7 +55,12 @@ const TransactionTable = ({ transactions }) => {
                 <span className="amount-text">{tx.amount}</span>
               </td>
             </tr>
-          ))}
+          ))
+        ) : (
+          <tr>
+            <td colSpan="4" className="text-center py-4 text-muted small">No transactions found</td>
+          </tr>
+        )}
         </tbody>
       </table>
 

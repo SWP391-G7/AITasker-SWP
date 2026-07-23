@@ -6,7 +6,7 @@ const DisputesPanel = ({ disputes, onSelectDispute }) => (
     </div>
 
     <div className="panel-list">
-      {disputes.length > 0 ? (
+      {Array.isArray(disputes) && disputes.length > 0 ? (
         disputes.map((item) => (
           <div key={item.id} className="list-item-row">
             <div className="item-left">
@@ -18,7 +18,7 @@ const DisputesPanel = ({ disputes, onSelectDispute }) => (
                 </span>
               </div>
             </div>
-            <button className="btn-case align-self-center" onClick={() => onSelectDispute(item)}>
+            <button className="btn-case align-self-center" onClick={() => onSelectDispute?.(item)}>
               View Case
             </button>
           </div>

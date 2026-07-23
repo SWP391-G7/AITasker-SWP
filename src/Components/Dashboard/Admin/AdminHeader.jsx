@@ -11,11 +11,11 @@ const AdminHeader = ({
   subtitle = 'System oversight and marketplace operations',
   headerActions,
   notifications,
-  onClearNotifications,
-  searchQuery,
-  onSearchChange,
+  onClearNotifications = () => {},
+  searchQuery = '',
+  onSearchChange = () => {},
   searchPlaceholder = 'Search users, tasks, or disputes...',
-  onLogout
+  onLogout = () => {}
 }) => {
   const { isProfileOpen, setIsProfileOpen, dropdownRef } = useHandleClickOutside()
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
@@ -54,11 +54,11 @@ const AdminHeader = ({
               type="text"
               placeholder={searchPlaceholder}
               value={searchQuery}
-              onChange={(event) => onSearchChange(event.target.value)}
+              onChange={(event) => onSearchChange?.(event.target.value)}
             />
           </div>
 
-          <button className="icon-button position-relative" aria-label="System Notifications" onClick={onClearNotifications}>
+          <button className="icon-button position-relative" aria-label="System Notifications" onClick={() => onClearNotifications?.()}>
             <Bell size={20} />
             {notifications > 0 && <span className="icon-badge bg-sky"></span>}
           </button>
@@ -101,7 +101,7 @@ const AdminHeader = ({
                 <button
                   className="dropdown-item logout-item"
                   type="button"
-                  onClick={onLogout}
+                  onClick={() => onLogout?.()}
                 >
                   <LogOut size={16} />
                   <span>Log out</span>
