@@ -23,6 +23,7 @@ const EmailVerificationPage = () => {
   const location = useLocation()
   const navigate = useNavigate()
   const [userEmail] = useState(location.state?.email || getStoredEmail())
+  const [codeSentInitially] = useState(location.state?.codeSent || false)
   const [showSuccess, setShowSuccess] = useState(false)
 
   useEffect(() => {
@@ -41,6 +42,7 @@ const EmailVerificationPage = () => {
     <AuthLayout>
       <EmailVerification 
         email={userEmail}
+        codeSentInitially={codeSentInitially}
         onVerificationSuccess={handleVerificationSuccess}
       />
 

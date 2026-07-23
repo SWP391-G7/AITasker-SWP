@@ -1,7 +1,7 @@
 import { useCallback, useState, useRef, useEffect } from 'react'
 import * as authService from '../../Services/authService'
 
-const EmailVerification = ({ email, onVerificationSuccess }) => {
+const EmailVerification = ({ email, codeSentInitially = false, onVerificationSuccess }) => {
   const [otp, setOtp] = useState(['', '', '', '', '', ''])
   const [isVerifying, setIsVerifying] = useState(false)
   const [isResending, setIsResending] = useState(false)
@@ -23,13 +23,15 @@ const EmailVerification = ({ email, onVerificationSuccess }) => {
     }
   }, [email])
 
-  // Auto-focus vào ô đầu tiên
+  // Auto-focus input & send initial code if not sent during registration
   useEffect(() => {
     if (inputRefs.current[0]) {
       inputRefs.current[0].focus()
     }
-    queueMicrotask(sendCodeToEmail)
-  }, [sendCodeToEmail])
+    if (!codeSentInitially) {
+      queueMicrotask(sendCodeToEmail)
+    }
+  }, [codeSentInitially, sendCodeToEmail])
 
   // Countdown timer logic
   useEffect(() => {

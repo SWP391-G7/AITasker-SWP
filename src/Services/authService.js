@@ -21,7 +21,13 @@ export const register = async (data) => {
       throw new Error(result.message || 'Registration failed')
     }
 
-    // Don't save token yet - only save after email verification and login
+    if (result.token) {
+      localStorage.setItem('token', result.token)
+      if (result.user) {
+        localStorage.setItem('user', JSON.stringify(result.user))
+      }
+    }
+
     return result
   } catch (error) {
     console.error('Registration error:', error)

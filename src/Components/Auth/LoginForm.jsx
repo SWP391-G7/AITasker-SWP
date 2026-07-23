@@ -61,8 +61,14 @@ function LoginForm() {
 
       console.log("Login success:", result)
 
-      // Navigate to dashboard; ProtectedRoute will redirect unverified
-      // users to /verify automatically based on their isVerified status.
+      if (result.user && !result.user.isVerified) {
+        navigate("/verify", {
+          replace: true,
+          state: { email: result.user.email },
+        })
+        return
+      }
+
       navigate("/")
     } catch (err) {
       if (err.code === 'ACCOUNT_DEACTIVATED') {
