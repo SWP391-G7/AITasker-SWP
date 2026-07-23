@@ -1,3 +1,10 @@
+/**
+ * Frontend module: pages/marketplace/MarketplaceProposalPage.jsx
+ *
+ * Vai trò: Page Marketplace Proposal Page: màn hình cấp route, điều phối dữ liệu và các component con cho một luồng nghiệp vụ hoàn chỉnh.
+ * Luồng chính: Đọc route/location, gọi service trong effect/handler, quản lý loading/error/form rồi truyền props xuống UI con.
+ * Lưu ý bảo trì: Giữ side effect trong handler/effect và không mutate trực tiếp state hoặc dữ liệu API.
+ */
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
@@ -22,13 +29,16 @@ import AISkeletonLoader from '../../Components/AI/AISkeletonLoader';
 import Toast from '../../Components/Toast';
 import '../Style/ServiceDetail.css';
 
+// Chuyển đổi dữ liệu cho “parse money” thành định dạng mà lớp gọi hoặc giao diện cần.
 const parseMoney = (value) => {
   const parsed = Number(String(value || '0').replace(/[^0-9.]/g, ''));
   return Number.isFinite(parsed) ? parsed : 0;
 };
 
+// Chuyển đổi dữ liệu cho “format money” thành định dạng mà lớp gọi hoặc giao diện cần.
 const formatMoney = (value) => `$${parseMoney(value).toLocaleString()}`;
 
+// Chuyển đổi dữ liệu cho “format budget” thành định dạng mà lớp gọi hoặc giao diện cần.
 const formatBudget = (task) => {
   const min = parseMoney(task?.budget_min ?? task?.budgetMin);
   const max = parseMoney(task?.budget_max ?? task?.budgetMax ?? task?.budget);
@@ -39,11 +49,13 @@ const formatBudget = (task) => {
   return 'Budget TBD';
 };
 
+// Chuyển đổi dữ liệu cho “format date” thành định dạng mà lớp gọi hoặc giao diện cần.
 const formatDate = (value) => {
   if (!value) return 'No deadline';
   return new Date(value).toLocaleDateString();
 };
 
+// React component “Marketplace Proposal Page” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
 const MarketplaceProposalPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -90,6 +102,7 @@ const MarketplaceProposalPage = () => {
     );
   }
 
+  // Handler “handle extend success” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleExtendSuccess = (data) => {
     if (data.coverLetter) setCoverLetter(data.coverLetter);
     if (data.implementationApproach) setImplementationApproach(data.implementationApproach);
@@ -98,6 +111,7 @@ const MarketplaceProposalPage = () => {
   };
 
   useEffect(() => {
+    // Đọc hoặc suy ra dữ liệu cho nghiệp vụ “fetch task”; không nên tạo side effect ngoài những request đọc đã nêu trong thân hàm.
     const fetchTask = async () => {
       if (!id) {
         setLoading(false);
@@ -119,6 +133,7 @@ const MarketplaceProposalPage = () => {
     fetchTask();
   }, [id]);
 
+  // Handler “handle submit proposal” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleSubmitProposal = async (event) => {
     event.preventDefault();
 

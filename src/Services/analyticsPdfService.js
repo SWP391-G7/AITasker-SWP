@@ -1,3 +1,10 @@
+/**
+ * Frontend module: Services/analyticsPdfService.js
+ *
+ * Vai trò: Service analytics Pdf Service: lớp giao tiếp giữa UI và backend API.
+ * Luồng chính: Nhận dữ liệu từ component, gắn token/header, gọi endpoint, chuẩn hóa response và ném Error khi request thất bại.
+ * Lưu ý bảo trì: Component không nên lặp lại URL hoặc logic HTTP đã được đóng gói tại đây.
+ */
 import { jsPDF } from 'jspdf'
 
 const colors = {
@@ -11,6 +18,7 @@ const colors = {
   white: [255, 255, 255],
 }
 
+// Thực hiện phần logic “draw section title” trong phạm vi trách nhiệm của module hiện tại.
 const drawSectionTitle = (doc, title, y) => {
   doc.setFont('helvetica', 'bold')
   doc.setFontSize(11)
@@ -18,6 +26,7 @@ const drawSectionTitle = (doc, title, y) => {
   doc.text(title, 15, y)
 }
 
+// Thực hiện phần logic “draw report header” trong phạm vi trách nhiệm của module hiện tại.
 const drawReportHeader = (doc, year) => {
   doc.setFillColor(...colors.navy)
   doc.rect(0, 0, 210, 25, 'F')
@@ -31,6 +40,7 @@ const drawReportHeader = (doc, year) => {
   doc.text(`Generated: ${new Date().toLocaleString()}`, 195, 19, { align: 'right' })
 }
 
+// Thực hiện phần logic “draw kpi cards” trong phạm vi trách nhiệm của module hiện tại.
 const drawKpiCards = (doc, kpis, startY) => {
   const cardWidth = 87
   const cardHeight = 22
@@ -58,6 +68,7 @@ const drawKpiCards = (doc, kpis, startY) => {
   })
 }
 
+// Thực hiện phần logic “draw monthly revenue” trong phạm vi trách nhiệm của module hiện tại.
 const drawMonthlyRevenue = (doc, bars, startY) => {
   const rowHeight = 6.5
 
@@ -90,6 +101,7 @@ const drawMonthlyRevenue = (doc, bars, startY) => {
   })
 }
 
+// Thực hiện phần logic “draw engagement metrics” trong phạm vi trách nhiệm của module hiện tại.
 const drawEngagementMetrics = (doc, metrics, startY) => {
   metrics.slice(0, 3).forEach((metric, index) => {
     const y = startY + index * 8
@@ -104,6 +116,7 @@ const drawEngagementMetrics = (doc, metrics, startY) => {
   })
 }
 
+// Thực hiện phần logic “draw expert leaderboard” trong phạm vi trách nhiệm của module hiện tại.
 const drawExpertLeaderboard = (doc, experts, year) => {
   doc.addPage()
   doc.setFillColor(...colors.navy)
@@ -165,6 +178,7 @@ const drawExpertLeaderboard = (doc, experts, year) => {
   }
 }
 
+// Thực hiện phần logic “draw page footers” trong phạm vi trách nhiệm của module hiện tại.
 const drawPageFooters = (doc, year) => {
   const pageCount = doc.getNumberOfPages()
   for (let page = 1; page <= pageCount; page += 1) {
@@ -179,11 +193,13 @@ const drawPageFooters = (doc, year) => {
   }
 }
 
+// Tạo hoặc gửi dữ liệu cho nghiệp vụ “create analytics report pdf”, đồng thời chuyển lỗi về caller/UI theo cơ chế của module.
 export const createAnalyticsReportPdf = ({ year, analyticsData }) => {
   const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' })
   const kpis = analyticsData?.kpis || []
   const revenueBars = analyticsData?.revenueBars || []
   const engagementMetrics = analyticsData?.engagementMetrics || []
+  // Thực hiện phần logic “top experts” trong phạm vi trách nhiệm của module hiện tại.
   const topExperts = (analyticsData?.allExperts || analyticsData?.topExperts || []).slice(0, 10)
 
   drawReportHeader(doc, year)
@@ -208,6 +224,7 @@ export const createAnalyticsReportPdf = ({ year, analyticsData }) => {
   return doc
 }
 
+// Thực hiện phần logic “download analytics report pdf” trong phạm vi trách nhiệm của module hiện tại.
 export const downloadAnalyticsReportPdf = ({ year, analyticsData }) => {
   const doc = createAnalyticsReportPdf({ year, analyticsData })
   doc.save(`aitasker-analytics-report-${year}.pdf`)

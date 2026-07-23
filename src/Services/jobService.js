@@ -1,5 +1,13 @@
+/**
+ * Frontend module: Services/jobService.js
+ *
+ * Vai trò: Service job Service: lớp giao tiếp giữa UI và backend API.
+ * Luồng chính: Nhận dữ liệu từ component, gắn token/header, gọi endpoint, chuẩn hóa response và ném Error khi request thất bại.
+ * Lưu ý bảo trì: Component không nên lặp lại URL hoặc logic HTTP đã được đóng gói tại đây.
+ */
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'
 
+// Tạo hoặc gửi dữ liệu cho nghiệp vụ “create job post”, đồng thời chuyển lỗi về caller/UI theo cơ chế của module.
 export const createJobPost = async (data) => {
   try {
     const token = localStorage.getItem('token')
@@ -33,6 +41,7 @@ export const createJobPost = async (data) => {
   }
 }
 
+// Đọc hoặc suy ra dữ liệu cho nghiệp vụ “get my jobs”; không nên tạo side effect ngoài những request đọc đã nêu trong thân hàm.
 export const getMyJobs = async () => {
   try {
     const token = localStorage.getItem('token')
@@ -62,6 +71,7 @@ export const getMyJobs = async () => {
   }
 }
 
+// Đọc hoặc suy ra dữ liệu cho nghiệp vụ “get job by id”; không nên tạo side effect ngoài những request đọc đã nêu trong thân hàm.
 export const getJobById = async (jobId) => {
   try {
     const token = localStorage.getItem('token')
@@ -91,6 +101,7 @@ export const getJobById = async (jobId) => {
    }
 }
 
+// Đọc hoặc suy ra dữ liệu cho nghiệp vụ “get job proposals”; không nên tạo side effect ngoài những request đọc đã nêu trong thân hàm.
 export const getJobProposals = async (jobId) => {
   try {
     const token = localStorage.getItem('token')
@@ -124,6 +135,7 @@ export const getJobProposals = async (jobId) => {
   }
 }
 
+// Thay đổi trạng thái hoặc dữ liệu cho nghiệp vụ “update job post”; cần giữ validation và quyền truy cập trước khi cập nhật.
 export const updateJobPost = async (jobId, data) => {
   try {
     const token = localStorage.getItem('token')
@@ -154,6 +166,7 @@ export const updateJobPost = async (jobId, data) => {
   }
 }
 
+// Thay đổi trạng thái hoặc dữ liệu cho nghiệp vụ “delete job post”; cần giữ validation và quyền truy cập trước khi cập nhật.
 export const deleteJobPost = async (jobId) => {
   try {
     const token = localStorage.getItem('token')

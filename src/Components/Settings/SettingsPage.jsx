@@ -1,3 +1,10 @@
+/**
+ * Frontend module: Components/Settings/SettingsPage.jsx
+ *
+ * Vai trò: Component Settings Page: khối giao diện có thể tái sử dụng trong một hoặc nhiều page.
+ * Luồng chính: Nhận props, render trạng thái tương ứng và báo sự kiện lên component cha qua callback khi cần.
+ * Lưu ý bảo trì: Không thay đổi props; state cục bộ chỉ nên phục vụ hành vi thuộc phạm vi component.
+ */
 import { useEffect, useMemo } from "react"
 import { useNavigate } from "react-router-dom"
 import {
@@ -8,6 +15,7 @@ import {
   X,
 } from "lucide-react"
 
+// React component “Setting Page” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
 const SettingPage = ({ isOpen, onClose, user, role = "Client", onLogout }) => {
   const navigate = useNavigate()
 
@@ -27,6 +35,7 @@ const SettingPage = ({ isOpen, onClose, user, role = "Client", onLogout }) => {
   useEffect(() => {
     if (!isOpen) return
 
+    // Handler “handle key down” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
     const handleKeyDown = (event) => {
       if (event.key === "Escape") onClose?.()
     }
@@ -43,6 +52,7 @@ const SettingPage = ({ isOpen, onClose, user, role = "Client", onLogout }) => {
   if (!isOpen) return null
 
   const isAdmin = String(user?.role || role || "").toLowerCase().includes("admin")
+  // Handler “handle edit profile” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleEditProfile = () => {
     const storedUser = JSON.parse(localStorage.getItem("user") || "{}")
     const userId = user?.id || user?._id || storedUser.id || storedUser._id

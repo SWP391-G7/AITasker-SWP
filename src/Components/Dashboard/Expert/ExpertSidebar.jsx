@@ -1,3 +1,10 @@
+/**
+ * Frontend module: Components/Dashboard/Expert/ExpertSidebar.jsx
+ *
+ * Vai trò: Component Expert Sidebar: khối giao diện có thể tái sử dụng trong một hoặc nhiều page.
+ * Luồng chính: Nhận props, render trạng thái tương ứng và báo sự kiện lên component cha qua callback khi cần.
+ * Lưu ý bảo trì: Không thay đổi props; state cục bộ chỉ nên phục vụ hành vi thuộc phạm vi component.
+ */
 import { Link } from 'react-router-dom'
 import {
   Briefcase,
@@ -20,6 +27,7 @@ const expertMenuItems = [
 // Defensive filter: keep Settings hidden even if the menu array is changed later.
 const visibleExpertMenuItems = expertMenuItems.filter((item) => item.id !== 'settings')
 
+// React component “Expert Sidebar” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
 const ExpertSidebar = ({ activeTab, onTabChange }) => (
   <aside className="admin-sidebar">
     <div className="sidebar-header">

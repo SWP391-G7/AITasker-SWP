@@ -1,7 +1,18 @@
-import React from 'react';
+/**
+ * Frontend module: Components/AI/AISkeletonLoader.jsx
+ *
+ * Vai trò: Component AISkeleton Loader: khối giao diện có thể tái sử dụng trong một hoặc nhiều page.
+ * Luồng chính: Nhận props, render trạng thái tương ứng và báo sự kiện lên component cha qua callback khi cần.
+ * Lưu ý bảo trì: Không thay đổi props; state cục bộ chỉ nên phục vụ hành vi thuộc phạm vi component.
+ */
 import { Sparkles } from 'lucide-react';
 import './AISkeletonLoader.css';
 
+/**
+ * Overlay dùng chung trong thời gian chờ AI.
+ * `message` cho phép từng màn hình mô tả đúng loại nội dung đang được tạo.
+ * Component chỉ trình bày trạng thái; request thật được quản lý ở form cha.
+ */
 const AISkeletonLoader = ({ message = 'AI Engine is designing your scope...' }) => {
   return (
     <div className="ai-skeleton-overlay">
@@ -14,7 +25,7 @@ const AISkeletonLoader = ({ message = 'AI Engine is designing your scope...' }) 
         </div>
         
         <div className="ai-skeleton-body">
-          {/* Skeleton representation of form fields */}
+          {/* Các khối giả lập input/textarea/tag giúp người dùng nhận biết form đang được xử lý. */}
           <div className="skeleton-field-block">
             <div className="skeleton-label shimmer"></div>
             <div className="skeleton-input shimmer" style={{ width: '60%' }}></div>

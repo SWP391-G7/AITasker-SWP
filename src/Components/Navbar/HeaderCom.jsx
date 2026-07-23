@@ -1,3 +1,10 @@
+/**
+ * Frontend module: Components/Navbar/HeaderCom.jsx
+ *
+ * Vai trò: Component Header Com: khối giao diện có thể tái sử dụng trong một hoặc nhiều page.
+ * Luồng chính: Nhận props, render trạng thái tương ứng và báo sự kiện lên component cha qua callback khi cần.
+ * Lưu ý bảo trì: Không thay đổi props; state cục bộ chỉ nên phục vụ hành vi thuộc phạm vi component.
+ */
 import { useEffect, useRef, useState } from "react"
 import { Link, useNavigate, NavLink } from "react-router-dom"
 import { LayoutDashboard, LogOut, Mail, Settings, User } from "lucide-react"
@@ -22,6 +29,7 @@ const getDashboardPathByRole = (role) => {
   return "/client/dashboard"
 }
 
+// Đọc hoặc suy ra dữ liệu cho nghiệp vụ “get messages path by role”; không nên tạo side effect ngoài những request đọc đã nêu trong thân hàm.
 const getMessagesPathByRole = (role) => {
   const normalizedRole = String(role || "").toLowerCase()
 
@@ -32,6 +40,7 @@ const getMessagesPathByRole = (role) => {
   return "/client/messages"
 }
 
+// React component “Header Com” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
 export default function HeaderCom() {
   const navigate = useNavigate()
   const [isLogin, setIsLogin] = useState(() => isLoggedIn())
@@ -42,6 +51,7 @@ export default function HeaderCom() {
   const dropdownRef = useRef(null)
 
   useEffect(() => {
+    // Handler “handle click outside” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setShowDropdown(false)
@@ -60,6 +70,7 @@ export default function HeaderCom() {
 
     let isMounted = true
 
+    // Đọc hoặc suy ra dữ liệu cho nghiệp vụ “fetch pending messages”; không nên tạo side effect ngoài những request đọc đã nêu trong thân hàm.
     const fetchPendingMessages = async () => {
       try {
         const data = await getConversations()
@@ -80,8 +91,10 @@ export default function HeaderCom() {
     }
   }, [isLogin])
 
+  // Handler “close menu” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const closeMenu = () => setIsMenuOpen(false)
 
+  // Handler “handle logout” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleLogout = () => {
     logout()
     setIsLogin(false)
@@ -90,18 +103,21 @@ export default function HeaderCom() {
     navigate("/login")
   }
 
+  // Handler “handle dashboard” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleDashboard = () => {
     setShowDropdown(false)
     const storedUser = getStoredUser()
     navigate(getDashboardPathByRole(storedUser?.role))
   }
 
+  // Handler “handle messages” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleMessages = () => {
     const storedUser = getStoredUser()
     closeMenu()
     navigate(getMessagesPathByRole(storedUser?.role))
   }
 
+  // Handler “handle profile” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleProfile = () => {
     setShowDropdown(false)
     const storedUser = getStoredUser()
@@ -119,6 +135,7 @@ export default function HeaderCom() {
   const currentUser = getStoredUser()
   const currentRole = String(currentUser?.role || "").toLowerCase().includes("expert") ? "Expert" : "Client"
 
+  // Thực hiện phần logic “avatar letter” trong phạm vi trách nhiệm của module hiện tại.
   const avatarLetter = () => {
     const currentUserName = currentUser?.fullName || currentUser?.name || "User"
     return currentUserName.trim().charAt(0).toUpperCase() || "U"

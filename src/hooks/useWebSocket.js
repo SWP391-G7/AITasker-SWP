@@ -1,5 +1,13 @@
+/**
+ * Frontend module: hooks/useWebSocket.js
+ *
+ * Vai trò: Custom hook use Web Socket: gom state, effect và subscription có thể tái sử dụng.
+ * Luồng chính: Nhận dependency từ component, quản lý lifecycle và trả state/callback cần thiết cho giao diện.
+ * Lưu ý bảo trì: Effect phải cleanup timer, listener hoặc socket để tránh memory leak.
+ */
 import { useEffect, useRef } from 'react';
 
+// Custom hook “use web socket” quản lý lifecycle/state dùng lại và phải cleanup tài nguyên khi unmount.
 export default function useWebSocket(onMessageReceived) {
   const wsRef = useRef(null);
   const reconnectTimeoutRef = useRef(null);
@@ -14,6 +22,7 @@ export default function useWebSocket(onMessageReceived) {
     const token = localStorage.getItem('token');
     if (!token) return;
 
+    // Thực hiện phần logic “connect” trong phạm vi trách nhiệm của module hiện tại.
     const connect = () => {
       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
       const wsProto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -72,6 +81,7 @@ export default function useWebSocket(onMessageReceived) {
     };
   }, []);
 
+  // Tạo hoặc gửi dữ liệu cho nghiệp vụ “send”, đồng thời chuyển lỗi về caller/UI theo cơ chế của module.
   const send = (data) => {
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
       wsRef.current.send(JSON.stringify(data));

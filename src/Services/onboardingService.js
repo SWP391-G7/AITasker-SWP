@@ -1,5 +1,13 @@
+/**
+ * Frontend module: Services/onboardingService.js
+ *
+ * Vai trò: Service onboarding Service: lớp giao tiếp giữa UI và backend API.
+ * Luồng chính: Nhận dữ liệu từ component, gắn token/header, gọi endpoint, chuẩn hóa response và ném Error khi request thất bại.
+ * Lưu ý bảo trì: Component không nên lặp lại URL hoặc logic HTTP đã được đóng gói tại đây.
+ */
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'
 
+// Tạo hoặc gửi dữ liệu cho nghiệp vụ “submit client onboarding”, đồng thời chuyển lỗi về caller/UI theo cơ chế của module.
 export const submitClientOnboarding = async (data) => {
   try {
     const token = localStorage.getItem('token')
@@ -38,6 +46,7 @@ export const submitClientOnboarding = async (data) => {
   }
 }
 
+// Tạo hoặc gửi dữ liệu cho nghiệp vụ “submit expert onboarding”, đồng thời chuyển lỗi về caller/UI theo cơ chế của module.
 export const submitExpertOnboarding = async (data) => {
   try {
     const token = localStorage.getItem('token')
@@ -78,6 +87,7 @@ export const submitExpertOnboarding = async (data) => {
   }
 }
 
+// Thay đổi trạng thái hoặc dữ liệu cho nghiệp vụ “update user role”; cần giữ validation và quyền truy cập trước khi cập nhật.
 export const updateUserRole = async (role) => {
   try {
     const token = localStorage.getItem('token')

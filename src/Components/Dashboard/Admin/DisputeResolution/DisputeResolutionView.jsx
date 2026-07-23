@@ -1,3 +1,10 @@
+/**
+ * Frontend module: Components/Dashboard/Admin/DisputeResolution/DisputeResolutionView.jsx
+ *
+ * Vai trò: Component Dispute Resolution View: khối giao diện có thể tái sử dụng trong một hoặc nhiều page.
+ * Luồng chính: Nhận props, render trạng thái tương ứng và báo sự kiện lên component cha qua callback khi cần.
+ * Lưu ý bảo trì: Không thay đổi props; state cục bộ chỉ nên phục vụ hành vi thuộc phạm vi component.
+ */
 import { useEffect, useMemo, useState } from 'react'
 import { getAdminDisputes, resolveAdminDispute } from '../../../../Services/adminDashboardService'
 import ChatSummaryPanel from './ChatSummaryPanel'
@@ -9,6 +16,7 @@ import EvidencePreviewPanel from './EvidencePreviewPanel'
 
 const disputeFilters = ['All Cases', 'Under Review', 'Resolved']
 
+// React component “Dispute Resolution View” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
 const DisputeResolutionView = ({ searchQuery: externalSearchQuery }) => {
   const [disputes, setDisputes] = useState([])
   const [loading, setLoading] = useState(true)
@@ -18,6 +26,7 @@ const DisputeResolutionView = ({ searchQuery: externalSearchQuery }) => {
 
   const searchQuery = externalSearchQuery ?? ''
 
+  // Đọc hoặc suy ra dữ liệu cho nghiệp vụ “load disputes”; không nên tạo side effect ngoài những request đọc đã nêu trong thân hàm.
   const loadDisputes = async () => {
     try {
       setLoading(true)
@@ -79,6 +88,7 @@ const DisputeResolutionView = ({ searchQuery: externalSearchQuery }) => {
     ]
   }, [disputes])
 
+  // Handler “handle resolve submit” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleResolveSubmit = async (disputeId, resolutionData) => {
     await resolveAdminDispute(disputeId, resolutionData)
     await loadDisputes()

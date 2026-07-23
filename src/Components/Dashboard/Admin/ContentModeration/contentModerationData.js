@@ -1,3 +1,10 @@
+/**
+ * Frontend module: Components/Dashboard/Admin/ContentModeration/contentModerationData.js
+ *
+ * Vai trò: Component content Moderation Data: khối giao diện có thể tái sử dụng trong một hoặc nhiều page.
+ * Luồng chính: Nhận props, render trạng thái tương ứng và báo sự kiện lên component cha qua callback khi cần.
+ * Lưu ý bảo trì: Không thay đổi props; state cục bộ chỉ nên phục vụ hành vi thuộc phạm vi component.
+ */
 import expertDavid from '../../../LandingPages/image/expert_david.png'
 import expertElena from '../../../LandingPages/image/expert_elena.png'
 import expertMarcus from '../../../LandingPages/image/expert_marcus.png'

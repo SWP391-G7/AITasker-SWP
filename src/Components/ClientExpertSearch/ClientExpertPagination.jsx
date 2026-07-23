@@ -1,5 +1,13 @@
+/**
+ * Frontend module: Components/ClientExpertSearch/ClientExpertPagination.jsx
+ *
+ * Vai trò: Component Client Expert Pagination: khối giao diện có thể tái sử dụng trong một hoặc nhiều page.
+ * Luồng chính: Nhận props, render trạng thái tương ứng và báo sự kiện lên component cha qua callback khi cần.
+ * Lưu ý bảo trì: Không thay đổi props; state cục bộ chỉ nên phục vụ hành vi thuộc phạm vi component.
+ */
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
+// React component “Client Expert Pagination” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
 const ClientExpertPagination = ({ page, totalPages, onPageChange }) => {
   if (totalPages <= 1) return null;
 

@@ -1,6 +1,14 @@
+/**
+ * Frontend module: Components/Auth/EmailVerificationForm.jsx
+ *
+ * Vai trò: Component Email Verification Form: khối giao diện có thể tái sử dụng trong một hoặc nhiều page.
+ * Luồng chính: Nhận props, render trạng thái tương ứng và báo sự kiện lên component cha qua callback khi cần.
+ * Lưu ý bảo trì: Không thay đổi props; state cục bộ chỉ nên phục vụ hành vi thuộc phạm vi component.
+ */
 import { useCallback, useState, useRef, useEffect } from 'react'
 import * as authService from '../../Services/authService'
 
+// React component “Email Verification” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
 const EmailVerification = ({ email, onVerificationSuccess }) => {
   const [otp, setOtp] = useState(['', '', '', '', '', ''])
   const [isVerifying, setIsVerifying] = useState(false)
@@ -42,6 +50,7 @@ const EmailVerification = ({ email, onVerificationSuccess }) => {
     return () => clearInterval(timer)
   }, [countdown])
 
+  // Handler “handle change” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleChange = (index, value) => {
     if (!/^\d*$/.test(value)) return
 
@@ -55,6 +64,7 @@ const EmailVerification = ({ email, onVerificationSuccess }) => {
     }
   }
 
+  // Handler “handle key down” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleKeyDown = (index, e) => {
     if (e.key === 'Backspace') {
       if (!otp[index] && index > 0) {
@@ -77,6 +87,7 @@ const EmailVerification = ({ email, onVerificationSuccess }) => {
     }
   }
 
+  // Handler “handle paste” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handlePaste = (e) => {
     e.preventDefault()
     const pasteData = e.clipboardData.getData('text').slice(0, 6)
@@ -92,6 +103,7 @@ const EmailVerification = ({ email, onVerificationSuccess }) => {
     inputRefs.current[nextFocusIndex].focus()
   }
 
+  // Handler “handle verify” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleVerify = async () => {
     const code = otp.join('')
     if (code.length < 6) {
@@ -119,12 +131,14 @@ const EmailVerification = ({ email, onVerificationSuccess }) => {
     }
   }
 
+  // Thực hiện phần logic “trigger error” trong phạm vi trách nhiệm của module hiện tại.
   const triggerError = (msg) => {
     setErrorMsg(msg)
     setOtp(['', '', '', '', '', '']) // Xóa toàn bộ mã đã nhập khi có lỗi
     inputRefs.current[0].focus()
   }
 
+  // Handler “handle internal resend” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleInternalResend = async () => {
     if (countdown > 0) return
     

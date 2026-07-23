@@ -1,3 +1,10 @@
+/**
+ * Frontend module: Components/marketplace/DetailCarousel.jsx
+ *
+ * Vai trò: Component Detail Carousel: khối giao diện có thể tái sử dụng trong một hoặc nhiều page.
+ * Luồng chính: Nhận props, render trạng thái tương ứng và báo sự kiện lên component cha qua callback khi cần.
+ * Lưu ý bảo trì: Không thay đổi props; state cục bộ chỉ nên phục vụ hành vi thuộc phạm vi component.
+ */
 import { useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import './DetailCarousel.css';
@@ -10,12 +17,14 @@ const VISUAL_CLASSES = [
   'service-visual-amber',
 ];
 
+// Đọc hoặc suy ra dữ liệu cho nghiệp vụ “get visual class”; không nên tạo side effect ngoài những request đọc đã nêu trong thân hàm.
 const getVisualClass = (id) => {
   if (!id) return VISUAL_CLASSES[0];
   const num = typeof id === 'number' ? id : String(id).split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
   return VISUAL_CLASSES[num % VISUAL_CLASSES.length];
 };
 
+// Chuyển đổi dữ liệu cho “parse images” thành định dạng mà lớp gọi hoặc giao diện cần.
 const parseImages = (imagesData) => {
   if (!imagesData) return [];
   if (Array.isArray(imagesData)) return imagesData;
@@ -33,14 +42,17 @@ const parseImages = (imagesData) => {
   return [];
 };
 
+// React component “Detail Carousel” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
 export default function DetailCarousel({ itemId, images, title }) {
   const imageList = parseImages(images);
   const [activeIndex, setActiveIndex] = useState(0);
 
+  // Handler “handle prev” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handlePrev = () => {
     setActiveIndex((prev) => (prev === 0 ? imageList.length - 1 : prev - 1));
   };
 
+  // Handler “handle next” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleNext = () => {
     setActiveIndex((prev) => (prev === imageList.length - 1 ? 0 : prev + 1));
   };

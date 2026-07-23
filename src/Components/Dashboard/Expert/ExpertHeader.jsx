@@ -1,3 +1,10 @@
+/**
+ * Frontend module: Components/Dashboard/Expert/ExpertHeader.jsx
+ *
+ * Vai trò: Component Expert Header: khối giao diện có thể tái sử dụng trong một hoặc nhiều page.
+ * Luồng chính: Nhận props, render trạng thái tương ứng và báo sự kiện lên component cha qua callback khi cần.
+ * Lưu ý bảo trì: Không thay đổi props; state cục bộ chỉ nên phục vụ hành vi thuộc phạm vi component.
+ */
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Bell, Search, User, Settings, LogOut, ChevronDown } from 'lucide-react'
@@ -7,6 +14,7 @@ import useHandleClickOutside from '../HandleClickOutside'
 import NotificationBell from '../../Navbar/NotificationBell'
 import '../../Navbar/HeaderCom.css'
 
+// React component “Expert Header” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
 const ExpertHeader = ({ title, subtitle, headerActions, notifications, onClearNotifications, searchQuery = '', onSearchChange = () => {}, user, onLogout = () => {} }) => {
   const { isProfileOpen, setIsProfileOpen, dropdownRef } = useHandleClickOutside()
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
@@ -14,6 +22,7 @@ const ExpertHeader = ({ title, subtitle, headerActions, notifications, onClearNo
 
   const currentUser = user || getStoredUser()
 
+  // Thực hiện phần logic “avatar letter” trong phạm vi trách nhiệm của module hiện tại.
   const avatarLetter = () => {
     const currentUserName = currentUser?.fullName || currentUser?.name || "Expert"
     return currentUserName.trim().charAt(0).toUpperCase() || "E"
@@ -26,6 +35,7 @@ const ExpertHeader = ({ title, subtitle, headerActions, notifications, onClearNo
     setIsSettingsOpen(true)
   }
 
+  // Handler “handle profile” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleProfile = () => {
     setIsProfileOpen(false)
     if (currentUser && (currentUser.id || currentUser._id)) {

@@ -1,3 +1,10 @@
+/**
+ * Frontend module: Components/Dashboard/Admin/DisputeResolution/disputeResolutionData.js
+ *
+ * Vai trò: Component dispute Resolution Data: khối giao diện có thể tái sử dụng trong một hoặc nhiều page.
+ * Luồng chính: Nhận props, render trạng thái tương ứng và báo sự kiện lên component cha qua callback khi cần.
+ * Lưu ý bảo trì: Không thay đổi props; state cục bộ chỉ nên phục vụ hành vi thuộc phạm vi component.
+ */
 export const disputeStats = [
   { label: 'Active Disputes', value: '24', note: '+12% increase this week', tone: 'is-info' },
   { label: 'Under Review', value: '08', note: 'Avg. response 4h' },

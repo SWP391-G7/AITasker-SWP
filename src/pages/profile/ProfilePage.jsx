@@ -1,3 +1,10 @@
+/**
+ * Frontend module: pages/profile/ProfilePage.jsx
+ *
+ * Vai trò: Page Profile Page: màn hình cấp route, điều phối dữ liệu và các component con cho một luồng nghiệp vụ hoàn chỉnh.
+ * Luồng chính: Đọc route/location, gọi service trong effect/handler, quản lý loading/error/form rồi truyền props xuống UI con.
+ * Lưu ý bảo trì: Giữ side effect trong handler/effect và không mutate trực tiếp state hoặc dữ liệu API.
+ */
 import { useEffect, useState } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import {
@@ -41,7 +48,18 @@ import {
 } from "../../Services/adminDashboardService";
 import "./ProfilePage.css";
 
+/**
+ * Trang hồ sơ dùng chung cho Client, Expert và Admin.
+ *
+ * Trách nhiệm chính:
+ * - Tải hồ sơ theo `userId` trên URL và chọn đúng chế độ Client/Expert.
+ * - Hiển thị thông tin, thống kê, service hoặc project thuộc người dùng.
+ * - Cho chủ hồ sơ cập nhật thông tin, avatar và dùng AI để tối ưu profile.
+ * - Cho Admin cập nhật tài khoản và kiểm duyệt nội dung của người dùng.
+ */
 function ProfilePage() {
+  // Thông tin điều hướng: URL quyết định hồ sơ cần xem, còn location.state
+  // cho biết người dùng đi tới đây từ màn hình nào để hiển thị nút Back phù hợp.
   const { userId } = useParams()
   const navigate = useNavigate()
   const location = useLocation()
@@ -51,10 +69,13 @@ function ProfilePage() {
   const marketplaceTarget = location.state?.marketplaceTarget
   const backLabel = fromLanding ? "Back to Home" : fromMarketplace ? (marketplaceTarget === "clients" ? "Back to Clients List" : "Back to Experts List") : "Back to Profile"
 
+  // Trạng thái tải dữ liệu chung của toàn trang.
   const [profileData, setProfileData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
   const [activeTab, setActiveTab] = useState("") // "client" or "expert"
+
+  // Trạng thái dành cho các thao tác quản trị tài khoản/nội dung.
   const [showAdminEditModal, setShowAdminEditModal] = useState(false)
   const [adminEditForm, setAdminEditForm] = useState({
     fullName: "",
@@ -66,6 +87,9 @@ function ProfilePage() {
   const [adminActionLoading, setAdminActionLoading] = useState("")
   const [confirmAction, setConfirmAction] = useState(null)
   const [contentModerationConfirm, setContentModerationConfirm] = useState(null)
+
+  // Trạng thái của modal Edit Profile dành cho chính chủ hồ sơ.
+  // Một form được dùng chung; khi submit chỉ các trường thuộc activeTab được gửi.
   const [showOwnEditModal, setShowOwnEditModal] = useState(false)
   const [ownEditForm, setOwnEditForm] = useState({
     fullName: "",
@@ -82,16 +106,26 @@ function ProfilePage() {
   const [ownAvatarPreview, setOwnAvatarPreview] = useState("")
   const [ownEditError, setOwnEditError] = useState("")
   const [ownEditLoading, setOwnEditLoading] = useState(false)
+
+  // Trạng thái riêng của AI để không trộn lẫn với trạng thái đang lưu profile.
+  // `ownEditAiOptimized` chỉ điều khiển badge; dữ liệu AI vẫn nằm trong form
+  // và người dùng có thể sửa tiếp trước khi nhấn Save Changes.
   const [ownEditAiGenerating, setOwnEditAiGenerating] = useState(false)
   const [ownEditAiOptimized, setOwnEditAiOptimized] = useState(false)
   const [ownEditAiError, setOwnEditAiError] = useState("")
 
+  // Các cờ phân quyền được tính từ người đang đăng nhập và hồ sơ đang xem.
   const isOwnProfile = currentUser && String(currentUser.id) === String(userId)
   const currentRole = String(currentUser?.role || "").toLowerCase()
   const isAdminViewer = currentRole.includes("admin")
   const isAdminProfile = String(profileData?.user?.role || currentUser?.role || "").toLowerCase().includes("admin")
 
+  /**
+   * Tải toàn bộ dữ liệu hồ sơ mỗi khi `userId` thay đổi.
+   * API trả cả user, clientProfile, expertProfile, services và projects.
+   */
   useEffect(() => {
+    // Đọc hoặc suy ra dữ liệu cho nghiệp vụ “fetch profile”; không nên tạo side effect ngoài những request đọc đã nêu trong thân hàm.
     const fetchProfile = async () => {
       try {
         setLoading(true)
@@ -123,6 +157,7 @@ function ProfilePage() {
     }
   }, [userId])
 
+  // Chuẩn hóa role thành đường dẫn dashboard tương ứng.
   const getRoleDashboardPath = (role) => {
     const normalizedRole = String(role || "").toLowerCase();
 
@@ -137,11 +172,13 @@ function ProfilePage() {
     return "/client/dashboard";
   };
 
+  // Expert và Client dùng hai route messages khác nhau.
   const getMessagesPath = () => {
     const normalizedRole = String(currentUser?.role || "").toLowerCase();
     return normalizedRole.includes("expert") ? "/expert/messages" : "/client/messages";
   };
 
+  // Đưa người dùng đã đăng nhập về dashboard theo role; khách về landing page.
   const handleBack = () => {
     if (currentUser) {
       navigate(getRoleDashboardPath(currentUser.role));
@@ -150,6 +187,10 @@ function ProfilePage() {
     }
   }
 
+  /**
+   * Tạo hoặc lấy conversation hiện có với chủ hồ sơ rồi mở màn hình chat.
+   * Nếu API conversation lỗi, vẫn chuyển sang messages để người dùng không bị kẹt.
+   */
   const handleContact = async () => {
     if (!currentUser) {
       navigate("/login");
@@ -166,6 +207,7 @@ function ProfilePage() {
     }
   }
 
+  // Chính chủ xem danh sách trong dashboard; người khác xem route public của profile.
   const handleViewAllProfileItems = () => {
     if (isOwnProfile) {
       navigate(activeTab === "expert" ? "/expert/projects" : "/client/projects");
@@ -177,11 +219,16 @@ function ProfilePage() {
     });
   }
 
+  // Tải lại dữ liệu sau mỗi thao tác cập nhật mà không reload toàn bộ trang.
   const refreshProfileData = async () => {
     const data = await getUserProfile(userId)
     setProfileData(data)
   }
 
+  /**
+   * Mở Edit Profile và sao chép dữ liệu API vào form cục bộ.
+   * Việc dùng bản sao giúp Cancel không làm thay đổi dữ liệu đang hiển thị.
+   */
   const openOwnEditModal = () => {
     const targetUser = profileData?.user
     const client = profileData?.clientProfile
@@ -208,6 +255,11 @@ function ProfilePage() {
     setShowOwnEditModal(true)
   }
 
+  /**
+   * Một số màn hình chuyển đến ProfilePage với cờ `openEditProfile`.
+   * Effect này tự mở modal đúng một lần rồi xóa cờ khỏi history state,
+   * tránh modal tự mở lại khi trang render hoặc người dùng Back/Forward.
+   */
   useEffect(() => {
     if (!profileData || !isOwnProfile || !location.state?.openEditProfile) return
 
@@ -253,6 +305,10 @@ function ProfilePage() {
     profileData,
   ])
 
+  /**
+   * Kiểm tra avatar ngay trên client trước khi upload:
+   * chỉ nhận ảnh, tối đa 5 MB, sau đó tạo data URL để preview tức thì.
+   */
   const handleOwnAvatarChange = (event) => {
     const file = event.target.files?.[0]
     if (!file) return
@@ -273,6 +329,11 @@ function ProfilePage() {
     reader.readAsDataURL(file)
   }
 
+  /**
+   * Hợp nhất phản hồi AI vào form hiện tại.
+   * Dùng giá trị cũ làm fallback để một field thiếu trong phản hồi AI
+   * không vô tình xóa nội dung mà người dùng đã nhập.
+   */
   const handleOwnEditAiSuccess = (data) => {
     setOwnEditForm((previousForm) => (
       activeTab === "expert"
@@ -293,6 +354,13 @@ function ProfilePage() {
     setOwnEditAiOptimized(true)
   }
 
+  /**
+   * Lưu Edit Profile:
+   * 1. Validate các trường bắt buộc theo loại hồ sơ.
+   * 2. Cập nhật profile và full name song song.
+   * 3. Chỉ upload avatar nếu người dùng chọn file mới.
+   * 4. Đồng bộ localStorage và tải lại dữ liệu mới nhất từ server.
+   */
   const handleOwnProfileUpdate = async (event) => {
     event.preventDefault()
     const isEditingExpert = activeTab === "expert"
@@ -357,6 +425,7 @@ function ProfilePage() {
     }
   }
 
+  // Chuyển mọi biến thể role từ API về đúng value mà select của Admin sử dụng.
   const getProfileRoleValue = (role) => {
     const normalizedRole = String(role || "").toLowerCase()
     if (normalizedRole === "expert") return "expert"
@@ -364,6 +433,7 @@ function ProfilePage() {
     return "client"
   }
 
+  // Nạp dữ liệu tài khoản hiện tại vào form trước khi Admin chỉnh sửa.
   const openAdminEditModal = () => {
     const targetUser = profileData?.user
     if (!targetUser) return
@@ -378,6 +448,7 @@ function ProfilePage() {
     setShowAdminEditModal(true)
   }
 
+  // Gửi toàn bộ form quản trị và refresh profile khi API thành công.
   const handleAdminUpdateUser = async (event) => {
     event.preventDefault()
 
@@ -394,6 +465,7 @@ function ProfilePage() {
     }
   }
 
+  // Kích hoạt lại tài khoản đang bị vô hiệu hóa.
   const handleAdminActivateUser = async () => {
     try {
       setAdminActionError("")
@@ -407,17 +479,24 @@ function ProfilePage() {
     }
   }
 
+  // `type` là "deactivate" hoặc "delete"; lưu vào state để modal dùng chung.
   const openAdminConfirm = (type) => {
     setAdminActionError("")
     setConfirmAction(type)
   }
 
+  // Không cho đóng confirmation trong lúc request đang chạy.
   const closeAdminConfirm = () => {
     if (adminActionLoading) return
     setConfirmAction(null)
     setAdminActionError("")
   }
 
+  /**
+   * Thực thi hành động nguy hiểm sau khi Admin xác nhận.
+   * Deactivate giữ người dùng ở lại trang để thấy trạng thái mới;
+   * Delete điều hướng về danh sách vì hồ sơ không còn tồn tại.
+   */
   const handleAdminConfirmAction = async () => {
     try {
       setAdminActionError("")
@@ -442,6 +521,7 @@ function ProfilePage() {
     }
   }
 
+  // Biến mã kinh nghiệm lưu trong DB thành nhãn thân thiện với người đọc.
   const getExperienceLabel = (exp) => {
     switch (exp) {
       case "0-1":
@@ -457,6 +537,7 @@ function ProfilePage() {
     }
   }
 
+  // API lưu skills dạng chuỗi phân tách bằng dấu phẩy; UI cần mảng để render pill.
   const getSkills = (skills) => {
     if (!skills) {
       return [];
@@ -468,6 +549,7 @@ function ProfilePage() {
       .filter(Boolean);
   };
 
+  // Format ngày theo locale của trình duyệt và cung cấp fallback nếu DB chưa có ngày.
   const formatDate = (date) => {
     if (!date) {
       return "Recently";
@@ -480,6 +562,7 @@ function ProfilePage() {
     });
   };
 
+  // Chuẩn hóa các giá trị tiền thành USD, đồng thời chặn NaN xuất hiện trên UI.
   const formatCurrency = (value) => {
     const amount = Number(value);
 
@@ -494,6 +577,7 @@ function ProfilePage() {
     });
   };
 
+  // Hỗ trợ cả dữ liệu số và chuỗi cũ có ký hiệu tiền tệ.
   const formatHourlyRate = (value) => {
     if (!value) {
       return "Not specified";
@@ -508,6 +592,7 @@ function ProfilePage() {
     return `${formatCurrency(amount)}/hr`;
   };
 
+  // Lấy trung bình khoảng ngân sách; nếu thiếu một đầu thì dùng đầu còn lại.
   const getAverageProjectBudget = (project) => {
     const min = Number(project.budgetMin);
     const max = Number(project.budgetMax);
@@ -527,12 +612,14 @@ function ProfilePage() {
     return null;
   };
 
+  // Hàm tổng quát để cộng giá trị hợp lệ và bỏ qua null/NaN.
   const sumNumbers = (items, getValue) =>
     items.reduce((total, item) => {
       const value = getValue(item);
       return Number.isFinite(value) ? total + value : total;
     }, 0);
 
+  // Renderer nhỏ dùng chung cho ba ô thống kê ở hero.
   const renderStat = (value, label) => (
     <div className="profile-stat-card">
       <strong>{value}</strong>
@@ -540,11 +627,17 @@ function ProfilePage() {
     </div>
   );
 
+  // Gom các status nghiệp vụ về hai trạng thái UI: đang hiển thị hoặc đã gỡ.
   const isPublishedContent = (status) =>
     ["approved", "open"].includes(String(status || "").toLowerCase());
+  // Đọc hoặc suy ra dữ liệu cho nghiệp vụ “is removed content”; không nên tạo side effect ngoài những request đọc đã nêu trong thân hàm.
   const isRemovedContent = (status) =>
     ["removed", "rejected"].includes(String(status || "").toLowerCase());
 
+  /**
+   * Chuẩn bị modal kiểm duyệt service/job.
+   * stopPropagation ngăn click nút kiểm duyệt kích hoạt điều hướng của cả card.
+   */
   const openAdminContentConfirm = (event, action, contentType, item) => {
     event.stopPropagation();
     setAdminActionError("");
@@ -556,6 +649,7 @@ function ProfilePage() {
     });
   };
 
+  // Chuyển action giao diện thành status backend rồi refresh danh sách.
   const handleAdminContentAction = async () => {
     if (!contentModerationConfirm) return;
     const { action, contentType, contentId } = contentModerationConfirm;
@@ -576,6 +670,7 @@ function ProfilePage() {
     }
   };
 
+  // Render service và các nút publish/unpublish chỉ dành cho Admin.
   const renderServiceCard = (item) => (
     <article
       className="profile-side-item"
@@ -619,6 +714,7 @@ function ProfilePage() {
     </article>
   );
 
+  // Render project/job theo cùng pattern với service card.
   const renderProjectCard = (item) => (
     <article
       className="profile-side-item"
@@ -663,6 +759,7 @@ function ProfilePage() {
   );
 
 
+  // Early return giúp phần giao diện chính không phải lồng thêm điều kiện loading.
   if (loading) {
     return (
       <div className="profile-shell">
@@ -682,6 +779,7 @@ function ProfilePage() {
     );
   }
 
+  // Lỗi tải hồ sơ có màn hình riêng và cho phép quay lại route trước đó.
   if (error) {
     return (
       <div className="profile-shell">
@@ -704,6 +802,7 @@ function ProfilePage() {
     );
   }
 
+  // Từ đây profileData chắc chắn đã tồn tại vì loading/error đã return phía trên.
   const { user, clientProfile, expertProfile, hasClientProfile, hasExpertProfile } = profileData;
   
   // If user is suspended, only allow admin to view
@@ -730,9 +829,11 @@ function ProfilePage() {
     );
   }
 
+  // Các giá trị dẫn xuất dưới đây quyết định nội dung hiển thị của Client/Expert.
   const isExpertView = activeTab === "expert";
   const activeProfile = isExpertView ? expertProfile : clientProfile;
   // API data: profile page calls API once, then pushes response lists through Profile helpers.
+  // Tạo bản sao trước khi sort để không mutate object dữ liệu lấy từ state.
   const sortedServices = [...(profileData.services || [])].sort((a, b) => {
     const priceA = Number(a.price) || 0;
     const priceB = Number(b.price) || 0;
@@ -740,6 +841,7 @@ function ProfilePage() {
   });
   const profileServices = getExpertServicesFromApi(sortedServices);
   const sortedProjects = [...(profileData.projects || [])].sort((a, b) => {
+    // Thực hiện phần logic “avg budget” trong phạm vi trách nhiệm của module hiện tại.
     const avgBudget = (p) => {
       const min = Number(p.budgetMin);
       const max = Number(p.budgetMax);
@@ -763,6 +865,7 @@ function ProfilePage() {
   const averageProjectBudget = profileData.projects?.length
     ? projectBudgetTotal / profileData.projects.length
     : null;
+  // Handler “open project count” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const openProjectCount = (profileData.projects || []).filter((project) =>
     String(project.status || "").toLowerCase().includes("open")
   ).length;
@@ -778,11 +881,13 @@ function ProfilePage() {
   const aboutText = isExpertView
     ? expertProfile?.bio
     : clientProfile?.bio;
+  // Admin không được tự xóa chính mình hoặc thao tác lên một Admin khác tại đây.
   const targetRole = String(user.role || "").toLowerCase();
   const isTargetAdmin = targetRole === "admin";
   const isTargetSuspended = user.accStatus === false || user.status === "Suspended";
   const showAdminActions = isAdminViewer && !isOwnProfile && !isTargetAdmin;
 
+  // Giao diện chính của trang profile sau khi dữ liệu đã sẵn sàng.
   return (
     <div className="profile-shell">
       <HeaderCom />
@@ -793,8 +898,10 @@ function ProfilePage() {
             {backLabel}
           </button>
         </header>
+        {/* Có ít nhất một profile thì render nội dung; nếu không hiển thị onboarding state. */}
         {(hasClientProfile || hasExpertProfile) ? (
           <>
+            {/* Người dùng có cả hai role có thể đổi qua lại giữa hai profile. */}
             {hasClientProfile && hasExpertProfile && (
               <section className="profile-view-switch" aria-label="Select profile view">
                 <button
@@ -812,6 +919,7 @@ function ProfilePage() {
               </section>
             )}
 
+            {/* Layout hai cột: nội dung hồ sơ bên trái, action và danh sách bên phải. */}
             <div className="profile-layout">
               <section className="profile-main-column">
                 <article className="profile-hero-card">
@@ -943,6 +1051,7 @@ function ProfilePage() {
                     <small>{user.role}</small>
                   </div>
                   
+                  {/* Action thay đổi theo quan hệ giữa viewer và chủ hồ sơ. */}
                   {showAdminActions ? (
                     <div className="profile-admin-actions">
                       {adminActionError && <p className="profile-admin-error">{adminActionError}</p>}
@@ -1087,9 +1196,11 @@ function ProfilePage() {
           </section>
         )}
 
+        {/* Modal chỉnh sửa chỉ được mount khi chính chủ yêu cầu mở. */}
         {showOwnEditModal && (
           <div className="profile-admin-modal-overlay" onClick={() => !ownEditLoading && setShowOwnEditModal(false)}>
             <div className="profile-admin-modal profile-owner-edit-modal" onClick={(event) => event.stopPropagation()}>
+              {/* Overlay AI chặn tương tác form trong lúc chờ nội dung từ Gemini. */}
               {ownEditAiGenerating && (
                 <AISkeletonLoader
                   message={
@@ -1135,6 +1246,7 @@ function ProfilePage() {
                   />
                 </label>
 
+                {/* Mỗi loại profile có bộ trường và payload lưu khác nhau. */}
                 {activeTab === "expert" ? (
                   <>
                     <label>
@@ -1198,6 +1310,10 @@ function ProfilePage() {
                           {ownEditAiOptimized && (
                             <span className="ai-sparkle-badge">✨ AI Optimized</span>
                           )}
+                          {/*
+                            AIExtendButton ghép các draft field có dữ liệu và gọi /api/ai/generate.
+                            Prefix tên field giúp model hiểu đúng ý nghĩa từng dòng đầu vào.
+                          */}
                           <AIExtendButton
                             draftFields={[
                               ownEditForm.professionalTitle && `Professional title: ${ownEditForm.professionalTitle}`,
@@ -1254,6 +1370,7 @@ function ProfilePage() {
                           {ownEditAiOptimized && (
                             <span className="ai-sparkle-badge">✨ AI Optimized</span>
                           )}
+                          {/* Client dùng prompt riêng để AI trả companyName, industry và bio. */}
                           <AIExtendButton
                             draftFields={[
                               ownEditForm.companyName && `Company name: ${ownEditForm.companyName}`,
@@ -1302,10 +1419,12 @@ function ProfilePage() {
             </div>
           </div>
         )}
+        {/* Toast nằm ngoài modal để luôn nổi trên overlay và tự đóng sau timeout. */}
         {ownEditAiError && (
           <Toast message={ownEditAiError} onClose={() => setOwnEditAiError("")} />
         )}
 
+        {/* Modal cập nhật thông tin tài khoản dành riêng cho Admin viewer. */}
         {showAdminEditModal && (
           <div className="profile-admin-modal-overlay" onClick={() => setShowAdminEditModal(false)}>
             <div className="profile-admin-modal" onClick={(event) => event.stopPropagation()}>
@@ -1369,6 +1488,7 @@ function ProfilePage() {
           </div>
         )}
 
+        {/* Modal xác nhận dùng chung cho deactivate và delete account. */}
         {confirmAction && (
           <div className="profile-admin-modal-overlay" onClick={closeAdminConfirm}>
             <div className="profile-admin-modal" onClick={(event) => event.stopPropagation()}>
@@ -1402,6 +1522,7 @@ function ProfilePage() {
             </div>
           </div>
         )}
+        {/* Component xác nhận kiểm duyệt service/job được tách riêng để tái sử dụng. */}
         <AdminModerationConfirmModal
           action={contentModerationConfirm?.action}
           contentTitle={contentModerationConfirm?.title}

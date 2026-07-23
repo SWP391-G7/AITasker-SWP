@@ -1,7 +1,16 @@
+/**
+ * Frontend module: Components/Dashboard/Expert/MyProjects/ProjectCard.jsx
+ *
+ * Vai trò: Component Project Card: khối giao diện có thể tái sử dụng trong một hoặc nhiều page.
+ * Luồng chính: Nhận props, render trạng thái tương ứng và báo sự kiện lên component cha qua callback khi cần.
+ * Lưu ý bảo trì: Không thay đổi props; state cục bộ chỉ nên phục vụ hành vi thuộc phạm vi component.
+ */
 import React from 'react';
 import { Calendar, User, DollarSign, Layers, ChevronRight } from 'lucide-react';
 
+// React component “Project Card” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
 const ProjectCard = ({ project }) => {
+  // Đọc hoặc suy ra dữ liệu cho nghiệp vụ “get status style”; không nên tạo side effect ngoài những request đọc đã nêu trong thân hàm.
   const getStatusStyle = (type) => {
     switch (type) {
       case 'active':

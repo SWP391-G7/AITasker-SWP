@@ -1,3 +1,10 @@
+/**
+ * Frontend module: pages/marketplace/ServiceRequestDetailPage.jsx
+ *
+ * Vai trò: Page Service Request Detail Page: màn hình cấp route, điều phối dữ liệu và các component con cho một luồng nghiệp vụ hoàn chỉnh.
+ * Luồng chính: Đọc route/location, gọi service trong effect/handler, quản lý loading/error/form rồi truyền props xuống UI con.
+ * Lưu ý bảo trì: Giữ side effect trong handler/effect và không mutate trực tiếp state hoặc dữ liệu API.
+ */
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
@@ -28,9 +35,12 @@ import "../DashboardPage/Style/AdminDashboardPage.css";
 import "../DashboardPage/Style/ExpertDashboardPage.css";
 import "../DashboardPage/Client/ClientMarketplace.css";
 
+// Chuyển đổi dữ liệu cho “parse money” thành định dạng mà lớp gọi hoặc giao diện cần.
 const parseMoney = (value) => Number(String(value || '0').replace(/[^0-9.]/g, '')) || 0;
+// Chuyển đổi dữ liệu cho “format money” thành định dạng mà lớp gọi hoặc giao diện cần.
 const formatMoney = (value) => `$${parseMoney(value).toLocaleString()}`;
 
+// React component “Service Request Detail Page” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
 function ServiceRequestDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -109,6 +119,7 @@ function ServiceRequestDetailPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Handler “handle tab change” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleTabChange = (tabId) => {
     if (isExpert) {
       if (tabId === "dashboard") navigate("/expert/dashboard");
@@ -269,6 +280,7 @@ function ServiceRequestDetailPage() {
     }
   };
 
+  // Handler “handle payment source” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handlePaymentSource = async (paymentSource) => {
     try {
       setSubmitting(true);

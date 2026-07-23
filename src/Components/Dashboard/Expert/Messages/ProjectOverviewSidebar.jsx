@@ -1,6 +1,14 @@
+/**
+ * Frontend module: Components/Dashboard/Expert/Messages/ProjectOverviewSidebar.jsx
+ *
+ * Vai trò: Component Project Overview Sidebar: khối giao diện có thể tái sử dụng trong một hoặc nhiều page.
+ * Luồng chính: Nhận props, render trạng thái tương ứng và báo sự kiện lên component cha qua callback khi cần.
+ * Lưu ý bảo trì: Không thay đổi props; state cục bộ chỉ nên phục vụ hành vi thuộc phạm vi component.
+ */
 import React from 'react';
 import { FileText, Image, Table, ExternalLink } from 'lucide-react';
 
+// React component “Project Overview Sidebar” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
 const ProjectOverviewSidebar = ({ conversation }) => {
   if (!conversation) return null;
 

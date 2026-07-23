@@ -1,5 +1,13 @@
+/**
+ * Frontend module: Services/messageService.js
+ *
+ * Vai trò: Service message Service: lớp giao tiếp giữa UI và backend API.
+ * Luồng chính: Nhận dữ liệu từ component, gắn token/header, gọi endpoint, chuẩn hóa response và ném Error khi request thất bại.
+ * Lưu ý bảo trì: Component không nên lặp lại URL hoặc logic HTTP đã được đóng gói tại đây.
+ */
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
+// Đọc hoặc suy ra dữ liệu cho nghiệp vụ “get conversations”; không nên tạo side effect ngoài những request đọc đã nêu trong thân hàm.
 export const getConversations = async () => {
   const token = localStorage.getItem('token');
   if (!token) {
@@ -21,6 +29,7 @@ export const getConversations = async () => {
   return result.data || [];
 };
 
+// Đọc hoặc suy ra dữ liệu cho nghiệp vụ “get or create conversation”; không nên tạo side effect ngoài những request đọc đã nêu trong thân hàm.
 export const getOrCreateConversation = async (targetId) => {
   const token = localStorage.getItem('token');
   if (!token) {
@@ -44,6 +53,7 @@ export const getOrCreateConversation = async (targetId) => {
   return result.data;
 };
 
+// Đọc hoặc suy ra dữ liệu cho nghiệp vụ “get conversation messages”; không nên tạo side effect ngoài những request đọc đã nêu trong thân hàm.
 export const getConversationMessages = async (conversationId) => {
   const token = localStorage.getItem('token');
   if (!token) {
@@ -65,6 +75,7 @@ export const getConversationMessages = async (conversationId) => {
   return result.data || [];
 };
 
+// Tạo hoặc gửi dữ liệu cho nghiệp vụ “send message”, đồng thời chuyển lỗi về caller/UI theo cơ chế của module.
 export const sendMessage = async (conversationId, content) => {
   const token = localStorage.getItem('token');
   if (!token) {
@@ -88,6 +99,7 @@ export const sendMessage = async (conversationId, content) => {
   return result.data;
 };
 
+// Thay đổi trạng thái hoặc dữ liệu cho nghiệp vụ “remove message”; cần giữ validation và quyền truy cập trước khi cập nhật.
 export const removeMessage = async (messageId) => {
   const token = localStorage.getItem('token');
   if (!token) {

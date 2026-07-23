@@ -1,3 +1,10 @@
+/**
+ * Frontend module: pages/marketplace/ServiceDetailPage.jsx
+ *
+ * Vai trò: Page Service Detail Page: màn hình cấp route, điều phối dữ liệu và các component con cho một luồng nghiệp vụ hoàn chỉnh.
+ * Luồng chính: Đọc route/location, gọi service trong effect/handler, quản lý loading/error/form rồi truyền props xuống UI con.
+ * Lưu ý bảo trì: Giữ side effect trong handler/effect và không mutate trực tiếp state hoặc dữ liệu API.
+ */
 import { useState, useEffect, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { ArrowLeft, CheckCircle2, Clock, Loader2, AlertCircle, Star, XCircle, Send, EyeOff } from 'lucide-react'
@@ -13,6 +20,7 @@ import '../../Components/marketplace/Marketplace.css'
 import '../Style/ServiceDetail.css'
 import AdminModerationConfirmModal from '../../Components/Dashboard/Admin/AdminModerationConfirmModal'
 
+// React component “Service Detail Page” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
 const ServiceDetailPage = () => {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -58,6 +66,7 @@ const ServiceDetailPage = () => {
   }, [])
 
   useEffect(() => {
+    // Đọc hoặc suy ra dữ liệu cho nghiệp vụ “fetch detail”; không nên tạo side effect ngoài những request đọc đã nêu trong thân hàm.
     const fetchDetail = async () => {
       try {
         setLoading(true)
@@ -81,6 +90,7 @@ const ServiceDetailPage = () => {
     fetchDetail()
   }, [id, currentUserRole, fetchReviews])
 
+  // Handler “handle review submit” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleReviewSubmit = async ({ target_id, stars, review }) => {
     setSubmitting(true)
     try {
@@ -93,6 +103,7 @@ const ServiceDetailPage = () => {
     }
   }
 
+  // Handler “handle moderate service” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleModerateService = async (status) => {
     try {
       setModerationAction(status)
@@ -107,6 +118,7 @@ const ServiceDetailPage = () => {
     }
   }
 
+  // Thực hiện phần logic “confirm moderation action” trong phạm vi trách nhiệm của module hiện tại.
   const confirmModerationAction = () => {
     const status = ['approve', 'republish'].includes(moderationConfirmAction) ? 'approved' : 'removed'
     handleModerateService(status)

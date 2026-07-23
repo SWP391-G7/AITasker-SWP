@@ -1,3 +1,10 @@
+/**
+ * Frontend module: pages/profile/ProfilePage.css
+ *
+ * Vai trò: Page Profile Page: màn hình cấp route, điều phối dữ liệu và các component con cho một luồng nghiệp vụ hoàn chỉnh.
+ * Luồng chính: Đọc route/location, gọi service trong effect/handler, quản lý loading/error/form rồi truyền props xuống UI con.
+ * Lưu ý bảo trì: Giữ side effect trong handler/effect và không mutate trực tiếp state hoặc dữ liệu API.
+ */
 .profile-shell {
   min-height: 100vh;
   background-color: var(--bg-primary);
@@ -846,6 +853,11 @@
     padding: 24px;
   }
 }
+/*
+ * Modal Edit Profile có thể dài hơn viewport do số trường của Expert.
+ * Giới hạn chiều cao và cho cuộn nội bộ để header/footer trang không bị kéo dài.
+ * position: relative cũng là mốc định vị cho AI skeleton overlay.
+ */
 .profile-owner-edit-modal {
   max-height: calc(100vh - 40px);
   max-width: 620px;
@@ -853,6 +865,7 @@
   position: relative;
 }
 
+/* Đồng bộ textarea với input/select đang dùng trong modal quản trị. */
 .profile-owner-edit-modal textarea {
   background: rgba(15, 23, 42, 0.68);
   border: 1px solid rgba(148, 163, 184, 0.16);
@@ -867,12 +880,14 @@
   width: 100%;
 }
 
+/* Bao field Bio và khu vực điều khiển AI thành một nhóm form thống nhất. */
 .profile-ai-edit-field {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
+/* Đặt label bên trái, badge và nút AI bên phải trên màn hình đủ rộng. */
 .profile-ai-edit-heading {
   align-items: center;
   display: flex;
@@ -884,6 +899,7 @@
   margin: 0;
 }
 
+/* Cho phép badge/nút xuống hàng nếu nội dung dài hoặc modal bị thu nhỏ. */
 .profile-ai-edit-actions {
   align-items: center;
   display: flex;
@@ -892,6 +908,7 @@
   justify-content: flex-end;
 }
 
+/* Trên mobile, xếp phần điều khiển AI xuống dưới label để không tràn modal. */
 @media (max-width: 560px) {
   .profile-ai-edit-heading {
     align-items: flex-start;

@@ -1,3 +1,10 @@
+/**
+ * Frontend module: Components/Profile/Client/ClientProject.js
+ *
+ * Vai trò: Component Client Project: khối giao diện có thể tái sử dụng trong một hoặc nhiều page.
+ * Luồng chính: Nhận props, render trạng thái tương ứng và báo sự kiện lên component cha qua callback khi cần.
+ * Lưu ý bảo trì: Không thay đổi props; state cục bộ chỉ nên phục vụ hành vi thuộc phạm vi component.
+ */
 export const clientProjects = [
   {
     id: 1,
@@ -31,6 +38,7 @@ const projectVisualClasses = [
   "service-visual-network",
 ];
 
+// Chuyển đổi dữ liệu cho “format project budget” thành định dạng mà lớp gọi hoặc giao diện cần.
 const formatProjectBudget = (value) => {
   const amount = Number(value);
 

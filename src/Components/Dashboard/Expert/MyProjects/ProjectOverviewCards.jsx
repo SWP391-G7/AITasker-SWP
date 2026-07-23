@@ -1,6 +1,14 @@
+/**
+ * Frontend module: Components/Dashboard/Expert/MyProjects/ProjectOverviewCards.jsx
+ *
+ * Vai trò: Component Project Overview Cards: khối giao diện có thể tái sử dụng trong một hoặc nhiều page.
+ * Luồng chính: Nhận props, render trạng thái tương ứng và báo sự kiện lên component cha qua callback khi cần.
+ * Lưu ý bảo trì: Không thay đổi props; state cục bộ chỉ nên phục vụ hành vi thuộc phạm vi component.
+ */
 import React from 'react';
 import { Briefcase, DollarSign, Clock, TrendingUp } from 'lucide-react';
 
+// React component “Project Overview Cards” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
 const ProjectOverviewCards = ({
   activeContracts = 12,
   totalRevenue = '$24,850',

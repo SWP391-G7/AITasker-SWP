@@ -1,3 +1,10 @@
+/**
+ * Frontend module: pages/projects/ProjectDetailPage.jsx
+ *
+ * Vai trò: Page Project Detail Page: màn hình cấp route, điều phối dữ liệu và các component con cho một luồng nghiệp vụ hoàn chỉnh.
+ * Luồng chính: Đọc route/location, gọi service trong effect/handler, quản lý loading/error/form rồi truyền props xuống UI con.
+ * Lưu ý bảo trì: Giữ side effect trong handler/effect và không mutate trực tiếp state hoặc dữ liệu API.
+ */
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
@@ -74,6 +81,7 @@ const STATUS_COLORS = {
   disputed:          { bg: 'rgba(239,68,68,0.2)',    color: '#f87171' },
 };
 
+// React component “Status Badge” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
 function StatusBadge({ status }) {
   const s = STATUS_COLORS[status] || { bg: 'rgba(255,255,255,0.05)', color: '#fff' };
   return (
@@ -130,7 +138,9 @@ const btnIndigo = { ...btnGreen, backgroundColor: '#4f46e5' };
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const fmtDate  = (d) => d ? new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
+// Thực hiện phần logic “fmt money” trong phạm vi trách nhiệm của module hiện tại.
 const fmtMoney = (v) => `$${parseFloat(v || 0).toLocaleString()}`;
+// Đọc hoặc suy ra dữ liệu cho nghiệp vụ “get milestone settlement”; không nên tạo side effect ngoài những request đọc đã nêu trong thân hàm.
 const getMilestoneSettlement = (milestone) => {
   const amount = parseFloat(milestone?.amount || 0);
   if (milestone?.status === 'finished' && milestone.released_amount != null) {
@@ -244,6 +254,7 @@ export default function ProjectDetailPage() {
       setError('');
       const data = await getProjectById(projectId);
       setProject(data.project);
+      // Thực hiện phần logic “ms” trong phạm vi trách nhiệm của module hiện tại.
       const ms = (data.milestones || []).sort((a, b) => (a.position || 0) - (b.position || 0));
       setMilestones(ms);
 
@@ -283,7 +294,9 @@ export default function ProjectDetailPage() {
 
   // ── Draft helpers ─────────────────────────────────────────────────────────
   const addDraft    = () => setDrafts(p => [...p, { localId: Date.now(), title: '', content: '', amount: '', delivery_days: '', change_request_note: null }]);
+  // Thay đổi trạng thái hoặc dữ liệu cho nghiệp vụ “remove draft”; cần giữ validation và quyền truy cập trước khi cập nhật.
   const removeDraft = (lid) => setDrafts(p => p.filter(d => d.localId !== lid));
+  // Thay đổi trạng thái hoặc dữ liệu cho nghiệp vụ “edit draft”; cần giữ validation và quyền truy cập trước khi cập nhật.
   const editDraft   = (lid, field, val) => setDrafts(p => p.map(d => d.localId === lid ? { ...d, [field]: val } : d));
 
   // ── Generic async action wrapper ──────────────────────────────────────────
@@ -317,6 +330,7 @@ export default function ProjectDetailPage() {
     }))));
   };
 
+  // Handler “handle approve plan” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleApprovePlan = () => {
     const projectDuration = parseInt(project?.duration_days || 0, 10);
     const planDuration = planMilestones.reduce((sum, milestone) => sum + parseInt(milestone.delivery_days || 0, 10), 0);
@@ -328,6 +342,7 @@ export default function ProjectDetailPage() {
     wrap(() => approveMilestonePlan(projectId, approvesExtension));
   };
 
+  // Handler “handle request changes” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleRequestChanges = () => {
     wrap(async () => {
       await requestMilestonePlanChanges(projectId, changeNotes);
@@ -335,11 +350,13 @@ export default function ProjectDetailPage() {
     });
   };
 
+  // Handler “handle start” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleStart = (id) => {
     if (!window.confirm('Start this milestone? The deadline will be calculated from today.')) return;
     wrap(() => startMilestone(id));
   };
 
+  // Handler “handle submit deliverable” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleSubmitDeliverable = () => {
     if (!deliverableForm.url.trim()) { setActionErr('A deliverable URL is required.'); return; }
     wrap(async () => {
@@ -351,6 +368,7 @@ export default function ProjectDetailPage() {
     });
   };
 
+  // Handler “handle approve deliverable” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleApproveDeliverable = (id) => {
     const milestone = milestones.find(item => item.id === id);
     const settlement = getMilestoneSettlement(milestone);
@@ -361,6 +379,7 @@ export default function ProjectDetailPage() {
     wrap(() => approveDeliverable(id));
   };
 
+  // Handler “handle request revision” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleRequestRevision = () => {
     wrap(async () => {
       await requestRevision(revisionModal.milestoneId, revisionNote);
@@ -368,6 +387,7 @@ export default function ProjectDetailPage() {
     });
   };
 
+  // Handler “handle request extension” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleRequestExtension = (id) => {
     const daysInput = window.prompt('How many additional days do you need? (1-90)');
     if (daysInput === null) return;
@@ -385,6 +405,7 @@ export default function ProjectDetailPage() {
     wrap(() => requestMilestoneExtension(id, additionalDays, reason.trim()));
   };
 
+  // Handler “handle respond extension” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleRespondExtension = (id, action) => {
     const milestone = milestones.find(item => item.id === id);
     const days = milestone?.extension_requested_days || 0;
@@ -398,6 +419,7 @@ export default function ProjectDetailPage() {
     wrap(() => respondMilestoneExtension(id, 'reject', note.trim()));
   };
 
+  // Handler “handle pay” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handlePay = (id) => {
     if (!window.confirm('Confirm payment for this milestone?')) return;
     wrap(async () => {
@@ -406,11 +428,13 @@ export default function ProjectDetailPage() {
     });
   };
 
+  // Handler “handle close project” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleCloseProject = () => {
     if (!window.confirm('Close this project? This cannot be undone.')) return;
     wrap(() => closeProject(projectId));
   };
 
+  // Handler “handle raise dispute” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleRaiseDispute = () => {
     if (!disputeForm.title.trim() || !disputeForm.content.trim()) {
       setActionErr('Dispute title and description are required.');
