@@ -137,7 +137,15 @@ const UserManagementTable = ({
             <tr key={user.id}>
               <td>
                 <div className="user-cell">
-                  <span className={`user-avatar avatar-${user.id}`}>{user.avatar}</span>
+                  {user.avatarUrl ? (
+                    <img
+                      className="user-avatar user-avatar-image"
+                      src={user.avatarUrl}
+                      alt={`${user.name} avatar`}
+                    />
+                  ) : (
+                    <span className={`user-avatar avatar-${user.id}`}>{user.avatar}</span>
+                  )}
                   <span>
                     <strong>{user.name}</strong>
                     <small>{user.email}</small>

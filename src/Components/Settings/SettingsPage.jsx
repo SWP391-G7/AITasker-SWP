@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   CreditCard,
@@ -10,7 +10,6 @@ import {
 
 const SettingPage = ({ isOpen, onClose, user, role = "Client", onLogout }) => {
   const navigate = useNavigate();
-  const [isTwoFactorEnabled, setIsTwoFactorEnabled] = useState(false);
 
   const profile = useMemo(() => {
     const displayName = user?.fullName || user?.name || (role === "Expert" ? "Expert User" : "Client User");
@@ -43,6 +42,7 @@ const SettingPage = ({ isOpen, onClose, user, role = "Client", onLogout }) => {
 
   if (!isOpen) return null;
 
+  const isAdmin = String(user?.role || role || "").toLowerCase().includes("admin");
   const handleEditProfile = () => {
     const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
     const userId = user?.id || user?._id || storedUser.id || storedUser._id;
@@ -80,13 +80,15 @@ const SettingPage = ({ isOpen, onClose, user, role = "Client", onLogout }) => {
                   <p>{profile.email}</p>
                 </div>
               </div>
-              <button
-                className="settings-primary-btn"
-                type="button"
-                onClick={handleEditProfile}
-              >
-                Edit Profile
-              </button>
+              {!isAdmin && (
+                <button
+                  className="settings-primary-btn"
+                  type="button"
+                  onClick={handleEditProfile}
+                >
+                  Edit Profile
+                </button>
+              )}
             </div>
           </div>
 

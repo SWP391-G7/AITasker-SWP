@@ -327,6 +327,10 @@
   width: 38px;
 }
 
+.user-avatar-image {
+  object-fit: cover;
+}
+
 .avatar-1 {
   background: linear-gradient(135deg, #0f766e, #1d4ed8);
 }

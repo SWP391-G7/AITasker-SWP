@@ -220,6 +220,7 @@ export const buildManagedUsers = (users = []) =>
       // Nếu thiếu thì dùng "From API" để báo dữ liệu đến từ API nhưng chưa có ngày.
       joined: user.created_at ? new Date(user.created_at).toLocaleDateString() : 'From API',
       avatar: initials,
+      avatarUrl: user.avatar_url || user.avatarUrl || null,
     }
   })
 

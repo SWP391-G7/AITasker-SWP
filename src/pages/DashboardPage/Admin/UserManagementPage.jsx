@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { UserPlus, X, Loader2, Info, Trash2, ShieldAlert } from 'lucide-react'
+import { X, Loader2, Info, Trash2, ShieldAlert } from 'lucide-react'
 import AdminHeader from '../../../Components/Dashboard/Admin/AdminHeader'
 import AdminSidebar from '../../../Components/Dashboard/Admin/AdminSidebar'
 import UserManagementStats from '../../../Components/Dashboard/Admin/UserManagement/UserManagementStats'
@@ -281,9 +281,17 @@ const UserManagementPage = ({ onLogout }) => {
               </div>
               <div className="modal-body" style={{ color: '#94a3b8', fontSize: '0.95rem', lineHeight: '1.8' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
-                  <span className={`user-avatar avatar-${selectedUser.id}`} style={{ width: '60px', height: '60px', fontSize: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', background: 'rgba(99,102,241,0.1)', color: '#a5b4fc', fontWeight: 'bold' }}>
-                    {selectedUser.avatar}
-                  </span>
+                  {selectedUser.avatarUrl ? (
+                    <img
+                      src={selectedUser.avatarUrl}
+                      alt={`${selectedUser.name} avatar`}
+                      style={{ width: '60px', height: '60px', flexShrink: 0, borderRadius: '50%', objectFit: 'cover', border: '1px solid rgba(255,255,255,0.12)' }}
+                    />
+                  ) : (
+                    <span className={`user-avatar avatar-${selectedUser.id}`} style={{ width: '60px', height: '60px', fontSize: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', background: 'rgba(99,102,241,0.1)', color: '#a5b4fc', fontWeight: 'bold' }}>
+                      {selectedUser.avatar}
+                    </span>
+                  )}
                   <div>
                     <h4 style={{ color: '#fff', margin: 0, fontSize: '1.2rem' }}>{selectedUser.name}</h4>
                     <p style={{ margin: 0, fontSize: '0.85rem', color: '#64748b' }}>User ID: {selectedUser.id}</p>
