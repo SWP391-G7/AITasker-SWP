@@ -420,7 +420,8 @@ export const buildLiveAnalytics = (data = {}) => {
         tone: 'rose',
       },
     ],
-    topExperts: (data.topExperts || []).map((expert) => ({
+    // Keep the UI capped at five rows even if a future API version returns more experts.
+    topExperts: (data.topExperts || []).slice(0, 5).map((expert) => ({
       id: expert.id,
       name: expert.name || 'AI Expert',
       avatar: expert.avatarUrl || null,

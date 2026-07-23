@@ -1,8 +1,7 @@
 const TopExpertsTable = ({ experts }) => (
   <section className="analytics-experts-section">
     <div className="analytics-experts-heading">
-      <h2>Top Performing AI Experts</h2>
-      <button type="button">View Full Leaderboard</button>
+      <h2>Top 5 Performing AI Experts</h2>
     </div>
 
     <div className="analytics-experts-table-wrap">
