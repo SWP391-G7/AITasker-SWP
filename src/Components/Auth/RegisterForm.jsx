@@ -88,9 +88,9 @@ function RegisterForm() {
         password: formData.password,
       })
 
-      navigate("/login", {
+      navigate("/verify", {
         replace: true,
-        state: { message: "Account created successfully. Please log in." },
+        state: { email: formData.email, codeSent: true },
       })
     } catch (err) {
       setError(err.message || "Register failed. Please try again.")

@@ -9,7 +9,7 @@ import { useCallback, useState, useRef, useEffect } from 'react'
 import * as authService from '../../Services/authService'
 
 // React component “Email Verification” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
-const EmailVerification = ({ email, onVerificationSuccess }) => {
+const EmailVerification = ({ email, codeSentInitially = false, onVerificationSuccess }) => {
   const [otp, setOtp] = useState(['', '', '', '', '', ''])
   const [isVerifying, setIsVerifying] = useState(false)
   const [isResending, setIsResending] = useState(false)
@@ -31,13 +31,15 @@ const EmailVerification = ({ email, onVerificationSuccess }) => {
     }
   }, [email])
 
-  // Auto-focus vào ô đầu tiên
+  // Auto-focus input & send initial code if not sent during registration
   useEffect(() => {
     if (inputRefs.current[0]) {
       inputRefs.current[0].focus()
     }
-    queueMicrotask(sendCodeToEmail)
-  }, [sendCodeToEmail])
+    if (!codeSentInitially) {
+      queueMicrotask(sendCodeToEmail)
+    }
+  }, [codeSentInitially, sendCodeToEmail])
 
   // Countdown timer logic
   useEffect(() => {
@@ -141,7 +143,7 @@ const EmailVerification = ({ email, onVerificationSuccess }) => {
   // Handler “handle internal resend” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleInternalResend = async () => {
     if (countdown > 0) return
-    
+
     setIsResending(true)
     try {
       await authService.sendVerificationCode(email)
