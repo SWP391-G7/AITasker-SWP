@@ -187,7 +187,7 @@ export default function ProjectDetailPage() {
   );
 
   const planMilestones = useMemo(
-    () => sorted.filter(m => ['planning', 'change_requested'].includes(m.status)),
+    () => sorted.filter(m => ['planning', 'change_requested', 'Pending', 'Declined'].includes(m.status)),
     [sorted]
   );
 
