@@ -77,7 +77,10 @@ function RegisterForm() {
         password: formData.password,
       })
 
-      navigate("/verify-email", { state: { email: formData.email } })
+      navigate("/login", {
+        replace: true,
+        state: { message: "Account created successfully. Please log in." },
+      })
     } catch (err) {
       setError(err.message || "Register failed. Please try again.")
     } finally {
@@ -230,7 +233,7 @@ function RegisterForm() {
 
       <div className="bottom-text">
         Already have an account?{" "}
-        <button type="button" onClick={() => navigate("/onboarding")} disabled={isLoading}>
+        <button type="button" onClick={() => navigate("/login")} disabled={isLoading}>
           Log in
         </button>
       </div>
