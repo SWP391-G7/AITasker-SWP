@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { ArrowLeft, CheckCircle2, Clock, Loader2, AlertCircle, Star, XCircle, Send } from 'lucide-react'
+import { ArrowLeft, CheckCircle2, Clock, Loader2, AlertCircle, Star, XCircle, Send, EyeOff } from 'lucide-react'
 import Footer from '../../Components/Footer/Footer'
 import { getServiceById } from '../../Services/serviceService'
 import { updateContentStatus } from '../../Services/adminDashboardService'
@@ -37,6 +37,10 @@ const ServiceDetailPage = () => {
   const canModerateService = isAdmin && service?.status === 'pending'
   const currentUserId = currentUser?.id || null
   const currentUserRole = currentUser?.role || null
+  const serviceStatus = String(service?.status || '').toLowerCase();
+  //const canModerateService = isAdmin && serviceStatus === 'pending';
+  const canUnpublishService = isAdmin && ['approved', 'open'].includes(serviceStatus);
+  const canRepublishService = isAdmin && ['removed', 'rejected'].includes(serviceStatus);
 
   const fetchReviews = useCallback(async (serviceId) => {
     if (!serviceId) return
