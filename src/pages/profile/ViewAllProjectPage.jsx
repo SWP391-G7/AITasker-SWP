@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { CalendarDays, ChevronRight, DollarSign, Layers, UserRound, X } from "lucide-react";
+import { CalendarDays, ChevronRight, DollarSign, EyeOff, Layers, RefreshCcw, UserRound, X } from "lucide-react";
 import { getUserProfile } from "../../Services/profileService";
 import { getStoredUser } from "../../Services/checkLogin";
 import { getClientProjectsFromApi } from "../../Components/Profile/Client/ClientProject";
+import { updateContentStatus } from "../../Services/adminDashboardService";
+import AdminModerationConfirmModal from "../../Components/Dashboard/Admin/AdminModerationConfirmModal";
 import "./ProfilePage.css";
 import "./ViewAllProfileItems.css";
 
@@ -16,10 +18,12 @@ function ViewAllProjectPage() {
   const [profileData, setProfileData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [actionError, setActionError] = useState("");
+  const [unpublishingId, setUnpublishingId] = useState(null);
+  const [unpublishConfirm, setUnpublishConfirm] = useState(null);
 
   const currentRole = String(currentUser?.role || "").toLowerCase();
-  const profileRole = String(profileData?.user?.role || "").toLowerCase();
-  const isSameRole = currentRole && profileRole && currentRole === profileRole;
+  const isAdminViewer = currentRole.includes("admin");
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -75,6 +79,27 @@ function ViewAllProjectPage() {
     navigate(`/marketplace/task/${projectId}`);
   };
 
+  const handleUnpublish = async (projectId, action = "unpublish") => {
+    const nextStatus = action === "republish" ? "open" : "removed";
+    try {
+      setActionError("");
+      setUnpublishingId(projectId);
+      await updateContentStatus("job", projectId, action === "republish" ? "approved" : "removed");
+      setProfileData((current) => ({
+        ...current,
+        projects: (current?.projects || []).map((project) =>
+          project.id === projectId ? { ...project, status: nextStatus } : project
+        ),
+      }));
+      setUnpublishConfirm(null);
+    } catch (err) {
+      setActionError(err.message || "Failed to update project.");
+      setUnpublishConfirm(null);
+    } finally {
+      setUnpublishingId(null);
+    }
+  };
+
   const projects = getClientProjectsFromApi(profileData?.projects || []);
   const rawProjects = profileData?.projects || [];
   const actionLabel = "View Detail";
@@ -96,6 +121,7 @@ function ViewAllProjectPage() {
         <div className="view-all-modal-body">
           {loading && <div className="view-all-state">Loading projects...</div>}
           {error && <div className="view-all-state">{error}</div>}
+          {actionError && <div className="view-all-action-error">{actionError}</div>}
 
           {!loading && !error && projects.length === 0 && (
             <div className="view-all-empty">This client has not posted any projects yet.</div>
@@ -147,7 +173,7 @@ function ViewAllProjectPage() {
                         </div>
                       </div>
                     </div>
-                    <div className="view-all-side-actions">
+                    <div className={`view-all-side-actions ${isAdminViewer ? "has-admin-actions" : ""}`}>
                       <span className="view-all-status-pill">{project.status}</span>
                       <button
                         className="view-all-action-btn"
@@ -156,6 +182,28 @@ function ViewAllProjectPage() {
                       >
                         {actionLabel}
                       </button>
+                      {isAdminViewer && ["approved", "open"].includes(String(rawProject.status || "").toLowerCase()) && (
+                        <button
+                          className="view-all-action-btn is-unpublish"
+                          type="button"
+                          onClick={() => setUnpublishConfirm({ action: "unpublish", id: project.id, title: project.title })}
+                          disabled={unpublishingId === project.id}
+                        >
+                          <EyeOff size={14} />
+                          {unpublishingId === project.id ? "Unpublishing..." : "Unpublish"}
+                        </button>
+                      )}
+                      {isAdminViewer && ["removed", "rejected"].includes(String(rawProject.status || "").toLowerCase()) && (
+                        <button
+                          className="view-all-action-btn is-republish"
+                          type="button"
+                          onClick={() => setUnpublishConfirm({ action: "republish", id: project.id, title: project.title })}
+                          disabled={unpublishingId === project.id}
+                        >
+                          <RefreshCcw size={14} />
+                          {unpublishingId === project.id ? "Publishing..." : "Publish Again"}
+                        </button>
+                      )}
                       <ChevronRight size={24} className="view-all-chevron" />
                     </div>
                   </article>
@@ -165,6 +213,13 @@ function ViewAllProjectPage() {
           )}
         </div>
       </section>
+      <AdminModerationConfirmModal
+        action={unpublishConfirm?.action}
+        contentTitle={unpublishConfirm?.title}
+        loading={unpublishingId === unpublishConfirm?.id}
+        onCancel={() => setUnpublishConfirm(null)}
+        onConfirm={() => handleUnpublish(unpublishConfirm?.id, unpublishConfirm?.action)}
+      />
     </div>
   );
 }

@@ -97,7 +97,13 @@ const ServiceDetailPage = () => {
       setModerationError(err.message || 'Failed to update service status.')
     } finally {
       setModerationAction('')
+      setModerationConfirmAction('')
     }
+  }
+
+  const confirmModerationAction = () => {
+    const status = ['approve', 'republish'].includes(moderationConfirmAction) ? 'approved' : 'removed'
+    handleModerateService(status)
   }
 
   return (
@@ -223,7 +229,7 @@ const ServiceDetailPage = () => {
                       className="service-moderation-btn approve"
                       type="button"
                       disabled={Boolean(moderationAction)}
-                      onClick={() => handleModerateService('approved')}
+                      onClick={() => setModerationConfirmAction('approve')}
                     >
                       <CheckCircle2 size={16} />
                       {moderationAction === 'approved' ? 'Approving...' : 'Approve'}
@@ -232,11 +238,41 @@ const ServiceDetailPage = () => {
                       className="service-moderation-btn reject"
                       type="button"
                       disabled={Boolean(moderationAction)}
-                      onClick={() => handleModerateService('removed')}
+                      onClick={() => setModerationConfirmAction('reject')}
                     >
                       <XCircle size={16} />
                       {moderationAction === 'removed' ? 'Removing...' : 'Reject'}
 
+                    </button>
+                    {moderationError && <p className="service-moderation-error">{moderationError}</p>}
+                  </div>
+                )}
+
+                {canUnpublishService && (
+                  <div className="admin-service-moderation">
+                    <button
+                      className="service-moderation-btn unpublish"
+                      type="button"
+                      disabled={Boolean(moderationAction)}
+                      onClick={() => setModerationConfirmAction('unpublish')}
+                    >
+                      <EyeOff size={16} />
+                      {moderationAction === 'removed' ? 'Unpublishing...' : 'Unpublish'}
+                    </button>
+                    {moderationError && <p className="service-moderation-error">{moderationError}</p>}
+                  </div>
+                )}
+
+                {canRepublishService && (
+                  <div className="admin-service-moderation">
+                    <button
+                      className="service-moderation-btn approve"
+                      type="button"
+                      disabled={Boolean(moderationAction)}
+                      onClick={() => setModerationConfirmAction('republish')}
+                    >
+                      <RefreshCcw size={16} />
+                      {moderationAction === 'approved' ? 'Publishing...' : 'Publish Again'}
                     </button>
                     {moderationError && <p className="service-moderation-error">{moderationError}</p>}
                   </div>
@@ -254,6 +290,13 @@ const ServiceDetailPage = () => {
       </div>
 
       <Footer />
+      <AdminModerationConfirmModal
+        action={moderationConfirmAction}
+        contentTitle={service?.title}
+        loading={Boolean(moderationAction)}
+        onCancel={() => setModerationConfirmAction('')}
+        onConfirm={confirmModerationAction}
+      />
     </div>
   )
 }

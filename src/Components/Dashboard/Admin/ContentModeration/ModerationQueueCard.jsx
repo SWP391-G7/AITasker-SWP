@@ -1,14 +1,34 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { CheckCircle2, XCircle } from 'lucide-react'
+import { CheckCircle2, EyeOff, RefreshCcw, XCircle } from 'lucide-react'
 
 const actionableStatuses = ['pending']
+const publishedStatuses = ['approved', 'open']
+const removedStatuses = ['removed', 'rejected']
 
-const ModerationQueueCard = ({ item, onApprove, onReject }) => {
-  const canModerate = actionableStatuses.includes(item.status || 'pending')
+const ModerationQueueCard = ({ item, onApprove, onReject, onUnpublish, onRepublish }) => {
+  const [imageFailed, setImageFailed] = useState(false)
+  const normalizedStatus = String(item.status || 'pending').toLowerCase()
+  const canModerate = actionableStatuses.includes(normalizedStatus)
+  const canUnpublish = publishedStatuses.includes(normalizedStatus)
+  const canRepublish = removedStatuses.includes(normalizedStatus)
 
   return (
     <article className="moderation-card">
-      <img src={item.image} alt="" className="moderation-card-image" />
+      {item.image && !imageFailed ? (
+        <img
+          src={item.image}
+          alt={item.title}
+          className="moderation-card-image"
+          onError={() => setImageFailed(true)}
+        />
+      ) : (
+        <div
+          className={`moderation-card-image moderation-card-image-fallback ${item.imageClass || 'service-visual-automation'}`}
+          role="img"
+          aria-label={`${item.title} default image`}
+        />
+      )}
 
       <div className="moderation-card-body">
         <div className="moderation-card-meta">
@@ -67,6 +87,26 @@ const ModerationQueueCard = ({ item, onApprove, onReject }) => {
               Reject
             </button>
           </>
+        )}
+        {canUnpublish && (
+          <button
+            className="moderation-action-button unpublish"
+            type="button"
+            onClick={() => onUnpublish && onUnpublish(item.id)}
+          >
+            <EyeOff size={14} />
+            Unpublish
+          </button>
+        )}
+        {canRepublish && (
+          <button
+            className="moderation-action-button approve"
+            type="button"
+            onClick={() => onRepublish && onRepublish(item.id)}
+          >
+            <RefreshCcw size={14} />
+            Publish
+          </button>
         )}
         <Link className="moderation-detail-link" to={item.detailPath}>
           View detail

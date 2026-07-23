@@ -29,6 +29,34 @@ adminDashboardApi.interceptors.request.use(
 // Chuyển các giá trị như price/count/rating từ API về number.
 const toNumber = (value) => Number(value) || 0
 
+const moderationVisualClasses = [
+  'service-visual-automation',
+  'service-visual-analytics',
+  'service-visual-network',
+]
+
+const getPrimaryContentImage = (images, legacyImageUrl = null) => {
+  if (Array.isArray(images)) {
+    return images.find((image) => typeof image === 'string' && image.trim()) || legacyImageUrl
+  }
+
+  if (typeof images === 'string' && images.trim()) {
+    try {
+      const parsedImages = JSON.parse(images)
+      if (Array.isArray(parsedImages)) {
+        return parsedImages.find((image) => typeof image === 'string' && image.trim()) || legacyImageUrl
+      }
+      if (typeof parsedImages === 'string' && parsedImages.trim()) {
+        return parsedImages
+      }
+    } catch {
+      return images.trim()
+    }
+  }
+
+  return legacyImageUrl
+}
+
 // Lấy toàn bộ dữ liệu nền cho các màn admin từ api thực tế
 export const getAdminDashboardData = async (status = 'pending') => {
   const [usersRes, contentRes] = await Promise.all([
@@ -94,6 +122,14 @@ export const getAdminContent = async ({ type = 'all', status = 'all' }) => {
   return data
 }
 
+// Fetch platform-wide aggregates calculated by the protected admin analytics endpoint.
+export const getAdminAnalytics = async ({ from, to } = {}) => {
+  const { data } = await adminDashboardApi.get('/admin/analytics', {
+    params: { ...(from && { from }), ...(to && { to }) },
+  })
+  return data
+}
+
 export const updateContentStatus = async (type, id, status) => {
   const { data } = await adminDashboardApi.put(`/admin/content/${type}/${id}/status`, { status })
   return data.content
@@ -139,7 +175,7 @@ export const buildAdminModerationItems = (jobs = [], services = []) => [
 //
 // Severity cao khi bài đăng/service thiếu description, vì item thiếu mô tả thường cần admin xử lý trước.
 export const buildModerationQueueItems = (jobs = [], services = []) => [
-  ...services.map((service) => ({
+  ...services.map((service, index) => ({
     id: `service-${service.id}`,
     detailPath: `/marketplace/service/${service.id}`,
     title: service.title || 'Untitled Service',
@@ -154,10 +190,11 @@ export const buildModerationQueueItems = (jobs = [], services = []) => [
     type: service.tags || 'AI Service',
     time: 'From API',
     // Ưu tiên ảnh service từ backend. Nếu chưa có ảnh thì dùng ảnh mẫu để card không bị vỡ layout.
-    image: service.image_url || 'https://images.unsplash.com/photo-1677442136019-21780ecad995?w=480&h=320&fit=crop',
+    image: getPrimaryContentImage(service.images, service.image_url || service.imageUrl),
+    imageClass: moderationVisualClasses[index % moderationVisualClasses.length],
     status: service.status || 'pending',
   })),
-  ...jobs.map((job) => ({
+  ...jobs.map((job, index) => ({
     id: `job-${job.id}`,
     detailPath: `/marketplace/task/${job.id}`,
     title: job.title || 'Untitled Client Task',
@@ -172,7 +209,8 @@ export const buildModerationQueueItems = (jobs = [], services = []) => [
     type: job.required_skill || 'Client Job',
     time: 'From API',
     // Job hiện chưa có image_url riêng nên dùng ảnh fallback cố định.
-    image: 'https://images.unsplash.com/photo-1551434678-e076c223a692?w=480&h=320&fit=crop',
+    image: getPrimaryContentImage(job.images, job.image_url || job.imageUrl),
+    imageClass: moderationVisualClasses[index % moderationVisualClasses.length],
     status: job.status || 'pending',
   })),
 ]
@@ -201,11 +239,11 @@ export const buildManagedUsers = (users = []) =>
       .toUpperCase()
 
     // Map role to display nicely
-    let displayRole = 'Client';
+    let displayRole = 'Client'
     if (user.role === 'expert') {
-      displayRole = 'AI Expert';
+      displayRole = 'AI Expert'
     } else if (user.role === 'admin') {
-      displayRole = 'Admin';
+      displayRole = 'Admin'
     }
 
     return {
@@ -220,6 +258,7 @@ export const buildManagedUsers = (users = []) =>
       // Nếu thiếu thì dùng "From API" để báo dữ liệu đến từ API nhưng chưa có ngày.
       joined: user.created_at ? new Date(user.created_at).toLocaleDateString() : 'From API',
       avatar: initials,
+      avatarUrl: user.avatar_url || user.avatarUrl || null,
     }
   })
 
@@ -309,3 +348,104 @@ export const resolveAdminDispute = async (disputeId, resolutionData) => {
   return data
 }
 
+const clampPercentage = (value) => Math.min(100, Math.max(0, Number(value) || 0))
+const formatCurrency = (value) =>
+  Number(value || 0).toLocaleString('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    maximumFractionDigits: 0,
+  })
+
+// Convert raw analytics API values into the display model used by the dashboard widgets.
+export const buildLiveAnalytics = (data = {}) => {
+  const summary = data.summary || {}
+  const monthlyRevenue = data.revenueByMonth || []
+  const engagement = data.engagement || {}
+  const maximumMonthlyRevenue = Math.max(0, ...monthlyRevenue.map((item) => Number(item.revenue) || 0))
+  const selectedYear = Number(data.period?.from?.slice(0, 4))
+  const now = new Date()
+  const activeMonth = selectedYear === now.getFullYear()
+    ? `${selectedYear}-${String(now.getMonth() + 1).padStart(2, '0')}`
+    : `${selectedYear}-12`
+  const rankedExperts = (data.topExperts || []).map((expert, index) => ({
+    id: expert.id,
+    rank: index + 1,
+    name: expert.name || 'AI Expert',
+    avatar: expert.avatarUrl || null,
+    specialization: expert.specialization || 'AI Specialist',
+    completion: `${clampPercentage(expert.completionRate).toFixed(1)}%`,
+    revenue: formatCurrency(expert.revenue),
+    status: expert.status || 'Active',
+  }))
+
+  return {
+    kpis: [
+      {
+        label: 'Released Revenue',
+        value: formatCurrency(summary.totalRevenue),
+        trend: 'Completed escrow',
+        tone: 'is-success',
+        icon: 'revenue',
+        // Revenue has no fixed target yet, so a non-zero value fills the decorative track.
+        progress: Number(summary.totalRevenue) > 0 ? 100 : 0,
+      },
+      {
+        label: 'Completion Rate',
+        value: `${clampPercentage(summary.completionRate).toFixed(1)}%`,
+        trend: `${summary.completedProjects || 0}/${summary.totalProjects || 0} projects`,
+        tone: 'is-success',
+        icon: 'completion',
+        progress: clampPercentage(summary.completionRate),
+      },
+      {
+        label: 'Active Experts',
+        value: Number(summary.activeExperts || 0).toLocaleString(),
+        trend: 'Enabled accounts',
+        tone: 'is-success',
+        icon: 'experts',
+        progress: Math.min(100, Number(summary.activeExperts || 0) * 10),
+      },
+      {
+        label: 'Avg. Task Price',
+        value: formatCurrency(summary.averageTaskPrice),
+        trend: 'Started projects',
+        tone: 'is-success',
+        icon: 'price',
+        progress: Number(summary.averageTaskPrice) > 0 ? 100 : 0,
+      },
+    ],
+    revenueBars: monthlyRevenue.map((item) => ({
+      label: item.label,
+      amount: Number(item.revenue) || 0,
+      value: maximumMonthlyRevenue && Number(item.revenue) > 0
+        ? Math.max(4, ((Number(item.revenue) || 0) / maximumMonthlyRevenue) * 100)
+        : 0,
+      active: item.monthKey === activeMonth,
+    })),
+    engagementMetrics: [
+      {
+        label: 'Client Engagement',
+        value: `${clampPercentage(engagement.clientRate).toFixed(1)}%`,
+        progress: clampPercentage(engagement.clientRate),
+        tone: 'blue',
+      },
+      {
+        label: 'Expert Engagement',
+        value: `${clampPercentage(engagement.expertRate).toFixed(1)}%`,
+        progress: clampPercentage(engagement.expertRate),
+        tone: 'teal',
+      },
+      {
+        label: 'Inactive Accounts',
+        value: `${clampPercentage(engagement.inactiveAccountRate).toFixed(1)}%`,
+        progress: clampPercentage(engagement.inactiveAccountRate),
+        tone: 'rose',
+      },
+    ],
+    // The main analytics table stays compact while the modal receives the full ranking.
+    topExperts: rankedExperts.slice(0, 5),
+    allExperts: rankedExperts,
+    period: data.period || {},
+    definitions: data.definitions || {},
+  }
+}

@@ -1,0 +1,115 @@
+.admin-moderation-confirm-overlay {
+  align-items: center;
+  background: rgba(2, 6, 23, 0.78);
+  backdrop-filter: blur(8px);
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  padding: 20px;
+  position: fixed;
+  z-index: 2400;
+}
+
+.admin-moderation-confirm-modal {
+  background: linear-gradient(180deg, #111c31, #0a1222);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 16px;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
+  color: #f8fafc;
+  max-width: 440px;
+  padding: 28px;
+  position: relative;
+  text-align: center;
+  width: 100%;
+}
+
+.admin-moderation-confirm-close {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  color: #94a3b8;
+  cursor: pointer;
+  display: inline-flex;
+  justify-content: center;
+  padding: 6px;
+  position: absolute;
+  right: 14px;
+  top: 14px;
+}
+
+.admin-moderation-confirm-icon {
+  align-items: center;
+  border-radius: 50%;
+  display: inline-flex;
+  height: 52px;
+  justify-content: center;
+  margin-bottom: 16px;
+  width: 52px;
+}
+
+.admin-moderation-confirm-icon.is-approve {
+  background: rgba(16, 185, 129, 0.16);
+  color: #34d399;
+}
+
+.admin-moderation-confirm-icon.is-danger {
+  background: rgba(239, 68, 68, 0.16);
+  color: #f87171;
+}
+
+.admin-moderation-confirm-modal h2 {
+  font-size: 1.25rem;
+  margin: 0 0 10px;
+}
+
+.admin-moderation-confirm-modal p {
+  color: #a8b3c5;
+  line-height: 1.55;
+  margin: 0;
+}
+
+.admin-moderation-confirm-target {
+  color: #dbeafe;
+  display: block;
+  margin-top: 12px;
+  overflow-wrap: anywhere;
+}
+
+.admin-moderation-confirm-actions {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 1fr 1fr;
+  margin-top: 24px;
+}
+
+.admin-moderation-confirm-actions button {
+  border-radius: 9px;
+  cursor: pointer;
+  font-weight: 800;
+  min-height: 42px;
+}
+
+.admin-moderation-confirm-actions .is-cancel {
+  background: rgba(30, 41, 59, 0.78);
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  color: #cbd5e1;
+}
+
+.admin-moderation-confirm-actions .is-confirm {
+  border: 0;
+  color: #ffffff;
+}
+
+.admin-moderation-confirm-actions .is-confirm.is-approve {
+  background: linear-gradient(135deg, #10b981, #0d9488);
+}
+
+.admin-moderation-confirm-actions .is-confirm.is-danger {
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+}
+
+.admin-moderation-confirm-actions button:disabled,
+.admin-moderation-confirm-close:disabled {
+  cursor: wait;
+  opacity: 0.62;
+}

@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
-import { useNavigate, useParams, useLocation } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import {
   AlertCircle,
   ArrowLeft,
@@ -7,7 +7,9 @@ import {
   CheckCircle2,
   Clock,
   DollarSign,
+  EyeOff,
   Loader2,
+  RefreshCcw,
   Send,
   XCircle,
 } from 'lucide-react';
@@ -16,6 +18,7 @@ import { getStoredUser } from '../../Services/checkLogin';
 import { getMarketplaceJobById } from '../../Services/serviceService';
 
 import DetailCarousel from '../../Components/marketplace/DetailCarousel';
+import AdminModerationConfirmModal from '../../Components/Dashboard/Admin/AdminModerationConfirmModal';
 import '../../Components/marketplace/Marketplace.css';
 import { updateContentStatus } from '../../Services/adminDashboardService';
 import '../Style/ServiceDetail.css';
@@ -42,17 +45,14 @@ const formatBudget = (task) => {
 const MarketplaceTaskDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const location = useLocation();
-  const fromProfile = location.state?.fromProfile;
-  const fromLanding = location.state?.fromLanding;
-  const backLabel = fromProfile ? "Back to Profile" : fromLanding ? "Back to Home" : "Back to Marketplace";
   const [task, setTask] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [moderationAction, setModerationAction] = useState('');
   const [moderationError, setModerationError] = useState('');
+  const [moderationConfirmAction, setModerationConfirmAction] = useState('');
   const currentUser = getStoredUser();
-  const isAdmin = currentUser?.role === 'admin';
+  const isAdmin = String(currentUser?.role || '').toLowerCase().includes('admin');
   const isExpert = currentUser?.role === 'expert';
 
   useEffect(() => {
@@ -73,8 +73,10 @@ const MarketplaceTaskDetailPage = () => {
   }, [id]);
 
   const requiredSkill = task?.required_skill || task?.requiredSkill || 'AI Task';
-  const taskStatus = task?.status || 'open';
+  const taskStatus = String(task?.status || 'open').toLowerCase();
   const canModerateTask = isAdmin && taskStatus === 'pending';
+  const canUnpublishTask = isAdmin && taskStatus === 'open';
+  const canRepublishTask = isAdmin && ['removed', 'rejected'].includes(taskStatus);
   const canSendProposal = isExpert && taskStatus === 'open';
 
   const handleModerateTask = async (status) => {
@@ -87,7 +89,13 @@ const MarketplaceTaskDetailPage = () => {
       setModerationError(err.message || 'Failed to update task status.');
     } finally {
       setModerationAction('');
+      setModerationConfirmAction('');
     }
+  };
+
+  const confirmModerationAction = () => {
+    const status = ['approve', 'republish'].includes(moderationConfirmAction) ? 'approved' : 'removed';
+    handleModerateTask(status);
   };
 
   return (
@@ -177,7 +185,7 @@ const MarketplaceTaskDetailPage = () => {
                       className="service-moderation-btn approve"
                       type="button"
                       disabled={Boolean(moderationAction)}
-                      onClick={() => handleModerateTask('approved')}
+                      onClick={() => setModerationConfirmAction('approve')}
                     >
                       <CheckCircle2 size={16} />
                       {moderationAction === 'approved' ? 'Approving...' : 'Approve'}
@@ -186,10 +194,36 @@ const MarketplaceTaskDetailPage = () => {
                       className="service-moderation-btn reject"
                       type="button"
                       disabled={Boolean(moderationAction)}
-                      onClick={() => handleModerateTask('removed')}
+                      onClick={() => setModerationConfirmAction('reject')}
                     >
                       <XCircle size={16} />
                       {moderationAction === 'removed' ? 'Removing...' : 'Reject'}
+                    </button>
+                    {moderationError && <p className="service-moderation-error">{moderationError}</p>}
+                  </div>
+                ) : canUnpublishTask ? (
+                  <div className="admin-service-moderation">
+                    <button
+                      className="service-moderation-btn unpublish"
+                      type="button"
+                      disabled={Boolean(moderationAction)}
+                      onClick={() => setModerationConfirmAction('unpublish')}
+                    >
+                      <EyeOff size={16} />
+                      {moderationAction === 'removed' ? 'Unpublishing...' : 'Unpublish'}
+                    </button>
+                    {moderationError && <p className="service-moderation-error">{moderationError}</p>}
+                  </div>
+                ) : canRepublishTask ? (
+                  <div className="admin-service-moderation">
+                    <button
+                      className="service-moderation-btn approve"
+                      type="button"
+                      disabled={Boolean(moderationAction)}
+                      onClick={() => setModerationConfirmAction('republish')}
+                    >
+                      <RefreshCcw size={16} />
+                      {moderationAction === 'approved' ? 'Publishing...' : 'Publish Again'}
                     </button>
                     {moderationError && <p className="service-moderation-error">{moderationError}</p>}
                   </div>
@@ -211,6 +245,13 @@ const MarketplaceTaskDetailPage = () => {
       </div>
 
       <Footer />
+      <AdminModerationConfirmModal
+        action={moderationConfirmAction}
+        contentTitle={task?.title}
+        loading={Boolean(moderationAction)}
+        onCancel={() => setModerationConfirmAction('')}
+        onConfirm={confirmModerationAction}
+      />
     </div>
   );
 };

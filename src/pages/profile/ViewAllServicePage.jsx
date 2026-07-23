@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { CalendarDays, ChevronRight, DollarSign, Layers, Star, UserRound, X } from "lucide-react";
+import { CalendarDays, ChevronRight, DollarSign, EyeOff, Layers, RefreshCcw, Star, UserRound, X } from "lucide-react";
 import { getUserProfile } from "../../Services/profileService";
 import { getStoredUser } from "../../Services/checkLogin";
 import { getExpertServicesFromApi } from "../../Components/Profile/Expert/ExpertService";
+import { updateContentStatus } from "../../Services/adminDashboardService";
+import AdminModerationConfirmModal from "../../Components/Dashboard/Admin/AdminModerationConfirmModal";
 import "./ProfilePage.css";
 import "./ViewAllProfileItems.css";
 
@@ -16,10 +18,14 @@ function ViewAllServicePage() {
   const [profileData, setProfileData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [actionError, setActionError] = useState("");
+  const [unpublishingId, setUnpublishingId] = useState(null);
+  const [unpublishConfirm, setUnpublishConfirm] = useState(null);
 
   const currentRole = String(currentUser?.role || "").toLowerCase();
   const profileRole = String(profileData?.user?.role || "").toLowerCase();
   const isSameRole = currentRole && profileRole && currentRole === profileRole;
+  const isAdminViewer = currentRole.includes("admin");
 
   useEffect(() => {
     const fetchServices = async () => {
@@ -65,6 +71,27 @@ function ViewAllServicePage() {
     navigate(`/marketplace/service/${serviceId}`);
   };
 
+  const handleUnpublish = async (serviceId, action = "unpublish") => {
+    const nextStatus = action === "republish" ? "approved" : "removed";
+    try {
+      setActionError("");
+      setUnpublishingId(serviceId);
+      await updateContentStatus("service", serviceId, nextStatus);
+      setProfileData((current) => ({
+        ...current,
+        services: (current?.services || []).map((service) =>
+          service.id === serviceId ? { ...service, status: nextStatus } : service
+        ),
+      }));
+      setUnpublishConfirm(null);
+    } catch (err) {
+      setActionError(err.message || "Failed to update service.");
+      setUnpublishConfirm(null);
+    } finally {
+      setUnpublishingId(null);
+    }
+  };
+
   const services = getExpertServicesFromApi(profileData?.services || []);
   const rawServices = profileData?.services || [];
   const actionLabel = isSameRole ? "View Detail" : "Purchase";
@@ -86,6 +113,7 @@ function ViewAllServicePage() {
         <div className="view-all-modal-body">
           {loading && <div className="view-all-state">Loading services...</div>}
           {error && <div className="view-all-state">{error}</div>}
+          {actionError && <div className="view-all-action-error">{actionError}</div>}
 
           {!loading && !error && services.length === 0 && (
             <div className="view-all-empty">This expert has not published any services yet.</div>
@@ -138,7 +166,7 @@ function ViewAllServicePage() {
                         </div>
                       </div>
                     </div>
-                    <div className="view-all-side-actions">
+                    <div className={`view-all-side-actions ${isAdminViewer ? "has-admin-actions" : ""}`}>
                       <span className="view-all-status-pill">
                         <Star size={13} fill="currentColor" />
                         {service.rating}
@@ -150,6 +178,28 @@ function ViewAllServicePage() {
                       >
                         {actionLabel}
                       </button>
+                      {isAdminViewer && ["approved", "open"].includes(String(rawService.status || "").toLowerCase()) && (
+                        <button
+                          className="view-all-action-btn is-unpublish"
+                          type="button"
+                          onClick={() => setUnpublishConfirm({ action: "unpublish", id: service.id, title: service.title })}
+                          disabled={unpublishingId === service.id}
+                        >
+                          <EyeOff size={14} />
+                          {unpublishingId === service.id ? "Unpublishing..." : "Unpublish"}
+                        </button>
+                      )}
+                      {isAdminViewer && ["removed", "rejected"].includes(String(rawService.status || "").toLowerCase()) && (
+                        <button
+                          className="view-all-action-btn is-republish"
+                          type="button"
+                          onClick={() => setUnpublishConfirm({ action: "republish", id: service.id, title: service.title })}
+                          disabled={unpublishingId === service.id}
+                        >
+                          <RefreshCcw size={14} />
+                          {unpublishingId === service.id ? "Publishing..." : "Publish Again"}
+                        </button>
+                      )}
                       <ChevronRight size={24} className="view-all-chevron" />
                     </div>
                   </article>
@@ -159,6 +209,13 @@ function ViewAllServicePage() {
           )}
         </div>
       </section>
+      <AdminModerationConfirmModal
+        action={unpublishConfirm?.action}
+        contentTitle={unpublishConfirm?.title}
+        loading={unpublishingId === unpublishConfirm?.id}
+        onCancel={() => setUnpublishConfirm(null)}
+        onConfirm={() => handleUnpublish(unpublishConfirm?.id, unpublishConfirm?.action)}
+      />
     </div>
   );
 }

@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ShieldCheck } from 'lucide-react'
 import AdminHeader from '../../../Components/Dashboard/Admin/AdminHeader'
 import AdminSidebar from '../../../Components/Dashboard/Admin/AdminSidebar'
 import ContentModerationView from '../../../Components/Dashboard/Admin/ContentModeration/ContentModerationView'
+import AdminModerationConfirmModal from '../../../Components/Dashboard/Admin/AdminModerationConfirmModal'
 import { handleAdminTabChange } from '../../../Components/Dashboard/Admin/adminNavigation'
 import Footer from '../../../Components/Footer/Footer'
 import {
@@ -20,6 +20,8 @@ const ContentModerationPage = ({ onLogout }) => {
   const [notifications, setNotifications] = useState(3)
   const [moderationItems, setModerationItems] = useState([])
   const [moderationError, setModerationError] = useState('')
+  const [moderationConfirm, setModerationConfirm] = useState(null)
+  const [moderationActionLoading, setModerationActionLoading] = useState(false)
 
   useEffect(() => {
     const fetchModerationData = async () => {
@@ -51,36 +53,36 @@ const ContentModerationPage = ({ onLogout }) => {
     ]
   }, [moderationItems])
 
-  const handleApprove = async (id) => {
-    try {
-      const parts = id.split('-');
-      const type = parts[0];
-      const itemId = parts.slice(1).join('-');
-      await updateContentStatus(type, itemId, 'approved');
-      // Update the status state inline so it remains visible
-      setModerationItems((prev) => 
-        prev.map((item) => item.id === id ? { ...item, status: 'approved' } : item)
-      );
-    } catch (err) {
-      console.error(err);
-      alert(err.message || 'Failed to approve content');
-    }
+  const requestModerationAction = (action, id) => {
+    const item = moderationItems.find((entry) => entry.id === id)
+    setModerationError('')
+    setModerationConfirm({ action, id, title: item?.title || 'Untitled content' })
   }
 
-  const handleReject = async (id) => {
+  const handleConfirmModeration = async () => {
+    if (!moderationConfirm) return
+
     try {
-      const parts = id.split('-');
-      const type = parts[0];
-      const itemId = parts.slice(1).join('-');
-      // Update status to 'removed'
-      await updateContentStatus(type, itemId, 'removed');
-      // Update the status state inline so it remains visible
-      setModerationItems((prev) => 
-        prev.map((item) => item.id === id ? { ...item, status: 'removed' } : item)
-      );
+      setModerationActionLoading(true)
+      setModerationError('')
+      const { action, id } = moderationConfirm
+      const parts = id.split('-')
+      const type = parts[0]
+      const itemId = parts.slice(1).join('-')
+      const nextStatus = ['approve', 'republish'].includes(action) ? 'approved' : 'removed'
+
+      const updatedContent = await updateContentStatus(type, itemId, nextStatus)
+      const updatedStatus = updatedContent?.status || nextStatus
+      setModerationItems((prev) =>
+        prev.map((item) => item.id === id ? { ...item, status: updatedStatus } : item)
+      )
+      setModerationConfirm(null)
     } catch (err) {
-      console.error(err);
-      alert(err.message || 'Failed to reject content');
+      console.error(err)
+      setModerationError(err.message || 'Failed to update content')
+      setModerationConfirm(null)
+    } finally {
+      setModerationActionLoading(false)
     }
   }
 
@@ -115,11 +117,20 @@ const ContentModerationPage = ({ onLogout }) => {
           searchQuery={searchQuery}
           items={moderationItems}
           stats={moderationStats}
-          onApprove={handleApprove}
-          onReject={handleReject}
+          onApprove={(id) => requestModerationAction('approve', id)}
+          onReject={(id) => requestModerationAction('reject', id)}
+          onUnpublish={(id) => requestModerationAction('unpublish', id)}
+          onRepublish={(id) => requestModerationAction('republish', id)}
         />
         <Footer variant="dashboard" />
       </main>
+      <AdminModerationConfirmModal
+        action={moderationConfirm?.action}
+        contentTitle={moderationConfirm?.title}
+        loading={moderationActionLoading}
+        onCancel={() => setModerationConfirm(null)}
+        onConfirm={handleConfirmModeration}
+      />
     </div>
   )
 }

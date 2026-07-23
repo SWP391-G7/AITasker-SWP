@@ -1,95 +1,56 @@
-import { useEffect, useMemo, useState, useRef } from "react";
+import { useEffect, useMemo } from "react"
+import { useNavigate } from "react-router-dom"
 import {
   CreditCard,
   LogOut,
-  RefreshCw,
   ShieldCheck,
   UserRound,
   X,
-} from "lucide-react";
-import { uploadImage } from "../../Services/uploadService";
+} from "lucide-react"
 
-const SettingPage = ({ isOpen, onClose, user, role = "Client", onLogout, onSwitchRole }) => {
-  const [isTwoFactorEnabled, setIsTwoFactorEnabled] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
-  const [uploadError, setUploadError] = useState("");
-  const fileInputRef = useRef(null);
-
-  const handleAvatarUpload = async (event) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    try {
-      setIsUploading(true);
-      setUploadError("");
-      const imageUrl = await uploadImage(file);
-
-      // Call API to update avatar
-      const token = localStorage.getItem('token');
-      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
-      const response = await fetch(`${API_BASE_URL}/users/update-avatar`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ avatarUrl: imageUrl })
-      });
-
-      const result = await response.json();
-      if (!response.ok) {
-        throw new Error(result.message || 'Failed to update avatar in database');
-      }
-
-      // Update user in localStorage
-      const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
-      storedUser.avatarUrl = imageUrl;
-      localStorage.setItem('user', JSON.stringify(storedUser));
-
-      // Reload page to reflect changes everywhere
-      window.location.reload();
-    } catch (error) {
-      console.error("Avatar upload failed:", error);
-      setUploadError(error.message || "Failed to upload avatar");
-    } finally {
-      setIsUploading(false);
-    }
-  };
+const SettingPage = ({ isOpen, onClose, user, role = "Client", onLogout }) => {
+  const navigate = useNavigate()
 
   const profile = useMemo(() => {
-    const displayName = user?.fullName || user?.name || (role === "Expert" ? "Expert User" : "Client User");
-    const email = user?.email || `${displayName.toLowerCase().replace(/\s+/g, ".")}@example.com`;
+    const displayName = user?.fullName || user?.name || (role === "Expert" ? "Expert User" : "Client User")
+    const email = user?.email || `${displayName.toLowerCase().replace(/\s+/g, ".")}@example.com`
 
     return {
       displayName,
       email,
       avatarLetter: displayName.trim().charAt(0).toUpperCase() || "U",
       avatarUrl: user?.avatarUrl || user?.avatar_url || null,
-    };
-  }, [role, user]);
+    }
+  }, [role, user])
 
   // Lock body scroll while the modal is open.
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) return
 
     const handleKeyDown = (event) => {
-      if (event.key === "Escape") onClose?.();
-    };
+      if (event.key === "Escape") onClose?.()
+    }
 
-    document.body.classList.add("settings-modal-open");
-    document.addEventListener("keydown", handleKeyDown);
+    document.body.classList.add("settings-modal-open")
+    document.addEventListener("keydown", handleKeyDown)
 
     return () => {
-      document.body.classList.remove("settings-modal-open");
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [isOpen, onClose]);
+      document.body.classList.remove("settings-modal-open")
+      document.removeEventListener("keydown", handleKeyDown)
+    }
+  }, [isOpen, onClose])
 
-  if (!isOpen) return null;
+  if (!isOpen) return null
 
-  const isAdmin = String(user?.role || role || "").toLowerCase() === "admin";
-  const isExpert = String(role || "").toLowerCase() === "expert";
-  const targetRole = isExpert ? "Client" : "Expert";
+  const isAdmin = String(user?.role || role || "").toLowerCase().includes("admin")
+  const handleEditProfile = () => {
+    const storedUser = JSON.parse(localStorage.getItem("user") || "{}")
+    const userId = user?.id || user?._id || storedUser.id || storedUser._id
+    if (!userId) return
+
+    onClose?.()
+    navigate(`/profile/${userId}`, { state: { openEditProfile: true } })
+  }
 
   return (
     <div className="settings-modal-backdrop" role="dialog" aria-modal="true" aria-label="Account settings">
@@ -107,55 +68,27 @@ const SettingPage = ({ isOpen, onClose, user, role = "Client", onLogout, onSwitc
 
             <div className="settings-account-row">
               <div className="settings-account-info">
-                <div 
-                  className="settings-avatar-wrapper" 
-                  onClick={() => !isUploading && fileInputRef.current?.click()} 
-                  style={{ position: 'relative', cursor: isUploading ? 'not-allowed' : 'pointer' }}
-                  title="Click to change avatar"
-                >
+                <div className="settings-avatar-wrapper">
                   {profile.avatarUrl ? (
                     <img src={profile.avatarUrl} alt={profile.displayName} className="settings-avatar-img" />
                   ) : (
                     <div className="settings-avatar">{profile.avatarLetter}</div>
                   )}
-                  <div className="avatar-edit-overlay" style={{
-                    position: 'absolute',
-                    inset: 0,
-                    background: 'rgba(2, 6, 23, 0.7)',
-                    borderRadius: '50%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    opacity: 0,
-                    transition: 'opacity 0.2s',
-                    color: 'white',
-                    fontSize: '11px',
-                    fontWeight: 'bold'
-                  }}>
-                    {isUploading ? "..." : "Edit"}
-                  </div>
                 </div>
                 <div>
                   <h3>{profile.displayName}</h3>
                   <p>{profile.email}</p>
-                  {uploadError && <p style={{ color: '#ef4444', fontSize: '10px', marginTop: '4px' }}>{uploadError}</p>}
                 </div>
               </div>
-              <input 
-                type="file" 
-                ref={fileInputRef} 
-                hidden 
-                accept="image/*" 
-                onChange={handleAvatarUpload} 
-              />
-              <button 
-                className="settings-primary-btn" 
-                type="button"
-                disabled={isUploading}
-                onClick={() => fileInputRef.current?.click()}
-              >
-                {isUploading ? "Uploading..." : "Change Avatar"}
-              </button>
+              {!isAdmin && (
+                <button
+                  className="settings-primary-btn"
+                  type="button"
+                  onClick={handleEditProfile}
+                >
+                  Edit Profile
+                </button>
+              )}
             </div>
           </div>
 
@@ -170,12 +103,12 @@ const SettingPage = ({ isOpen, onClose, user, role = "Client", onLogout, onSwitc
                 <h3>Change Password</h3>
                 <p>Update your password regularly to keep your account secure.</p>
               </div>
-              <button className="settings-outline-btn" type="button">Update</button>
+              <button className="settings-outline-btn" type="button" onClick={() => navigate('/update-password')}>Update</button>
             </div>
 
             <div className="settings-divider" />
 
-            <div className="settings-action-row">
+            {/* <div className="settings-action-row">
               <div>
                 <h3>Two-Factor Authentication (2FA)</h3>
                 <p>Add an extra layer of security to your account.</p>
@@ -188,7 +121,7 @@ const SettingPage = ({ isOpen, onClose, user, role = "Client", onLogout, onSwitc
               >
                 <span />
               </button>
-            </div>
+            </div> */}
           </div>
 
           <div className="settings-card">
@@ -199,21 +132,6 @@ const SettingPage = ({ isOpen, onClose, user, role = "Client", onLogout, onSwitc
             <p className="settings-muted">Manage your billing and payment options for active projects.</p>
             <button className="settings-add-payment" type="button">+ Add New Payment Method</button>
           </div>
-
-          {!isAdmin && (
-            <div className="settings-card settings-role-card">
-              <div>
-                <div className="settings-section-title">
-                  <RefreshCw size={18} />
-                  <h2>4. Change Role</h2>
-                </div>
-                <p className="settings-muted">Currently browsing as <strong>{role}</strong>.</p>
-              </div>
-              <button className="settings-outline-btn" type="button" onClick={onSwitchRole}>
-                Switch to {targetRole} View
-              </button>
-            </div>
-          )}
 
           <button className="settings-logout-btn" type="button" onClick={onLogout}>
             <LogOut size={16} />
@@ -347,11 +265,6 @@ const SettingPage = ({ isOpen, onClose, user, role = "Client", onLogout, onSwitc
 
         .settings-avatar-wrapper {
           position: relative;
-          cursor: pointer;
-        }
-
-        .settings-avatar-wrapper:hover .avatar-edit-overlay {
-          opacity: 1 !important;
         }
 
         .settings-card h3 {
@@ -486,7 +399,7 @@ const SettingPage = ({ isOpen, onClose, user, role = "Client", onLogout, onSwitc
         }
       `}</style>
     </div>
-  );
-};
+  )
+}
 
-export default SettingPage;
+export default SettingPage

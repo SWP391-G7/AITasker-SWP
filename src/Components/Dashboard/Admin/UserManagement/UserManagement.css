@@ -327,6 +327,10 @@
   width: 38px;
 }
 
+.user-avatar-image {
+  object-fit: cover;
+}
+
 .avatar-1 {
   background: linear-gradient(135deg, #0f766e, #1d4ed8);
 }
@@ -456,6 +460,17 @@
   height: 30px;
   padding: 0;
   width: 30px;
+}
+
+.pagination-controls button.active {
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+  border-color: rgba(96, 165, 250, 0.48);
+  color: #ffffff;
+}
+
+.pagination-controls button:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
 }
 
 @media (max-width: 1200px) {

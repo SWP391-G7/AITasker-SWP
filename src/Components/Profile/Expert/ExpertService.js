@@ -53,5 +53,6 @@ export const getExpertServicesFromApi = (services = []) =>
     category: service.tags || "AI Service",
     rating: service.avgRating ? Number(service.avgRating).toFixed(1) : "New",
     price: formatServicePrice(service.price),
+    status: service.status || "pending",
     imageClass: serviceVisualClasses[index % serviceVisualClasses.length],
   }));
