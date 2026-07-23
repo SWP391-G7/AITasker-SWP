@@ -122,6 +122,14 @@ export const getAdminContent = async ({ type = 'all', status = 'all' }) => {
   return data
 }
 
+// Fetch platform-wide aggregates calculated by the protected admin analytics endpoint.
+export const getAdminAnalytics = async ({ from, to } = {}) => {
+  const { data } = await adminDashboardApi.get('/admin/analytics', {
+    params: { ...(from && { from }), ...(to && { to }) },
+  })
+  return data
+}
+
 export const updateContentStatus = async (type, id, status) => {
   const { data } = await adminDashboardApi.put(`/admin/content/${type}/${id}/status`, { status })
   return data.content
@@ -325,5 +333,103 @@ export const buildAnalytics = ({ experts = [], clients = [], jobs = [], services
       revenue: 'From services',
       status: 'Active',
     })),
+  }
+}
+
+const clampPercentage = (value) => Math.min(100, Math.max(0, Number(value) || 0))
+const formatCurrency = (value) =>
+  Number(value || 0).toLocaleString(undefined, {
+    style: 'currency',
+    currency: 'USD',
+    maximumFractionDigits: 0,
+  })
+
+// Convert raw analytics API values into the display model used by the dashboard widgets.
+export const buildLiveAnalytics = (data = {}) => {
+  const summary = data.summary || {}
+  const monthlyRevenue = data.revenueByMonth || []
+  const engagement = data.engagement || {}
+  const maximumMonthlyRevenue = Math.max(0, ...monthlyRevenue.map((item) => Number(item.revenue) || 0))
+  const selectedYear = Number(data.period?.from?.slice(0, 4))
+  const now = new Date()
+  const activeMonth = selectedYear === now.getFullYear()
+    ? `${selectedYear}-${String(now.getMonth() + 1).padStart(2, '0')}`
+    : `${selectedYear}-12`
+
+  return {
+    kpis: [
+      {
+        label: 'Released Revenue',
+        value: formatCurrency(summary.totalRevenue),
+        trend: 'Completed escrow',
+        tone: 'is-success',
+        icon: 'revenue',
+        // Revenue has no fixed target yet, so a non-zero value fills the decorative track.
+        progress: Number(summary.totalRevenue) > 0 ? 100 : 0,
+      },
+      {
+        label: 'Completion Rate',
+        value: `${clampPercentage(summary.completionRate).toFixed(1)}%`,
+        trend: `${summary.completedProjects || 0}/${summary.totalProjects || 0} projects`,
+        tone: 'is-success',
+        icon: 'completion',
+        progress: clampPercentage(summary.completionRate),
+      },
+      {
+        label: 'Active Experts',
+        value: Number(summary.activeExperts || 0).toLocaleString(),
+        trend: 'Enabled accounts',
+        tone: 'is-success',
+        icon: 'experts',
+        progress: Math.min(100, Number(summary.activeExperts || 0) * 10),
+      },
+      {
+        label: 'Avg. Task Price',
+        value: formatCurrency(summary.averageTaskPrice),
+        trend: 'Started projects',
+        tone: 'is-success',
+        icon: 'price',
+        progress: Number(summary.averageTaskPrice) > 0 ? 100 : 0,
+      },
+    ],
+    revenueBars: monthlyRevenue.map((item) => ({
+      label: item.label,
+      amount: Number(item.revenue) || 0,
+      value: maximumMonthlyRevenue && Number(item.revenue) > 0
+        ? Math.max(4, ((Number(item.revenue) || 0) / maximumMonthlyRevenue) * 100)
+        : 0,
+      active: item.monthKey === activeMonth,
+    })),
+    engagementMetrics: [
+      {
+        label: 'Client Engagement',
+        value: `${clampPercentage(engagement.clientRate).toFixed(1)}%`,
+        progress: clampPercentage(engagement.clientRate),
+        tone: 'blue',
+      },
+      {
+        label: 'Expert Engagement',
+        value: `${clampPercentage(engagement.expertRate).toFixed(1)}%`,
+        progress: clampPercentage(engagement.expertRate),
+        tone: 'teal',
+      },
+      {
+        label: 'Inactive Accounts',
+        value: `${clampPercentage(engagement.inactiveAccountRate).toFixed(1)}%`,
+        progress: clampPercentage(engagement.inactiveAccountRate),
+        tone: 'rose',
+      },
+    ],
+    topExperts: (data.topExperts || []).map((expert) => ({
+      id: expert.id,
+      name: expert.name || 'AI Expert',
+      avatar: expert.avatarUrl || null,
+      specialization: expert.specialization || 'AI Specialist',
+      completion: `${clampPercentage(expert.completionRate).toFixed(1)}%`,
+      revenue: formatCurrency(expert.revenue),
+      status: expert.status || 'Active',
+    })),
+    period: data.period || {},
+    definitions: data.definitions || {},
   }
 }

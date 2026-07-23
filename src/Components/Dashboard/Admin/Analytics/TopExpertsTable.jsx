@@ -21,7 +21,13 @@ const TopExpertsTable = ({ experts }) => (
             <tr key={expert.id}>
               <td>
                 <div className="analytics-expert-cell">
-                  <img src={expert.avatar} alt={expert.name} />
+                  {expert.avatar ? (
+                    <img src={expert.avatar} alt={expert.name} />
+                  ) : (
+                    <span className="analytics-expert-avatar-fallback">
+                      {expert.name.trim().charAt(0).toUpperCase() || 'E'}
+                    </span>
+                  )}
                   <strong>{expert.name}</strong>
                 </div>
               </td>

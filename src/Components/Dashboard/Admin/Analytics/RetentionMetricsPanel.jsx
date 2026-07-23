@@ -1,6 +1,6 @@
-const RetentionMetricsPanel = ({ metrics }) => (
+const RetentionMetricsPanel = ({ metrics, insight }) => (
   <aside className="analytics-panel retention-panel">
-    <h2>Retention Metrics</h2>
+    <h2>Engagement Metrics</h2>
 
     <div className="retention-list">
       {metrics.map((item) => (
@@ -16,9 +16,7 @@ const RetentionMetricsPanel = ({ metrics }) => (
       ))}
     </div>
 
-    <blockquote>
-      "System Insight: Expert retention has improved by 4% since the new tiered payment system was introduced."
-    </blockquote>
+    {insight && <blockquote>System Insight: {insight}.</blockquote>}
   </aside>
 )
 

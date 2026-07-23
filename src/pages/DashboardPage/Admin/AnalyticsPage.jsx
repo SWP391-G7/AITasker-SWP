@@ -7,35 +7,85 @@ import AnalyticsView from '../../../Components/Dashboard/Admin/Analytics/Analyti
 import { handleAdminTabChange } from '../../../Components/Dashboard/Admin/adminNavigation'
 import Footer from '../../../Components/Footer/Footer'
 import {
-  buildAnalytics,
-  getAdminDashboardData
+  buildLiveAnalytics,
+  getAdminAnalytics
 } from '../../../Services/adminDashboardService'
 import '../Style/AdminDashboardPage.css'
 import '../Style/AnalyticsPage.css'
+
+const currentYear = new Date().getFullYear()
+const earliestAnalyticsYear = 2020
 
 const AnalyticsPage = ({ onLogout }) => {
   const navigate = useNavigate()
   const [searchQuery, setSearchQuery] = useState('')
   const [notifications, setNotifications] = useState(3)
-  const [analyticsData, setAnalyticsData] = useState({ kpis: [], topExperts: [] })
+  const [selectedYear, setSelectedYear] = useState(String(currentYear))
+  const [analyticsData, setAnalyticsData] = useState({
+    kpis: [],
+    revenueBars: [],
+    engagementMetrics: [],
+    topExperts: [],
+    period: {},
+    definitions: {},
+  })
   const [analyticsError, setAnalyticsError] = useState('')
 
   useEffect(() => {
+    const numericYear = Number(selectedYear)
+    if (
+      selectedYear.length !== 4
+      || !Number.isInteger(numericYear)
+      || numericYear < earliestAnalyticsYear
+      || numericYear > currentYear
+    ) {
+      return undefined
+    }
+
+    let ignoreResult = false
+
     const fetchAnalytics = async () => {
       try {
         setAnalyticsError('')
 
-        // API data: analytics derives live KPIs from existing search endpoints.
-        const data = await getAdminDashboardData()
-        setAnalyticsData(buildAnalytics(data))
+        // The backend aggregates live platform data so the browser never downloads full financial tables.
+        const data = await getAdminAnalytics({
+          from: `${numericYear}-01-01`,
+          to: `${numericYear}-12-31`,
+        })
+        if (!ignoreResult) {
+          setAnalyticsData(buildLiveAnalytics(data))
+        }
       } catch (err) {
+        if (ignoreResult) return
         setAnalyticsError(err.message || 'Failed to load analytics data.')
-        setAnalyticsData({ kpis: [], topExperts: [] })
+        setAnalyticsData({
+          kpis: [],
+          revenueBars: [],
+          engagementMetrics: [],
+          topExperts: [],
+          period: {},
+          definitions: {},
+        })
       }
     }
 
     fetchAnalytics()
-  }, [])
+    return () => {
+      ignoreResult = true
+    }
+  }, [selectedYear])
+
+  const handleYearChange = (event) => {
+    setSelectedYear(event.target.value.replace(/\D/g, '').slice(0, 4))
+  }
+
+  const normalizeSelectedYear = () => {
+    const numericYear = Number(selectedYear)
+    if (!Number.isInteger(numericYear) || numericYear < earliestAnalyticsYear || numericYear > currentYear) {
+      setSelectedYear(String(currentYear))
+    }
+  }
 
   const handleLogout = onLogout || (() => {
     localStorage.removeItem('token')
@@ -58,10 +108,21 @@ const AnalyticsPage = ({ onLogout }) => {
           subtitle="Real-time performance metrics for AITasker."
           headerActions={
             <div className="header-actions admin-header-action-group">
-              <button className="btn-case admin-header-action-button" type="button">
+              <label className="btn-case admin-header-action-button analytics-year-control">
                 <CalendarDays size={16} />
-                Oct 01 - Oct 31, 2024
-              </button>
+                <span>Year</span>
+                <input
+                  type="number"
+                  min={earliestAnalyticsYear}
+                  max={currentYear}
+                  step="1"
+                  inputMode="numeric"
+                  aria-label="Analytics year"
+                  value={selectedYear}
+                  onChange={handleYearChange}
+                  onBlur={normalizeSelectedYear}
+                />
+              </label>
               <button className="btn-approve admin-header-action-button" type="button">
                 <Download size={16} />
                 Export
@@ -76,7 +137,14 @@ const AnalyticsPage = ({ onLogout }) => {
           onLogout={handleLogout}
         />
         {analyticsError && <div className="alert alert-danger">{analyticsError}</div>}
-        <AnalyticsView kpis={analyticsData.kpis} experts={analyticsData.topExperts} />
+        <AnalyticsView
+          kpis={analyticsData.kpis}
+          revenueBars={analyticsData.revenueBars}
+          engagementMetrics={analyticsData.engagementMetrics}
+          experts={analyticsData.topExperts}
+          period={analyticsData.period}
+          definitions={analyticsData.definitions}
+        />
         <Footer variant="dashboard" />
       </main>
     </div>
