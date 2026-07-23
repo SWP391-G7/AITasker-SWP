@@ -7,11 +7,12 @@ import AdminStats from '../../../Components/Dashboard/Admin/AdminStats'
 import DisputeDetailModal from '../../../Components/Dashboard/Admin/DisputeDetailModal'
 import UserGrowthChart from '../../../Components/Dashboard/Admin/UserGrowthChart'
 import Footer from '../../../Components/Footer/Footer'
-import { initialDisputes } from '../../../Components/Dashboard/Admin/adminDashboardData'
 import { handleAdminTabChange } from '../../../Components/Dashboard/Admin/adminNavigation'
 import {
+  buildActiveDisputeItems,
   buildAdminModerationItems,
   getAdminDashboardData,
+  getAdminDisputes,
   updateContentStatus
 } from '../../../Services/adminDashboardService'
 import '../Style/AdminDashboardPage.css'
@@ -22,7 +23,7 @@ const AdminDashboardPage = ({ onLogout }) => {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedDispute, setSelectedDispute] = useState(null)
   const [moderations, setModerations] = useState([])
-  const [disputes, setDisputes] = useState(initialDisputes)
+  const [disputes, setDisputes] = useState([])
   const [notifications, setNotifications] = useState(3)
   const [userCount, setUserCount] = useState(0)
   const [users, setUsers] = useState([])
@@ -33,14 +34,19 @@ const AdminDashboardPage = ({ onLogout }) => {
       try {
         setDashboardError('')
 
-        // API data: admin dashboard uses existing search endpoints for users, jobs, and services.
-        const data = await getAdminDashboardData()
+        // Load dashboard content and disputes together so every summary card uses live API data.
+        const [data, disputeData] = await Promise.all([
+          getAdminDashboardData(),
+          getAdminDisputes(),
+        ])
         setUsers(data.users)
         setUserCount(data.users.length)
         setModerations(buildAdminModerationItems(data.jobs, data.services))
+        setDisputes(buildActiveDisputeItems(disputeData))
       } catch (err) {
         setDashboardError(err.message || 'Failed to load admin dashboard data.')
         setModerations([])
+        setDisputes([])
         setUsers([])
         setUserCount(0)
       }

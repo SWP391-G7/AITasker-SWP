@@ -342,6 +342,26 @@ export const getAdminDisputes = async () => {
   return data.disputes || []
 }
 
+// Convert unresolved disputes from the API into the compact card model used
+// by the Admin Dashboard. Resolved cases remain available on the full board.
+export const buildActiveDisputeItems = (disputes = []) =>
+  disputes
+    .filter((dispute) => !dispute.is_resolved)
+    .map((dispute, index) => {
+      const disputeId = dispute.dispute_id || dispute.id || index
+
+      return {
+        ...dispute,
+        id: disputeId,
+        title: dispute.title || dispute.project_title || 'Disputed Project',
+        caseId: `#D-${String(disputeId).slice(-6).toUpperCase()}`,
+        client: dispute.client_name || 'Unknown client',
+        expert: dispute.expert_name || 'Unassigned expert',
+        tag: String(dispute.status || 'Under Review').toUpperCase(),
+        tagClass: 'tag-review',
+      }
+    })
+
 // Xử lý / giải quyết dispute
 export const resolveAdminDispute = async (disputeId, resolutionData) => {
   const { data } = await adminDashboardApi.post(`/admin/disputes/${disputeId}/resolve`, resolutionData)

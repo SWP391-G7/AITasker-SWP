@@ -1,8 +1,10 @@
+import { Link } from 'react-router-dom'
+
 const DisputesPanel = ({ disputes, onSelectDispute }) => (
   <div className="admin-panel-card">
     <div className="panel-header">
       <h2 className="panel-title">Active Disputes</h2>
-      <span className="panel-link">View Board</span>
+      <Link className="panel-link" to="/admin/disputes">View Board</Link>
     </div>
 
     <div className="panel-list">
