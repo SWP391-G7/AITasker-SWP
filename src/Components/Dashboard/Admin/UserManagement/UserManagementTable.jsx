@@ -214,7 +214,7 @@ const UserManagementTable = ({
                         <ShieldAlert size={14} />
                       </button>
                     )}
-                    <button 
+                    {/* <button 
                       type="button" 
                       className="ghost-tool-button text-danger" 
                       title="Delete user"
@@ -222,7 +222,7 @@ const UserManagementTable = ({
                       style={{ padding: '6px 8px', minWidth: 'auto' }}
                     >
                       <Trash2 size={14} />
-                    </button>
+                    </button> */}
                   </div>
                 )}
               </td>
