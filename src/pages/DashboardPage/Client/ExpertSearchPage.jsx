@@ -67,7 +67,7 @@ const mapExpertFromApi = (expert) => {
     id: expert.id,
     name: expert.full_name || "Unnamed Expert",
     title: expert.professional_title || "AI Expert",
-    avatar: expert.avatar || defaultExpertAvatar,
+    avatar: expert.avatar_url || null,
     rating: Number(expert.avg_rating) || 4.8,
     reviews: Number(expert.review_count) || 0,
     rate: hourlyRate,
@@ -76,7 +76,6 @@ const mapExpertFromApi = (expert) => {
       : ["AI EXPERT"],
     description: expert.bio || "No bio provided.",
     projects: Number(expert.completed_projects) || 0,
-    success: Number(expert.job_success) || 100,
     available: true,
     stack: skills,
     mode: "expert",
@@ -91,7 +90,7 @@ const mapClientFromApi = (client) => {
     id: client.id,
     name: client.full_name || company || "Unnamed Client",
     title: company,
-    avatar: client.avatar || defaultClientAvatar,
+    avatar: client.avatar_url || null,
     rating: Number(client.avg_rating) || 4.8,
     reviews: Number(client.review_count) || 0,
     rate: 0,
@@ -101,7 +100,6 @@ const mapClientFromApi = (client) => {
       client.company_description ||
       "This client is looking for AI experts to help with project delivery.",
     projects: Number(client.posted_jobs_count || client.jobs_count) || 0,
-    success: 100,
     available: true,
     stack: [industry],
     company,
@@ -428,7 +426,26 @@ function ExpertSearchPage() {
                     <article className="expert-card" key={person.id}>
                       <div className="expert-card-top">
                         <div className="expert-avatar-wrap">
-                          <img src={person.avatar} alt={person.name} />
+                          {person.avatar ? (
+                            <img src={person.avatar} alt={person.name} />
+                          ) : (
+                            <div className="avatar-initials-placeholder" style={{
+                              width: '60px',
+                              height: '60px',
+                              borderRadius: '12px',
+                              border: '2px solid rgba(255, 255, 255, 0.08)',
+                              background: 'linear-gradient(135deg, #3b82f6, #60a5fa)',
+                              color: 'white',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontSpread: '0',
+                              fontWeight: '800',
+                              fontSize: '1.5rem'
+                            }}>
+                              {person.name ? person.name.trim().charAt(0).toUpperCase() : "?"}
+                            </div>
+                          )}
                           {person.available && <span className="online-dot"></span>}
                         </div>
 
@@ -464,9 +481,7 @@ function ExpertSearchPage() {
 
                         <span>
                           <Clock3 size={18} />
-                          {isExpertMode
-                            ? "Verified Client"
-                            : `${person.success}% Job Success`}
+                          {isExpertMode ? "Verified Client" : `${person.projects} Projects`}
                         </span>
                       </div>
 

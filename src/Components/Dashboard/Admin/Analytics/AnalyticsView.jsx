@@ -1,19 +1,26 @@
 import AnalyticsKpiGrid from './AnalyticsKpiGrid'
-import { analyticsKpis, retentionMetrics, revenueBars, topExperts } from './analyticsData'
 import RetentionMetricsPanel from './RetentionMetricsPanel'
 import RevenueGrowthChart from './RevenueGrowthChart'
 import TopExpertsTable from './TopExpertsTable'
 
-const AnalyticsView = ({ kpis = analyticsKpis, experts = topExperts }) => (
+const AnalyticsView = ({
+  kpis = [],
+  revenueBars = [],
+  engagementMetrics = [],
+  experts = [],
+  allExperts = [],
+  period = {},
+  definitions = {},
+}) => (
   <>
     <AnalyticsKpiGrid items={kpis} />
 
     <section className="analytics-main-grid">
-      <RevenueGrowthChart bars={revenueBars} />
-      <RetentionMetricsPanel metrics={retentionMetrics} />
+      <RevenueGrowthChart bars={revenueBars} periodLabel={period.to?.slice(0, 4)} />
+      <RetentionMetricsPanel metrics={engagementMetrics} insight={definitions.engagement} />
     </section>
 
-    <TopExpertsTable experts={experts} />
+    <TopExpertsTable experts={experts} allExperts={allExperts} />
   </>
 )
 

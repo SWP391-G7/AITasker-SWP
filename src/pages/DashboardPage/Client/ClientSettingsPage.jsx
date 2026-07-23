@@ -6,7 +6,7 @@ import Footer from "../../../Components/Footer/Footer";
 import { useClientUser } from "../../../Components/Dashboard/Client/user";
 import { logout } from "../../../Services/authService";
 import { getUserProfile } from "../../../Services/profileService";
-import "../../Style/AdminDashboardPage.css";
+import "../Style/AdminDashboardPage.css";
 import "./ClientMarketplace.css";
 
 function ClientSettingsPage() {
@@ -77,3 +77,4 @@ function ClientSettingsPage() {
 }
 
 export default ClientSettingsPage;
+

@@ -1,0 +1,877 @@
+/* AISolutionMarketPlace CSS */
+:root {
+  --bg-deep: var(--bg-primary);
+  --bg-card: rgba(15, 23, 42, 0.66);
+  --border-subtle: var(--border-color);
+  --primary-blue: var(--accent-blue);
+  --success-mint: var(--accent-green);
+  --text-muted: var(--text-muted);
+  --text-bright: var(--text-main);
+}
+
+.marketplace-page-wrapper {
+  background-color: var(--bg-primary);
+  background-image: var(--bg-glow);
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  color: var(--text-main);
+  font-family: var(--font-family);
+  min-height: 100vh;
+}
+
+.marketplace-container {
+  background: transparent;
+  min-height: 100vh;
+  color: var(--text-bright);
+  font-family: inherit;
+  padding-bottom: 4rem;
+}
+
+/* Hero Section */
+.marketplace-hero {
+  padding: 8rem 1rem 2.5rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.marketplace-hero p {
+  max-width: 650px;
+  margin: 0 auto;
+  color: var(--text-muted);
+  font-size: 1.1rem;
+  line-height: 1.6;
+}
+
+/* AI Mesh Gradient Effect */
+.marketplace-hero::before {
+  content: '';
+  position: absolute;
+  top: -20%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 1000px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, rgba(6, 11, 24, 0) 70%);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.marketplace-hero .container {
+  position: relative;
+  z-index: 1;
+}
+
+.marketplace-hero h1 {
+  font-size: 4rem;
+  font-weight: 800;
+  margin-bottom: 1.5rem;
+  letter-spacing: -0.04em;
+  line-height: 1.1;
+}
+
+.marketplace-hero h1 span {
+  background: linear-gradient(to right, #60a5fa, #a855f7);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ... rest of existing styles ... */
+
+/* Heart Button */
+.wishlist-btn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
+  border: 1px solid var(--border-subtle);
+  color: white;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  z-index: 2;
+}
+
+.wishlist-btn:hover {
+  background: rgba(15, 23, 42, 0.9);
+  transform: scale(1.1);
+}
+
+.wishlist-btn.active {
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 5rem 1rem;
+  background: var(--bg-card);
+  border: 1px dashed var(--border-subtle);
+  border-radius: 1.5rem;
+  grid-column: 1 / -1;
+}
+
+.empty-state-icon {
+  margin-bottom: 1.5rem;
+  color: var(--text-muted);
+  display: inline-block;
+}
+
+.empty-state h3 {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.empty-state p {
+  color: var(--text-muted);
+}
+
+/* Two-Column Sidebar Layout */
+.marketplace-layout-container {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 2rem;
+  max-width: 1400px;
+  margin: 2.5rem auto 6rem;
+  padding: 0 2rem;
+  align-items: flex-start;
+}
+
+.marketplace-sidebar {
+  background: rgba(15, 22, 38, 0.4);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 1.5rem;
+  padding: 1.5rem 1.25rem;
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5);
+  position: sticky;
+  top: 100px;
+  z-index: 10;
+  overflow: hidden;   /* clip children to rounded border — prevents search box from protruding */
+}
+
+.sidebar-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  letter-spacing: -0.02em;
+}
+
+.search-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;              /* must not exceed sidebar content width */
+  box-sizing: border-box;   /* padding included in width */
+  background: rgba(6, 11, 24, 0.85);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 0.5rem;
+  padding: 0 0.75rem;
+  height: 36px;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+  overflow: hidden;
+  margin-bottom: 1.25rem;
+}
+
+.search-input-wrapper:focus-within {
+  border-color: var(--primary-blue);
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.15);
+  background: rgba(6, 11, 24, 1);
+}
+
+.search-icon-styled {
+  color: var(--primary-blue);
+  filter: drop-shadow(0 0 6px rgba(59, 130, 246, 0.35));
+  margin-right: 0.5rem;
+  flex-shrink: 0;
+  opacity: 0.8;
+}
+
+.search-input-wrapper input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;              /* fill wrapper height exactly */
+  background: transparent;
+  border: none;
+  outline: none;
+  box-shadow: none;
+  color: white;
+  font-size: 0.85rem;
+  font-weight: 400;
+  padding: 0;
+  margin: 0;
+  line-height: 36px;         /* match wrapper height */
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.search-input-wrapper input:focus,
+.search-input-wrapper input:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+  border: none !important;
+  background: transparent !important;
+}
+
+.search-input-wrapper input::placeholder {
+  color: #64748b;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+}
+
+.filter-label {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding-left: 0.25rem;
+}
+
+.filter-select {
+  width: 100%;
+  height: 36px;
+  background: rgba(6, 11, 24, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  color: #cbd5e1;
+  padding: 0 2rem 0 0.75rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: all 0.2s;
+  outline: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.6rem center;
+}
+
+.filter-select:hover {
+  background-color: rgba(6, 11, 24, 0.8);
+  border-color: rgba(59, 130, 246, 0.3);
+  color: white;
+}
+
+.filter-select:focus {
+  border-color: var(--primary-blue);
+  box-shadow: 0 0 15px rgba(59, 130, 246, 0.1);
+}
+
+.tech-stack-filter-input {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.tech-stack-filter-input input {
+  flex: 1;
+  min-width: 120px;
+  height: 36px;
+  background: rgba(6, 11, 24, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 0.5rem;
+  color: #e2e8f0;
+  padding: 0 0.75rem;
+  font-size: 0.8rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.tech-stack-filter-input input:focus {
+  border-color: #60a5fa;
+}
+
+.tech-stack-apply-btn,
+.tech-stack-clear-btn {
+  height: 36px;
+  padding: 0 0.75rem;
+  border-radius: 0.5rem;
+  border: none;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+
+.tech-stack-apply-btn {
+  background: #2563eb;
+  color: #fff;
+}
+
+.tech-stack-apply-btn:hover {
+  background: #1d4ed8;
+}
+
+.tech-stack-clear-btn {
+  background: rgba(255, 255, 255, 0.06);
+  color: #94a3b8;
+}
+
+.tech-stack-clear-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #e2e8f0;
+}
+
+/* Main Content Area */
+.marketplace-main-content {
+  flex-grow: 1;
+}
+
+.content-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.results-count {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.view-toggles {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.toggle-btn {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-muted);
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+}
+
+.toggle-btn.active {
+  color: white;
+  background: var(--primary-blue);
+  border-color: var(--primary-blue);
+}
+
+.service-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+/* Service Card */
+.service-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 1rem;
+  overflow: hidden;
+  transition: transform 0.2s, border-color 0.2s;
+  display: flex;
+  flex-direction: column;
+}
+
+.service-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--primary-blue);
+}
+
+.card-image-area {
+  height: 160px;
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  position: relative;
+}
+
+.category-tag {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  background: rgba(15, 23, 42, 0.8);
+  backdrop-filter: blur(4px);
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--primary-blue);
+}
+
+.card-body {
+  padding: 1.25rem;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.expert-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.expert-avatar-small {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #3b82f6;
+}
+
+.expert-name {
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.rating {
+  margin-left: auto;
+  font-size: 0.8rem;
+  color: var(--success-mint);
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.card-title {
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.4;
+  margin-bottom: 0.75rem;
+}
+
+.card-description {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  line-height: 1.5;
+  margin: 0 0 1rem;
+  max-height: 4.25em;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.card-description::-webkit-scrollbar {
+  display: none;
+}
+
+.card-footer {
+  border-top: 1px solid var(--border-subtle);
+  padding: 1rem 1.25rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.starting-price {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.price-value {
+  display: block;
+  font-size: 1rem;
+  font-weight: 700;
+  color: white;
+}
+
+.view-details-btn {
+  background: transparent;
+  border: 1px solid var(--primary-blue);
+  color: var(--primary-blue);
+  padding: 0.4rem 0.8rem;
+  border-radius: 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.view-details-btn:hover {
+  background: var(--primary-blue);
+  color: white;
+}
+
+/* Pagination */
+.pagination-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 4rem;
+}
+
+.page-btn {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-muted);
+  width: 40px;
+  height: 40px;
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.page-btn:hover {
+  border-color: var(--primary-blue);
+  color: white;
+}
+
+.page-btn.active {
+  background: var(--primary-blue);
+  border-color: var(--primary-blue);
+  color: white;
+}
+
+@media (max-width: 992px) {
+  .marketplace-layout-container {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    padding: 0 1rem;
+  }
+  
+  .marketplace-sidebar {
+    position: relative;
+    top: 0;
+    width: 100%;
+  }
+
+  .marketplace-hero h1 {
+    font-size: 2.5rem;
+  }
+}
+
+/* Job status badge on marketplace cards */
+.expert-stats .status-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 999px;
+  text-transform: capitalize;
+}
+
+.expert-stats .status-badge.active {
+  background: rgba(59, 130, 246, 0.15);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  color: #93c5fd;
+}
+
+.expert-stats .status-badge.completed {
+  background: rgba(34, 197, 94, 0.12);
+  border: 1px solid rgba(34, 197, 94, 0.25);
+  color: #86efac;
+}
+
+.expert-stats .status-badge.cancelled {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  color: #fca5a5;
+}
+
+/* ============================================================
+   REDESIGNED MARKETPLACE CARD  (matches PostService live preview)
+   ============================================================ */
+
+.mp-service-card {
+  background: #0f172a;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 1rem;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+  transition: transform 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease;
+}
+
+.mp-service-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(59, 130, 246, 0.6);
+  box-shadow: 0 12px 36px rgba(59, 130, 246, 0.12);
+}
+
+/* ── Image area ── */
+.mp-card-image-area {
+  height: 160px;
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.mp-card-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Profile-side-visual fallback fills the image area */
+.mp-card-visual-fallback.profile-side-visual {
+  height: 100%;
+  position: absolute;
+  inset: 0;
+}
+
+/* Replicate the grid overlay from ProfilePage.css */
+.mp-card-visual-fallback.profile-side-visual::after {
+  background-image:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.12) 1px, transparent 1px),
+    linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+  background-size: 18px 18px;
+  content: "";
+  inset: 0;
+  opacity: 0.32;
+  position: absolute;
+}
+
+
+/* Tag badge */
+.mp-card-tag {
+  position: absolute;
+  top: 0.85rem;
+  left: 0.85rem;
+  background: rgba(0, 0, 0, 0.54);
+  backdrop-filter: blur(4px);
+  border-radius: 4px;
+  padding: 0.22rem 0.6rem;
+  font-size: 0.6rem;
+  font-weight: 900;
+  color: #60a5fa;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  z-index: 2;
+}
+
+/* Favorite button */
+.mp-favorite-btn {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: white;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  z-index: 2;
+}
+
+.mp-favorite-btn:hover {
+  background: rgba(15, 23, 42, 0.9);
+  transform: scale(1.1);
+}
+
+.mp-favorite-btn.active {
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
+/* ── Card body ── */
+.mp-card-body {
+  padding: 1rem 1.25rem 0.75rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+/* Expert row */
+.mp-card-expert-row {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-bottom: 0.3rem;
+}
+
+.mp-card-avatar {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3b82f6, #06b6d4);
+  color: #fff;
+  font-size: 0.52rem;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.mp-card-expert-name {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  font-weight: 500;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mp-card-rating {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #34d399;
+  flex-shrink: 0;
+}
+
+/* Job status badge */
+.mp-status-badge {
+  font-size: 0.62rem;
+  font-weight: 700;
+  padding: 0.18rem 0.55rem;
+  border-radius: 999px;
+  text-transform: capitalize;
+  flex-shrink: 0;
+}
+
+.mp-status-open {
+  background: rgba(59, 130, 246, 0.14);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  color: #93c5fd;
+}
+
+.mp-status-closed,
+.mp-status-completed {
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.22);
+  color: #86efac;
+}
+
+/* Card title */
+.mp-card-title {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #f1f5f9;
+  line-height: 1.4;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Description */
+.mp-card-description {
+  font-size: 0.8rem;
+  color: #64748b;
+  line-height: 1.5;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  white-space: pre-line;
+}
+
+/* ── Card footer ── */
+.mp-card-footer {
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 0.85rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.mp-card-price {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.mp-card-price small {
+  font-size: 0.58rem;
+  color: #475569;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.mp-card-price strong {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #f1f5f9;
+}
+
+.mp-card-delivery {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.7rem;
+  color: #64748b;
+  white-space: nowrap;
+}
+
+.mp-view-btn {
+  border: 1px solid #3b82f6;
+  color: #60a5fa;
+  padding: 0.38rem 0.72rem;
+  border-radius: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  white-space: nowrap;
+  transition: background 0.18s, color 0.18s;
+}
+
+.mp-service-card:hover .mp-view-btn {
+  background: #3b82f6;
+  color: #fff;
+}
+
+/* ── Extra profile-side-visual gradient variants ── */
+
+.service-visual-purple {
+  background:
+    radial-gradient(circle at 78% 38%, rgba(168, 85, 247, 0.68), transparent 20%),
+    radial-gradient(circle at 24% 66%, rgba(99, 102, 241, 0.55), transparent 22%),
+    linear-gradient(135deg, rgba(30, 15, 60, 0.96), rgba(15, 23, 42, 0.96));
+}
+
+.service-visual-amber {
+  background:
+    radial-gradient(circle at 32% 30%, rgba(251, 191, 36, 0.58), transparent 20%),
+    radial-gradient(circle at 76% 68%, rgba(249, 115, 22, 0.52), transparent 22%),
+    linear-gradient(135deg, rgba(40, 20, 5, 0.96), rgba(15, 23, 42, 0.96));
+}
+
+/* Shared gradient classes from ProfilePage.css — needed here since that file is not loaded on the marketplace route */
+.service-visual-automation {
+  background:
+    radial-gradient(circle at 22% 44%, rgba(34, 211, 238, 0.72), transparent 18%),
+    linear-gradient(135deg, rgba(8, 47, 73, 0.96), rgba(6, 78, 59, 0.82));
+}
+
+.service-visual-analytics {
+  background:
+    repeating-linear-gradient(90deg, rgba(96, 165, 250, 0.28) 0 4px, transparent 4px 18px),
+    linear-gradient(180deg, rgba(14, 165, 233, 0.44), rgba(15, 23, 42, 0.96));
+}
+
+.service-visual-network {
+  background:
+    radial-gradient(circle at 26% 42%, rgba(34, 211, 238, 0.65), transparent 15%),
+    radial-gradient(circle at 72% 32%, rgba(96, 165, 250, 0.6), transparent 18%),
+    linear-gradient(135deg, rgba(6, 95, 70, 0.78), rgba(15, 23, 42, 0.96));
+}
+
+

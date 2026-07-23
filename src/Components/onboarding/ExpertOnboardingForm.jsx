@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { submitExpertOnboarding } from "../../Services/onboardingService";
+import AIExtendButton from "../AI/AIExtendButton";
+import AISkeletonLoader from "../AI/AISkeletonLoader";
+import Toast from "../Toast";
 import "./Onboarding.css";
 
 function ExpertOnboardingForm({ onBack }) {
@@ -16,6 +19,20 @@ function ExpertOnboardingForm({ onBack }) {
   });
 
   const [error, setError] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [isAiOptimized, setIsAiOptimized] = useState(false);
+  const [toastError, setToastError] = useState("");
+
+  const handleExtendSuccess = (data) => {
+    setFormData((prev) => ({
+      ...prev,
+      professionalTitle: data.professionalTitle || prev.professionalTitle,
+      skills: data.skills || prev.skills,
+      bio: data.bio || prev.bio,
+    }));
+    setIsGenerating(false);
+    setIsAiOptimized(true);
+  };
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -67,14 +84,15 @@ function ExpertOnboardingForm({ onBack }) {
 
       console.log("Expert onboarding success:", result);
 
-      navigate("/dashboard");
+      navigate("/expert/dashboard");
     } catch (error) {
       setError("Submit failed. Please try again.");
     }
   };
 
   return (
-    <div className="onboarding-card">
+    <div className="onboarding-card" style={{ position: "relative" }}>
+      {isGenerating && <AISkeletonLoader message="AI Engine is polishing your profile details..." />}
       <button type="button" className="back-btn" onClick={onBack}>
         ← Back
       </button>
@@ -143,7 +161,27 @@ function ExpertOnboardingForm({ onBack }) {
         </div>
 
         <div className="form-field">
-          <label>Short bio</label>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+            <label style={{ margin: 0 }}>Short bio</label>
+            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+              {isAiOptimized && (
+                <span className="ai-sparkle-badge">
+                  ✨ AI Optimized
+                </span>
+              )}
+              <AIExtendButton
+                draftFields={[formData.professionalTitle, formData.bio]}
+                onExtendStart={() => {
+                  setIsGenerating(true);
+                  setIsAiOptimized(false);
+                }}
+                onExtendSuccess={handleExtendSuccess}
+                onExtendFailure={() => setIsGenerating(false)}
+                type="bio"
+                onErrorToast={(msg) => setToastError(msg)}
+              />
+            </div>
+          </div>
           <textarea
             name="bio"
             placeholder="Introduce yourself..."
@@ -158,6 +196,7 @@ function ExpertOnboardingForm({ onBack }) {
           Continue
         </button>
       </form>
+      {toastError && <Toast message={toastError} onClose={() => setToastError("")} />}
     </div>
   );
 }

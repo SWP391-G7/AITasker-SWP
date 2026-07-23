@@ -1,4 +1,4 @@
-﻿import { allServices } from '../Components/AISolutionMarketPlace/servicesData';
+import { allServices } from '../Components/marketplace/servicesData';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
@@ -19,11 +19,13 @@ export const publishService = async (serviceData) => {
     },
     body: JSON.stringify({
       title: serviceData.title,
-      description: serviceData.description || '',
+      description: [serviceData.techStack ? `Tech Stack: ${serviceData.techStack}` : '', serviceData.description || ''].filter(Boolean).join('\n\n'),
       price: parseFloat(serviceData.price) || 0,
       pricing_type: 'fixed',
       delivery_days: serviceData.deliveryDays ? parseInt(serviceData.deliveryDays, 10) : 3,
-      tags: serviceData.category || ''
+      tags: serviceData.tags || '',
+      images: serviceData.images || null,
+      videoLink: serviceData.videoLink || null
     })
   });
 
@@ -46,10 +48,12 @@ export const publishService = async (serviceData) => {
  * Get all services from the backend API (via public search endpoint)
  */
 export const getMarketplaceServices = async () => {
+  const token = localStorage.getItem('token');
   const response = await fetch(`${API_BASE_URL}/search?target=services`, {
     method: 'GET',
     headers: {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {})
     }
   });
 
@@ -66,10 +70,12 @@ export const getMarketplaceServices = async () => {
  * Get all client job/task posts for experts from the public search endpoint.
  */
 export const getMarketplaceJobs = async () => {
+  const token = localStorage.getItem('token');
   const response = await fetch(`${API_BASE_URL}/search?target=jobs`, {
     method: 'GET',
     headers: {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {})
     }
   });
 

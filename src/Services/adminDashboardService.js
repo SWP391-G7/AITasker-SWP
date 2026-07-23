@@ -5,10 +5,6 @@ import axios from 'axios'
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'
 
 // Tạo một axios instance riêng cho admin dashboard.
-// Lợi ích:
-// - Không phải lặp lại baseURL ở từng request.
-// - Các request trong file này mặc định gửi/nhận JSON.
-// - Sau này nếu cần thêm interceptor hoặc token mặc định cho admin thì thêm ở đây là đủ.
 const adminDashboardApi = axios.create({
   baseURL: API_BASE_URL,
   headers: {
@@ -16,109 +12,72 @@ const adminDashboardApi = axios.create({
   },
 })
 
+// Request interceptor để tự động chèn JWT token
+adminDashboardApi.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token')
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`
+    }
+    return config
+  },
+  (error) => {
+    return Promise.reject(error)
+  }
+)
+
 // Chuyển các giá trị như price/count/rating từ API về number.
-// API đôi khi trả số dưới dạng string, ví dụ "100" thay vì 100.
-// Nếu value bị rỗng, null, undefined hoặc không chuyển được thành số thì dùng 0 để tránh lỗi khi tính toán.
 const toNumber = (value) => Number(value) || 0
 
-// Helper gọi API search cho từng loại dữ liệu admin cần.
-//
-// target có thể là:
-// - "expert": lấy danh sách AI Expert.
-// - "client": lấy danh sách Client.
-// - "jobs": lấy danh sách job/task do client đăng.
-// - "services": lấy danh sách service do expert tạo.
-//
-// Request thực tế sẽ có dạng:
-// GET http://localhost:5000/api/search?target=expert
-//
-// Hàm này trả về format giống searchService cũ:
-// {
-//   results: [...],
-//   count: number,
-//   target: string
-// }
-// Nhờ vậy các hàm phía dưới không cần biết axios trả data như thế nào.
-const searchAdminTarget = async (target) => {
-  const { data } = await adminDashboardApi.get('/search', {
-    params: { target },
-  })
+const moderationVisualClasses = [
+  'service-visual-automation',
+  'service-visual-analytics',
+  'service-visual-network',
+]
 
-  return {
-    results: data.results || [],
-    count: data.count || 0,
-    target: data.target,
+const getPrimaryContentImage = (images, legacyImageUrl = null) => {
+  if (Array.isArray(images)) {
+    return images.find((image) => typeof image === 'string' && image.trim()) || legacyImageUrl
   }
+
+  if (typeof images === 'string' && images.trim()) {
+    try {
+      const parsedImages = JSON.parse(images)
+      if (Array.isArray(parsedImages)) {
+        return parsedImages.find((image) => typeof image === 'string' && image.trim()) || legacyImageUrl
+      }
+      if (typeof parsedImages === 'string' && parsedImages.trim()) {
+        return parsedImages
+      }
+    } catch {
+      return images.trim()
+    }
+  }
+
+  return legacyImageUrl
 }
 
-// Lấy toàn bộ dữ liệu nền cho các màn admin.
-//
-// Hàm này đang dùng chung endpoint /search hiện có thay vì có một endpoint riêng kiểu /admin/dashboard.
-// Nó gọi 4 request cùng lúc bằng Promise.all để trang admin load nhanh hơn:
-// - experts
-// - clients
-// - jobs
-// - services
-//
-// Kết quả trả về là object tổng hợp để các page admin tái sử dụng:
-// - AdminDashboardPage dùng users, jobs, services để hiện thống kê/moderation.
-// - UserManagementPage dùng users để hiện bảng quản lý người dùng.
-// - ContentModerationPage dùng jobs/services để tạo queue kiểm duyệt.
-// - AnalyticsPage dùng toàn bộ dữ liệu để tính KPI.
-export const getAdminDashboardData = async () => {
-  const [expertsResult, clientsResult, jobsResult, servicesResult] = await Promise.all([
-    searchAdminTarget('expert'),
-    searchAdminTarget('client'),
-    searchAdminTarget('jobs'),
-    searchAdminTarget('services'),
+// Lấy toàn bộ dữ liệu nền cho các màn admin từ api thực tế
+export const getAdminDashboardData = async (status = 'pending') => {
+  const [usersRes, contentRes] = await Promise.all([
+    adminDashboardApi.get('/admin/users'),
+    adminDashboardApi.get(`/admin/content?status=${status}`)
   ])
 
-  const experts = expertsResult.results || []
-  const clients = clientsResult.results || []
-  const jobs = jobsResult.results || []
-  const services = servicesResult.results || []
-
   return {
-    experts,
-    clients,
-    jobs,
-    services,
-    users: [
-      // Gộp expert và client vào cùng một mảng users để admin quản lý chung.
-      // dashboardRole là field frontend tự thêm vào, không nhất thiết có trong database.
-      // Field này giúp UI hiển thị role đẹp hơn: "AI Expert" hoặc "Client".
-      ...experts.map((user) => ({ ...user, dashboardRole: 'AI Expert' })),
-      ...clients.map((user) => ({ ...user, dashboardRole: 'Client' })),
-    ],
+    users: usersRes.data.users || [],
+    jobs: contentRes.data.jobs || [],
+    services: contentRes.data.services || []
   }
 }
 
 // Lấy riêng danh sách user cho trang UserManagementPage.
-//
-// Trang quản lý user chỉ cần expert + client, không cần jobs/services.
-// Tách hàm này ra để nếu API jobs hoặc services bị lỗi thì bảng user vẫn hiển thị bình thường.
 export const getAdminUsersData = async () => {
-  const [expertsResult, clientsResult] = await Promise.all([
-    searchAdminTarget('expert'),
-    searchAdminTarget('client'),
-  ])
-
-  const experts = expertsResult.results || []
-  const clients = clientsResult.results || []
-
-  return [
-    ...experts.map((user) => ({ ...user, dashboardRole: 'AI Expert' })),
-    ...clients.map((user) => ({ ...user, dashboardRole: 'Client' })),
-  ]
+  const { data } = await adminDashboardApi.get('/admin/users')
+  return data.users || []
 }
 
 // Lấy thông tin admin hiện tại từ token đang lưu trong localStorage.
-//
-// Luồng:
-// 1. Lấy token sau khi user login.
-// 2. Nếu không có token thì throw error để page gọi hàm này biết là chưa đăng nhập.
-// 3. Gọi GET /auth/me kèm Authorization Bearer token.
-// 4. Trả về data.user nếu backend xác thực thành công.
 export const getAdminProfile = async () => {
   const token = localStorage.getItem('token')
 
@@ -133,6 +92,47 @@ export const getAdminProfile = async () => {
   })
 
   return data.user || null
+}
+
+// Các hàm gọi API mới phục vụ quản lý user và content
+export const adminCreateUser = async (userData) => {
+  const { data } = await adminDashboardApi.post('/admin/users', userData)
+  return data.user
+}
+
+export const adminUpdateUser = async (id, userData) => {
+  const { data } = await adminDashboardApi.put(`/admin/users/${id}`, userData)
+  return data.user
+}
+
+export const adminDeleteUser = async (id) => {
+  const { data } = await adminDashboardApi.delete(`/admin/users/${id}`)
+  return data
+}
+
+export const adminDeactivateUser = async (id, status) => {
+  const { data } = await adminDashboardApi.patch(`/admin/users/${id}/status`, { acc_status: status })
+  return data.user
+}
+
+export const getAdminContent = async ({ type = 'all', status = 'all' }) => {
+  const { data } = await adminDashboardApi.get('/admin/content', {
+    params: { type, status }
+  })
+  return data
+}
+
+// Fetch platform-wide aggregates calculated by the protected admin analytics endpoint.
+export const getAdminAnalytics = async ({ from, to } = {}) => {
+  const { data } = await adminDashboardApi.get('/admin/analytics', {
+    params: { ...(from && { from }), ...(to && { to }) },
+  })
+  return data
+}
+
+export const updateContentStatus = async (type, id, status) => {
+  const { data } = await adminDashboardApi.put(`/admin/content/${type}/${id}/status`, { status })
+  return data.content
 }
 
 // Tạo danh sách moderation đơn giản cho widget trên trang AdminDashboardPage.
@@ -175,8 +175,9 @@ export const buildAdminModerationItems = (jobs = [], services = []) => [
 //
 // Severity cao khi bài đăng/service thiếu description, vì item thiếu mô tả thường cần admin xử lý trước.
 export const buildModerationQueueItems = (jobs = [], services = []) => [
-  ...services.map((service) => ({
+  ...services.map((service, index) => ({
     id: `service-${service.id}`,
+    detailPath: `/marketplace/service/${service.id}`,
     title: service.title || 'Untitled Service',
     description: service.description || 'No service description provided.',
     category: 'Service',
@@ -189,10 +190,13 @@ export const buildModerationQueueItems = (jobs = [], services = []) => [
     type: service.tags || 'AI Service',
     time: 'From API',
     // Ưu tiên ảnh service từ backend. Nếu chưa có ảnh thì dùng ảnh mẫu để card không bị vỡ layout.
-    image: service.image_url || 'https://images.unsplash.com/photo-1677442136019-21780ecad995?w=480&h=320&fit=crop',
+    image: getPrimaryContentImage(service.images, service.image_url || service.imageUrl),
+    imageClass: moderationVisualClasses[index % moderationVisualClasses.length],
+    status: service.status || 'pending',
   })),
-  ...jobs.map((job) => ({
+  ...jobs.map((job, index) => ({
     id: `job-${job.id}`,
+    detailPath: `/marketplace/task/${job.id}`,
     title: job.title || 'Untitled Client Task',
     description: job.description || 'No job description provided.',
     category: 'Job',
@@ -205,7 +209,9 @@ export const buildModerationQueueItems = (jobs = [], services = []) => [
     type: job.required_skill || 'Client Job',
     time: 'From API',
     // Job hiện chưa có image_url riêng nên dùng ảnh fallback cố định.
-    image: 'https://images.unsplash.com/photo-1551434678-e076c223a692?w=480&h=320&fit=crop',
+    image: getPrimaryContentImage(job.images, job.image_url || job.imageUrl),
+    imageClass: moderationVisualClasses[index % moderationVisualClasses.length],
+    status: job.status || 'pending',
   })),
 ]
 
@@ -232,22 +238,27 @@ export const buildManagedUsers = (users = []) =>
       .slice(0, 2)
       .toUpperCase()
 
+    // Map role to display nicely
+    let displayRole = 'Client'
+    if (user.role === 'expert') {
+      displayRole = 'AI Expert'
+    } else if (user.role === 'admin') {
+      displayRole = 'Admin'
+    }
+
     return {
       // Nếu API không có id thì dùng index làm fallback để React table vẫn có key ổn định tạm thời.
       id: user.id || index,
       name,
       email: user.email || 'Email not available',
-      // dashboardRole được thêm ở getAdminDashboardData hoặc getAdminUsersData.
-      // Nếu không có dashboardRole thì fallback theo user.role từ backend.
-      role: user.dashboardRole || (user.role === 'expert' ? 'AI Expert' : 'Client'),
-      // Hiện backend/search chưa trả trạng thái quản lý user chi tiết, nên tạm để Active.
-      status: 'Active',
-      // Tạm coi user là verified để UI hiển thị; khi backend có field verification thì nên thay bằng dữ liệu thật.
-      verified: true,
+      role: displayRole,
+      status: user.acc_status === false ? 'Suspended' : 'Active',
+      verified: user.is_verified ?? false,
       // created_at nếu có thì format sang ngày theo locale máy người dùng.
       // Nếu thiếu thì dùng "From API" để báo dữ liệu đến từ API nhưng chưa có ngày.
       joined: user.created_at ? new Date(user.created_at).toLocaleDateString() : 'From API',
       avatar: initials,
+      avatarUrl: user.avatar_url || user.avatarUrl || null,
     }
   })
 
@@ -322,5 +333,139 @@ export const buildAnalytics = ({ experts = [], clients = [], jobs = [], services
       revenue: 'From services',
       status: 'Active',
     })),
+  }
+}
+
+// Lấy danh sách dispute từ backend cho Admin Dashboard
+export const getAdminDisputes = async () => {
+  const { data } = await adminDashboardApi.get('/admin/disputes')
+  return data.disputes || []
+}
+
+// Convert unresolved disputes from the API into the compact card model used
+// by the Admin Dashboard. Resolved cases remain available on the full board.
+export const buildActiveDisputeItems = (disputes = []) =>
+  disputes
+    .filter((dispute) => !dispute.is_resolved)
+    .map((dispute, index) => {
+      const disputeId = dispute.dispute_id || dispute.id || index
+
+      return {
+        ...dispute,
+        id: disputeId,
+        title: dispute.title || dispute.project_title || 'Disputed Project',
+        caseId: `#D-${String(disputeId).slice(-6).toUpperCase()}`,
+        client: dispute.client_name || 'Unknown client',
+        expert: dispute.expert_name || 'Unassigned expert',
+        tag: String(dispute.status || 'Under Review').toUpperCase(),
+        tagClass: 'tag-review',
+      }
+    })
+
+// Xử lý / giải quyết dispute
+export const resolveAdminDispute = async (disputeId, resolutionData) => {
+  const { data } = await adminDashboardApi.post(`/admin/disputes/${disputeId}/resolve`, resolutionData)
+  return data
+}
+
+const clampPercentage = (value) => Math.min(100, Math.max(0, Number(value) || 0))
+const formatCurrency = (value) =>
+  Number(value || 0).toLocaleString('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    maximumFractionDigits: 0,
+  })
+
+// Convert raw analytics API values into the display model used by the dashboard widgets.
+export const buildLiveAnalytics = (data = {}) => {
+  const summary = data.summary || {}
+  const monthlyRevenue = data.revenueByMonth || []
+  const engagement = data.engagement || {}
+  const maximumMonthlyRevenue = Math.max(0, ...monthlyRevenue.map((item) => Number(item.revenue) || 0))
+  const selectedYear = Number(data.period?.from?.slice(0, 4))
+  const now = new Date()
+  const activeMonth = selectedYear === now.getFullYear()
+    ? `${selectedYear}-${String(now.getMonth() + 1).padStart(2, '0')}`
+    : `${selectedYear}-12`
+  const rankedExperts = (data.topExperts || []).map((expert, index) => ({
+    id: expert.id,
+    rank: index + 1,
+    name: expert.name || 'AI Expert',
+    avatar: expert.avatarUrl || null,
+    specialization: expert.specialization || 'AI Specialist',
+    completion: `${clampPercentage(expert.completionRate).toFixed(1)}%`,
+    revenue: formatCurrency(expert.revenue),
+    status: expert.status || 'Active',
+  }))
+
+  return {
+    kpis: [
+      {
+        label: 'Released Revenue',
+        value: formatCurrency(summary.totalRevenue),
+        trend: 'Completed escrow',
+        tone: 'is-success',
+        icon: 'revenue',
+        // Revenue has no fixed target yet, so a non-zero value fills the decorative track.
+        progress: Number(summary.totalRevenue) > 0 ? 100 : 0,
+      },
+      {
+        label: 'Completion Rate',
+        value: `${clampPercentage(summary.completionRate).toFixed(1)}%`,
+        trend: `${summary.completedProjects || 0}/${summary.totalProjects || 0} projects`,
+        tone: 'is-success',
+        icon: 'completion',
+        progress: clampPercentage(summary.completionRate),
+      },
+      {
+        label: 'Active Experts',
+        value: Number(summary.activeExperts || 0).toLocaleString(),
+        trend: 'Enabled accounts',
+        tone: 'is-success',
+        icon: 'experts',
+        progress: Math.min(100, Number(summary.activeExperts || 0) * 10),
+      },
+      {
+        label: 'Avg. Task Price',
+        value: formatCurrency(summary.averageTaskPrice),
+        trend: 'Started projects',
+        tone: 'is-success',
+        icon: 'price',
+        progress: Number(summary.averageTaskPrice) > 0 ? 100 : 0,
+      },
+    ],
+    revenueBars: monthlyRevenue.map((item) => ({
+      label: item.label,
+      amount: Number(item.revenue) || 0,
+      value: maximumMonthlyRevenue && Number(item.revenue) > 0
+        ? Math.max(4, ((Number(item.revenue) || 0) / maximumMonthlyRevenue) * 100)
+        : 0,
+      active: item.monthKey === activeMonth,
+    })),
+    engagementMetrics: [
+      {
+        label: 'Client Engagement',
+        value: `${clampPercentage(engagement.clientRate).toFixed(1)}%`,
+        progress: clampPercentage(engagement.clientRate),
+        tone: 'blue',
+      },
+      {
+        label: 'Expert Engagement',
+        value: `${clampPercentage(engagement.expertRate).toFixed(1)}%`,
+        progress: clampPercentage(engagement.expertRate),
+        tone: 'teal',
+      },
+      {
+        label: 'Inactive Accounts',
+        value: `${clampPercentage(engagement.inactiveAccountRate).toFixed(1)}%`,
+        progress: clampPercentage(engagement.inactiveAccountRate),
+        tone: 'rose',
+      },
+    ],
+    // The main analytics table stays compact while the modal receives the full ranking.
+    topExperts: rankedExperts.slice(0, 5),
+    allExperts: rankedExperts,
+    period: data.period || {},
+    definitions: data.definitions || {},
   }
 }

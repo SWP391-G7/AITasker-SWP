@@ -7,10 +7,10 @@ import Footer from '../../../Components/Footer/Footer'
 import EarningsOverviewCards from '../../../Components/Dashboard/Expert/Earnings/EarningsOverviewCards'
 import EarningsCharts from '../../../Components/Dashboard/Expert/Earnings/EarningsCharts'
 import TransactionTable from '../../../Components/Dashboard/Expert/Earnings/TransactionTable'
-import { getMyServices } from '../../../Services/serviceService'
+import { getMyTransactionsAPI } from '../../../Services/transactionService'
 import { createHandleLogout } from './handleLogout'
-import '../../Style/AdminDashboardPage.css'
-import '../../Style/ExpertDashboardPage.css'
+import '../Style/AdminDashboardPage.css'
+import '../Style/ExpertDashboardPage.css'
 import '../../../Components/Dashboard/Expert/Earnings/EarningsPage.css'
 
 const EarningsPage = () => {
@@ -53,58 +53,67 @@ const EarningsPage = () => {
       try {
         setEarningsError('')
 
-        // API data: derive earnings from the current expert's services via GET /api/services/my.
-        const services = await getMyServices()
-        const apiServices = Array.isArray(services) ? services : []
-        const gross = apiServices.reduce((sum, service) => sum + (Number(service.price) || 0), 0)
-        const fees = gross * 0.1
-        const net = gross - fees
+        const result = await getMyTransactionsAPI()
+        if (result && result.success) {
+          const stats = result.stats || { totalLifetime: 0, availableNow: 0, pendingClearance: 0, inEscrow: 0 }
+          const txList = Array.isArray(result.transactions) ? result.transactions : []
 
-        setEarningsStats([
-          {
-            id: 'stat-api-1',
-            label: 'Available for Withdrawal',
-            value: formatCurrency(net),
-            trend: `${apiServices.length} SERVICES`,
-            trendType: 'neutral',
-            icon: 'bank',
-          },
-          {
-            id: 'stat-api-2',
-            label: 'Pending in Escrow',
-            value: formatCurrency(fees),
-            trend: '10% SERVICE FEE',
-            trendType: 'neutral',
-            icon: 'lock',
-          },
-          {
-            id: 'stat-api-3',
-            label: 'Avg. Service Revenue',
-            value: formatCurrency(apiServices.length ? gross / apiServices.length : 0),
-            trend: null,
-            trendType: 'up',
-            icon: 'chart',
-          },
-        ])
+          const totalLifetime = stats.totalLifetime
+          const availableNow = stats.availableNow
+          const pendingClearance = stats.pendingClearance
+          const inEscrow = stats.inEscrow
 
-        setIncomeSummary({
-          gross: formatCurrency(gross),
-          fees: `-${formatCurrency(fees)}`,
-          net: formatCurrency(net),
-          nextPayout: 'Not scheduled',
-        })
+          setEarningsStats([
+            {
+              id: 'stat-api-1',
+              label: 'Available for Withdrawal',
+              value: formatCurrency(availableNow),
+              trend: 'WALLET READY',
+              trendType: 'neutral',
+              icon: 'bank',
+            },
+            {
+              id: 'stat-api-2',
+              label: 'Pending Clearance',
+              value: formatCurrency(pendingClearance),
+              trend: 'IN PROCESS',
+              trendType: 'neutral',
+              icon: 'lock',
+            },
+            {
+              id: 'stat-api-3',
+              label: 'Total Lifetime Earnings',
+              value: formatCurrency(totalLifetime),
+              trend: `${txList.length} TRANSACTIONS`,
+              trendType: 'up',
+              icon: 'chart',
+            },
+          ])
 
-        setTransactions(
-          apiServices.map((service) => ({
-            id: `#svc-${service.id}`,
-            project: service.title || 'Untitled Service',
-            date: service.created_at ? new Date(service.created_at).toLocaleDateString() : 'From API',
-            status: 'PUBLISHED',
-            statusType: 'active',
-            amount: `+${formatCurrency(service.price)}`,
-            iconType: 'database',
-          }))
-        )
+          // Calculate gross, fees (10%), net
+          const gross = totalLifetime
+          const fees = gross * 0.1
+          const net = gross - fees
+
+          setIncomeSummary({
+            gross: formatCurrency(gross),
+            fees: `-${formatCurrency(fees)}`,
+            net: formatCurrency(net),
+            nextPayout: 'Not scheduled',
+          })
+
+          setTransactions(
+            txList.map((tx) => ({
+              id: `#tx-${tx.id.slice(0, 8)}`,
+              project: tx.project_title || 'Payment Release',
+              date: tx.complete_at ? new Date(tx.complete_at).toLocaleDateString() : 'Completed',
+              status: tx.status ? tx.status.toUpperCase() : 'COMPLETED',
+              statusType: tx.status === 'completed' ? 'active' : 'pending',
+              amount: `+${formatCurrency(tx.amount)}`,
+              iconType: 'wallet',
+            }))
+          )
+        }
       } catch (err) {
         setEarningsError(err.message || 'Failed to load earnings data.')
         setEarningsStats([])
@@ -157,3 +166,4 @@ const EarningsPage = () => {
 }
 
 export default EarningsPage
+

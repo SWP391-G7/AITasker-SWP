@@ -4,11 +4,11 @@ import ExpertHeader from '../../../Components/Dashboard/Expert/ExpertHeader'
 import ExpertSidebar from '../../../Components/Dashboard/Expert/ExpertSidebar'
 import ChatList from '../../../Components/Dashboard/Expert/Messages/ChatList'
 import ChatWindow from '../../../Components/Dashboard/Expert/Messages/ChatWindow'
-import { getConversations, getConversationMessages, sendMessage } from '../../../Services/messageService'
+import { getConversations, getConversationMessages, sendMessage, removeMessage } from '../../../Services/messageService'
 import { createHandleLogout } from './handleLogout'
 import useWebSocket from '../../../hooks/useWebSocket'
-import '../../Style/AdminDashboardPage.css'
-import '../../Style/ExpertDashboardPage.css'
+import '../Style/AdminDashboardPage.css'
+import '../Style/ExpertDashboardPage.css'
 import '../../../Components/Dashboard/Expert/Messages/MessagesPage.css'
 
 const MessagesPage = () => {
@@ -125,6 +125,16 @@ const MessagesPage = () => {
           )
         })
       }
+    } else if (data.type === 'message_removed') {
+      const { conversationId, messageId } = data
+      if (conversationId === activeChatId) {
+        setMessages(prev => prev.map(m =>
+          m.id === messageId ? { ...m, is_removed: true, content: 'Message has been removed' } : m
+        ))
+      }
+      setConversations(prev => prev.map(c =>
+        c.id === conversationId ? { ...c, last_message: 'Message has been removed' } : c
+      ))
     }
   })
 
@@ -149,6 +159,22 @@ const MessagesPage = () => {
     }
   }
 
+  // 5. Handle removing a message
+  const handleRemoveMessage = async (messageId) => {
+    if (!messageId) return
+    try {
+      await removeMessage(messageId)
+      setMessages(prev => prev.map(m =>
+        m.id === messageId ? { ...m, is_removed: true, content: 'Message has been removed' } : m
+      ))
+      setConversations(prev => prev.map(c =>
+        c.id === activeChatId ? { ...c, last_message: 'Message has been removed' } : c
+      ))
+    } catch (err) {
+      console.error("Error removing message:", err)
+    }
+  }
+
   // Prepare UI conversations (renaming properties to match ChatList component expectations)
   const uiConversations = useMemo(() => {
     return conversations.map(c => {
@@ -157,7 +183,7 @@ const MessagesPage = () => {
         ? (c.other_user_professional_title || "Expert")
         : (c.other_user_company_name || "Client")
 
-      const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random&color=fff`
+      const avatarUrl = c.other_user_avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random&color=fff`
 
       return {
         id: c.id,
@@ -213,6 +239,7 @@ const MessagesPage = () => {
               conversation={activeConversation}
               messages={messages}
               onSendMessage={handleSendMessage}
+              onRemoveMessage={handleRemoveMessage}
             />
           </section>
         )}
@@ -221,4 +248,6 @@ const MessagesPage = () => {
   )
 }
 
+
 export default MessagesPage
+

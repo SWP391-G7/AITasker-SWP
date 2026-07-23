@@ -49,6 +49,7 @@ export const login = async (data) => {
       error.isVerificationRequired = result.isVerificationRequired || false
       error.email = result.email || data.email
       error.statusCode = response.status
+      error.code = result.code || null
       throw error
     }
 
@@ -118,7 +119,16 @@ export const getMe = async () => {
 
     if (result.user) {
       const user = result.user
+
+      // Seed isOnboarded from localStorage so the value written by
+      // submitClientOnboarding / submitExpertOnboarding is honoured as a
+      // fallback.  The server profile-check below will override it if it
+      // succeeds; it will NOT reset it to false if the fetch fails.
       let isOnboarded = false
+      try {
+        const stored = JSON.parse(localStorage.getItem('user') || '{}')
+        isOnboarded = stored.isOnboarded ?? false
+      } catch (_) { /* ignore */ }
 
       if (user.role === 'admin') {
         isOnboarded = true
@@ -128,7 +138,8 @@ export const getMe = async () => {
             method: 'GET',
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`
+              'Authorization': `Bearer ${token}`,
+              'Cache-Control': 'no-cache'
             }
           })
           if (profileResponse.ok) {
@@ -139,8 +150,10 @@ export const getMe = async () => {
               isOnboarded = !!profileData.hasExpertProfile
             }
           }
+          // If profileResponse is NOT ok, isOnboarded retains the localStorage fallback
         } catch (profileErr) {
           console.error('Failed to check onboarding profile:', profileErr)
+          // isOnboarded retains the localStorage fallback
         }
       }
 
@@ -284,7 +297,9 @@ export const googleLogin = async (credentials) => {
     const result = await response.json()
 
     if (!response.ok) {
-      throw new Error(result.message || 'Google Login failed')
+      const error = new Error(result.message || 'Google Login failed')
+      error.code = result.code || null
+      throw error
     }
 
     if (result.token) {

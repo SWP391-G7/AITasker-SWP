@@ -12,11 +12,12 @@ import Footer from '../../../Components/Footer/Footer'
 import { getMyServices, deleteService } from '../../../Services/serviceService'
 import { getMyProjects } from '../../../Services/projectService'
 import { getMyProposals } from '../../../Services/proposalService'
+import { getMyInvitations } from '../../../Services/invitationService'
 import { createHandleLogout } from './handleLogout'
-import '../../Style/AdminDashboardPage.css'
-import '../../Style/ExpertDashboardPage.css'
+import '../Style/AdminDashboardPage.css'
+import '../Style/ExpertDashboardPage.css'
 import '../Client/ClientMarketplace.css'
-import '../../ClientExpertSearchPage.css'
+import '../../clients-experts/ClientExpertSearchPage.css'
 
 const parseMoney = (value) => Number(String(value || '0').replace(/[^0-9.]/g, '')) || 0
 const formatMoney = (value) => `$${parseMoney(value).toLocaleString()}`
@@ -26,6 +27,7 @@ const MyProjectsPage = () => {
   const [services, setServices] = useState([])
   const [projects, setProjects] = useState([])
   const [proposals, setProposals] = useState([])
+  const [invitations, setInvitations] = useState([])
   const [searchQuery, setSearchQuery] = useState('')
   const [notifications, setNotifications] = useState(2)
   const [loading, setLoading] = useState(true)
@@ -55,14 +57,16 @@ const MyProjectsPage = () => {
     try {
       setLoading(true)
       setError('')
-      const [servicesResult, projectsResult, proposalsResult] = await Promise.all([
+      const [servicesResult, projectsResult, proposalsResult, invitationsResult] = await Promise.all([
         getMyServices(),
         getMyProjects(),
-        getMyProposals()
+        getMyProposals(),
+        getMyInvitations()
       ])
       setServices(Array.isArray(servicesResult) ? servicesResult : [])
       setProjects(Array.isArray(projectsResult) ? projectsResult : [])
       setProposals(Array.isArray(proposalsResult) ? proposalsResult : [])
+      setInvitations(Array.isArray(invitationsResult) ? invitationsResult : [])
     } catch (err) {
       setError(err.message || 'Failed to load dashboard data.')
     } finally {
@@ -95,6 +99,15 @@ const MyProjectsPage = () => {
       (proposal.status || '').toLowerCase().includes(query)
     )
   }, [proposals, searchQuery])
+
+  const filteredInvitations = useMemo(() => {
+    const query = searchQuery.toLowerCase()
+    return invitations.filter((invitation) =>
+      (invitation.service_title || '').toLowerCase().includes(query) ||
+      (invitation.client_name || '').toLowerCase().includes(query) ||
+      (invitation.status || '').toLowerCase().includes(query)
+    )
+  }, [invitations, searchQuery])
 
   const filteredServices = useMemo(() => {
     const query = searchQuery.toLowerCase()
@@ -299,39 +312,106 @@ const MyProjectsPage = () => {
             )}
 
             {activeTab === 'services' && (
-              <div className="post-form-card" style={{ background: '#0b1220', border: '1px solid rgba(255, 255, 255, 0.08)', padding: '24px', borderRadius: '16px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                  <h3 style={{ margin: 0, color: '#fff', fontSize: '1.2rem', fontWeight: '600' }}>Published Services</h3>
-                  <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                    <span className="project-status" style={{ fontSize: '0.8rem', padding: '3px 8px', borderRadius: '12px' }}>{filteredServices.length} Services</span>
-                    <button
-                      className="next-btn"
-                      type="button"
-                      onClick={() => navigate('/expert/post-service')}
-                      style={{ cursor: 'pointer', minWidth: 'auto', height: '36px', padding: '0 16px', fontSize: '0.85rem' }}
-                    >
-                      + New Service
-                    </button>
+              <div className="dashboard-split-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(450px, 1fr))', gap: '30px', alignItems: 'start' }}>
+                {/* LEFT COLUMN: PUBLISHED SERVICES */}
+                <div className="post-form-card" style={{ background: '#0b1220', border: '1px solid rgba(255, 255, 255, 0.08)', padding: '24px', borderRadius: '16px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                    <h3 style={{ margin: 0, color: '#fff', fontSize: '1.2rem', fontWeight: '600' }}>Published Services</h3>
+                    <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                      <span className="project-status" style={{ fontSize: '0.8rem', padding: '3px 8px', borderRadius: '12px' }}>{filteredServices.length} Services</span>
+                      <button
+                        className="next-btn"
+                        type="button"
+                        onClick={() => navigate('/expert/post-service')}
+                        style={{ cursor: 'pointer', minWidth: 'auto', height: '36px', padding: '0 16px', fontSize: '0.85rem' }}
+                      >
+                        + New Service
+                      </button>
+                    </div>
                   </div>
+
+                  {filteredServices.length === 0 ? (
+                    <div className="empty-projects" style={{ padding: '40px 20px', textAlign: 'center' }}>
+                      <BriefcaseBusiness size={42} style={{ color: 'rgba(255,255,255,0.2)', marginBottom: '16px' }} />
+                      <h4 style={{ color: '#fff', marginBottom: '8px' }}>No Services Published</h4>
+                      <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.9rem', marginBottom: '20px' }}>You haven't posted any services yet.</p>
+                      <button className="next-btn" type="button" onClick={() => navigate('/expert/post-service')} style={{ cursor: 'pointer' }}>
+                        Post a New Service
+                      </button>
+                    </div>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                      {filteredServices.map((service) => {
+                        const pricingType = service.pricing_type || service.pricingType || 'fixed'
+                        return (
+                          <div
+                            key={service.id || service.title}
+                            onClick={() => service.id && navigate(`/marketplace/service/${service.id}`)}
+                            style={{
+                              background: 'rgba(255, 255, 255, 0.02)',
+                              border: '1px solid rgba(255, 255, 255, 0.05)',
+                              borderRadius: '12px',
+                              padding: '16px',
+                              cursor: 'pointer',
+                              transition: 'transform 0.2s, background 0.2s'
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.background = 'rgba(255,255,255,0.04)';
+                              e.currentTarget.style.transform = 'translateY(-2px)';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.02)';
+                              e.currentTarget.style.transform = 'translateY(0)';
+                            }}
+                          >
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '8px' }}>
+                              <h4 style={{ margin: 0, color: '#fff', fontSize: '1rem', fontWeight: '600' }}>{service.title || "Untitled Service"}</h4>
+                              <span className="project-status" style={{ fontSize: '0.75rem', padding: '3px 8px', borderRadius: '4px' }}>
+                                {pricingType}
+                              </span>
+                            </div>
+                            <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.85rem', margin: '0 0 12px 0', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                              {service.description || "No description provided."}
+                            </p>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)' }}>
+                              <span>Price: {formatMoney(service.price)}</span>
+                              <button
+                                type="button"
+                                className="delete-project-btn"
+                                disabled={deletingId === service.id}
+                                onClick={(event) => handleDelete(event, service.id)}
+                                style={{ border: 'none', background: 'transparent', color: '#ff4d4f', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', padding: 0 }}
+                              >
+                                <Trash2 size={12} />
+                                {deletingId === service.id ? 'Deleting...' : 'Delete'}
+                              </button>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )}
                 </div>
 
-                {filteredServices.length === 0 ? (
-                  <div className="empty-projects" style={{ padding: '40px 20px', textAlign: 'center' }}>
-                    <BriefcaseBusiness size={42} style={{ color: 'rgba(255,255,255,0.2)', marginBottom: '16px' }} />
-                    <h4 style={{ color: '#fff', marginBottom: '8px' }}>No Services Published</h4>
-                    <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.9rem', marginBottom: '20px' }}>You haven't posted any services yet.</p>
-                    <button className="next-btn" type="button" onClick={() => navigate('/expert/post-service')} style={{ cursor: 'pointer' }}>
-                      Post a New Service
-                    </button>
+                {/* RIGHT COLUMN: SERVICE REQUESTS RECEIVED */}
+                <div className="post-form-card" style={{ background: '#0b1220', border: '1px solid rgba(255, 255, 255, 0.08)', padding: '24px', borderRadius: '16px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                    <h3 style={{ margin: 0, color: '#fff', fontSize: '1.2rem', fontWeight: '600' }}>Service Requests</h3>
+                    <span className="project-status" style={{ fontSize: '0.8rem', padding: '3px 8px', borderRadius: '12px' }}>{filteredInvitations.length} Requests</span>
                   </div>
-                ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                    {filteredServices.map((service) => {
-                      const pricingType = service.pricing_type || service.pricingType || 'fixed'
-                      return (
+
+                  {filteredInvitations.length === 0 ? (
+                    <div style={{ padding: '60px 20px', textAlign: 'center', color: 'rgba(255,255,255,0.4)' }}>
+                      <BriefcaseBusiness size={42} style={{ opacity: 0.2, marginBottom: '16px' }} />
+                      <h4 style={{ color: '#fff', marginBottom: '8px' }}>No Requests Received</h4>
+                      <p style={{ fontSize: '0.9rem' }}>When a client requests one of your services, they will appear here.</p>
+                    </div>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                      {filteredInvitations.map((invitation) => (
                         <div
-                          key={service.id || service.title}
-                          onClick={() => service.id && navigate(`/marketplace/service/${service.id}`)}
+                          key={invitation.id}
+                          onClick={() => navigate(`/service-requests/${invitation.id}`)}
                           style={{
                             background: 'rgba(255, 255, 255, 0.02)',
                             border: '1px solid rgba(255, 255, 255, 0.05)',
@@ -350,32 +430,23 @@ const MyProjectsPage = () => {
                           }}
                         >
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '8px' }}>
-                            <h4 style={{ margin: 0, color: '#fff', fontSize: '1rem', fontWeight: '600' }}>{service.title || "Untitled Service"}</h4>
-                            <span className="project-status" style={{ fontSize: '0.75rem', padding: '3px 8px', borderRadius: '4px' }}>
-                              {pricingType}
+                            <h4 style={{ margin: 0, color: '#fff', fontSize: '1rem', fontWeight: '600' }}>{invitation.service_title || "Untitled Request"}</h4>
+                            <span className={`project-status ${invitation.status}`} style={{ fontSize: '0.75rem', padding: '3px 8px', borderRadius: '4px' }}>
+                              {invitation.status}
                             </span>
                           </div>
                           <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.85rem', margin: '0 0 12px 0', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                            {service.description || "No description provided."}
+                            {invitation.cover_letter || invitation.service_description || "No description provided."}
                           </p>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)' }}>
-                            <span>Price: {formatMoney(service.price)}</span>
-                            <button
-                              type="button"
-                              className="delete-project-btn"
-                              disabled={deletingId === service.id}
-                              onClick={(event) => handleDelete(event, service.id)}
-                              style={{ border: 'none', background: 'transparent', color: '#ff4d4f', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', padding: 0 }}
-                            >
-                              <Trash2 size={12} />
-                              {deletingId === service.id ? 'Deleting...' : 'Delete'}
-                            </button>
+                            <span>Client: <strong>{invitation.client_name || "Client"}</strong></span>
+                            <span>Offer: <strong>${invitation.bid_amount}</strong></span>
                           </div>
                         </div>
-                      )
-                    })}
-                  </div>
-                )}
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </>
@@ -388,3 +459,4 @@ const MyProjectsPage = () => {
 }
 
 export default MyProjectsPage
+

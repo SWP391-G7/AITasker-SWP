@@ -278,8 +278,9 @@ const LandingPages = () => {
           <div className="row justify-content-center">
             <div className="col-12 col-md-10 col-lg-9">
               <h1 className="hero-title mb-4">
-                Automate Your Business with <br />
-                <span className="gradient-text">Top AI Experts</span>
+                <span className="hero-title-white">Automate Your Business</span> <br />
+                <span className="hero-title-white">with Custom AI Solutions</span> <br />
+                <span className="gradient-text">Powered by Top Experts</span>
               </h1>
 
               <p className="hero-description lead mb-5">
@@ -806,10 +807,14 @@ const LandingPages = () => {
                 expertsData.map((exp) => (
                   <div key={exp.id} className="col-12 col-sm-6 col-lg-3">
                     <div className="expert-card p-4 h-100 text-center d-flex flex-column align-items-center">
-                      <div className="expert-avatar-wrapper mb-4 position-relative d-flex align-items-center justify-content-center" style={{ background: "linear-gradient(135deg, #a855f7, #3b82f6)" }}>
-                        <span style={{ fontSize: "2rem", fontWeight: 700, color: "#fff", lineHeight: 1 }}>
-                          {(exp.full_name || "E").charAt(0).toUpperCase()}
-                        </span>
+                      <div className="expert-avatar-wrapper mb-4 position-relative d-flex align-items-center justify-content-center" style={{ background: exp.avatar_url ? "transparent" : "linear-gradient(135deg, #a855f7, #3b82f6)" }}>
+                        {exp.avatar_url ? (
+                          <img src={exp.avatar_url} alt={exp.full_name} className="expert-avatar-img" />
+                        ) : (
+                          <span style={{ fontSize: "2rem", fontWeight: 700, color: "#fff", lineHeight: 1 }}>
+                            {(exp.full_name || "E").charAt(0).toUpperCase()}
+                          </span>
+                        )}
                         {exp.avg_rating > 0 && (
                           <div className="expert-rating px-2 py-1 rounded-pill d-flex align-items-center gap-1 shadow">
                             <Star size={12} className="text-warning fill-warning" />
@@ -863,10 +868,14 @@ const LandingPages = () => {
                 clients.map((client) => (
                   <div key={client.id} className="col-12 col-sm-6 col-lg-3">
                     <div className="expert-card p-4 h-100 text-center d-flex flex-column align-items-center" style={{ cursor: "pointer" }} onClick={() => navigate(`/client/clients/${client.id}`, { state: { fromLanding: true } })}>
-                      <div className="expert-avatar-wrapper mb-4 position-relative d-flex align-items-center justify-content-center" style={{ background: "linear-gradient(135deg, #3b82f6, #60a5fa)" }}>
-                        <span style={{ fontSize: "2rem", fontWeight: 700, color: "#fff", lineHeight: 1 }}>
-                          {(client.company_name || client.full_name || "C").charAt(0).toUpperCase()}
-                        </span>
+                      <div className="expert-avatar-wrapper mb-4 position-relative d-flex align-items-center justify-content-center" style={{ background: client.avatar_url ? "transparent" : "linear-gradient(135deg, #3b82f6, #60a5fa)" }}>
+                        {client.avatar_url ? (
+                          <img src={client.avatar_url} alt={client.company_name || client.full_name} className="expert-avatar-img" />
+                        ) : (
+                          <span style={{ fontSize: "2rem", fontWeight: 700, color: "#fff", lineHeight: 1 }}>
+                            {(client.company_name || client.full_name || "C").charAt(0).toUpperCase()}
+                          </span>
+                        )}
                         {client.avg_rating > 0 && (
                           <div className="expert-rating px-2 py-1 rounded-pill d-flex align-items-center gap-1 shadow">
                             <Star size={12} className="text-warning fill-warning" />

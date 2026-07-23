@@ -1,13 +1,18 @@
 import { useEffect, useRef, useState } from 'react';
-import { Phone, Video, MoreVertical, Paperclip, Send } from "lucide-react";
+import { Phone, Video, MoreVertical, Paperclip, Send, Trash2 } from "lucide-react";
 import "../../../../pages/DashboardPage/Client/ClientMarketplace.css";
 
-export default function ChatPanel({ conversation, messages = [], onSendMessage }) {
+export default function ChatPanel({ conversation, messages = [], onSendMessage, onRemoveMessage }) {
   const [inputText, setInputText] = useState("");
   const messagesEndRef = useRef(null);
   const shouldScrollAfterSend = useRef(false);
 
-  const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+  let currentUser = {};
+  try {
+    currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+  } catch (err) {
+    currentUser = {};
+  }
 
   useEffect(() => {
     if (!shouldScrollAfterSend.current) return;
@@ -60,7 +65,13 @@ export default function ChatPanel({ conversation, messages = [], onSendMessage }
     <section className="chat-panel">
       <div className="chat-header">
         <div className="chat-user">
-          <div className="chat-avatar">{initials}</div>
+          <div className="chat-avatar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+            {conversation.other_user_avatar_url ? (
+              <img src={conversation.other_user_avatar_url} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            ) : (
+              initials
+            )}
+          </div>
 
           <div>
             <h2>{name}</h2>
@@ -88,17 +99,38 @@ export default function ChatPanel({ conversation, messages = [], onSendMessage }
           </div>
         ) : (
           messages.map((message) => {
-            const isMe = message.user_id === currentUser.id;
+            const currentUserId = currentUser?.id || currentUser?._id;
+            const isMe = Boolean(message?.user_id && currentUserId && message.user_id === currentUserId);
             const senderClass = isMe ? "client" : "expert";
+            const isRemoved = Boolean(message.is_removed || message.content === "Message has been removed");
 
             return (
               <div
                 className={`message-row ${senderClass}`}
                 key={message.id}
               >
-                <div className="message-bubble">
-                  <p>{message.content}</p>
-                  <span>{formatMessageTime(message.send_at || message.time)}</span>
+                <div className={`message-bubble-wrapper ${senderClass}`}>
+                  {isMe && !isRemoved && onRemoveMessage && (
+                    <button
+                      type="button"
+                      className="message-remove-btn"
+                      title="Remove message"
+                      onClick={() => onRemoveMessage(message.id)}
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  )}
+                  <div className={`message-bubble ${isRemoved ? 'removed' : ''}`}>
+                    {isRemoved ? (
+                      <p className="removed-text">
+                        <Trash2 size={13} style={{ marginRight: '6px', opacity: 0.8, verticalAlign: 'middle' }} />
+                        <em>Message has been removed</em>
+                      </p>
+                    ) : (
+                      <p>{message.content}</p>
+                    )}
+                    <span>{formatMessageTime(message.send_at || message.time)}</span>
+                  </div>
                 </div>
               </div>
             );
@@ -106,6 +138,7 @@ export default function ChatPanel({ conversation, messages = [], onSendMessage }
         )}
         <div ref={messagesEndRef} />
       </div>
+
 
       <div className="chat-input-area">
         <button type="button">

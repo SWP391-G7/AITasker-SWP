@@ -16,9 +16,10 @@ import {
 import ClientSidebar from "../../../Components/Dashboard/Client/ClientSidebar";
 import Footer from "../../../Components/Footer/Footer";
 import { getJobById, getJobProposals } from "../../../Services/jobService";
-import { updateProposalStatus, counterProposal } from "../../../Services/proposalService";
+import { updateProposalStatus, counterProposal, initiateProposalPayment } from "../../../Services/proposalService";
 import { createProject } from "../../../Services/projectService";
 import { getOrCreateConversation } from "../../../Services/messageService";
+import PaymentSourceDialog from "../../../Components/Payment/PaymentSourceDialog";
 import "./ClientMarketplace.css";
 
 const getFirstArray = (result, keys) => {
@@ -70,6 +71,7 @@ function ClientTaskDetailPage() {
   // ── Modal / action state ─────────────────────────────────────────
   const [selectedProposal, setSelectedProposal] = useState(null);
   const [actingProposal, setActingProposal] = useState(null);
+  const [paymentProposal, setPaymentProposal] = useState(null);
 
   // Counter-offer form state (inside the proposal modal)
   const [showCounterForm, setShowCounterForm] = useState(false);
@@ -128,6 +130,22 @@ function ClientTaskDetailPage() {
 
   useEffect(() => { fetchDetail(); }, [fetchDetail]);
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const paymentStatus = params.get("payment");
+    const pId = params.get("proposalId");
+    const errorMsg = params.get("error");
+
+    if (paymentStatus === "success" && pId) {
+      setPendingProposalId(pId);
+      setShowProjectPrompt(true);
+      window.history.replaceState({}, document.title, window.location.pathname);
+    } else if (paymentStatus === "failed" && errorMsg) {
+      setError("Payment failed: " + decodeURIComponent(errorMsg));
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, []);
+
   // ── Formatting ───────────────────────────────────────────────────
   const formatDuration = (days) => {
     if (!days) return 'Duration TBD';
@@ -164,15 +182,65 @@ function ClientTaskDetailPage() {
 
   /** Client clicks Approve on a proposal (can be a plain proposal or a counter from expert) */
   const handleAcceptProposal = (proposalId) => {
-    setPendingProposalId(proposalId);
-    setShowProjectPrompt(true);
+    const proposal = proposals.find(p => (p._id || p.id) === proposalId);
+    if (!proposal) return;
+    setPaymentProposal(proposal);
+  };
+
+  const handlePaymentSource = async (paymentSource) => {
+    const proposalId = paymentProposal?._id || paymentProposal?.id;
+    if (!proposalId) return;
+    setActingProposal(proposalId);
+    try {
+      setError("");
+      const result = await initiateProposalPayment(proposalId, paymentSource);
+      if (result.redirectUrl) {
+        window.location.href = result.redirectUrl;
+      } else {
+        throw new Error("Failed to generate payment redirect link");
+      }
+    } catch (err) {
+      setError(err.message || "Failed to initiate payment session");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } finally {
+      setActingProposal(null);
+    }
   };
 
   /** Confirm from the "Start Project?" dialog */
   const confirmProposalAcceptance = async (startProject) => {
     setShowProjectPrompt(false);
     const proposalId = pendingProposalId;
-    if (!proposalId || actingProposal) return;
+    if (!proposalId) return;
+
+    // Check if the proposal in our state is already accepted (from successful payment redirect)
+    const proposal = proposals.find(p => (p._id || p.id) === proposalId);
+    if (proposal && (proposal.status === "accepted" || job?.status === "closed")) {
+      if (startProject) {
+        setActingProposal(proposalId);
+        try {
+          setError("");
+          const result = await createProject(jobId);
+          if (result.project?.id) {
+            navigate(`/projects/${result.project.id}`);
+          } else {
+            navigate("/client/projects");
+          }
+        } catch (err) {
+          setError(err.message || "Failed to start project");
+        } finally {
+          setActingProposal(null);
+          setPendingProposalId(null);
+        }
+      } else {
+        // User paid but declined immediate project start, just reload details
+        setPendingProposalId(null);
+        fetchDetail();
+      }
+      return;
+    }
+
+    // Fallback/Legacy code pathway (for other states, safety only)
     setActingProposal(proposalId);
     try {
       setError("");
@@ -276,7 +344,23 @@ function ClientTaskDetailPage() {
     const pid = proposal._id || proposal.id;
     const busy = actingProposal === pid;
 
+    if (job && (job.status === "removed" || job.status === "rejected")) {
+      return (
+        <span className="text-danger small fw-bold">
+          No actions available (Job Removed by Admin)
+        </span>
+      );
+    }
+
     if (proposal.status === "accepted") {
+      if (proposal.payment_status !== "funded") {
+        return (
+          <button type="button" className="btn btn-sm btn-success px-3 py-2 fw-semibold" style={{ borderRadius: "8px" }} onClick={() => handleAcceptProposal(pid)} disabled={busy}>
+            {busy ? <Loader2 className="animate-spin me-1 d-inline" size={14} /> : null}
+            Fund Escrow
+          </button>
+        );
+      }
       return (
         <span className="project-status accepted-status d-flex align-items-center py-2 px-3">
           <Check size={14} className="me-1" /> Accepted
@@ -422,12 +506,23 @@ function ClientTaskDetailPage() {
 
         {!loading && !error && job && (
           <>
+            {job.status === 'removed' && (
+              <div className="alert alert-danger d-flex align-items-center gap-2 mb-4" style={{ borderRadius: '12px', border: '1px solid rgba(239, 68, 68, 0.2)', background: 'rgba(239, 68, 68, 0.05)', color: '#ef4444' }}>
+                <strong>Warning:</strong> This task has been removed by the administrator due to policy violations. You cannot perform any actions on this task.
+              </div>
+            )}
+
             {/* ── Job summary ─────────────────────────────────────── */}
             <section className="task-detail-grid">
               <article className="post-form-card task-detail-card">
                 <div className="task-detail-header">
                   <div>
-                    <span className="project-status">{job.status || "open"}</span>
+                    <span 
+                      className={`project-status ${job.status === 'removed' ? 'rejected-status' : ''}`}
+                      style={job.status === 'removed' ? { color: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.1)', borderColor: 'rgba(239, 68, 68, 0.2)', textTransform: 'capitalize' } : {}}
+                    >
+                      {job.status === 'removed' ? 'Removed by Admin' : (job.status || "open")}
+                    </span>
                     <h2>{job.title || job.jobTitle || "Untitled Task"}</h2>
                   </div>
 
@@ -530,8 +625,8 @@ function ClientTaskDetailPage() {
                     background: "#0b1220",
                     border: "1px solid rgba(255,255,255,0.1)",
                     color: "#ffffff",
-                    maxWidth: "620px",
-                    width: "90%",
+                    maxWidth: "920px",
+                    width: "min(94vw, 920px)",
                     textAlign: "left",
                     padding: "30px",
                     borderRadius: "16px",
@@ -716,6 +811,16 @@ function ClientTaskDetailPage() {
             )}
 
             {/* ── Start Project? prompt ────────────────────────────── */}
+            <PaymentSourceDialog
+              open={Boolean(paymentProposal)}
+              title={paymentProposal ? `Fund proposal from ${getExpertName(paymentProposal)}` : ''}
+              amount={paymentProposal?.status === 'countered' && paymentProposal?.counter_bid_amount ? paymentProposal.counter_bid_amount : paymentProposal?.bid_amount}
+              availableBalance={job?.client_budget ?? job?.clientBudget}
+              busy={Boolean(actingProposal)}
+              onClose={() => !actingProposal && setPaymentProposal(null)}
+              onSelect={handlePaymentSource}
+            />
+
             {showProjectPrompt && (
               <div className="modal-overlay" onClick={() => setShowProjectPrompt(false)}>
                 <div
@@ -766,3 +871,4 @@ function ClientTaskDetailPage() {
 }
 
 export default ClientTaskDetailPage;
+

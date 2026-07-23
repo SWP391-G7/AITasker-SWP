@@ -22,8 +22,8 @@ import {
   updateProposalStatus,
   counterProposal,
 } from "../../../Services/proposalService";
-import "../../Style/AdminDashboardPage.css";
-import "../../Style/ExpertDashboardPage.css";
+import "../Style/AdminDashboardPage.css";
+import "../Style/ExpertDashboardPage.css";
 import "../Client/ClientMarketplace.css";
 
 function ExpertProposalDetailPage() {
@@ -617,3 +617,4 @@ function ExpertProposalDetailPage() {
 }
 
 export default ExpertProposalDetailPage;
+

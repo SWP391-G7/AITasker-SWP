@@ -69,8 +69,8 @@ const checkProfileReminder = () => {
 }
 
 export const seedWelcomeNotification = () => {
-  const stored = localStorage.getItem(STORAGE_KEY)
-  if (!stored || JSON.parse(stored).length === 0) {
+  const seeded = localStorage.getItem("welcomeSeeded")
+  if (!seeded) {
     const welcome = [{
       id: "welcome-1",
       title: "Welcome to AITasker!",
@@ -81,6 +81,7 @@ export const seedWelcomeNotification = () => {
       link: "/marketplace",
     }]
     localStorage.setItem(STORAGE_KEY, JSON.stringify(welcome))
+    localStorage.setItem("welcomeSeeded", "true")
   }
 }
 
@@ -88,6 +89,14 @@ export const getLocalNotifications = () => {
   try {
     const reminder = checkProfileReminder()
     let local = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]")
+    
+    // Auto-delete read local notifications on next page load/fetch
+    const unreadLocal = local.filter((n) => !n.read)
+    if (unreadLocal.length !== local.length) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(unreadLocal))
+      local = unreadLocal
+    }
+
     if (reminder) {
       const exists = local.some((n) => n.id === "profile-reminder")
       if (!exists) local.unshift(reminder)
@@ -133,3 +142,106 @@ export const markLocalAsRead = (id) => {
 export const clearAllLocalNotifications = () => {
   localStorage.removeItem(STORAGE_KEY)
 }
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'
+
+export const getNotificationsAPI = async () => {
+  try {
+    const token = localStorage.getItem('token')
+    if (!token) throw new Error('No token found')
+    const response = await fetch(`${API_BASE_URL}/notifications`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      }
+    })
+    const result = await response.json()
+    if (!response.ok) throw new Error(result.message || 'Failed to fetch notifications')
+    return result
+  } catch (error) {
+    console.error('Get notifications error:', error)
+    throw error
+  }
+}
+
+export const markNotificationAsReadAPI = async (id) => {
+  try {
+    const token = localStorage.getItem('token')
+    if (!token) throw new Error('No token found')
+    const response = await fetch(`${API_BASE_URL}/notifications/${id}/read`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      }
+    })
+    const result = await response.json()
+    if (!response.ok) throw new Error(result.message || 'Failed to mark notification as read')
+    return result
+  } catch (error) {
+    console.error('Mark notification as read error:', error)
+    throw error
+  }
+}
+
+export const markAllNotificationsAsReadAPI = async () => {
+  try {
+    const token = localStorage.getItem('token')
+    if (!token) throw new Error('No token found')
+    const response = await fetch(`${API_BASE_URL}/notifications/read-all`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      }
+    })
+    const result = await response.json()
+    if (!response.ok) throw new Error(result.message || 'Failed to mark all notifications as read')
+    return result
+  } catch (error) {
+    console.error('Mark all notifications as read error:', error)
+    throw error
+  }
+}
+
+export const getMilestoneByIdAPI = async (id) => {
+  try {
+    const token = localStorage.getItem('token')
+    if (!token) throw new Error('No token found')
+    const response = await fetch(`${API_BASE_URL}/milestones/${id}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      }
+    })
+    const result = await response.json()
+    if (!response.ok) throw new Error(result.message || 'Failed to fetch milestone')
+    return result
+  } catch (error) {
+    console.error('Get milestone error:', error)
+    throw error
+  }
+}
+
+export const getProposalByIdAPI = async (id) => {
+  try {
+    const token = localStorage.getItem('token')
+    if (!token) throw new Error('No token found')
+    const response = await fetch(`${API_BASE_URL}/proposals/${id}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      }
+    })
+    const result = await response.json()
+    if (!response.ok) throw new Error(result.message || 'Failed to fetch proposal')
+    return result
+  } catch (error) {
+    console.error('Get proposal error:', error)
+    throw error
+  }
+}
+

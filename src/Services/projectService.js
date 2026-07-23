@@ -207,10 +207,11 @@ export const submitMilestonePlan = async (projectId, milestones) => {
 /**
  * Client approves the submitted milestone plan (all planning → planned)
  */
-export const approveMilestonePlan = async (projectId) => {
+export const approveMilestonePlan = async (projectId, approveDurationExtension = false) => {
   const response = await fetch(`${API_BASE_URL}/milestones/project/${projectId}/approve-plan`, {
     method: 'PUT',
-    headers: getAuthHeaders()
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ approve_duration_extension: approveDurationExtension })
   });
   const result = await response.json();
   if (!response.ok) throw new Error(result.message || 'Failed to approve milestone plan.');
@@ -290,4 +291,64 @@ export const requestRevision = async (milestoneId, note) => {
   if (!response.ok) throw new Error(result.message || 'Failed to request revision.');
   return result;
 };
+
+export const requestMilestoneExtension = async (milestoneId, additionalDays, reason) => {
+  const response = await fetch(`${API_BASE_URL}/milestones/${milestoneId}/request-extension`, {
+    method: 'PUT',
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ additional_days: additionalDays, reason })
+  });
+  const result = await response.json();
+  if (!response.ok) throw new Error(result.message || 'Failed to request deadline extension.');
+  return result;
+};
+
+export const respondMilestoneExtension = async (milestoneId, action, note = '') => {
+  const response = await fetch(`${API_BASE_URL}/milestones/${milestoneId}/respond-extension`, {
+    method: 'PUT',
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ action, note })
+  });
+  const result = await response.json();
+  if (!response.ok) throw new Error(result.message || 'Failed to respond to deadline extension.');
+  return result;
+};
+
+/**
+ * File/raise a dispute for a project
+ */
+export const raiseProjectDispute = async (projectId, disputeData) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/projects/${projectId}/dispute`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(disputeData)
+    });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.message || 'Failed to file dispute.');
+    return result;
+  } catch (error) {
+    console.error('Raise project dispute error:', error);
+    throw error;
+  }
+};
+
+/**
+ * Get dispute details for a project if any
+ */
+export const getProjectDisputeStatus = async (projectId) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/projects/${projectId}/dispute`, {
+      method: 'GET',
+      headers: getAuthHeaders()
+    });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.message || 'Failed to retrieve dispute details.');
+    return result.dispute || null;
+  } catch (error) {
+    console.error('Get project dispute error:', error);
+    throw error;
+  }
+};
+
 

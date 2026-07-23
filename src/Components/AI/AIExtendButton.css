@@ -1,0 +1,128 @@
+.ai-extend-button-container {
+  display: inline-block;
+  position: relative;
+}
+
+.ai-generate-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(168, 85, 247, 0.2) 50%, rgba(236, 72, 153, 0.2) 100%);
+  border: 1px solid rgba(168, 85, 247, 0.4);
+  border-radius: 8px;
+  color: #f3f4f6;
+  padding: 6px 14px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(168, 85, 247, 0.1);
+  backdrop-filter: blur(4px);
+}
+
+.ai-generate-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.4) 0%, rgba(168, 85, 247, 0.4) 50%, rgba(236, 72, 153, 0.4) 100%);
+  border-color: rgba(168, 85, 247, 0.8);
+  box-shadow: 0 0 15px rgba(168, 85, 247, 0.4);
+  transform: translateY(-1px);
+}
+
+.ai-generate-btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.ai-generate-btn:disabled {
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* Grayscale/Greyed out cooldown effect */
+.ai-generate-btn.cooldown {
+  background: rgba(30, 41, 59, 0.8) !important;
+  border-color: rgba(71, 85, 105, 0.5) !important;
+  color: #64748b !important;
+  filter: grayscale(1);
+  opacity: 0.7;
+}
+
+/* Disabled state when no input is filled */
+.ai-generate-btn.disabled-no-input {
+  background: rgba(255, 255, 255, 0.03) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  color: #64748b !important;
+  opacity: 0.6;
+}
+
+/* Tooltip design */
+.ai-tooltip {
+  visibility: hidden;
+  width: 240px;
+  background-color: rgba(15, 23, 42, 0.95);
+  color: #f3f4f6;
+  text-align: center;
+  border-radius: 8px;
+  padding: 8px 12px;
+  position: absolute;
+  z-index: 1000;
+  bottom: 125%; /* Position the tooltip above the button */
+  left: 50%;
+  margin-left: -120px;
+  opacity: 0;
+  transition: opacity 0.3s;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border: 1px solid rgba(168, 85, 247, 0.3);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+  line-height: 1.4;
+}
+
+/* Tooltip arrow */
+.ai-tooltip::after {
+  content: "";
+  position: absolute;
+  top: 100%; /* At the bottom of the tooltip */
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: rgba(15, 23, 42, 0.95) transparent transparent transparent;
+}
+
+/* Show the tooltip on hover when disabled due to no input */
+.ai-generate-btn.disabled-no-input:hover .ai-tooltip {
+  visibility: visible;
+  opacity: 1;
+}
+
+/* Sparkle animation */
+.sparkles-icon {
+  color: #c084fc;
+  transition: transform 0.3s ease;
+}
+
+.ai-generate-btn:hover:not(:disabled) .sparkles-icon {
+  transform: scale(1.2) rotate(15deg);
+  color: #f472b6;
+}
+
+/* Sparkle badge for AI-generated layouts */
+.ai-sparkle-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.25) 0%, rgba(236, 72, 153, 0.25) 100%);
+  border: 1px solid rgba(168, 85, 247, 0.4);
+  border-radius: 12px;
+  color: #d8b4fe;
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  box-shadow: 0 0 10px rgba(168, 85, 247, 0.2);
+  animation: badgePulse 2s infinite alternate;
+}
+
+@keyframes badgePulse {
+  from { box-shadow: 0 0 8px rgba(168, 85, 247, 0.15); }
+  to { box-shadow: 0 0 16px rgba(168, 85, 247, 0.35); }
+}

@@ -20,9 +20,13 @@ const ProjectDeliverables = ({ projects }) => {
       </div>
 
       <div className="project-list-stack">
-        {projects.map((project) => (
-          <ProjectCard key={project.id} project={project} />
-        ))}
+        {Array.isArray(projects) && projects.length > 0 ? (
+          projects.map((project) => (
+            <ProjectCard key={project.id} project={project} />
+          ))
+        ) : (
+          <div className="text-center py-4 text-muted small">No active deliverables found</div>
+        )}
       </div>
     </section>
   );

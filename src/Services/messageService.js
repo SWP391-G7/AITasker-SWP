@@ -87,3 +87,25 @@ export const sendMessage = async (conversationId, content) => {
 
   return result.data;
 };
+
+export const removeMessage = async (messageId) => {
+  const token = localStorage.getItem('token');
+  if (!token) {
+    throw new Error('No authentication token found. Please log in first.');
+  }
+
+  const response = await fetch(`${API_BASE_URL}/messages/${messageId}`, {
+    method: 'DELETE',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  const result = await response.json();
+  if (!response.ok) {
+    throw new Error(result.message || 'Failed to remove message.');
+  }
+
+  return result.data;
+};
+

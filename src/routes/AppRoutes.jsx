@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react"
 import { Navigate, Route, Routes, useLocation } from "react-router-dom"
-import LoginPage from "../pages/LoginPage"
-import RegisterPage from "../pages/RegisterPage"
-import ForgotPasswordPage from "../pages/ForgotPasswordPage"
+import LoginPage from "../pages/auth/LoginPage"
+import RegisterPage from "../pages/auth/RegisterPage"
+import ForgotPasswordPage from "../pages/auth/ForgotPasswordPage"
 import LandingPages from "../Components/LandingPages/LandingPages"
 import HeaderCom from "../Components/Navbar/HeaderCom"
-import EmailVerificationPage from "../pages/EmailVerificationPage"
+import EmailVerificationPage from "../pages/auth/EmailVerificationPage"
 import { checkLogin } from "../Services/checkLogin"
-import OnboardingPage from "../pages/OnboardingPage"
+import OnboardingPage from "../pages/onboarding/OnboardingPage"
 import ClientDashboardPage from "../pages/DashboardPage/Client/ClientDashboardPage"
 import ClientProjectsPage from "../pages/DashboardPage/Client/ClientProjectsPage"
 import ClientTaskDetailPage from "../pages/DashboardPage/Client/ClientTaskDetailPage"
@@ -27,18 +27,23 @@ import ExpertMessagesPage from "../pages/DashboardPage/Expert/MessagesPage"
 import ExpertSettingsPage from "../pages/DashboardPage/Expert/SettingsPage"
 import PostServicePage from "../pages/DashboardPage/Expert/PostServicePage"
 import ExpertProposalDetailPage from "../pages/DashboardPage/Expert/ExpertProposalDetailPage"
-import ClientExpertSearchPage from "../pages/ClientExpertSearchPage"
-import ProfilePage from "../pages/ProfilePage"
-import AISolutionMarketplacePage from "../pages/AISolutionMarketplacePage"
-import ServiceDetailPage from "../pages/ServiceDetailPage"
-import MarketplaceTaskDetailPage from "../pages/MarketplaceTaskDetailPage"
-import ViewAllProjectPage from "../pages/ViewAllProjectPage"
-import ViewAllServicePage from "../pages/ViewAllServicePage"
-import MarketplaceProposalPage from "../pages/MarketplaceProposalPage"
-import ProjectDetailPage from "../pages/ProjectDetailPage"
+import ClientExpertSearchPage from "../pages/clients-experts/ClientExpertSearchPage"
+import ProfilePage from "../pages/profile/ProfilePage"
+import AISolutionMarketplacePage from "../pages/marketplace/AISolutionMarketplacePage"
+import ServiceDetailPage from "../pages/marketplace/ServiceDetailPage"
+import MarketplaceTaskDetailPage from "../pages/marketplace/MarketplaceTaskDetailPage"
+import ViewAllProjectPage from "../pages/profile/ViewAllProjectPage"
+import ViewAllServicePage from "../pages/profile/ViewAllServicePage"
+import MarketplaceProposalPage from "../pages/marketplace/MarketplaceProposalPage"
+import ProjectDetailPage from "../pages/projects/ProjectDetailPage"
+import DeactivatedPage from "../pages/misc/DeactivatedPage"
+import MockPaymentGateway from "../pages/misc/MockPaymentGateway"
+import ServiceRequestPage from "../pages/marketplace/ServiceRequestPage"
+import ServiceRequestDetailPage from "../pages/marketplace/ServiceRequestDetailPage"
+import { PrivacyPolicy, TermsOfService, HelpCenter, ApiDocs } from "../pages/info/InfoPages"
 
 function useAuthStatus() {
-  const [status, setStatus] = useState({ isLoggedIn: null, isVerified: null, role: null })
+  const [status, setStatus] = useState({ isLoggedIn: null, isVerified: null, isOnboarded: null, role: null })
 
   useEffect(() => {
     let mounted = true
@@ -49,12 +54,14 @@ function useAuthStatus() {
           const loggedIn = result?.isLoggedIn ?? false
           const user = result?.user?.user
           const verified = loggedIn ? (user?.isVerified ?? false) : false
-          setStatus({ isLoggedIn: loggedIn, isVerified: verified, role: user?.role ?? null })
+          // isOnboarded is enriched onto the user object by authService.getMe
+          const onboarded = loggedIn ? (user?.isOnboarded ?? false) : false
+          setStatus({ isLoggedIn: loggedIn, isVerified: verified, isOnboarded: onboarded, role: user?.role ?? null })
         }
       })
       .catch(() => {
         if (mounted) {
-          setStatus({ isLoggedIn: false, isVerified: false, role: null })
+          setStatus({ isLoggedIn: false, isVerified: false, isOnboarded: false, role: null })
         }
       })
 
@@ -72,11 +79,46 @@ const roleHomePaths = {
   expert: "/expert/dashboard",
 }
 
+const isAdminRole = (role) => String(role || "").toLowerCase() === "admin"
+
 function GuestOnly({ children }) {
-  const { isLoggedIn, isVerified } = useAuthStatus()
+  const { isLoggedIn, isVerified, isOnboarded, role } = useAuthStatus()
 
   if (isLoggedIn === null) return null
-  if (isLoggedIn && isVerified) return <Navigate to="/" replace />
+  if (isLoggedIn && isVerified) {
+    // Redirect to onboarding if profile not yet complete
+    if (!isOnboarded && !isAdminRole(role)) return <Navigate to="/onboarding" replace />
+    return <Navigate to={roleHomePaths[role] || "/"} replace />
+  }
+
+  return children
+}
+
+// Allows access only to logged-in, verified users who have NOT yet onboarded.
+// Already-onboarded users are sent straight to their role dashboard.
+function OnboardingOnly({ children }) {
+  const location = useLocation()
+  const { isLoggedIn, isVerified, isOnboarded, role } = useAuthStatus()
+
+  if (isLoggedIn === null) return null
+
+  if (!isLoggedIn) {
+    return (
+      <Navigate
+        to="/login"
+        replace
+        state={{
+          from: location.pathname,
+          message: "Please log in or create an account to use this feature.",
+        }}
+      />
+    )
+  }
+
+  if (!isVerified) return <Navigate to="/verify" replace />
+
+  // Profile already established — send them home
+  if (isOnboarded || isAdminRole(role)) return <Navigate to={roleHomePaths[role] || "/"} replace />
 
   return children
 }
@@ -105,9 +147,9 @@ function VerifyOnly({ children }) {
   return children
 }
 
-function ProtectedRoute({ children, allowedRoles }) {
+function ProtectedRoute({ children, allowedRoles, onboardingRequired = true }) {
   const location = useLocation()
-  const { isLoggedIn, isVerified, role } = useAuthStatus()
+  const { isLoggedIn, isVerified, isOnboarded, role } = useAuthStatus()
 
   if (isLoggedIn === null) return null
 
@@ -125,6 +167,11 @@ function ProtectedRoute({ children, allowedRoles }) {
   }
 
   if (!isVerified) return <Navigate to="/verify" replace />
+
+  // Redirect to onboarding if the user hasn't completed their profile yet
+  if (onboardingRequired && !isOnboarded && !isAdminRole(role)) {
+    return <Navigate to="/onboarding" replace />
+  }
 
   if (allowedRoles?.length && !allowedRoles.includes(role)) {
     return <Navigate to={roleHomePaths[role] || "/"} replace />
@@ -135,7 +182,7 @@ function ProtectedRoute({ children, allowedRoles }) {
 
 function DashboardRedirect() {
   const location = useLocation()
-  const { isLoggedIn, isVerified, role } = useAuthStatus()
+  const { isLoggedIn, isVerified, isOnboarded, role } = useAuthStatus()
 
   if (isLoggedIn === null) return null
 
@@ -153,6 +200,8 @@ function DashboardRedirect() {
   }
 
   if (!isVerified) return <Navigate to="/verify" replace />
+
+  if (!isOnboarded && !isAdminRole(role)) return <Navigate to="/onboarding" replace />
 
   return <Navigate to={roleHomePaths[role] || "/"} replace />
 }
@@ -169,33 +218,42 @@ function AppRoutes() {
       <Route
         path="/marketplace"
         element={
-          <ProtectedRoute>
+          <>
             <AISolutionMarketplacePage />
-          </ProtectedRoute>
+          </>
         }
       />
       <Route
         path="/marketplace/service/:id"
         element={
-          <ProtectedRoute>
+          <>
             <HeaderCom />
             <ServiceDetailPage />
+          </>
+        }
+      />
+      <Route
+        path="/marketplace/service/:id/request"
+        element={
+          <ProtectedRoute allowedRoles={["client"]}>
+            <HeaderCom />
+            <ServiceRequestPage />
           </ProtectedRoute>
         }
       />
       <Route
         path="/marketplace/task/:id"
         element={
-          <ProtectedRoute>
+          <>
             <HeaderCom />
             <MarketplaceTaskDetailPage />
-          </ProtectedRoute>
+          </>
         }
       />
       <Route
         path="/marketplace/task/:id/proposal"
         element={
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={["expert"]}>
             <HeaderCom />
             <MarketplaceProposalPage />
           </ProtectedRoute>
@@ -204,20 +262,26 @@ function AppRoutes() {
       <Route
         path="/clients-experts"
         element={
-          <ProtectedRoute>
+          <>
+            <HeaderCom />
             <ClientExpertSearchPage />
-          </ProtectedRoute>
+          </>
         }
       />
 
 
       <Route path="/login" element={<GuestOnly><LoginPage /></GuestOnly>} />
       <Route path="/register" element={<GuestOnly><RegisterPage /></GuestOnly>} />
-      <Route path="/forgot-password" element={<GuestOnly><ForgotPasswordPage /></GuestOnly>} />
+      <Route path="/update-password" element={<ForgotPasswordPage />} />
       <Route path="/verify" element={<VerifyOnly><EmailVerificationPage /></VerifyOnly>} />
-      <Route path="/verify-email" element={<VerifyOnly><EmailVerificationPage /></VerifyOnly>} />
+      <Route path="/deactivated" element={<DeactivatedPage />} />
+      <Route path="/privacy" element={<PrivacyPolicy />} />
+      <Route path="/terms" element={<TermsOfService />} />
+      <Route path="/help" element={<HelpCenter />} />
+      <Route path="/api-docs" element={<ApiDocs />} />
+      <Route path="/mock-payment-gateway/:token" element={<MockPaymentGateway />} />
 
-      <Route path="/onboarding" element={<ProtectedRoute><OnboardingPage /></ProtectedRoute>} />
+      <Route path="/onboarding" element={<OnboardingOnly><OnboardingPage /></OnboardingOnly>} />
       <Route path="/dashboard" element={<DashboardRedirect />} />
 
       <Route path="/client/dashboard" element={<ProtectedRoute allowedRoles={["client"]}><ClientDashboardPage /></ProtectedRoute>} />
@@ -242,16 +306,24 @@ function AppRoutes() {
       <Route path="/expert/earnings" element={<ProtectedRoute allowedRoles={["expert"]}><EarningsPage /></ProtectedRoute>} />
       <Route path="/expert/messages" element={<ProtectedRoute allowedRoles={["expert"]}><ExpertMessagesPage /></ProtectedRoute>} />
       <Route path="/expert/settings" element={<ProtectedRoute allowedRoles={["expert"]}><ExpertSettingsPage /></ProtectedRoute>} />
-      <Route path="/profile/:userId" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-      <Route path="/profile/:userId/projects" element={<ProtectedRoute><ViewAllProjectPage /></ProtectedRoute>} />
-      <Route path="/profile/:userId/services" element={<ProtectedRoute><ViewAllServicePage /></ProtectedRoute>} />
-      <Route path="/client/experts/:userId" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-      <Route path="/client/clients/:userId" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+      <Route path="/profile/:userId" element={<ProfilePage />} />
+      <Route path="/profile/:userId/projects" element={<ViewAllProjectPage />} />
+      <Route path="/profile/:userId/services" element={<ViewAllServicePage />} />
+      <Route path="/client/experts/:userId" element={<ProfilePage />} />
+      <Route path="/client/clients/:userId" element={<ProfilePage />} />
       <Route
         path="/projects/:projectId"
         element={
           <ProtectedRoute>
             <ProjectDetailPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/service-requests/:id"
+        element={
+          <ProtectedRoute>
+            <ServiceRequestDetailPage />
           </ProtectedRoute>
         }
       />

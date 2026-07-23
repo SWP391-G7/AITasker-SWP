@@ -47,7 +47,7 @@ function ClientActiveProjectsTable({ projects }) {
           {projects.map((project) => (
             <tr
               key={project.id}
-              onClick={() => navigate(`/client/projects/${project.id}`)}
+              onClick={() => navigate(`/projects/${project.id}`)}
             >
               <td>
                 <strong>{project.name}</strong>

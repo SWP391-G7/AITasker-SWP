@@ -1,27 +1,71 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import ContentModerationFilters from './ContentModerationFilters'
 import ContentModerationPagination from './ContentModerationPagination'
 import ContentModerationStats from './ContentModerationStats'
 import { moderationFilters, moderationItems, moderationStats } from './contentModerationData'
 import ModerationQueueList from './ModerationQueueList'
 
-const ContentModerationView = ({ searchQuery: externalSearchQuery, items = moderationItems, stats = moderationStats }) => {
+const normalizeSeverity = (value = '') =>
+  value.toLowerCase().replace(' severity', '').trim()
+
+const ContentModerationView = ({
+  searchQuery: externalSearchQuery,
+  items = moderationItems,
+  stats = moderationStats,
+  onApprove,
+  onReject,
+  onUnpublish,
+  onRepublish
+}) => {
   const [activeFilter, setActiveFilter] = useState('All Types')
   const [severityFilter, setSeverityFilter] = useState('All Levels')
+  const [currentPage, setCurrentPage] = useState(1)
+  const [reviewStatusFilter, setReviewStatusFilter] = useState('all')
   const searchQuery = externalSearchQuery ?? ''
+
+  // Reset page when filters or search terms change
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [activeFilter, severityFilter, searchQuery, reviewStatusFilter])
 
   const filteredItems = useMemo(() => {
     return items.filter((item) => {
-      const matchesType = activeFilter === 'All Types' || item.category === activeFilter
+      // Filter by moderation reviewed status
+      const isPending = String(item.status || 'pending').toLowerCase() === 'pending'
+      const matchesReviewStatus =
+        reviewStatusFilter === 'all' ||
+        (reviewStatusFilter === 'reviewed' && !isPending) ||
+        (reviewStatusFilter === 'unreviewed' && isPending)
+      if (!matchesReviewStatus) return false
+
+      let matchesType = false
+      if (activeFilter === 'All Types') {
+        matchesType = true
+      } else if (activeFilter === 'Job Posts' && item.category === 'Job') {
+        matchesType = true
+      } else if (activeFilter === 'Service Listings' && item.category === 'Service') {
+        matchesType = true
+      }
+
       const matchesSeverity =
-        severityFilter === 'All Levels' || item.severityLabel === severityFilter
+        severityFilter === 'All Levels' ||
+        normalizeSeverity(item.severityLabel || item.severity) === normalizeSeverity(severityFilter)
       const matchesSearch =
         item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.description.toLowerCase().includes(searchQuery.toLowerCase())
 
       return matchesType && matchesSeverity && matchesSearch
     })
-  }, [activeFilter, items, searchQuery, severityFilter])
+  }, [activeFilter, items, searchQuery, severityFilter, reviewStatusFilter])
+
+  const pageSize = 5
+  const totalItems = filteredItems.length
+  const totalPages = Math.ceil(totalItems / pageSize)
+
+  const paginatedItems = useMemo(() => {
+    const start = (currentPage - 1) * pageSize
+    return filteredItems.slice(start, start + pageSize)
+  }, [filteredItems, currentPage, pageSize])
 
   return (
     <>
@@ -32,9 +76,23 @@ const ContentModerationView = ({ searchQuery: externalSearchQuery, items = moder
         onFilterChange={setActiveFilter}
         onSeverityChange={setSeverityFilter}
         severityFilter={severityFilter}
+        reviewStatusFilter={reviewStatusFilter}
+        onReviewStatusChange={setReviewStatusFilter}
       />
-      <ModerationQueueList items={filteredItems} />
-      <ContentModerationPagination />
+      <ModerationQueueList
+        items={paginatedItems}
+        onApprove={onApprove}
+        onReject={onReject}
+        onUnpublish={onUnpublish}
+        onRepublish={onRepublish}
+      />
+      <ContentModerationPagination 
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+        totalItems={totalItems}
+        pageSize={pageSize}
+      />
     </>
   )
 }

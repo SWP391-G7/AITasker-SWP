@@ -1,9 +1,14 @@
 import React from 'react';
 import { ChevronDown } from 'lucide-react';
 
-const EarningsCharts = ({ summary }) => {
+const EarningsCharts = ({ summary = {} }) => {
   const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN'];
   const values = [40, 65, 45, 80, 55, 90]; // Percentage heights for bars
+
+  const grossText = summary?.gross || '$0.00';
+  const feesText = summary?.fees || '$0.00';
+  const netText = summary?.net || '$0.00';
+  const nextPayoutText = summary?.nextPayout || 'N/A';
 
   return (
     <div className="earnings-middle-grid">
@@ -46,20 +51,20 @@ const EarningsCharts = ({ summary }) => {
         <div className="summary-list">
           <div className="summary-item">
             <label>Gross Earnings</label>
-            <span>{summary.gross}</span>
+            <span>{grossText}</span>
           </div>
           <div className="summary-item">
             <label>Service Fees (10%)</label>
-            <span className="text-coral">{summary.fees}</span>
+            <span className="text-coral">{feesText}</span>
           </div>
           <div className="summary-divider"></div>
           <div className="summary-item">
             <label>Net Earnings</label>
-            <span className="text-mint">{summary.net}</span>
+            <span className="text-mint">{netText}</span>
           </div>
           
           <div className="summary-footer">
-            Next scheduled payout: {summary.nextPayout}
+            Next scheduled payout: {nextPayoutText}
           </div>
         </div>
       </div>

@@ -6,8 +6,8 @@ import AdminSidebar from '../../../Components/Dashboard/Admin/AdminSidebar'
 import DisputeResolutionView from '../../../Components/Dashboard/Admin/DisputeResolution/DisputeResolutionView'
 import { handleAdminTabChange } from '../../../Components/Dashboard/Admin/adminNavigation'
 import Footer from '../../../Components/Footer/Footer'
-import '../../Style/AdminDashboardPage.css'
-import '../../Style/DisputeResolutionPage.css'
+import '../Style/AdminDashboardPage.css'
+import '../Style/DisputeResolutionPage.css'
 
 const DisputeResolutionPage = ({ onLogout }) => {
   const navigate = useNavigate()
@@ -57,3 +57,4 @@ const DisputeResolutionPage = ({ onLogout }) => {
 }
 
 export default DisputeResolutionPage
+

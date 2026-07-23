@@ -23,7 +23,7 @@ const ProjectOverviewSidebar = ({ conversation }) => {
       <div>
         <h5 className="sidebar-section-title">Shared Files</h5>
         <div className="shared-files-list">
-          {conversation.sharedFiles.map((file, idx) => (
+          {(conversation.sharedFiles || []).map((file, idx) => (
             <div key={idx} className="shared-file-item">
               <div className="project-icon-box" style={{ width: 32, height: 32 }}>
                 {file.type === 'image' ? <Image size={14} /> : <FileText size={14} />}

@@ -1,10 +1,11 @@
+import { Link } from "react-router-dom";
 import "./Footer.css";
 
 const defaultLinks = [
-  { label: "Privacy Policy", href: "#privacy" },
-  { label: "Terms of Service", href: "#terms" },
-  { label: "Help Center", href: "#help" },
-  { label: "API Documentation", href: "#api" },
+  { label: "Privacy Policy", to: "/privacy" },
+  { label: "Terms of Service", to: "/terms" },
+  { label: "Help Center", to: "/help" },
+  { label: "API Documentation", to: "/api-docs" },
 ];
 
 function Footer({
@@ -25,9 +26,9 @@ function Footer({
 
           <nav className="footer-links" aria-label="Footer links">
             {links.map((link) => (
-              <a key={link.href} href={link.href} className="footer-link">
+              <Link key={link.to} to={link.to} className="footer-link">
                 {link.label}
-              </a>
+              </Link>
             ))}
           </nav>
         </div>
