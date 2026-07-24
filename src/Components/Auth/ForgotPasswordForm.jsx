@@ -1,10 +1,3 @@
-/**
- * Frontend module: Components/Auth/ForgotPasswordForm.jsx
- *
- * Vai trò: Component Forgot Password Form: khối giao diện có thể tái sử dụng trong một hoặc nhiều page.
- * Luồng chính: Nhận props, render trạng thái tương ứng và báo sự kiện lên component cha qua callback khi cần.
- * Lưu ý bảo trì: Không thay đổi props; state cục bộ chỉ nên phục vụ hành vi thuộc phạm vi component.
- */
 import { useEffect, useRef, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { Eye, EyeOff, KeyRound, Lock, Mail } from "lucide-react"
@@ -13,7 +6,6 @@ import "./Auth.css"
 
 const emptyOtp = ["", "", "", "", "", ""]
 
-// React component “Forgot Password Form” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
 function ForgotPasswordForm() {
   const navigate = useNavigate()
   const inputRefs = useRef([])
@@ -38,13 +30,11 @@ function ForgotPasswordForm() {
     }
   }, [step])
 
-  // Thực hiện phần logic “reset otp” trong phạm vi trách nhiệm của module hiện tại.
   const resetOtp = () => {
     setOtp(emptyOtp)
     queueMicrotask(() => inputRefs.current[0]?.focus())
   }
 
-  // Handler “handle change” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleChange = (event) => {
     const { name, value } = event.target
     setFormData({
@@ -53,14 +43,12 @@ function ForgotPasswordForm() {
     })
   }
 
-  // Thực hiện phần logic “validate email” trong phạm vi trách nhiệm của module hiện tại.
   const validateEmail = () => {
     if (!formData.email.trim()) return "Email is required"
     if (!formData.email.includes("@")) return "Email is invalid"
     return ""
   }
 
-  // Thực hiện phần logic “validate password” trong phạm vi trách nhiệm của module hiện tại.
   const validatePassword = () => {
     if (!formData.newPassword.trim()) return "New password is required"
     if (formData.newPassword.length < 6) return "Password must be at least 6 characters"
@@ -68,7 +56,6 @@ function ForgotPasswordForm() {
     return ""
   }
 
-  // Handler “handle otp change” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleOtpChange = (index, value) => {
     if (!/^\d*$/.test(value)) return
 
@@ -82,7 +69,6 @@ function ForgotPasswordForm() {
     }
   }
 
-  // Handler “handle otp key down” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleOtpKeyDown = (index, event) => {
     if (event.key === "Backspace") {
       if (!otp[index] && index > 0) {
@@ -100,7 +86,6 @@ function ForgotPasswordForm() {
     }
   }
 
-  // Handler “handle otp paste” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleOtpPaste = (event) => {
     event.preventDefault()
     const pastedCode = event.clipboardData.getData("text").trim().slice(0, 6)
@@ -114,7 +99,6 @@ function ForgotPasswordForm() {
     inputRefs.current[Math.min(pastedCode.length, 5)]?.focus()
   }
 
-  // Thực hiện phần logic “request code” trong phạm vi trách nhiệm của module hiện tại.
   const requestCode = async ({ resend = false } = {}) => {
     const validateError = validateEmail()
     if (validateError) {
@@ -138,13 +122,11 @@ function ForgotPasswordForm() {
     }
   }
 
-  // Handler “handle request code” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleRequestCode = async (event) => {
     event.preventDefault()
     await requestCode()
   }
 
-  // Handler “handle verify code” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleVerifyCode = async (event) => {
     event.preventDefault()
     const code = otp.join("")
@@ -172,7 +154,6 @@ function ForgotPasswordForm() {
     }
   }
 
-  // Handler “handle reset password” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleResetPassword = async (event) => {
     event.preventDefault()
 

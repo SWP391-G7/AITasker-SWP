@@ -1,13 +1,5 @@
-/**
- * Frontend module: Components/Dashboard/Client/ClientSpendingChart.jsx
- *
- * Vai trò: Component Client Spending Chart: khối giao diện có thể tái sử dụng trong một hoặc nhiều page.
- * Luồng chính: Nhận props, render trạng thái tương ứng và báo sự kiện lên component cha qua callback khi cần.
- * Lưu ý bảo trì: Không thay đổi props; state cục bộ chỉ nên phục vụ hành vi thuộc phạm vi component.
- */
 const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
 
-// React component “Client Spending Chart” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
 function ClientSpendingChart() {
   return (
     <div className="client-panel spending-panel">

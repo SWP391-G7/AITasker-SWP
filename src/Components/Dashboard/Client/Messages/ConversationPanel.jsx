@@ -1,15 +1,7 @@
-/**
- * Frontend module: Components/Dashboard/Client/Messages/ConversationPanel.jsx
- *
- * Vai trò: Component Conversation Panel: khối giao diện có thể tái sử dụng trong một hoặc nhiều page.
- * Luồng chính: Nhận props, render trạng thái tương ứng và báo sự kiện lên component cha qua callback khi cần.
- * Lưu ý bảo trì: Không thay đổi props; state cục bộ chỉ nên phục vụ hành vi thuộc phạm vi component.
- */
 import { useState } from 'react';
 import { Search } from "lucide-react";
 import "../../../../pages/DashboardPage/Client/ClientMarketplace.css";
 
-// Chuyển đổi dữ liệu cho “format time” thành định dạng mà lớp gọi hoặc giao diện cần.
 const formatTime = (timeString) => {
   if (!timeString) return "";
   const date = new Date(timeString);
@@ -28,7 +20,6 @@ const formatTime = (timeString) => {
   return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
 };
 
-// React component “Conversation Panel” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
 export default function ConversationPanel({ conversations = [], activeId, onSelectConversation }) {
   const [filter, setFilter] = useState("");
 

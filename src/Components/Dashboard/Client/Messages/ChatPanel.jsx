@@ -1,15 +1,7 @@
-/**
- * Frontend module: Components/Dashboard/Client/Messages/ChatPanel.jsx
- *
- * Vai trò: Component Chat Panel: khối giao diện có thể tái sử dụng trong một hoặc nhiều page.
- * Luồng chính: Nhận props, render trạng thái tương ứng và báo sự kiện lên component cha qua callback khi cần.
- * Lưu ý bảo trì: Không thay đổi props; state cục bộ chỉ nên phục vụ hành vi thuộc phạm vi component.
- */
 import { useEffect, useRef, useState } from 'react';
 import { Phone, Video, MoreVertical, Paperclip, Send, Trash2 } from "lucide-react";
 import "../../../../pages/DashboardPage/Client/ClientMarketplace.css";
 
-// React component “Chat Panel” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
 export default function ChatPanel({ conversation, messages = [], onSendMessage, onRemoveMessage }) {
   const [inputText, setInputText] = useState("");
   const messagesEndRef = useRef(null);
@@ -49,7 +41,6 @@ export default function ChatPanel({ conversation, messages = [], onSendMessage, 
     .slice(0, 2)
     .toUpperCase();
 
-  // Handler “handle send” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleSend = async () => {
     const messageText = inputText.trim();
     if (!messageText) return;
@@ -58,14 +49,12 @@ export default function ChatPanel({ conversation, messages = [], onSendMessage, 
     setInputText("");
   };
 
-  // Handler “handle key down” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleKeyDown = (e) => {
     if (e.key === 'Enter') {
       handleSend();
     }
   };
 
-  // Chuyển đổi dữ liệu cho “format message time” thành định dạng mà lớp gọi hoặc giao diện cần.
   const formatMessageTime = (timeString) => {
     if (!timeString) return "";
     const date = new Date(timeString);

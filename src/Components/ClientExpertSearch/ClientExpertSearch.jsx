@@ -1,10 +1,3 @@
-/**
- * Frontend module: Components/ClientExpertSearch/ClientExpertSearch.jsx
- *
- * Vai trò: Component Client Expert Search: khối giao diện có thể tái sử dụng trong một hoặc nhiều page.
- * Luồng chính: Nhận props, render trạng thái tương ứng và báo sự kiện lên component cha qua callback khi cần.
- * Lưu ý bảo trì: Không thay đổi props; state cục bộ chỉ nên phục vụ hành vi thuộc phạm vi component.
- */
 import { useEffect, useMemo, useState } from "react";
 
 import { search as searchApi } from "../../Services/searchService";
@@ -21,7 +14,6 @@ const defaultExpertAvatar =
 const defaultClientAvatar =
   "https://images.unsplash.com/photo-1556157382-97eda2d62296?w=200&h=200&fit=crop";
 
-// Đọc hoặc suy ra dữ liệu cho nghiệp vụ “get current role”; không nên tạo side effect ngoài những request đọc đã nêu trong thân hàm.
 const getCurrentRole = () => {
   try {
     return JSON.parse(localStorage.getItem("user") || "{}")?.role || "client";
@@ -30,13 +22,11 @@ const getCurrentRole = () => {
   }
 };
 
-// Thực hiện phần logic “split csv” trong phạm vi trách nhiệm của module hiện tại.
 const splitCsv = (value) =>
   value
     ? String(value).split(",").map((item) => item.trim()).filter(Boolean)
     : [];
 
-// Chuyển đổi dữ liệu cho “map expert from api” thành định dạng mà lớp gọi hoặc giao diện cần.
 const mapExpertFromApi = (expert) => {
   const skills = splitCsv(expert.skills);
   const hourlyRate =
@@ -59,7 +49,6 @@ const mapExpertFromApi = (expert) => {
   };
 };
 
-// Chuyển đổi dữ liệu cho “map client from api” thành định dạng mà lớp gọi hoặc giao diện cần.
 const mapClientFromApi = (client) => {
   const industry = client.industry || "";
   const company = client.company_name || "";
@@ -82,7 +71,6 @@ const mapClientFromApi = (client) => {
   };
 };
 
-// React component “Client Expert Search” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
 const ClientExpertSearch = () => {
   const [viewMode, setViewMode] = useState(() => {
     return localStorage.getItem('expertSearchViewMode') || getCurrentRole();
@@ -114,7 +102,6 @@ const ClientExpertSearch = () => {
     setFavoriteIds(new Set(getFavorites(targetType)));
   }, [targetType]);
 
-  // Thay đổi trạng thái hoặc dữ liệu cho nghiệp vụ “toggle favorite”; cần giữ validation và quyền truy cập trước khi cập nhật.
   const toggleFavorite = (id) => {
     const isFav = favoriteIds.has(id);
     if (isFav) {
@@ -130,7 +117,6 @@ const ClientExpertSearch = () => {
     }
   };
 
-  // Thay đổi trạng thái hoặc dữ liệu cho nghiệp vụ “toggle filter”; cần giữ validation và quyền truy cập trước khi cập nhật.
   const toggleFilter = (filter) => {
     if (filter === "All") {
       setSelectedFilters([]);
@@ -143,7 +129,6 @@ const ClientExpertSearch = () => {
     );
   };
 
-  // Đọc hoặc suy ra dữ liệu cho nghiệp vụ “fetch people”; không nên tạo side effect ngoài những request đọc đã nêu trong thân hàm.
   const fetchPeople = async () => {
     try {
       setLoading(true);
@@ -172,7 +157,6 @@ const ClientExpertSearch = () => {
         ...rateParams,
       });
 
-      // Thực hiện phần logic “mapped” trong phạm vi trách nhiệm của module hiện tại.
       const mapped = (result.results || []).map(
         isExpertMode ? mapClientFromApi : mapExpertFromApi
       );
@@ -196,14 +180,12 @@ const ClientExpertSearch = () => {
   }, [isExpertMode, selectedFilters, skillSearch, rating, rateRange, searchQuery]);
 
   useEffect(() => {
-    // Đọc hoặc suy ra dữ liệu cho nghiệp vụ “fetch filter options”; không nên tạo side effect ngoài những request đọc đã nêu trong thân hàm.
     const fetchFilterOptions = async () => {
       try {
         const result = await searchApi({
           target: isExpertMode ? "client" : "expert",
           query: searchQuery.trim(),
         });
-        // Thực hiện phần logic “mapped” trong phạm vi trách nhiệm của module hiện tại.
         const mapped = (result.results || []).map(
           isExpertMode ? mapClientFromApi : mapExpertFromApi
         );

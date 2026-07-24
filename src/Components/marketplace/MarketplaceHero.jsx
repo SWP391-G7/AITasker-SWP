@@ -1,14 +1,6 @@
-/**
- * Frontend module: Components/marketplace/MarketplaceHero.jsx
- *
- * Vai trò: Component Marketplace Hero: khối giao diện có thể tái sử dụng trong một hoặc nhiều page.
- * Luồng chính: Nhận props, render trạng thái tương ứng và báo sự kiện lên component cha qua callback khi cần.
- * Lưu ý bảo trì: Không thay đổi props; state cục bộ chỉ nên phục vụ hành vi thuộc phạm vi component.
- */
 
 import './Marketplace.css';
 
-// Đọc hoặc suy ra dữ liệu cho nghiệp vụ “get current role”; không nên tạo side effect ngoài những request đọc đã nêu trong thân hàm.
 const getCurrentRole = () => {
   try {
     return JSON.parse(localStorage.getItem('user') || '{}')?.role || 'client';
@@ -17,7 +9,6 @@ const getCurrentRole = () => {
   }
 };
 
-// React component “Marketplace Hero” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
 const MarketplaceHero = () => {
   const isExpert = getCurrentRole() === 'expert';
 

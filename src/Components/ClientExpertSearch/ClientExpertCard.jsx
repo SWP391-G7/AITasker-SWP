@@ -1,14 +1,6 @@
-/**
- * Frontend module: Components/ClientExpertSearch/ClientExpertCard.jsx
- *
- * Vai trò: Component Client Expert Card: khối giao diện có thể tái sử dụng trong một hoặc nhiều page.
- * Luồng chính: Nhận props, render trạng thái tương ứng và báo sự kiện lên component cha qua callback khi cần.
- * Lưu ý bảo trì: Không thay đổi props; state cục bộ chỉ nên phục vụ hành vi thuộc phạm vi component.
- */
 import { CheckCircle2, Clock3, Heart, Star } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-// React component “Client Expert Card” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
 const ClientExpertCard = ({ person, isExpertMode, isFavorited, onToggleFavorite }) => {
   const navigate = useNavigate();
 

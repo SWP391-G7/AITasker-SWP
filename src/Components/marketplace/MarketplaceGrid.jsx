@@ -1,10 +1,3 @@
-/**
- * Frontend module: Components/marketplace/MarketplaceGrid.jsx
- *
- * Vai trò: Component Marketplace Grid: khối giao diện có thể tái sử dụng trong một hoặc nhiều page.
- * Luồng chính: Nhận props, render trạng thái tương ứng và báo sự kiện lên component cha qua callback khi cần.
- * Lưu ý bảo trì: Không thay đổi props; state cục bộ chỉ nên phục vụ hành vi thuộc phạm vi component.
- */
 import { useState, useMemo, useEffect } from 'react';
 import { Search as SearchIcon, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
 import ServiceCard from './ServiceCard';
@@ -14,7 +7,6 @@ import { useLocation } from 'react-router-dom';
 import '../../pages/clients-experts/ClientExpertSearchPage.css';
 import './Marketplace.css';
 
-// Đọc hoặc suy ra dữ liệu cho nghiệp vụ “get current role”; không nên tạo side effect ngoài những request đọc đã nêu trong thân hàm.
 const getCurrentRole = () => {
   try {
     return JSON.parse(localStorage.getItem('user') || '{}')?.role || 'client';
@@ -23,16 +15,13 @@ const getCurrentRole = () => {
   }
 };
 
-// Chuyển đổi dữ liệu cho “parse money” thành định dạng mà lớp gọi hoặc giao diện cần.
 const parseMoney = (value) => {
   const parsed = Number(String(value || '0').replace(/[^0-9.]/g, ''));
   return Number.isFinite(parsed) ? parsed : 0;
 };
 
-// Chuyển đổi dữ liệu cho “format money” thành định dạng mà lớp gọi hoặc giao diện cần.
 const formatMoney = (value) => `$${parseMoney(value).toLocaleString()}`;
 
-// Chuyển đổi dữ liệu cho “format budget” thành định dạng mà lớp gọi hoặc giao diện cần.
 const formatBudget = (job) => {
   const min = parseMoney(job.budget_min);
   const max = parseMoney(job.budget_max);
@@ -44,7 +33,6 @@ const formatBudget = (job) => {
   return 'Budget TBD';
 };
 
-// Chuyển đổi dữ liệu cho “format service” thành định dạng mà lớp gọi hoặc giao diện cần.
 const formatService = (service) => ({
   id: service.id,
   type: 'service',
@@ -59,7 +47,6 @@ const formatService = (service) => ({
   deliveryDays: service.delivery_days || 0,
 });
 
-// Chuyển đổi dữ liệu cho “parse job image” thành định dạng mà lớp gọi hoặc giao diện cần.
 const parseJobImage = (images) => {
   if (!images) return null;
   try {
@@ -70,7 +57,6 @@ const parseJobImage = (images) => {
   }
 };
 
-// Chuyển đổi dữ liệu cho “format job” thành định dạng mà lớp gọi hoặc giao diện cần.
 const formatJob = (job) => ({
   id: job.id,
   type: 'job',
@@ -85,7 +71,6 @@ const formatJob = (job) => ({
   status: job.status,
 });
 
-// React component “Marketplace Grid” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
 const MarketplaceGrid = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchDraft, setSearchDraft] = useState('');
@@ -109,7 +94,6 @@ const MarketplaceGrid = () => {
     setFavoriteIds(new Set(getFavorites(isExpert ? 'jobs' : 'services')));
   }, [isExpert]);
 
-  // Thay đổi trạng thái hoặc dữ liệu cho nghiệp vụ “toggle favorite”; cần giữ validation và quyền truy cập trước khi cập nhật.
   const toggleFavorite = (id) => {
     const targetKey = isExpert ? 'jobs' : 'services';
     if (favoriteIds.has(id)) {
@@ -145,7 +129,6 @@ const MarketplaceGrid = () => {
   }, [location.search]);
 
   useEffect(() => {
-    // Đọc hoặc suy ra dữ liệu cho nghiệp vụ “fetch data”; không nên tạo side effect ngoài những request đọc đã nêu trong thân hàm.
     const fetchData = async () => {
       try {
         setLoading(true);
@@ -247,7 +230,6 @@ const MarketplaceGrid = () => {
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = filteredItems.slice(indexOfFirstItem, indexOfLastItem);
 
-  // Handler “handle page change” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
     window.scrollTo({ top: 0, behavior: 'smooth' });

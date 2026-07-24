@@ -1,10 +1,3 @@
-/**
- * Frontend module: Components/AI/AIExtendButton.jsx
- *
- * Vai trò: Component AIExtend Button: khối giao diện có thể tái sử dụng trong một hoặc nhiều page.
- * Luồng chính: Nhận props, render trạng thái tương ứng và báo sự kiện lên component cha qua callback khi cần.
- * Lưu ý bảo trì: Không thay đổi props; state cục bộ chỉ nên phục vụ hành vi thuộc phạm vi component.
- */
 import { useState, useEffect, useRef } from 'react';
 import { Sparkles, Loader2 } from 'lucide-react';
 import { generateFormWithAI } from '../../Services/aiService';

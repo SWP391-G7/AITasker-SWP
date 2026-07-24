@@ -1,10 +1,3 @@
-/**
- * Frontend module: pages/profile/ViewAllProjectPage.jsx
- *
- * Vai trò: Page View All Project Page: màn hình cấp route, điều phối dữ liệu và các component con cho một luồng nghiệp vụ hoàn chỉnh.
- * Luồng chính: Đọc route/location, gọi service trong effect/handler, quản lý loading/error/form rồi truyền props xuống UI con.
- * Lưu ý bảo trì: Giữ side effect trong handler/effect và không mutate trực tiếp state hoặc dữ liệu API.
- */
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { CalendarDays, ChevronRight, DollarSign, EyeOff, Layers, RefreshCcw, UserRound, X } from "lucide-react";
@@ -16,7 +9,6 @@ import AdminModerationConfirmModal from "../../Components/Dashboard/Admin/AdminM
 import "./ProfilePage.css";
 import "./ViewAllProfileItems.css";
 
-// React component “View All Project Page” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
 function ViewAllProjectPage() {
   const { userId } = useParams();
   const navigate = useNavigate();
@@ -34,7 +26,6 @@ function ViewAllProjectPage() {
   const isAdminViewer = currentRole.includes("admin");
 
   useEffect(() => {
-    // Đọc hoặc suy ra dữ liệu cho nghiệp vụ “fetch projects”; không nên tạo side effect ngoài những request đọc đã nêu trong thân hàm.
     const fetchProjects = async () => {
       try {
         setLoading(true);
@@ -53,7 +44,6 @@ function ViewAllProjectPage() {
     fetchProjects();
   }, [userId]);
 
-  // Handler “close modal” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const closeModal = () => {
     if (location.state?.backgroundLocation) {
       navigate(-1);
@@ -63,7 +53,6 @@ function ViewAllProjectPage() {
     navigate(`/profile/${userId}`);
   };
 
-  // Chuyển đổi dữ liệu cho “format currency” thành định dạng mà lớp gọi hoặc giao diện cần.
   const formatCurrency = (value) => {
     const amount = Number(value);
     if (!Number.isFinite(amount)) return value ? String(value) : "Not specified";
@@ -75,7 +64,6 @@ function ViewAllProjectPage() {
     });
   };
 
-  // Chuyển đổi dữ liệu cho “format budget” thành định dạng mà lớp gọi hoặc giao diện cần.
   const formatBudget = (project) => {
     const min = project.budgetMin;
     const max = project.budgetMax;
@@ -86,13 +74,11 @@ function ViewAllProjectPage() {
     return "Not specified";
   };
 
-  // Handler “handle project action” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleProjectAction = (projectId) => {
     if (!projectId) return;
     navigate(`/marketplace/task/${projectId}`);
   };
 
-  // Handler “handle unpublish” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleUnpublish = async (projectId, action = "unpublish") => {
     const nextStatus = action === "republish" ? "open" : "removed";
     try {

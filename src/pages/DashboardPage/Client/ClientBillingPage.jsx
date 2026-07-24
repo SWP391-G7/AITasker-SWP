@@ -1,10 +1,3 @@
-/**
- * Frontend module: pages/DashboardPage/Client/ClientBillingPage.jsx
- *
- * Vai trò: Page Client Billing Page: màn hình cấp route, điều phối dữ liệu và các component con cho một luồng nghiệp vụ hoàn chỉnh.
- * Luồng chính: Đọc route/location, gọi service trong effect/handler, quản lý loading/error/form rồi truyền props xuống UI con.
- * Lưu ý bảo trì: Giữ side effect trong handler/effect và không mutate trực tiếp state hoặc dữ liệu API.
- */
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -53,13 +46,11 @@ const TYPE_LABELS = {
   refund: "Refund",
 };
 
-// Thực hiện phần logic “to number” trong phạm vi trách nhiệm của module hiện tại.
 const toNumber = (value) => {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : 0;
 };
 
-// Chuyển đổi dữ liệu cho “format money” thành định dạng mà lớp gọi hoặc giao diện cần.
 const formatMoney = (value) =>
   new Intl.NumberFormat("en-US", {
     style: "currency",
@@ -67,7 +58,6 @@ const formatMoney = (value) =>
     minimumFractionDigits: 2,
   }).format(toNumber(value));
 
-// Chuyển đổi dữ liệu cho “format date” thành định dạng mà lớp gọi hoặc giao diện cần.
 const formatDate = (value) => {
   if (!value) return "Not completed yet";
   const date = new Date(value);
@@ -81,13 +71,10 @@ const formatDate = (value) => {
   }).format(date);
 };
 
-// Thực hiện phần logic “short id” trong phạm vi trách nhiệm của module hiện tại.
 const shortId = (id) => (id ? `TX-${String(id).slice(0, 8).toUpperCase()}` : "TX-PENDING");
 
-// Thực hiện phần logic “escape csv” trong phạm vi trách nhiệm của module hiện tại.
 const escapeCsv = (value) => `"${String(value ?? "").replace(/"/g, '""')}"`;
 
-// React component “Client Billing Page” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
 function ClientBillingPage() {
   const navigate = useNavigate();
   const user = useClientUser();
@@ -189,13 +176,11 @@ function ClientBillingPage() {
     ? Math.min(100, Math.round((toNumber(stats.totalLifetime) / trackedFunds) * 100))
     : 0;
 
-  // Handler “handle logout” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleLogout = () => {
     logout();
     navigate("/");
   };
 
-  // Handler “handle export” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleExport = () => {
     if (!filteredTransactions.length) return;
 

@@ -1,10 +1,3 @@
-/**
- * Frontend module: pages/DashboardPage/Expert/PostServicePage.jsx
- *
- * Vai trò: Page Post Service Page: màn hình cấp route, điều phối dữ liệu và các component con cho một luồng nghiệp vụ hoàn chỉnh.
- * Luồng chính: Đọc route/location, gọi service trong effect/handler, quản lý loading/error/form rồi truyền props xuống UI con.
- * Lưu ý bảo trì: Giữ side effect trong handler/effect và không mutate trực tiếp state hoặc dữ liệu API.
- */
 import React, { useState, useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Plus, Trash2, Camera, Video, AlertCircle, CheckCircle2, Clock, RefreshCcw } from "lucide-react";
@@ -21,7 +14,6 @@ import "../Style/AdminDashboardPage.css";
 import "../Client/ClientMarketplace.css";
 import "../../../Components/Dashboard/Expert/PostService/PostService.css";
 
-// Tạo hoặc gửi dữ liệu cho nghiệp vụ “post service page”, đồng thời chuyển lỗi về caller/UI theo cơ chế của module.
 function PostServicePage() {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
@@ -64,7 +56,6 @@ function PostServicePage() {
     return currentUserName.trim().charAt(0).toUpperCase() || "E";
   }, [user]);
 
-  // Handler “handle change” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleChange = (e) => {
     setError("");
     setFormData((prev) => ({
@@ -73,7 +64,6 @@ function PostServicePage() {
     }));
   };
 
-  // Handler “handle extend success” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleExtendSuccess = (data) => {
     let parsedTags = "";
     if (data.tags) {
@@ -103,19 +93,16 @@ function PostServicePage() {
     setIsAiOptimized(true);
   };
 
-  // Handler “handle tab change” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleTabChange = (id) => {
     if (id === "dashboard") navigate("/expert/dashboard");
     else navigate(`/expert/${id}`);
   };
 
-  // Handler “handle logout” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleLogout = () => {
     logout();
     navigate("/");
   };
 
-  // Tạo hoặc gửi dữ liệu cho nghiệp vụ “add faq”, đồng thời chuyển lỗi về caller/UI theo cơ chế của module.
   const addFAQ = () => {
     setFormData((prev) => ({
       ...prev,
@@ -123,7 +110,6 @@ function PostServicePage() {
     }));
   };
 
-  // Thay đổi trạng thái hoặc dữ liệu cho nghiệp vụ “update faq”; cần giữ validation và quyền truy cập trước khi cập nhật.
   const updateFAQ = (index, field, value) => {
     setFormData((prev) => {
       const updatedFAQs = [...prev.faqs];
@@ -132,7 +118,6 @@ function PostServicePage() {
     });
   };
 
-  // Thay đổi trạng thái hoặc dữ liệu cho nghiệp vụ “remove faq”; cần giữ validation và quyền truy cập trước khi cập nhật.
   const removeFAQ = (index) => {
     setFormData((prev) => ({
       ...prev,
@@ -140,7 +125,6 @@ function PostServicePage() {
     }));
   };
 
-  // Tạo hoặc gửi dữ liệu cho nghiệp vụ “add feature”, đồng thời chuyển lỗi về caller/UI theo cơ chế của module.
   const addFeature = () => {
     setFormData((prev) => ({
       ...prev,
@@ -148,7 +132,6 @@ function PostServicePage() {
     }));
   };
 
-  // Thay đổi trạng thái hoặc dữ liệu cho nghiệp vụ “update feature”; cần giữ validation và quyền truy cập trước khi cập nhật.
   const updateFeature = (index, value) => {
     setFormData((prev) => {
       const updatedFeatures = [...prev.features];
@@ -157,7 +140,6 @@ function PostServicePage() {
     });
   };
 
-  // Thay đổi trạng thái hoặc dữ liệu cho nghiệp vụ “remove feature”; cần giữ validation và quyền truy cập trước khi cập nhật.
   const removeFeature = (index) => {
     setFormData((prev) => ({
       ...prev,
@@ -165,7 +147,6 @@ function PostServicePage() {
     }));
   };
 
-  // Thực hiện phần logic “validate step” trong phạm vi trách nhiệm của module hiện tại.
   const validateStep = () => {
     setError("");
 
@@ -204,19 +185,16 @@ function PostServicePage() {
     return true;
   };
 
-  // Handler “handle next” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleNext = () => {
     if (!validateStep()) return;
     setStep((prev) => Math.min(prev + 1, 4));
   };
 
-  // Handler “handle back” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleBack = () => {
     setError("");
     setStep((prev) => Math.max(prev - 1, 1));
   };
 
-  // Handler “handle submit” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleSubmit = async () => {
     if (!validateStep()) return;
 

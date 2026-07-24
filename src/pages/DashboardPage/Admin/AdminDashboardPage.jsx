@@ -1,10 +1,3 @@
-/**
- * Frontend module: pages/DashboardPage/Admin/AdminDashboardPage.jsx
- *
- * Vai trò: Page Admin Dashboard Page: màn hình cấp route, điều phối dữ liệu và các component con cho một luồng nghiệp vụ hoàn chỉnh.
- * Luồng chính: Đọc route/location, gọi service trong effect/handler, quản lý loading/error/form rồi truyền props xuống UI con.
- * Lưu ý bảo trì: Giữ side effect trong handler/effect và không mutate trực tiếp state hoặc dữ liệu API.
- */
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AdminContentGrid from '../../../Components/Dashboard/Admin/AdminContentGrid'
@@ -24,7 +17,6 @@ import {
 } from '../../../Services/adminDashboardService'
 import '../Style/AdminDashboardPage.css'
 
-// React component “Admin Dashboard Page” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
 const AdminDashboardPage = ({ onLogout }) => {
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState('dashboard')
@@ -38,7 +30,6 @@ const AdminDashboardPage = ({ onLogout }) => {
   const [dashboardError, setDashboardError] = useState('')
 
   useEffect(() => {
-    // Đọc hoặc suy ra dữ liệu cho nghiệp vụ “fetch admin dashboard”; không nên tạo side effect ngoài những request đọc đã nêu trong thân hàm.
     const fetchAdminDashboard = async () => {
       try {
         setDashboardError('')
@@ -70,13 +61,11 @@ const AdminDashboardPage = ({ onLogout }) => {
     navigate('/')
   })
 
-  // Handler “handle resolve dispute” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleResolveDispute = (id) => {
     setDisputes((prev) => prev.filter((item) => item.id !== id))
     setSelectedDispute(null)
   }
 
-  // Handler “handle approve moderation” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleApproveModeration = async (id) => {
     try {
       const parts = id.split('-');
@@ -90,7 +79,6 @@ const AdminDashboardPage = ({ onLogout }) => {
     }
   }
 
-  // Handler “handle reject moderation” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleRejectModeration = async (id) => {
     try {
       const parts = id.split('-');

@@ -1,10 +1,3 @@
-/**
- * Frontend module: Components/Dashboard/Admin/UserManagement/UserManagementTable.jsx
- *
- * Vai trò: Component User Management Table: khối giao diện có thể tái sử dụng trong một hoặc nhiều page.
- * Luồng chính: Nhận props, render trạng thái tương ứng và báo sự kiện lên component cha qua callback khi cần.
- * Lưu ý bảo trì: Không thay đổi props; state cục bộ chỉ nên phục vụ hành vi thuộc phạm vi component.
- */
 import { useState } from 'react'
 import { Dropdown } from 'react-bootstrap'
 import { BadgeCheck, ChevronLeft, ChevronRight, SlidersHorizontal, UserPlus, Eye, Edit2, Trash2, ShieldAlert, ShieldCheck } from 'lucide-react'
@@ -32,7 +25,6 @@ const statusFilterOptions = [
   { label: 'Suspended', value: 'Suspended' }
 ]
 
-// React component “User Management Table” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
 const UserManagementTable = ({ 
   users = [], 
   searchQuery = '', 
@@ -47,21 +39,14 @@ const UserManagementTable = ({
   const [currentPage, setCurrentPage] = useState(1)
   const pageSize = 10
 
-  // Thực hiện phần logic “filtered users” trong phạm vi trách nhiệm của module hiện tại.
   const filteredUsers = (users || []).filter((user) => {
     if (!user) return false
-    // Thực hiện phần logic “query” trong phạm vi trách nhiệm của module hiện tại.
     const query = (searchQuery || '').toLowerCase()
-    // Thực hiện phần logic “user name” trong phạm vi trách nhiệm của module hiện tại.
     const userName = (user.name || user.full_name || '').toLowerCase()
-    // Thực hiện phần logic “user email” trong phạm vi trách nhiệm của module hiện tại.
     const userEmail = (user.email || '').toLowerCase()
-    // Thực hiện phần logic “user role” trong phạm vi trách nhiệm của module hiện tại.
     const userRole = (user.role || '').toLowerCase()
-    // Thực hiện phần logic “user status” trong phạm vi trách nhiệm của module hiện tại.
     const userStatus = (user.status || user.acc_status || '').toString().toLowerCase()
 
-    // Thực hiện phần logic “matches search” trong phạm vi trách nhiệm của module hiện tại.
     const matchesSearch = (
       userName.includes(query) ||
       userEmail.includes(query) ||
@@ -76,13 +61,11 @@ const UserManagementTable = ({
 
   const totalPages = Math.max(1, Math.ceil(filteredUsers.length / pageSize))
   const effectivePage = Math.min(currentPage, totalPages)
-  // Thực hiện phần logic “page start” trong phạm vi trách nhiệm của module hiện tại.
   const pageStart = (effectivePage - 1) * pageSize
   const paginatedUsers = filteredUsers.slice(pageStart, pageStart + pageSize)
   const firstVisibleUser = filteredUsers.length === 0 ? 0 : pageStart + 1
   const lastVisibleUser = Math.min(pageStart + pageSize, filteredUsers.length)
 
-  // Thay đổi trạng thái hoặc dữ liệu cho nghiệp vụ “change page”; cần giữ validation và quyền truy cập trước khi cập nhật.
   const changePage = (page) => {
     setCurrentPage(Math.min(Math.max(page, 1), totalPages))
   }

@@ -1,16 +1,8 @@
-/**
- * Frontend module: Services/notificationService.js
- *
- * Vai trò: Service notification Service: lớp giao tiếp giữa UI và backend API.
- * Luồng chính: Nhận dữ liệu từ component, gắn token/header, gọi endpoint, chuẩn hóa response và ném Error khi request thất bại.
- * Lưu ý bảo trì: Component không nên lặp lại URL hoặc logic HTTP đã được đóng gói tại đây.
- */
 import { getStoredUser } from "./checkLogin"
 import { getConversations } from "./messageService"
 
 const STORAGE_KEY = "localNotifications"
 
-// Thực hiện phần logic “time ago” trong phạm vi trách nhiệm của module hiện tại.
 export const timeAgo = (dateStr) => {
   const now = Date.now()
   const date = new Date(dateStr).getTime()
@@ -22,7 +14,6 @@ export const timeAgo = (dateStr) => {
   return new Date(dateStr).toLocaleDateString()
 }
 
-// Thực hiện phần logic “play notification sound” trong phạm vi trách nhiệm của module hiện tại.
 export const playNotificationSound = () => {
   try {
     const ctx = new (window.AudioContext || window.webkitAudioContext)()
@@ -38,28 +29,24 @@ export const playNotificationSound = () => {
   } catch { /* ignore */ }
 }
 
-// Thực hiện phần logic “request desktop permission” trong phạm vi trách nhiệm của module hiện tại.
 export const requestDesktopPermission = () => {
   if ("Notification" in window && Notification.permission === "default") {
     Notification.requestPermission()
   }
 }
 
-// Tạo hoặc gửi dữ liệu cho nghiệp vụ “send desktop notification”, đồng thời chuyển lỗi về caller/UI theo cơ chế của module.
 export const sendDesktopNotification = (title, body) => {
   if ("Notification" in window && Notification.permission === "granted") {
     new Notification(title, { body, icon: "/vite.svg" })
   }
 }
 
-// Đọc hoặc suy ra dữ liệu cho nghiệp vụ “get messages path by role”; không nên tạo side effect ngoài những request đọc đã nêu trong thân hàm.
 export const getMessagesPathByRole = (role) => {
   const normalizedRole = String(role || "").toLowerCase()
   if (normalizedRole.includes("expert")) return "/expert/messages"
   return "/client/messages"
 }
 
-// Đọc hoặc suy ra dữ liệu cho nghiệp vụ “check profile reminder”; không nên tạo side effect ngoài những request đọc đã nêu trong thân hàm.
 const checkProfileReminder = () => {
   const user = getStoredUser()
   if (!user) return null
@@ -81,7 +68,6 @@ const checkProfileReminder = () => {
   return null
 }
 
-// Thực hiện phần logic “seed welcome notification” trong phạm vi trách nhiệm của module hiện tại.
 export const seedWelcomeNotification = () => {
   const seeded = localStorage.getItem("welcomeSeeded")
   if (!seeded) {
@@ -99,7 +85,6 @@ export const seedWelcomeNotification = () => {
   }
 }
 
-// Đọc hoặc suy ra dữ liệu cho nghiệp vụ “get local notifications”; không nên tạo side effect ngoài những request đọc đã nêu trong thân hàm.
 export const getLocalNotifications = () => {
   try {
     const reminder = checkProfileReminder()
@@ -122,7 +107,6 @@ export const getLocalNotifications = () => {
   }
 }
 
-// Đọc hoặc suy ra dữ liệu cho nghiệp vụ “get conversation notifications”; không nên tạo side effect ngoài những request đọc đã nêu trong thân hàm.
 export const getConversationNotifications = async () => {
   const storedUser = getStoredUser()
   const msgsPath = getMessagesPathByRole(storedUser?.role)
@@ -144,7 +128,6 @@ export const getConversationNotifications = async () => {
   }
 }
 
-// Thực hiện phần logic “mark local as read” trong phạm vi trách nhiệm của module hiện tại.
 export const markLocalAsRead = (id) => {
   if (id === "profile-reminder") {
     localStorage.setItem("profileReminderDismissed", "true")
@@ -156,14 +139,12 @@ export const markLocalAsRead = (id) => {
   } catch { /* ignore */ }
 }
 
-// Thực hiện phần logic “clear all local notifications” trong phạm vi trách nhiệm của module hiện tại.
 export const clearAllLocalNotifications = () => {
   localStorage.removeItem(STORAGE_KEY)
 }
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'
 
-// Đọc hoặc suy ra dữ liệu cho nghiệp vụ “get notifications api”; không nên tạo side effect ngoài những request đọc đã nêu trong thân hàm.
 export const getNotificationsAPI = async () => {
   try {
     const token = localStorage.getItem('token')
@@ -184,7 +165,6 @@ export const getNotificationsAPI = async () => {
   }
 }
 
-// Thực hiện phần logic “mark notification as read api” trong phạm vi trách nhiệm của module hiện tại.
 export const markNotificationAsReadAPI = async (id) => {
   try {
     const token = localStorage.getItem('token')
@@ -205,7 +185,6 @@ export const markNotificationAsReadAPI = async (id) => {
   }
 }
 
-// Thực hiện phần logic “mark all notifications as read api” trong phạm vi trách nhiệm của module hiện tại.
 export const markAllNotificationsAsReadAPI = async () => {
   try {
     const token = localStorage.getItem('token')
@@ -226,7 +205,6 @@ export const markAllNotificationsAsReadAPI = async () => {
   }
 }
 
-// Đọc hoặc suy ra dữ liệu cho nghiệp vụ “get milestone by id api”; không nên tạo side effect ngoài những request đọc đã nêu trong thân hàm.
 export const getMilestoneByIdAPI = async (id) => {
   try {
     const token = localStorage.getItem('token')
@@ -247,7 +225,6 @@ export const getMilestoneByIdAPI = async (id) => {
   }
 }
 
-// Đọc hoặc suy ra dữ liệu cho nghiệp vụ “get proposal by id api”; không nên tạo side effect ngoài những request đọc đã nêu trong thân hàm.
 export const getProposalByIdAPI = async (id) => {
   try {
     const token = localStorage.getItem('token')

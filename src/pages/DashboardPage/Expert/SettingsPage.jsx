@@ -1,10 +1,3 @@
-/**
- * Frontend module: pages/DashboardPage/Expert/SettingsPage.jsx
- *
- * Vai trò: Page Settings Page: màn hình cấp route, điều phối dữ liệu và các component con cho một luồng nghiệp vụ hoàn chỉnh.
- * Luồng chính: Đọc route/location, gọi service trong effect/handler, quản lý loading/error/form rồi truyền props xuống UI con.
- * Lưu ý bảo trì: Giữ side effect trong handler/effect và không mutate trực tiếp state hoặc dữ liệu API.
- */
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import ExpertSidebar from '../../../Components/Dashboard/Expert/ExpertSidebar'
@@ -15,7 +8,6 @@ import { createHandleLogout } from './handleLogout'
 import '../Style/AdminDashboardPage.css'
 import '../Style/ExpertDashboardPage.css'
 
-// React component “Settings Page” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
 const SettingsPage = () => {
   const navigate = useNavigate()
   const [searchQuery, setSearchQuery] = useState('')
@@ -34,14 +26,12 @@ const SettingsPage = () => {
 
   const handleLogout = createHandleLogout(navigate)
 
-  // Handler “handle tab change” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleTabChange = (id) => {
     if (id === 'dashboard') navigate('/expert/dashboard')
     else navigate(`/expert/${id}`)
   }
 
   useEffect(() => {
-    // Đọc hoặc suy ra dữ liệu cho nghiệp vụ “fetch profile”; không nên tạo side effect ngoài những request đọc đã nêu trong thân hàm.
     const fetchProfile = async () => {
       if (!user?.id) return
 

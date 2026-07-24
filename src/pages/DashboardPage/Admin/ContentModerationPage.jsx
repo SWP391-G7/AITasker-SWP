@@ -1,10 +1,3 @@
-/**
- * Frontend module: pages/DashboardPage/Admin/ContentModerationPage.jsx
- *
- * Vai trò: Page Content Moderation Page: màn hình cấp route, điều phối dữ liệu và các component con cho một luồng nghiệp vụ hoàn chỉnh.
- * Luồng chính: Đọc route/location, gọi service trong effect/handler, quản lý loading/error/form rồi truyền props xuống UI con.
- * Lưu ý bảo trì: Giữ side effect trong handler/effect và không mutate trực tiếp state hoặc dữ liệu API.
- */
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AdminHeader from '../../../Components/Dashboard/Admin/AdminHeader'
@@ -21,7 +14,6 @@ import {
 import '../Style/AdminDashboardPage.css'
 import '../Style/ContentModerationPage.css'
 
-// React component “Content Moderation Page” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
 const ContentModerationPage = ({ onLogout }) => {
   const navigate = useNavigate()
   const [searchQuery, setSearchQuery] = useState('')
@@ -32,7 +24,6 @@ const ContentModerationPage = ({ onLogout }) => {
   const [moderationActionLoading, setModerationActionLoading] = useState(false)
 
   useEffect(() => {
-    // Đọc hoặc suy ra dữ liệu cho nghiệp vụ “fetch moderation data”; không nên tạo side effect ngoài những request đọc đã nêu trong thân hàm.
     const fetchModerationData = async () => {
       try {
         setModerationError('')
@@ -62,14 +53,12 @@ const ContentModerationPage = ({ onLogout }) => {
     ]
   }, [moderationItems])
 
-  // Thực hiện phần logic “request moderation action” trong phạm vi trách nhiệm của module hiện tại.
   const requestModerationAction = (action, id) => {
     const item = moderationItems.find((entry) => entry.id === id)
     setModerationError('')
     setModerationConfirm({ action, id, title: item?.title || 'Untitled content' })
   }
 
-  // Handler “handle confirm moderation” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleConfirmModeration = async () => {
     if (!moderationConfirm) return
 

@@ -1,10 +1,3 @@
-/**
- * Frontend module: Components/ClientExpertSearch/ClientExpertFilters.jsx
- *
- * Vai trò: Component Client Expert Filters: khối giao diện có thể tái sử dụng trong một hoặc nhiều page.
- * Luồng chính: Nhận props, render trạng thái tương ứng và báo sự kiện lên component cha qua callback khi cần.
- * Lưu ý bảo trì: Không thay đổi props; state cục bộ chỉ nên phục vụ hành vi thuộc phạm vi component.
- */
 import { useState } from "react";
 import { Search } from "lucide-react";
 
@@ -18,7 +11,6 @@ const rateRanges = [
   { value: "over-200", label: "$200+/hr" },
 ];
 
-// React component “Client Expert Filters” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
 const ClientExpertFilters = ({
   isExpertMode,
   filterOptions = [],

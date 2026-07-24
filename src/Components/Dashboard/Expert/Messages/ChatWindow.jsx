@@ -1,14 +1,6 @@
-/**
- * Frontend module: Components/Dashboard/Expert/Messages/ChatWindow.jsx
- *
- * Vai trò: Component Chat Window: khối giao diện có thể tái sử dụng trong một hoặc nhiều page.
- * Luồng chính: Nhận props, render trạng thái tương ứng và báo sự kiện lên component cha qua callback khi cần.
- * Lưu ý bảo trì: Không thay đổi props; state cục bộ chỉ nên phục vụ hành vi thuộc phạm vi component.
- */
 import { useEffect, useRef, useState } from 'react';
 import { Send, MoreVertical, Phone, Video, Paperclip, Trash2 } from 'lucide-react';
 
-// React component “Chat Window” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
 const ChatWindow = ({ conversation, messages = [], onSendMessage, onRemoveMessage }) => {
   const [inputText, setInputText] = useState("");
   const messagesEndRef = useRef(null);
@@ -26,7 +18,6 @@ const ChatWindow = ({ conversation, messages = [], onSendMessage, onRemoveMessag
     shouldScrollAfterSend.current = false;
   }, [messages.length]);
 
-  // Handler “handle send” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleSend = async () => {
     const messageText = inputText.trim();
     if (!messageText) return;
@@ -35,7 +26,6 @@ const ChatWindow = ({ conversation, messages = [], onSendMessage, onRemoveMessag
     setInputText("");
   };
 
-  // Handler “handle key down” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleKeyDown = (e) => {
     if (e.key === 'Enter') {
       handleSend();
@@ -50,7 +40,6 @@ const ChatWindow = ({ conversation, messages = [], onSendMessage, onRemoveMessag
     );
   }
 
-  // Chuyển đổi dữ liệu cho “format message time” thành định dạng mà lớp gọi hoặc giao diện cần.
   const formatMessageTime = (timeString) => {
     if (!timeString) return "";
     const date = new Date(timeString);

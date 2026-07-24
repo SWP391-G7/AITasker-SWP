@@ -1,10 +1,3 @@
-/**
- * Frontend module: Services/serviceService.js
- *
- * Vai trò: Service service Service: lớp giao tiếp giữa UI và backend API.
- * Luồng chính: Nhận dữ liệu từ component, gắn token/header, gọi endpoint, chuẩn hóa response và ném Error khi request thất bại.
- * Lưu ý bảo trì: Component không nên lặp lại URL hoặc logic HTTP đã được đóng gói tại đây.
- */
 import { allServices } from '../Components/marketplace/servicesData';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';

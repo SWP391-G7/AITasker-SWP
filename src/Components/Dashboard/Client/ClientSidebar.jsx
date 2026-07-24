@@ -1,10 +1,3 @@
-/**
- * Frontend module: Components/Dashboard/Client/ClientSidebar.jsx
- *
- * Vai trò: Component Client Sidebar: khối giao diện có thể tái sử dụng trong một hoặc nhiều page.
- * Luồng chính: Nhận props, render trạng thái tương ứng và báo sự kiện lên component cha qua callback khi cần.
- * Lưu ý bảo trì: Không thay đổi props; state cục bộ chỉ nên phục vụ hành vi thuộc phạm vi component.
- */
 import { Link, useNavigate } from "react-router-dom";
 import {
   BriefcaseBusiness,
@@ -27,11 +20,9 @@ const clientMenuItems = [
 // Defensive filter: keep Settings hidden even if the menu array is changed later.
 const visibleClientMenuItems = clientMenuItems.filter((item) => item.id !== "settings");
 
-// React component “Client Sidebar” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
 const ClientSidebar = ({ activeTab = "dashboard", onTabChange }) => {
   const navigate = useNavigate();
 
-  // Handler “handle menu click” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleMenuClick = (id) => {
     if (onTabChange) {
       onTabChange(id);

@@ -1,10 +1,3 @@
-/**
- * Frontend module: pages/profile/ViewAllServicePage.jsx
- *
- * Vai trò: Page View All Service Page: màn hình cấp route, điều phối dữ liệu và các component con cho một luồng nghiệp vụ hoàn chỉnh.
- * Luồng chính: Đọc route/location, gọi service trong effect/handler, quản lý loading/error/form rồi truyền props xuống UI con.
- * Lưu ý bảo trì: Giữ side effect trong handler/effect và không mutate trực tiếp state hoặc dữ liệu API.
- */
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { CalendarDays, ChevronRight, DollarSign, EyeOff, Layers, RefreshCcw, Star, UserRound, X } from "lucide-react";
@@ -16,7 +9,6 @@ import AdminModerationConfirmModal from "../../Components/Dashboard/Admin/AdminM
 import "./ProfilePage.css";
 import "./ViewAllProfileItems.css";
 
-// React component “View All Service Page” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
 function ViewAllServicePage() {
   const { userId } = useParams();
   const navigate = useNavigate();
@@ -36,7 +28,6 @@ function ViewAllServicePage() {
   const isAdminViewer = currentRole.includes("admin");
 
   useEffect(() => {
-    // Đọc hoặc suy ra dữ liệu cho nghiệp vụ “fetch services”; không nên tạo side effect ngoài những request đọc đã nêu trong thân hàm.
     const fetchServices = async () => {
       try {
         setLoading(true);
@@ -55,7 +46,6 @@ function ViewAllServicePage() {
     fetchServices();
   }, [userId]);
 
-  // Handler “close modal” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const closeModal = () => {
     if (location.state?.backgroundLocation) {
       navigate(-1);
@@ -65,7 +55,6 @@ function ViewAllServicePage() {
     navigate(`/profile/${userId}`);
   };
 
-  // Chuyển đổi dữ liệu cho “format currency” thành định dạng mà lớp gọi hoặc giao diện cần.
   const formatCurrency = (value) => {
     const amount = Number(value);
     if (!Number.isFinite(amount)) return value ? String(value) : "Not specified";
@@ -77,13 +66,11 @@ function ViewAllServicePage() {
     });
   };
 
-  // Handler “handle service action” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleServiceAction = (serviceId) => {
     if (!serviceId) return;
     navigate(`/marketplace/service/${serviceId}`);
   };
 
-  // Handler “handle unpublish” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleUnpublish = async (serviceId, action = "unpublish") => {
     const nextStatus = action === "republish" ? "approved" : "removed";
     try {

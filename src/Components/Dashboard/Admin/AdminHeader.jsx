@@ -1,10 +1,3 @@
-/**
- * Frontend module: Components/Dashboard/Admin/AdminHeader.jsx
- *
- * Vai trò: Component Admin Header: khối giao diện có thể tái sử dụng trong một hoặc nhiều page.
- * Luồng chính: Nhận props, render trạng thái tương ứng và báo sự kiện lên component cha qua callback khi cần.
- * Lưu ý bảo trì: Không thay đổi props; state cục bộ chỉ nên phục vụ hành vi thuộc phạm vi component.
- */
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Bell, ChevronDown, LogOut, Search, Settings, User } from 'lucide-react'
@@ -13,7 +6,6 @@ import SettingPage from '../../Settings/SettingsPage'
 import useHandleClickOutside from '../HandleClickOutside'
 import '../../Navbar/HeaderCom.css'
 
-// React component “Admin Header” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
 const AdminHeader = ({
   title = 'Admin Command Center',
   subtitle = 'System oversight and marketplace operations',
@@ -38,7 +30,6 @@ const AdminHeader = ({
     setIsSettingsOpen(true)
   }
 
-  // Handler “handle profile” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleProfile = () => {
     setIsProfileOpen(false)
     if (currentUser && (currentUser.id || currentUser._id)) {

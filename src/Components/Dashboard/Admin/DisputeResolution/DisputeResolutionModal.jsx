@@ -1,10 +1,3 @@
-/**
- * Frontend module: Components/Dashboard/Admin/DisputeResolution/DisputeResolutionModal.jsx
- *
- * Vai trò: Component Dispute Resolution Modal: khối giao diện có thể tái sử dụng trong một hoặc nhiều page.
- * Luồng chính: Nhận props, render trạng thái tương ứng và báo sự kiện lên component cha qua callback khi cần.
- * Lưu ý bảo trì: Không thay đổi props; state cục bộ chỉ nên phục vụ hành vi thuộc phạm vi component.
- */
 import { useState } from 'react'
 import { AlertTriangle, CheckCircle2, DollarSign, Loader2, Scale, ShieldAlert, UserX, X } from 'lucide-react'
 
@@ -37,7 +30,6 @@ const inputSt = {
   boxSizing: 'border-box',
 }
 
-// React component “Dispute Resolution Modal” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
 export default function DisputeResolutionModal({ dispute, onClose, onResolved }) {
   const [resolution, setResolution] = useState('refund_client') // 'refund_client' or 'release_expert'
   const [adminNotes, setAdminNotes] = useState('')
@@ -52,7 +44,6 @@ export default function DisputeResolutionModal({ dispute, onClose, onResolved })
   const releasedAmount = parseFloat(dispute.released_amount || 0)
   const remainingEscrow = Math.max(0, projectTotal - releasedAmount)
 
-  // Handler “handle submit” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleSubmit = async () => {
     setErr('')
     setBusy(true)

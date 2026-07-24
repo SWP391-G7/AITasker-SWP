@@ -1,10 +1,3 @@
-/**
- * Frontend module: Components/Footer/Footer.jsx
- *
- * Vai trò: Component Footer: khối giao diện có thể tái sử dụng trong một hoặc nhiều page.
- * Luồng chính: Nhận props, render trạng thái tương ứng và báo sự kiện lên component cha qua callback khi cần.
- * Lưu ý bảo trì: Không thay đổi props; state cục bộ chỉ nên phục vụ hành vi thuộc phạm vi component.
- */
 import { Link } from "react-router-dom";
 import "./Footer.css";
 
@@ -15,7 +8,6 @@ const defaultLinks = [
   { label: "API Documentation", to: "/api-docs" },
 ];
 
-// React component “Footer” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
 function Footer({
   brand = "AITasker",
   copyright = "(c) 2026 AITasker. All rights reserved.",

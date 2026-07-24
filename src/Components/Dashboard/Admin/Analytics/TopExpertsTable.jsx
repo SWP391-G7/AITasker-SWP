@@ -1,16 +1,8 @@
-/**
- * Frontend module: Components/Dashboard/Admin/Analytics/TopExpertsTable.jsx
- *
- * Vai trò: Component Top Experts Table: khối giao diện có thể tái sử dụng trong một hoặc nhiều page.
- * Luồng chính: Nhận props, render trạng thái tương ứng và báo sự kiện lên component cha qua callback khi cần.
- * Lưu ý bảo trì: Không thay đổi props; state cục bộ chỉ nên phục vụ hành vi thuộc phạm vi component.
- */
 import { useEffect, useState } from 'react'
 import { ChevronLeft, ChevronRight, X } from 'lucide-react'
 
 const pageSize = 20
 
-// React component “Expert Avatar” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
 const ExpertAvatar = ({ expert }) => (
   expert.avatar ? (
     <img src={expert.avatar} alt={expert.name} />
@@ -21,7 +13,6 @@ const ExpertAvatar = ({ expert }) => (
   )
 )
 
-// React component “Expert Rows” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
 const ExpertRows = ({ experts = [], showRank = false }) => (
   <>
     {experts.map((expert) => (
@@ -44,7 +35,6 @@ const ExpertRows = ({ experts = [], showRank = false }) => (
   </>
 )
 
-// React component “Top Experts Table” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
 const TopExpertsTable = ({ experts = [], allExperts = [] }) => {
   const [isLeaderboardOpen, setIsLeaderboardOpen] = useState(false)
   const [rankingFilter, setRankingFilter] = useState('all')
@@ -57,14 +47,12 @@ const TopExpertsTable = ({ experts = [], allExperts = [] }) => {
       : allExperts
   const totalPages = Math.max(1, Math.ceil(filteredExperts.length / pageSize))
   const effectivePage = Math.min(currentPage, totalPages)
-  // Thực hiện phần logic “page start” trong phạm vi trách nhiệm của module hiện tại.
   const pageStart = (effectivePage - 1) * pageSize
   const paginatedExperts = filteredExperts.slice(pageStart, pageStart + pageSize)
 
   useEffect(() => {
     if (!isLeaderboardOpen) return undefined
 
-    // Handler “handle escape” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
     const handleEscape = (event) => {
       if (event.key === 'Escape') setIsLeaderboardOpen(false)
     }
@@ -77,7 +65,6 @@ const TopExpertsTable = ({ experts = [], allExperts = [] }) => {
     }
   }, [isLeaderboardOpen])
 
-  // Thực hiện phần logic “select ranking filter” trong phạm vi trách nhiệm của module hiện tại.
   const selectRankingFilter = (filter) => {
     setRankingFilter(filter)
     setCurrentPage(1)

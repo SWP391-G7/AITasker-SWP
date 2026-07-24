@@ -1,13 +1,5 @@
-/**
- * Frontend module: Components/Dashboard/Admin/DisputeResolution/EvidencePreviewPanel.jsx
- *
- * Vai trò: Component Evidence Preview Panel: khối giao diện có thể tái sử dụng trong một hoặc nhiều page.
- * Luồng chính: Nhận props, render trạng thái tương ứng và báo sự kiện lên component cha qua callback khi cần.
- * Lưu ý bảo trì: Không thay đổi props; state cục bộ chỉ nên phục vụ hành vi thuộc phạm vi component.
- */
 import { Download, ExternalLink, FileText, ShieldAlert } from 'lucide-react'
 
-// React component “Evidence Preview Panel” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
 const EvidencePreviewPanel = ({ dispute }) => {
   let evidenceList = []
   if (dispute?.evidence_urls) {

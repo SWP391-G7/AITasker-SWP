@@ -1,10 +1,3 @@
-/**
- * Frontend module: pages/marketplace/ServiceRequestPage.jsx
- *
- * Vai trò: Page Service Request Page: màn hình cấp route, điều phối dữ liệu và các component con cho một luồng nghiệp vụ hoàn chỉnh.
- * Luồng chính: Đọc route/location, gọi service trong effect/handler, quản lý loading/error/form rồi truyền props xuống UI con.
- * Lưu ý bảo trì: Giữ side effect trong handler/effect và không mutate trực tiếp state hoặc dữ liệu API.
- */
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
@@ -29,16 +22,13 @@ import AISkeletonLoader from '../../Components/AI/AISkeletonLoader';
 import Toast from '../../Components/Toast';
 import '../Style/ServiceDetail.css';
 
-// Chuyển đổi dữ liệu cho “parse money” thành định dạng mà lớp gọi hoặc giao diện cần.
 const parseMoney = (value) => {
   const parsed = Number(String(value || '0').replace(/[^0-9.]/g, ''));
   return Number.isFinite(parsed) ? parsed : 0;
 };
 
-// Chuyển đổi dữ liệu cho “format money” thành định dạng mà lớp gọi hoặc giao diện cần.
 const formatMoney = (value) => `$${parseMoney(value).toLocaleString()}`;
 
-// React component “Service Request Page” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
 const ServiceRequestPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -84,7 +74,6 @@ const ServiceRequestPage = () => {
     );
   }
 
-  // Handler “handle extend success” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleExtendSuccess = (data) => {
     if (data.coverLetter) setCoverLetter(data.coverLetter);
     setIsGenerating(false);
@@ -92,7 +81,6 @@ const ServiceRequestPage = () => {
   };
 
   useEffect(() => {
-    // Đọc hoặc suy ra dữ liệu cho nghiệp vụ “fetch service”; không nên tạo side effect ngoài những request đọc đã nêu trong thân hàm.
     const fetchService = async () => {
       if (!id) {
         setLoading(false);
@@ -114,7 +102,6 @@ const ServiceRequestPage = () => {
     fetchService();
   }, [id]);
 
-  // Handler “handle submit request” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleSubmitRequest = async (event) => {
     event.preventDefault();
 

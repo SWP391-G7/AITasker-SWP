@@ -1,10 +1,3 @@
-/**
- * Frontend module: Components/Profile/Expert/ExpertService.js
- *
- * Vai trò: Component Expert Service: khối giao diện có thể tái sử dụng trong một hoặc nhiều page.
- * Luồng chính: Nhận props, render trạng thái tương ứng và báo sự kiện lên component cha qua callback khi cần.
- * Lưu ý bảo trì: Không thay đổi props; state cục bộ chỉ nên phục vụ hành vi thuộc phạm vi component.
- */
 export const expertServices = [
   {
     id: 1,
@@ -38,7 +31,6 @@ const serviceVisualClasses = [
   "service-visual-network",
 ];
 
-// Chuyển đổi dữ liệu cho “format service price” thành định dạng mà lớp gọi hoặc giao diện cần.
 const formatServicePrice = (value) => {
   const amount = Number(value);
 

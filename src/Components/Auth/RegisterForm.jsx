@@ -1,10 +1,3 @@
-/**
- * Frontend module: Components/Auth/RegisterForm.jsx
- *
- * Vai trò: Component Register Form: khối giao diện có thể tái sử dụng trong một hoặc nhiều page.
- * Luồng chính: Nhận props, render trạng thái tương ứng và báo sự kiện lên component cha qua callback khi cần.
- * Lưu ý bảo trì: Không thay đổi props; state cục bộ chỉ nên phục vụ hành vi thuộc phạm vi component.
- */
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { Eye, EyeOff, Lock, Mail, User } from "lucide-react"
@@ -12,7 +5,6 @@ import { register, googleLogin } from "../../Services/authService"
 import { useGoogleLogin } from "@react-oauth/google"
 import "./Auth.css"
 
-// Tạo hoặc gửi dữ liệu cho nghiệp vụ “register form”, đồng thời chuyển lỗi về caller/UI theo cơ chế của module.
 function RegisterForm() {
   const navigate = useNavigate()
 
@@ -28,7 +20,6 @@ function RegisterForm() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
-  // Handler “handle change” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleChange = (event) => {
     const { name, value } = event.target
 
@@ -38,7 +29,6 @@ function RegisterForm() {
     })
   }
 
-  // React component “validate Form” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
   const validateForm = () => {
     if (!formData.fullName.trim()) {
       return "Full name is required"
@@ -67,7 +57,6 @@ function RegisterForm() {
     return ""
   }
 
-  // Handler “handle submit” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleSubmit = async (event) => {
     event.preventDefault()
 

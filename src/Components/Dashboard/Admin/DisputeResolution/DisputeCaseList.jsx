@@ -1,13 +1,5 @@
-/**
- * Frontend module: Components/Dashboard/Admin/DisputeResolution/DisputeCaseList.jsx
- *
- * Vai trò: Component Dispute Case List: khối giao diện có thể tái sử dụng trong một hoặc nhiều page.
- * Luồng chính: Nhận props, render trạng thái tương ứng và báo sự kiện lên component cha qua callback khi cần.
- * Lưu ý bảo trì: Không thay đổi props; state cục bộ chỉ nên phục vụ hành vi thuộc phạm vi component.
- */
 import DisputeCaseCard from './DisputeCaseCard'
 
-// React component “Dispute Case List” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
 const DisputeCaseList = ({ cases, selectedCaseId, onSelectCase, onResolveCase }) => (
   <div className="dispute-case-list">
     {cases.length === 0 ? (

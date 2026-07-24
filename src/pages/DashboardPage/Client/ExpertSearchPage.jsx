@@ -1,10 +1,3 @@
-/**
- * Frontend module: pages/DashboardPage/Client/ExpertSearchPage.jsx
- *
- * Vai trò: Page Expert Search Page: màn hình cấp route, điều phối dữ liệu và các component con cho một luồng nghiệp vụ hoàn chỉnh.
- * Luồng chính: Đọc route/location, gọi service trong effect/handler, quản lý loading/error/form rồi truyền props xuống UI con.
- * Lưu ý bảo trì: Giữ side effect trong handler/effect và không mutate trực tiếp state hoặc dữ liệu API.
- */
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
@@ -49,7 +42,6 @@ const clientFilters = [
   "SHOW ALL",
 ];
 
-// Đọc hoặc suy ra dữ liệu cho nghiệp vụ “get current role”; không nên tạo side effect ngoài những request đọc đã nêu trong thân hàm.
 const getCurrentRole = () => {
   try {
     return JSON.parse(localStorage.getItem("user") || "{}")?.role || "client";
@@ -58,7 +50,6 @@ const getCurrentRole = () => {
   }
 };
 
-// Thực hiện phần logic “split csv” trong phạm vi trách nhiệm của module hiện tại.
 const splitCsv = (value) =>
   value
     ? String(value)
@@ -67,7 +58,6 @@ const splitCsv = (value) =>
         .filter(Boolean)
     : [];
 
-// Chuyển đổi dữ liệu cho “map expert from api” thành định dạng mà lớp gọi hoặc giao diện cần.
 const mapExpertFromApi = (expert) => {
   const skills = splitCsv(expert.skills);
   const hourlyRate =
@@ -92,7 +82,6 @@ const mapExpertFromApi = (expert) => {
   };
 };
 
-// Chuyển đổi dữ liệu cho “map client from api” thành định dạng mà lớp gọi hoặc giao diện cần.
 const mapClientFromApi = (client) => {
   const industry = client.industry || client.company_industry || "Client";
   const company = client.company_name || "Client Company";
@@ -118,7 +107,6 @@ const mapClientFromApi = (client) => {
   };
 };
 
-// React component “Expert Search Page” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
 function ExpertSearchPage() {
   const navigate = useNavigate();
   const isExpertMode = getCurrentRole() === "expert";
@@ -144,7 +132,6 @@ function ExpertSearchPage() {
     setSearchQuery(urlQuery);
   }, [location.search]);
 
-  // Thay đổi trạng thái hoặc dữ liệu cho nghiệp vụ “toggle filter”; cần giữ validation và quyền truy cập trước khi cập nhật.
   const toggleFilter = (filter) => {
     if (filter === "SHOW ALL") {
       setSelectedFilters([]);
@@ -158,7 +145,6 @@ function ExpertSearchPage() {
     );
   };
 
-  // Đọc hoặc suy ra dữ liệu cho nghiệp vụ “fetch people”; không nên tạo side effect ngoài những request đọc đã nêu trong thân hàm.
   const fetchPeople = async () => {
     try {
       setLoading(true);
@@ -179,7 +165,6 @@ function ExpertSearchPage() {
         hourlyRateMax: !isExpertMode && availability === "part-time" ? 180 : "",
       });
 
-      // Thực hiện phần logic “mapped” trong phạm vi trách nhiệm của module hiện tại.
       const mapped = (result.results || []).map(
         isExpertMode ? mapClientFromApi : mapExpertFromApi
       );

@@ -1,10 +1,3 @@
-/**
- * Frontend module: pages/DashboardPage/Expert/MessagesPage.jsx
- *
- * Vai trò: Page Messages Page: màn hình cấp route, điều phối dữ liệu và các component con cho một luồng nghiệp vụ hoàn chỉnh.
- * Luồng chính: Đọc route/location, gọi service trong effect/handler, quản lý loading/error/form rồi truyền props xuống UI con.
- * Lưu ý bảo trì: Giữ side effect trong handler/effect và không mutate trực tiếp state hoặc dữ liệu API.
- */
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import ExpertHeader from '../../../Components/Dashboard/Expert/ExpertHeader'
@@ -18,7 +11,6 @@ import '../Style/AdminDashboardPage.css'
 import '../Style/ExpertDashboardPage.css'
 import '../../../Components/Dashboard/Expert/Messages/MessagesPage.css'
 
-// React component “Messages Page” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
 const MessagesPage = () => {
   const navigate = useNavigate()
   const location = useLocation()
@@ -40,7 +32,6 @@ const MessagesPage = () => {
 
   const handleLogout = createHandleLogout(navigate)
 
-  // Handler “handle tab change” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleTabChange = (id) => {
     if (id === 'dashboard') navigate('/expert/dashboard')
     else navigate(`/expert/${id}`)
@@ -62,7 +53,6 @@ const MessagesPage = () => {
 
   // Initial load
   useEffect(() => {
-    // Thực hiện phần logic “init” trong phạm vi trách nhiệm của module hiện tại.
     const init = async () => {
       const data = await fetchConvs()
       const passedId = location.state?.activeConversationId
@@ -85,7 +75,6 @@ const MessagesPage = () => {
   useEffect(() => {
     if (!activeChatId) return
 
-    // Đọc hoặc suy ra dữ liệu cho nghiệp vụ “fetch messages”; không nên tạo side effect ngoài những request đọc đã nêu trong thân hàm.
     const fetchMessages = async () => {
       try {
         const data = await getConversationMessages(activeChatId)

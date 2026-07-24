@@ -1,10 +1,3 @@
-/**
- * Frontend module: routes/AppRoutes.jsx
- *
- * Vai trò: App Routes: định nghĩa cây route và quyền truy cập của ứng dụng React.
- * Luồng chính: Đối chiếu URL với page, kiểm tra trạng thái đăng nhập/role và render màn hình hoặc điều hướng phù hợp.
- * Lưu ý bảo trì: Khi thêm route cần kiểm tra cả deep-link, refresh trình duyệt và fallback route.
- */
 import { useEffect, useState } from "react"
 import { Navigate, Route, Routes, useLocation } from "react-router-dom"
 import LoginPage from "../pages/auth/LoginPage"
@@ -49,7 +42,6 @@ import ServiceRequestPage from "../pages/marketplace/ServiceRequestPage"
 import ServiceRequestDetailPage from "../pages/marketplace/ServiceRequestDetailPage"
 import { PrivacyPolicy, TermsOfService, HelpCenter, ApiDocs } from "../pages/info/InfoPages"
 
-// Custom hook “use auth status” quản lý lifecycle/state dùng lại và phải cleanup tài nguyên khi unmount.
 function useAuthStatus() {
   const [status, setStatus] = useState({ isLoggedIn: null, isVerified: null, isOnboarded: null, role: null })
 
@@ -87,10 +79,8 @@ const roleHomePaths = {
   expert: "/expert/dashboard",
 }
 
-// Đọc hoặc suy ra dữ liệu cho nghiệp vụ “is admin role”; không nên tạo side effect ngoài những request đọc đã nêu trong thân hàm.
 const isAdminRole = (role) => String(role || "").toLowerCase() === "admin"
 
-// React component “Guest Only” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
 function GuestOnly({ children }) {
   const { isLoggedIn, isVerified, isOnboarded, role } = useAuthStatus()
 
@@ -133,7 +123,6 @@ function OnboardingOnly({ children }) {
   return children
 }
 
-// React component “Verify Only” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
 function VerifyOnly({ children }) {
   const location = useLocation()
   const { isLoggedIn, isVerified } = useAuthStatus()
@@ -158,7 +147,6 @@ function VerifyOnly({ children }) {
   return children
 }
 
-// React component “Protected Route” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
 function ProtectedRoute({ children, allowedRoles, onboardingRequired = true }) {
   const location = useLocation()
   const { isLoggedIn, isVerified, isOnboarded, role } = useAuthStatus()
@@ -192,7 +180,6 @@ function ProtectedRoute({ children, allowedRoles, onboardingRequired = true }) {
   return children
 }
 
-// React component “Dashboard Redirect” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
 function DashboardRedirect() {
   const location = useLocation()
   const { isLoggedIn, isVerified, isOnboarded, role } = useAuthStatus()
@@ -219,7 +206,6 @@ function DashboardRedirect() {
   return <Navigate to={roleHomePaths[role] || "/"} replace />
 }
 
-// React component “App Routes” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
 function AppRoutes() {
   const location = useLocation()
   const backgroundLocation = location.state?.backgroundLocation

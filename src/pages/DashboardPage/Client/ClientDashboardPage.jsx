@@ -1,10 +1,3 @@
-/**
- * Frontend module: pages/DashboardPage/Client/ClientDashboardPage.jsx
- *
- * Vai trò: Page Client Dashboard Page: màn hình cấp route, điều phối dữ liệu và các component con cho một luồng nghiệp vụ hoàn chỉnh.
- * Luồng chính: Đọc route/location, gọi service trong effect/handler, quản lý loading/error/form rồi truyền props xuống UI con.
- * Lưu ý bảo trì: Giữ side effect trong handler/effect và không mutate trực tiếp state hoặc dữ liệu API.
- */
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useClientUser } from "../../../Components/Dashboard/Client/user";
@@ -25,7 +18,6 @@ import { getMyTransactionsAPI } from "../../../Services/transactionService";
 import "../Style/AdminDashboardPage.css";
 import "../Style/ClientDashboardPage.css";
 
-// React component “Client Dashboard Page” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
 function ClientDashboardPage() {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
@@ -35,7 +27,6 @@ function ClientDashboardPage() {
   const [error, setError] = useState("");
   const user = useClientUser();
 
-  // Chuyển đổi dữ liệu cho “format currency” thành định dạng mà lớp gọi hoặc giao diện cần.
   const formatCurrency = (value) =>
     new Intl.NumberFormat("en-US", {
       style: "currency",
@@ -50,7 +41,6 @@ function ClientDashboardPage() {
   });
 
   useEffect(() => {
-    // Đọc hoặc suy ra dữ liệu cho nghiệp vụ “fetch dashboard data”; không nên tạo side effect ngoài những request đọc đã nêu trong thân hàm.
     const fetchDashboardData = async () => {
       try {
         setError("");
@@ -122,7 +112,6 @@ function ClientDashboardPage() {
       item.status.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Handler “handle logout” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleLogout = () => {
     logout();
     navigate("/");

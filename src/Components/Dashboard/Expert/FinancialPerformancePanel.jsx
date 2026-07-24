@@ -1,10 +1,3 @@
-/**
- * Frontend module: Components/Dashboard/Expert/FinancialPerformancePanel.jsx
- *
- * Vai trò: Component Financial Performance Panel: khối giao diện có thể tái sử dụng trong một hoặc nhiều page.
- * Luồng chính: Nhận props, render trạng thái tương ứng và báo sự kiện lên component cha qua callback khi cần.
- * Lưu ý bảo trì: Không thay đổi props; state cục bộ chỉ nên phục vụ hành vi thuộc phạm vi component.
- */
 import { Download } from 'lucide-react'
 
 const earningsBars = [
@@ -22,7 +15,6 @@ const earningsBars = [
   { label: 'Dec', height: '78%', highlighted: true }
 ]
 
-// React component “Financial Performance Panel” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
 const FinancialPerformancePanel = ({
   totalLifetime = '$24,850.00',
   availableNow = '$8,240.00',

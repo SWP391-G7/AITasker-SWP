@@ -1,13 +1,5 @@
-/**
- * Frontend module: Components/Dashboard/Admin/AdminStats.jsx
- *
- * Vai trò: Component Admin Stats: khối giao diện có thể tái sử dụng trong một hoặc nhiều page.
- * Luồng chính: Nhận props, render trạng thái tương ứng và báo sự kiện lên component cha qua callback khi cần.
- * Lưu ý bảo trì: Không thay đổi props; state cục bộ chỉ nên phục vụ hành vi thuộc phạm vi component.
- */
 import { Scale, ShieldAlert, TrendingUp, Users } from 'lucide-react'
 
-// React component “Admin Stats” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
 const AdminStats = ({ userCount = 0, moderationCount, disputeCount }) => (
   <section className="admin-stats-grid">
     <div className="admin-stat-card">

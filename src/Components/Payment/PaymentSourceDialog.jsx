@@ -1,16 +1,7 @@
-/**
- * Frontend module: Components/Payment/PaymentSourceDialog.jsx
- *
- * Vai trò: Component Payment Source Dialog: khối giao diện có thể tái sử dụng trong một hoặc nhiều page.
- * Luồng chính: Nhận props, render trạng thái tương ứng và báo sự kiện lên component cha qua callback khi cần.
- * Lưu ý bảo trì: Không thay đổi props; state cục bộ chỉ nên phục vụ hành vi thuộc phạm vi component.
- */
 import { CreditCard, Layers3, WalletCards, X } from 'lucide-react'
 
-// Thực hiện phần logic “money” trong phạm vi trách nhiệm của module hiện tại.
 const money = (value) => `$${Number(value || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 
-// React component “Payment Source Dialog” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
 export default function PaymentSourceDialog({ open, title, amount, availableBalance, busy, onClose, onSelect }) {
   if (!open) return null
   const options = [

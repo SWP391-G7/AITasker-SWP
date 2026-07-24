@@ -1,10 +1,3 @@
-/**
- * Frontend module: Components/marketplace/ServiceCard.jsx
- *
- * Vai trò: Component Service Card: khối giao diện có thể tái sử dụng trong một hoặc nhiều page.
- * Luồng chính: Nhận props, render trạng thái tương ứng và báo sự kiện lên component cha qua callback khi cần.
- * Lưu ý bảo trì: Không thay đổi props; state cục bộ chỉ nên phục vụ hành vi thuộc phạm vi component.
- */
 import { useNavigate } from 'react-router-dom';
 import { Heart, Star, Clock } from 'lucide-react';
 import './Marketplace.css';
@@ -21,7 +14,6 @@ const VISUAL_CLASSES = [
   'service-visual-amber',
 ];
 
-// Đọc hoặc suy ra dữ liệu cho nghiệp vụ “get visual class”; không nên tạo side effect ngoài những request đọc đã nêu trong thân hàm.
 const getVisualClass = (id) => {
   if (!id) return VISUAL_CLASSES[0];
   // Use the numeric part or string hash
@@ -29,7 +21,6 @@ const getVisualClass = (id) => {
   return VISUAL_CLASSES[num % VISUAL_CLASSES.length];
 };
 
-// React component “Service Card” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
 const ServiceCard = ({
   id,
   tag,
@@ -48,7 +39,6 @@ const ServiceCard = ({
   const navigate = useNavigate();
   const isJob = type === 'job';
 
-  // Handler “handle view details” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleViewDetails = () => {
     if (isJob) {
       navigate('/marketplace/task/' + id);
@@ -57,7 +47,6 @@ const ServiceCard = ({
     navigate(`/marketplace/service/${id}`);
   };
 
-  // Đọc hoặc suy ra dữ liệu cho nghiệp vụ “get initials”; không nên tạo side effect ngoài những request đọc đã nêu trong thân hàm.
   const getInitials = (name) =>
     name
       ? name.split(' ').map((w) => w[0]).join('').slice(0, 2).toUpperCase()

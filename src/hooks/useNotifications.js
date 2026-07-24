@@ -1,10 +1,3 @@
-/**
- * Frontend module: hooks/useNotifications.js
- *
- * Vai trò: Custom hook use Notifications: gom state, effect và subscription có thể tái sử dụng.
- * Luồng chính: Nhận dependency từ component, quản lý lifecycle và trả state/callback cần thiết cho giao diện.
- * Lưu ý bảo trì: Effect phải cleanup timer, listener hoặc socket để tránh memory leak.
- */
 import { useEffect, useRef, useState } from "react"
 import {
   getConversationNotifications,
@@ -20,7 +13,6 @@ import {
 import { getStoredUser } from "../Services/checkLogin"
 import useWebSocket from "./useWebSocket"
 
-// Custom hook “use notifications” quản lý lifecycle/state dùng lại và phải cleanup tài nguyên khi unmount.
 export default function useNotifications(isLogin) {
   const [showNotifications, setShowNotifications] = useState(false)
   const [notifications, setNotifications] = useState([])
@@ -28,7 +20,6 @@ export default function useNotifications(isLogin) {
   const prevUnreadRef = useRef(0)
   const notificationRef = useRef(null)
 
-  // Đọc hoặc suy ra dữ liệu cho nghiệp vụ “load notifications”; không nên tạo side effect ngoài những request đọc đã nêu trong thân hàm.
   const loadNotifications = async () => {
     try {
       const conv = await getConversationNotifications()
@@ -62,7 +53,6 @@ export default function useNotifications(isLogin) {
     }
   }
 
-  // Handler “handle bell click” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleBellClick = () => {
     setShowNotifications((prev) => {
       if (!prev) loadNotifications()
@@ -70,7 +60,6 @@ export default function useNotifications(isLogin) {
     })
   }
 
-  // Handler “handle notification click” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleNotificationClick = async (navigate, notif) => {
     if (!notif.read) {
       if (notif.isDbNotification) {
@@ -176,7 +165,6 @@ export default function useNotifications(isLogin) {
     }
   }
 
-  // Thực hiện phần logic “mark as read” trong phạm vi trách nhiệm của module hiện tại.
   const markAsRead = async (id, e) => {
     e.stopPropagation()
     const notif = notifications.find((n) => n.id === id)
@@ -192,7 +180,6 @@ export default function useNotifications(isLogin) {
     }
   }
 
-  // Thực hiện phần logic “clear notifications” trong phạm vi trách nhiệm của module hiện tại.
   const clearNotifications = async () => {
     setNotifications([])
     try {
@@ -216,7 +203,6 @@ export default function useNotifications(isLogin) {
   useEffect(() => {
     if (!isLogin) return
     let isMounted = true
-    // Đọc hoặc suy ra dữ liệu cho nghiệp vụ “fetch pending”; không nên tạo side effect ngoài những request đọc đã nêu trong thân hàm.
     const fetchPending = async () => {
       try {
         const convNotifs = await getConversationNotifications()
@@ -273,7 +259,6 @@ export default function useNotifications(isLogin) {
 
   // Click outside
   useEffect(() => {
-    // Handler “handle click outside” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
     const handleClickOutside = (event) => {
       if (notificationRef.current && !notificationRef.current.contains(event.target)) {
         setShowNotifications(false)

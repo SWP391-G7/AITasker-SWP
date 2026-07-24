@@ -1,10 +1,3 @@
-/**
- * Frontend module: pages/auth/EmailVerificationPage.jsx
- *
- * Vai trò: Page Email Verification Page: màn hình cấp route, điều phối dữ liệu và các component con cho một luồng nghiệp vụ hoàn chỉnh.
- * Luồng chính: Đọc route/location, gọi service trong effect/handler, quản lý loading/error/form rồi truyền props xuống UI con.
- * Lưu ý bảo trì: Giữ side effect trong handler/effect và không mutate trực tiếp state hoặc dữ liệu API.
- */
 import { useState, useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import AuthLayout from '../../Components/Auth/AuthLayout'
@@ -26,7 +19,6 @@ function getStoredEmail() {
   }
 }
 
-// React component “Email Verification Page” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
 const EmailVerificationPage = () => {
   const location = useLocation()
   const navigate = useNavigate()

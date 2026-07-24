@@ -1,10 +1,3 @@
-/**
- * Frontend module: Services/adminDashboardService.js
- *
- * Vai trò: Service admin Dashboard Service: lớp giao tiếp giữa UI và backend API.
- * Luồng chính: Nhận dữ liệu từ component, gắn token/header, gọi endpoint, chuẩn hóa response và ném Error khi request thất bại.
- * Lưu ý bảo trì: Component không nên lặp lại URL hoặc logic HTTP đã được đóng gói tại đây.
- */
 import axios from 'axios'
 
 // Lấy URL gốc của backend từ biến môi trường Vite.
@@ -42,7 +35,6 @@ const moderationVisualClasses = [
   'service-visual-network',
 ]
 
-// Đọc hoặc suy ra dữ liệu cho nghiệp vụ “get primary content image”; không nên tạo side effect ngoài những request đọc đã nêu trong thân hàm.
 const getPrimaryContentImage = (images, legacyImageUrl = null) => {
   if (Array.isArray(images)) {
     return images.find((image) => typeof image === 'string' && image.trim()) || legacyImageUrl
@@ -108,25 +100,21 @@ export const adminCreateUser = async (userData) => {
   return data.user
 }
 
-// Thực hiện phần logic “admin update user” trong phạm vi trách nhiệm của module hiện tại.
 export const adminUpdateUser = async (id, userData) => {
   const { data } = await adminDashboardApi.put(`/admin/users/${id}`, userData)
   return data.user
 }
 
-// Thực hiện phần logic “admin delete user” trong phạm vi trách nhiệm của module hiện tại.
 export const adminDeleteUser = async (id) => {
   const { data } = await adminDashboardApi.delete(`/admin/users/${id}`)
   return data
 }
 
-// Thực hiện phần logic “admin deactivate user” trong phạm vi trách nhiệm của module hiện tại.
 export const adminDeactivateUser = async (id, status) => {
   const { data } = await adminDashboardApi.patch(`/admin/users/${id}/status`, { acc_status: status })
   return data.user
 }
 
-// Đọc hoặc suy ra dữ liệu cho nghiệp vụ “get admin content”; không nên tạo side effect ngoài những request đọc đã nêu trong thân hàm.
 export const getAdminContent = async ({ type = 'all', status = 'all' }) => {
   const { data } = await adminDashboardApi.get('/admin/content', {
     params: { type, status }
@@ -142,7 +130,6 @@ export const getAdminAnalytics = async ({ from, to } = {}) => {
   return data
 }
 
-// Thay đổi trạng thái hoặc dữ liệu cho nghiệp vụ “update content status”; cần giữ validation và quyền truy cập trước khi cập nhật.
 export const updateContentStatus = async (type, id, status) => {
   const { data } = await adminDashboardApi.put(`/admin/content/${type}/${id}/status`, { status })
   return data.content
@@ -381,9 +368,7 @@ export const resolveAdminDispute = async (disputeId, resolutionData) => {
   return data
 }
 
-// Thực hiện phần logic “clamp percentage” trong phạm vi trách nhiệm của module hiện tại.
 const clampPercentage = (value) => Math.min(100, Math.max(0, Number(value) || 0))
-// Chuyển đổi dữ liệu cho “format currency” thành định dạng mà lớp gọi hoặc giao diện cần.
 const formatCurrency = (value) =>
   Number(value || 0).toLocaleString('en-US', {
     style: 'currency',
@@ -402,7 +387,6 @@ export const buildLiveAnalytics = (data = {}) => {
   const activeMonth = selectedYear === now.getFullYear()
     ? `${selectedYear}-${String(now.getMonth() + 1).padStart(2, '0')}`
     : `${selectedYear}-12`
-  // Thực hiện phần logic “ranked experts” trong phạm vi trách nhiệm của module hiện tại.
   const rankedExperts = (data.topExperts || []).map((expert, index) => ({
     id: expert.id,
     rank: index + 1,

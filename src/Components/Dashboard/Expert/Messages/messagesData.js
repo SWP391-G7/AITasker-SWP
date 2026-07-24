@@ -1,10 +1,3 @@
-/**
- * Frontend module: Components/Dashboard/Expert/Messages/messagesData.js
- *
- * Vai trò: Component messages Data: khối giao diện có thể tái sử dụng trong một hoặc nhiều page.
- * Luồng chính: Nhận props, render trạng thái tương ứng và báo sự kiện lên component cha qua callback khi cần.
- * Lưu ý bảo trì: Không thay đổi props; state cục bộ chỉ nên phục vụ hành vi thuộc phạm vi component.
- */
 export const conversations = [
   {
     id: 'chat-1',

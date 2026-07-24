@@ -1,13 +1,5 @@
-/**
- * Frontend module: Services/authService.js
- *
- * Vai trò: Service auth Service: lớp giao tiếp giữa UI và backend API.
- * Luồng chính: Nhận dữ liệu từ component, gắn token/header, gọi endpoint, chuẩn hóa response và ném Error khi request thất bại.
- * Lưu ý bảo trì: Component không nên lặp lại URL hoặc logic HTTP đã được đóng gói tại đây.
- */
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api'
 
-// Tạo hoặc gửi dữ liệu cho nghiệp vụ “register”, đồng thời chuyển lỗi về caller/UI theo cơ chế của module.
 export const register = async (data) => {
   try {
     const response = await fetch(`${API_BASE_URL}/auth/register`, {
@@ -43,7 +35,6 @@ export const register = async (data) => {
   }
 }
 
-// Thực hiện phần logic “login” trong phạm vi trách nhiệm của module hiện tại.
 export const login = async (data) => {
   try {
     const response = await fetch(`${API_BASE_URL}/auth/login`, {
@@ -110,7 +101,6 @@ export const login = async (data) => {
   }
 }
 
-// Đọc hoặc suy ra dữ liệu cho nghiệp vụ “get me”; không nên tạo side effect ngoài những request đọc đã nêu trong thân hàm.
 export const getMe = async () => {
   try {
     const token = localStorage.getItem('token')
@@ -185,7 +175,6 @@ export const getMe = async () => {
   }
 }
 
-// Tạo hoặc gửi dữ liệu cho nghiệp vụ “send verification code”, đồng thời chuyển lỗi về caller/UI theo cơ chế của module.
 export const sendVerificationCode = async (email) => {
   try {
     const response = await fetch(`${API_BASE_URL}/auth/send-verification-code`, {
@@ -209,7 +198,6 @@ export const sendVerificationCode = async (email) => {
   }
 }
 
-// Thực hiện phần logic “verify code” trong phạm vi trách nhiệm của module hiện tại.
 export const verifyCode = async (email, code) => {
   try {
     const response = await fetch(`${API_BASE_URL}/auth/verify-code`, {
@@ -233,7 +221,6 @@ export const verifyCode = async (email, code) => {
   }
 }
 
-// Thực hiện phần logic “forgot password” trong phạm vi trách nhiệm của module hiện tại.
 export const forgotPassword = async (email) => {
   try {
     const response = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
@@ -257,7 +244,6 @@ export const forgotPassword = async (email) => {
   }
 }
 
-// Thực hiện phần logic “verify password reset code” trong phạm vi trách nhiệm của module hiện tại.
 export const verifyPasswordResetCode = async ({ email, code }) => {
   try {
     const response = await fetch(`${API_BASE_URL}/auth/verify-reset-code`, {
@@ -281,7 +267,6 @@ export const verifyPasswordResetCode = async ({ email, code }) => {
   }
 }
 
-// Thực hiện phần logic “reset password” trong phạm vi trách nhiệm của module hiện tại.
 export const resetPassword = async ({ email, code, newPassword }) => {
   try {
     const response = await fetch(`${API_BASE_URL}/auth/reset-password`, {
@@ -305,7 +290,6 @@ export const resetPassword = async ({ email, code, newPassword }) => {
   }
 }
 
-// Thực hiện phần logic “google login” trong phạm vi trách nhiệm của module hiện tại.
 export const googleLogin = async (credentials) => {
   try {
     const response = await fetch(`${API_BASE_URL}/auth/google`, {
@@ -366,7 +350,6 @@ export const googleLogin = async (credentials) => {
   }
 }
 
-// Thực hiện phần logic “logout” trong phạm vi trách nhiệm của module hiện tại.
 export const logout = () => {
   localStorage.removeItem('token')
   localStorage.removeItem('user')

@@ -1,10 +1,3 @@
-/**
- * Frontend module: pages/profile/ProfilePage.jsx
- *
- * Vai trò: Page Profile Page: màn hình cấp route, điều phối dữ liệu và các component con cho một luồng nghiệp vụ hoàn chỉnh.
- * Luồng chính: Đọc route/location, gọi service trong effect/handler, quản lý loading/error/form rồi truyền props xuống UI con.
- * Lưu ý bảo trì: Giữ side effect trong handler/effect và không mutate trực tiếp state hoặc dữ liệu API.
- */
 import { useEffect, useState } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import {
@@ -125,7 +118,6 @@ function ProfilePage() {
    * API trả cả user, clientProfile, expertProfile, services và projects.
    */
   useEffect(() => {
-    // Đọc hoặc suy ra dữ liệu cho nghiệp vụ “fetch profile”; không nên tạo side effect ngoài những request đọc đã nêu trong thân hàm.
     const fetchProfile = async () => {
       try {
         setLoading(true)
@@ -630,7 +622,6 @@ function ProfilePage() {
   // Gom các status nghiệp vụ về hai trạng thái UI: đang hiển thị hoặc đã gỡ.
   const isPublishedContent = (status) =>
     ["approved", "open"].includes(String(status || "").toLowerCase());
-  // Đọc hoặc suy ra dữ liệu cho nghiệp vụ “is removed content”; không nên tạo side effect ngoài những request đọc đã nêu trong thân hàm.
   const isRemovedContent = (status) =>
     ["removed", "rejected"].includes(String(status || "").toLowerCase());
 
@@ -841,7 +832,6 @@ function ProfilePage() {
   });
   const profileServices = getExpertServicesFromApi(sortedServices);
   const sortedProjects = [...(profileData.projects || [])].sort((a, b) => {
-    // Thực hiện phần logic “avg budget” trong phạm vi trách nhiệm của module hiện tại.
     const avgBudget = (p) => {
       const min = Number(p.budgetMin);
       const max = Number(p.budgetMax);
@@ -865,7 +855,6 @@ function ProfilePage() {
   const averageProjectBudget = profileData.projects?.length
     ? projectBudgetTotal / profileData.projects.length
     : null;
-  // Handler “open project count” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const openProjectCount = (profileData.projects || []).filter((project) =>
     String(project.status || "").toLowerCase().includes("open")
   ).length;

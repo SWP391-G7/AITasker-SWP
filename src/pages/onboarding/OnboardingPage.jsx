@@ -1,10 +1,3 @@
-/**
- * Frontend module: pages/onboarding/OnboardingPage.jsx
- *
- * Vai trò: Page Onboarding Page: màn hình cấp route, điều phối dữ liệu và các component con cho một luồng nghiệp vụ hoàn chỉnh.
- * Luồng chính: Đọc route/location, gọi service trong effect/handler, quản lý loading/error/form rồi truyền props xuống UI con.
- * Lưu ý bảo trì: Giữ side effect trong handler/effect và không mutate trực tiếp state hoặc dữ liệu API.
- */
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import RoleSelection from "../../Components/onboarding/RoleSelection";
@@ -13,13 +6,11 @@ import ExpertOnboardingForm from "../../Components/onboarding/ExpertOnboardingFo
 import { updateUserRole } from "../../Services/onboardingService";
 import "../../Components/onboarding/Onboarding.css";
 
-// React component “Onboarding Page” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
 function OnboardingPage() {
   const navigate = useNavigate();
   const [selectedRole, setSelectedRole] = useState("");
   const [error, setError] = useState("");
 
-  // Handler “handle select role” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleSelectRole = async (role) => {
     try {
       setError("");
@@ -30,7 +21,6 @@ function OnboardingPage() {
     }
   };
 
-  // Handler “handle back to role selection” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleBackToRoleSelection = () => {
     setSelectedRole("");
     setError("");
