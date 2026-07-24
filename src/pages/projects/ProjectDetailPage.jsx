@@ -21,12 +21,15 @@ import {
   RefreshCcw,
   Send,
   ShieldAlert,
+  Award,
+  Star,
   Trash2,
   X,
 } from 'lucide-react';
 import ClientSidebar from '../../Components/Dashboard/Client/ClientSidebar';
 import ExpertSidebar from '../../Components/Dashboard/Expert/ExpertSidebar';
 import Footer from '../../Components/Footer/Footer';
+import ProjectReviewModal from '../../Components/review/ProjectReviewModal';
 import {
   getProjectById,
   closeProject,
@@ -42,6 +45,7 @@ import {
   respondMilestoneExtension,
   raiseProjectDispute,
   getProjectDisputeStatus,
+  getProjectReviewStatus,
 } from '../../Services/projectService';
 import '../DashboardPage/Client/ClientMarketplace.css';
 
@@ -195,6 +199,9 @@ export default function ProjectDetailPage() {
   const [disputeInfo,     setDisputeInfo]     = useState(null);
   const [viewDisputeModal,setViewDisputeModal] = useState(false);
 
+  // Modal — post project review
+  const [reviewStatus,    setReviewStatus]    = useState(null);
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
 
   // User identity from localStorage
   const user  = useMemo(() => { try { return JSON.parse(localStorage.getItem('user') || 'null'); } catch { return null; } }, []);
@@ -265,6 +272,19 @@ export default function ProjectDetailPage() {
         setDisputeInfo(null);
       }
 
+      try {
+        const rStatus = await getProjectReviewStatus(projectId);
+        setReviewStatus(rStatus);
+        if (rStatus.isCompleted && rStatus.isWithin14Days && !rStatus.hasReviewed) {
+          const sessionKey = `review_modal_dismissed_${projectId}_${user?.id}`;
+          if (!sessionStorage.getItem(sessionKey)) {
+            setReviewModalOpen(true);
+          }
+        }
+      } catch (rErr) {
+        setReviewStatus(null);
+      }
+
       // Seed drafts from existing planning/change_requested milestones
       const seed = ms.filter(m => ['planning', 'change_requested'].includes(m.status));
       if (seed.length > 0) {
@@ -287,7 +307,7 @@ export default function ProjectDetailPage() {
     } finally {
       setLoading(false);
     }
-  }, [projectId]);
+  }, [projectId, user?.id]);
 
   useEffect(() => { fetchProjectData(); }, [fetchProjectData]);
 
@@ -514,6 +534,15 @@ export default function ProjectDetailPage() {
                   <button style={btnOutline} onClick={fetchProjectData} disabled={busy}>
                     <RefreshCcw size={14} style={{ marginRight: '4px', display: 'inline' }} /> Refresh
                   </button>
+                  {reviewStatus?.isCompleted && reviewStatus?.isWithin14Days && !reviewStatus?.hasReviewed && (
+                    <button
+                      type="button"
+                      style={{ ...btnAmber, backgroundColor: '#fbbf24', color: '#0f172a', border: 'none' }}
+                      onClick={() => setReviewModalOpen(true)}
+                    >
+                      <Star size={14} fill="#0f172a" style={{ marginRight: '4px', display: 'inline' }} /> Leave Review
+                    </button>
+                  )}
                   {disputeInfo && (
                     <button type="button" style={{ ...btnOutline, borderColor: 'rgba(239,68,68,0.4)', color: '#f87171' }} onClick={() => setViewDisputeModal(true)}>
                       <ShieldAlert size={14} style={{ marginRight: '4px', display: 'inline' }} /> Dispute Details
@@ -529,6 +558,57 @@ export default function ProjectDetailPage() {
                   )}
                 </div>
               </div>
+
+              {/* ── POST-PROJECT REVIEW BANNER ──────────────────────────── */}
+              {reviewStatus?.isCompleted && (
+                <div style={{
+                  background: reviewStatus.hasReviewed ? 'rgba(16,185,129,0.1)' : reviewStatus.isWithin14Days ? 'rgba(251,191,36,0.12)' : 'rgba(255,255,255,0.05)',
+                  border: `1px solid ${reviewStatus.hasReviewed ? 'rgba(16,185,129,0.3)' : reviewStatus.isWithin14Days ? 'rgba(251,191,36,0.3)' : 'rgba(255,255,255,0.1)'}`,
+                  borderRadius: '12px', padding: '16px 20px', color: '#fff', marginBottom: '20px',
+                  display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px', flexWrap: 'wrap'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, minWidth: '260px' }}>
+                    <Star size={24} style={{ color: reviewStatus.hasReviewed ? '#34d399' : reviewStatus.isWithin14Days ? '#fbbf24' : 'rgba(255,255,255,0.4)', flexShrink: 0 }} fill={reviewStatus.hasReviewed || reviewStatus.isWithin14Days ? (reviewStatus.hasReviewed ? '#34d399' : '#fbbf24') : 'none'} />
+                    <div>
+                      <h4 style={{ margin: '0 0 4px 0', fontSize: '1rem', color: '#fff' }}>
+                        {reviewStatus.hasReviewed
+                          ? '✓ Project Review Submitted'
+                          : reviewStatus.isWithin14Days
+                          ? `Leave a Review for ${reviewStatus.targetUser?.full_name || (isCli ? 'Expert' : 'Client')}`
+                          : 'Review Window Closed (>14 days past completion)'}
+                      </h4>
+                      <p style={{ margin: 0, fontSize: '0.86rem', color: 'rgba(255,255,255,0.7)' }}>
+                        {reviewStatus.hasReviewed
+                          ? `You rated ${reviewStatus.targetUser?.full_name || 'your partner'} ${reviewStatus.review?.stars || 5}/5 stars: "${reviewStatus.review?.review || ''}"`
+                          : reviewStatus.isWithin14Days
+                          ? `Share feedback on your experience. Reviews remain open for ${reviewStatus.daysRemaining} more day${reviewStatus.daysRemaining !== 1 ? 's' : ''}.`
+                          : 'The 14-day limit to submit a review for this project has passed.'}
+                      </p>
+                    </div>
+                  </div>
+                  {reviewStatus.isWithin14Days && !reviewStatus.hasReviewed && (
+                    <button
+                      type="button"
+                      style={{
+                        backgroundColor: '#fbbf24',
+                        color: '#0f172a',
+                        border: 'none',
+                        borderRadius: '8px',
+                        padding: '10px 18px',
+                        fontWeight: '700',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        fontSize: '0.88rem',
+                      }}
+                      onClick={() => setReviewModalOpen(true)}
+                    >
+                      <Star size={16} fill="#0f172a" /> Leave Review Now
+                    </button>
+                  )}
+                </div>
+              )}
 
               {String(project.status).toLowerCase() === 'disputed' && (
                 <div style={{ background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '12px', padding: '16px 20px', color: '#f87171', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', marginBottom: '20px', flexWrap: 'wrap' }}>
@@ -880,6 +960,25 @@ export default function ProjectDetailPage() {
         <ViewDisputeDetailsModal
           dispute={disputeInfo}
           onClose={() => setViewDisputeModal(false)}
+        />
+      )}
+
+      {/* ── MODAL: Post Project Review ────────────────────────────────── */}
+      {reviewStatus && (
+        <ProjectReviewModal
+          open={reviewModalOpen}
+          onClose={() => {
+            setReviewModalOpen(false);
+            if (user?.id && projectId) {
+              sessionStorage.setItem(`review_modal_dismissed_${projectId}_${user.id}`, 'true');
+            }
+          }}
+          targetName={reviewStatus.targetUser?.full_name || (isCli ? 'Expert' : 'Client')}
+          targetRole={reviewStatus.targetUser?.role || (isCli ? 'Expert' : 'Client')}
+          projectId={projectId}
+          targetId={reviewStatus.targetUser?.id || (isCli ? project?.expert_id : project?.client_id)}
+          daysRemaining={reviewStatus.daysRemaining}
+          onSubmitSuccess={fetchProjectData}
         />
       )}
 

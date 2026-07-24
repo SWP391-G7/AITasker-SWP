@@ -360,4 +360,39 @@ export const getProjectDisputeStatus = async (projectId) => {
   }
 };
 
+/**
+ * Get project review status for logged-in user
+ */
+export const getProjectReviewStatus = async (projectId) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/reviews/project/${projectId}/status`, {
+      method: 'GET',
+      headers: getAuthHeaders()
+    });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.message || 'Failed to check project review status.');
+    return result;
+  } catch (error) {
+    console.error('Get project review status error:', error);
+    throw error;
+  }
+};
 
+/**
+ * Submit project review
+ */
+export const submitProjectReview = async ({ target_id, project_id, stars, review }) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/reviews`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ target_id, project_id, stars, review })
+    });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.message || 'Failed to submit review.');
+    return result;
+  } catch (error) {
+    console.error('Submit project review error:', error);
+    throw error;
+  }
+};
