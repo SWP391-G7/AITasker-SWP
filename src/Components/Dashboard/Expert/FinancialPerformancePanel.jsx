@@ -5,6 +5,7 @@
  * Luồng chính: Nhận props, render trạng thái tương ứng và báo sự kiện lên component cha qua callback khi cần.
  * Lưu ý bảo trì: Không thay đổi props; state cục bộ chỉ nên phục vụ hành vi thuộc phạm vi component.
  */
+import { useNavigate } from 'react-router-dom'
 import { Download } from 'lucide-react'
 
 const earningsBars = [
@@ -28,49 +29,84 @@ const FinancialPerformancePanel = ({
   availableNow = '$8,240.00',
   pendingClearance = '$4,120.00',
   inEscrow = '$12,490.00',
-}) => (
-  <section className="chart-panel-card expert-performance-panel">
-    <div className="expert-performance-header">
-      <div>
-        <div className="stat-title">Financial Performance</div>
-        {/* API data: values can be supplied by dashboard page from service data. */}
-        <div className="stat-value">{totalLifetime}</div>
-        <div className="stat-trend text-muted">
-          <span>Total Lifetime Earning</span>
+}) => {
+  const navigate = useNavigate()
+
+  const handleDownloadReport = () => {
+    const csvData = [
+      ['Metric', 'Amount'],
+      ['Total Lifetime Earning', totalLifetime],
+      ['Available Now', availableNow],
+      ['Pending Clearance', pendingClearance],
+      ['In Escrow', inEscrow]
+    ].map(e => e.join(',')).join('\n')
+
+    const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.setAttribute('href', url)
+    link.setAttribute('download', `financial-report-${new Date().toISOString().slice(0, 10)}.csv`)
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
+
+  return (
+    <section className="chart-panel-card expert-performance-panel">
+      <div className="expert-performance-header">
+        <div>
+          <div className="stat-title">Financial Performance</div>
+          {/* API data: values can be supplied by dashboard page from service data. */}
+          <div className="stat-value">{totalLifetime}</div>
+          <div className="stat-trend text-muted">
+            <span>Total Lifetime Earning</span>
+          </div>
+        </div>
+        <div className="expert-performance-actions">
+          <button
+            className="icon-button"
+            aria-label="Download report"
+            onClick={handleDownloadReport}
+            title="Download Financial Report CSV"
+            style={{ cursor: 'pointer' }}
+          >
+            <Download size={17} />
+          </button>
+          <button
+            className="btn-approve"
+            onClick={() => navigate('/expert/earnings')}
+            style={{ cursor: 'pointer' }}
+          >
+            Withdraw Funds
+          </button>
         </div>
       </div>
-      <div className="expert-performance-actions">
-        <button className="icon-button" aria-label="Download report">
-          <Download size={17} />
-        </button>
-        <button className="btn-approve">Withdraw Funds</button>
-      </div>
-    </div>
 
-    <div className="expert-money-grid">
-      <div className="admin-stat-card expert-money-card">
-        <div className="stat-title">Available Now</div>
-        <div className="item-name">{availableNow}</div>
-      </div>
-      <div className="admin-stat-card expert-money-card">
-        <div className="stat-title">Pending Clearance</div>
-        <div className="item-name">{pendingClearance}</div>
-      </div>
-      <div className="admin-stat-card expert-money-card">
-        <div className="stat-title">In Escrow</div>
-        <div className="item-name">{inEscrow}</div>
-      </div>
-    </div>
-
-    <div className="custom-bar-chart expert-performance-chart">
-      {earningsBars.map((bar) => (
-        <div key={bar.label} className="chart-bar-container">
-          <div className={`chart-bar ${bar.highlighted ? 'highlighted' : ''}`} style={{ height: bar.height }}></div>
-          <span className="chart-label">{bar.label}</span>
+      <div className="expert-money-grid">
+        <div className="admin-stat-card expert-money-card">
+          <div className="stat-title">Available Now</div>
+          <div className="item-name">{availableNow}</div>
         </div>
-      ))}
-    </div>
-  </section>
-)
+        <div className="admin-stat-card expert-money-card">
+          <div className="stat-title">Pending Clearance</div>
+          <div className="item-name">{pendingClearance}</div>
+        </div>
+        <div className="admin-stat-card expert-money-card">
+          <div className="stat-title">In Escrow</div>
+          <div className="item-name">{inEscrow}</div>
+        </div>
+      </div>
+
+      <div className="custom-bar-chart expert-performance-chart">
+        {earningsBars.map((bar) => (
+          <div key={bar.label} className="chart-bar-container">
+            <div className={`chart-bar ${bar.highlighted ? 'highlighted' : ''}`} style={{ height: bar.height }}></div>
+            <span className="chart-label">{bar.label}</span>
+          </div>
+        ))}
+      </div>
+    </section>
+  )
+}
 
 export default FinancialPerformancePanel

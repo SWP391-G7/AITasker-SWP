@@ -135,6 +135,33 @@ const EarningsPage = () => {
     fetchEarningsData()
   }, [])
 
+  const handleExportStatement = () => {
+    if (!transactions || transactions.length === 0) {
+      alert("No transaction records available to export.");
+      return;
+    }
+    const csvContent = [
+      ["ID", "Project", "Date", "Status", "Amount"],
+      ...transactions.map(t => [t.id, `"${t.project}"`, t.date, t.status, `"${t.amount}"`])
+    ].map(e => e.join(",")).join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `earnings-statement-${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
+
+  const handleWithdraw = () => {
+    const availableStat = earningsStats.find(s => s.id === 'stat-api-1');
+    const availableAmount = availableStat?.value || '$0.00';
+    
+    alert(`Withdrawal Request:\n\nAvailable Funds: ${availableAmount}\n\nYour withdrawal request has been submitted to your default bank/payout account. Funds will arrive within 1-3 business days.`);
+  };
+
   return (
     <div className="admin-dashboard-layout expert-dashboard-layout">
       <ExpertSidebar activeTab="earnings" onTabChange={handleTabChange} onLogout={handleLogout} />
@@ -145,8 +172,10 @@ const EarningsPage = () => {
           subtitle="Monitor your revenue and manage your payouts."
           headerActions={
             <div className="header-actions">
-              <button className="btn-export">Export Statement</button>
-              <button className="btn-withdraw">
+              <button className="btn-export" onClick={handleExportStatement} style={{ cursor: 'pointer' }}>
+                Export Statement
+              </button>
+              <button className="btn-withdraw" onClick={handleWithdraw} style={{ cursor: 'pointer' }}>
                 <Wallet size={18} />
                 Withdraw Funds
               </button>

@@ -5,11 +5,13 @@
  * Luồng chính: Nhận props, render trạng thái tương ứng và báo sự kiện lên component cha qua callback khi cần.
  * Lưu ý bảo trì: Không thay đổi props; state cục bộ chỉ nên phục vụ hành vi thuộc phạm vi component.
  */
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { Search, Share2, Database, BarChart3 } from 'lucide-react';
 
 // React component “Transaction Table” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
 const TransactionTable = ({ transactions }) => {
+  const [filterText, setFilterText] = useState('');
+
   // Đọc hoặc suy ra dữ liệu cho nghiệp vụ “get icon”; không nên tạo side effect ngoài những request đọc đã nêu trong thân hàm.
   const getIcon = (type) => {
     switch (type) {
@@ -20,13 +22,30 @@ const TransactionTable = ({ transactions }) => {
     }
   };
 
+  const filteredTransactions = useMemo(() => {
+    if (!Array.isArray(transactions)) return [];
+    if (!filterText.trim()) return transactions;
+    const query = filterText.toLowerCase();
+    return transactions.filter(
+      (tx) =>
+        (tx.project || '').toLowerCase().includes(query) ||
+        (tx.id || '').toLowerCase().includes(query) ||
+        (tx.status || '').toLowerCase().includes(query)
+    );
+  }, [transactions, filterText]);
+
   return (
     <div className="transactions-card">
       <div className="table-header">
         <h4 className="card-title">Recent Transactions</h4>
         <div className="search-input-wrapper">
           <Search size={16} />
-          <input type="text" placeholder="Search tasks..." />
+          <input
+            type="text"
+            placeholder="Search tasks..."
+            value={filterText}
+            onChange={(e) => setFilterText(e.target.value)}
+          />
         </div>
       </div>
 
@@ -40,40 +59,48 @@ const TransactionTable = ({ transactions }) => {
           </tr>
         </thead>
         <tbody>
-          {Array.isArray(transactions) && transactions.length > 0 ? (
-            transactions.map((tx) => (
-            <tr key={tx.id}>
-              <td>
-                <div className="project-cell">
-                  <div className="project-icon-box">
-                    {getIcon(tx.iconType)}
+          {filteredTransactions.length > 0 ? (
+            filteredTransactions.map((tx) => (
+              <tr key={tx.id}>
+                <td>
+                  <div className="project-cell">
+                    <div className="project-icon-box">
+                      {getIcon(tx.iconType)}
+                    </div>
+                    <div className="project-info">
+                      <span className="project-name-text">{tx.project}</span>
+                      <span className="project-id-text">{tx.id}</span>
+                    </div>
                   </div>
-                  <div className="project-info">
-                    <span className="project-name-text">{tx.project}</span>
-                    <span className="project-id-text">{tx.id}</span>
-                  </div>
-                </div>
-              </td>
-              <td>{tx.date}</td>
-              <td>
-                <span className={`status-pill ${tx.statusType === 'success' ? 'status-success' : 'status-active'}`}>
-                  {tx.status}
-                </span>
-              </td>
-              <td>
-                <span className="amount-text">{tx.amount}</span>
-              </td>
+                </td>
+                <td>{tx.date}</td>
+                <td>
+                  <span className={`status-pill ${tx.statusType === 'success' ? 'status-success' : 'status-active'}`}>
+                    {tx.status}
+                  </span>
+                </td>
+                <td>
+                  <span className="amount-text">{tx.amount}</span>
+                </td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan="4" className="text-center py-4 text-muted small" style={{ textAlign: 'center' }}>No transactions found</td>
             </tr>
-          ))
-        ) : (
-          <tr>
-            <td colSpan="4" className="text-center py-4 text-muted small">No transactions found</td>
-          </tr>
-        )}
+          )}
         </tbody>
       </table>
 
-      <a href="#" className="view-all-link">View All Transactions</a>
+      {filterText && (
+        <span
+          className="view-all-link"
+          style={{ cursor: 'pointer' }}
+          onClick={() => setFilterText('')}
+        >
+          Reset Filter (Showing {filteredTransactions.length} of {transactions?.length || 0})
+        </span>
+      )}
     </div>
   );
 };
