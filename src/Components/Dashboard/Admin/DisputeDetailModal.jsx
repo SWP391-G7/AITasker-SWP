@@ -6,7 +6,7 @@
  * Lưu ý bảo trì: Không thay đổi props; state cục bộ chỉ nên phục vụ hành vi thuộc phạm vi component.
  */
 // React component “Dispute Detail Modal” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
-const DisputeDetailModal = ({ dispute, onClose, onResolve }) => {
+const DisputeDetailModal = ({ dispute, onClose}) => {
   if (!dispute) {
     return null
   }
@@ -39,9 +39,9 @@ const DisputeDetailModal = ({ dispute, onClose, onResolve }) => {
 
         <div className="d-flex gap-2 justify-content-end pt-2">
           <button className="btn btn-outline-light btn-sm px-3 py-2 fw-semibold" onClick={onClose}>Close</button>
-          <button className="btn btn-primary btn-sm px-4 py-2 fw-semibold" onClick={() => onResolve(dispute.id)}>
+          {/* <button className="btn btn-primary btn-sm px-4 py-2 fw-semibold" onClick={() => onResolve(dispute.id)}>
             Resolve dispute
-          </button>
+          </button> */}
         </div>
       </div>
     </div>
