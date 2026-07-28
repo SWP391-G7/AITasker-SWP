@@ -19,11 +19,15 @@ export default function useWebSocket(onMessageReceived) {
   }, [onMessageReceived]);
 
   useEffect(() => {
+    let isUnmounted = false;
+
     const token = localStorage.getItem('token');
     if (!token) return;
 
     // Thực hiện phần logic “connect” trong phạm vi trách nhiệm của module hiện tại.
     const connect = () => {
+      if (isUnmounted) return;
+
       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
       const wsProto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
       
@@ -43,10 +47,15 @@ export default function useWebSocket(onMessageReceived) {
       wsRef.current = ws;
 
       ws.onopen = () => {
+        if (isUnmounted) {
+          ws.close();
+          return;
+        }
         console.log('[WS] Connected successfully');
       };
 
       ws.onmessage = (event) => {
+        if (isUnmounted) return;
         try {
           const data = JSON.parse(event.data);
           if (callbackRef.current) {
@@ -58,25 +67,37 @@ export default function useWebSocket(onMessageReceived) {
       };
 
       ws.onclose = () => {
+        if (isUnmounted) return;
         console.log('[WS] Disconnected. Reconnecting in 3s...');
         reconnectTimeoutRef.current = setTimeout(connect, 3000);
       };
 
       ws.onerror = (err) => {
+        if (isUnmounted) return;
         console.error('[WS] Socket error:', err);
-        ws.close();
       };
     };
 
     connect();
 
     return () => {
-      if (wsRef.current) {
-        wsRef.current.onclose = null;
-        wsRef.current.close();
-      }
+      isUnmounted = true;
+
       if (reconnectTimeoutRef.current) {
         clearTimeout(reconnectTimeoutRef.current);
+        reconnectTimeoutRef.current = null;
+      }
+
+      if (wsRef.current) {
+        const socket = wsRef.current;
+        wsRef.current = null;
+        socket.onopen = null;
+        socket.onmessage = null;
+        socket.onclose = null;
+        socket.onerror = null;
+        if (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING) {
+          socket.close();
+        }
       }
     };
   }, []);
