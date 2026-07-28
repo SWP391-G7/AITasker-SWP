@@ -15,6 +15,7 @@ import EarningsOverviewCards from '../../../Components/Dashboard/Expert/Earnings
 import EarningsCharts from '../../../Components/Dashboard/Expert/Earnings/EarningsCharts'
 import TransactionTable from '../../../Components/Dashboard/Expert/Earnings/TransactionTable'
 import { getMyTransactionsAPI } from '../../../Services/transactionService'
+import { downloadExpertEarningsPdf } from '../../../Services/pdfExportService'
 import { createHandleLogout } from './handleLogout'
 import '../Style/AdminDashboardPage.css'
 import '../Style/ExpertDashboardPage.css'
@@ -135,6 +136,14 @@ const EarningsPage = () => {
     fetchEarningsData()
   }, [])
 
+  const handleExportPdf = () => {
+    downloadExpertEarningsPdf({
+      user,
+      transactions,
+      incomeSummary,
+    })
+  }
+
   return (
     <div className="admin-dashboard-layout expert-dashboard-layout">
       <ExpertSidebar activeTab="earnings" onTabChange={handleTabChange} onLogout={handleLogout} />
@@ -145,7 +154,7 @@ const EarningsPage = () => {
           subtitle="Monitor your revenue and manage your payouts."
           headerActions={
             <div className="header-actions">
-              <button className="btn-export">Export Statement</button>
+              <button className="btn-export" type="button" onClick={handleExportPdf}>Export Statement</button>
               <button className="btn-withdraw">
                 <Wallet size={18} />
                 Withdraw Funds

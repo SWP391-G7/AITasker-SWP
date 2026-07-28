@@ -1,23 +1,45 @@
 /**
  * Frontend module: Components/Dashboard/Expert/Earnings/TransactionTable.jsx
  *
- * Vai trò: Component Transaction Table: khối giao diện có thể tái sử dụng trong một hoặc nhiều page.
- * Luồng chính: Nhận props, render trạng thái tương ứng và báo sự kiện lên component cha qua callback khi cần.
- * Lưu ý bảo trì: Không thay đổi props; state cục bộ chỉ nên phục vụ hành vi thuộc phạm vi component.
+ * Vai trò: Component Transaction Table: khối giao diện hiển thị lịch sử giao dịch dùng chung cho Dashboard.
+ * Luồng chính: Nhận danh sách transactions, hỗ trợ tìm kiếm, định dạng icon/status/số tiền và render table.
+ * Lưu ý bảo trì: Thống nhất class CSS và cấu trúc HTML với ClientBillingPage table.
  */
-import React from 'react';
-import { Search, Share2, Database, BarChart3 } from 'lucide-react';
+import React, { useState } from 'react';
+import { Search, Landmark, ArrowDownLeft, ShieldCheck, CheckCircle2, Clock3, AlertCircle } from 'lucide-react';
 
-// React component “Transaction Table” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
-const TransactionTable = ({ transactions }) => {
-  // Đọc hoặc suy ra dữ liệu cho nghiệp vụ “get icon”; không nên tạo side effect ngoài những request đọc đã nêu trong thân hàm.
-  const getIcon = (type) => {
-    switch (type) {
-      case 'neural': return <Share2 size={18} />;
-      case 'database': return <Database size={18} />;
-      case 'chart': return <BarChart3 size={18} />;
-      default: return <Share2 size={18} />;
-    }
+const TYPE_LABELS = {
+  escrow_deposit: 'Escrow deposit',
+  escrow_release: 'Escrow release',
+  refund: 'Refund',
+  payout: 'Payout',
+};
+
+const TransactionTable = ({ transactions = [], searchQuery = '', onSearchChange }) => {
+  const [localSearch, setLocalSearch] = useState('');
+
+  const query = (onSearchChange ? searchQuery : localSearch).trim().toLowerCase();
+
+  const filtered = (Array.isArray(transactions) ? transactions : []).filter((tx) => {
+    if (!query) return true;
+    const projectText = (tx.project || tx.project_title || '').toLowerCase();
+    const idText = (tx.id || '').toLowerCase();
+    const statusText = (tx.status || '').toLowerCase();
+    return projectText.includes(query) || idText.includes(query) || statusText.includes(query);
+  });
+
+  const getIcon = (tx) => {
+    const type = (tx.type || tx.normalizedType || '').toLowerCase();
+    if (type === 'refund') return <ArrowDownLeft size={18} />;
+    if (type === 'escrow_release') return <ShieldCheck size={18} />;
+    return <Landmark size={18} />;
+  };
+
+  const getStatusClass = (statusType, status) => {
+    const s = (status || '').toLowerCase();
+    if (statusType === 'success' || s === 'completed' || s === 'secured') return 'status-success';
+    if (s === 'failed') return 'status-failed';
+    return 'status-active';
   };
 
   return (
@@ -26,54 +48,65 @@ const TransactionTable = ({ transactions }) => {
         <h4 className="card-title">Recent Transactions</h4>
         <div className="search-input-wrapper">
           <Search size={16} />
-          <input type="text" placeholder="Search tasks..." />
+          <input
+            type="search"
+            value={onSearchChange ? searchQuery : localSearch}
+            onChange={(e) => (onSearchChange ? onSearchChange(e.target.value) : setLocalSearch(e.target.value))}
+            placeholder="Search transactions..."
+          />
         </div>
       </div>
 
-      <table className="transactions-table">
-        <thead>
-          <tr>
-            <th>Project Name</th>
-            <th>Date</th>
-            <th>Status</th>
-            <th>Amount</th>
-          </tr>
-        </thead>
-        <tbody>
-          {Array.isArray(transactions) && transactions.length > 0 ? (
-            transactions.map((tx) => (
-            <tr key={tx.id}>
-              <td>
-                <div className="project-cell">
-                  <div className="project-icon-box">
-                    {getIcon(tx.iconType)}
-                  </div>
-                  <div className="project-info">
-                    <span className="project-name-text">{tx.project}</span>
-                    <span className="project-id-text">{tx.id}</span>
-                  </div>
-                </div>
-              </td>
-              <td>{tx.date}</td>
-              <td>
-                <span className={`status-pill ${tx.statusType === 'success' ? 'status-success' : 'status-active'}`}>
-                  {tx.status}
-                </span>
-              </td>
-              <td>
-                <span className="amount-text">{tx.amount}</span>
-              </td>
+      <div className="client-billing-table-wrap">
+        <table className="transactions-table">
+          <thead>
+            <tr>
+              <th>Project & Transaction</th>
+              <th>Type</th>
+              <th>Date</th>
+              <th>Status</th>
+              <th>Amount</th>
             </tr>
-          ))
-        ) : (
-          <tr>
-            <td colSpan="4" className="text-center py-4 text-muted small">No transactions found</td>
-          </tr>
-        )}
-        </tbody>
-      </table>
-
-      <a href="#" className="view-all-link">View All Transactions</a>
+          </thead>
+          <tbody>
+            {filtered.length > 0 ? (
+              filtered.map((tx) => (
+                <tr key={tx.id}>
+                  <td>
+                    <div className="project-cell">
+                      <div className="project-icon-box">{getIcon(tx)}</div>
+                      <div className="project-info">
+                        <span className="project-name-text">{tx.project || tx.project_title || 'Transaction'}</span>
+                        <span className="project-id-text">{tx.id}</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <span className="billing-type-tag">
+                      {TYPE_LABELS[tx.type || tx.normalizedType] || tx.type || 'Transaction'}
+                    </span>
+                  </td>
+                  <td>{tx.date || (tx.complete_at ? new Date(tx.complete_at).toLocaleDateString() : 'N/A')}</td>
+                  <td>
+                    <span className={`status-pill ${getStatusClass(tx.statusType, tx.status)}`}>
+                      {(tx.status || 'COMPLETED').toUpperCase()}
+                    </span>
+                  </td>
+                  <td>
+                    <span className="amount-text">{tx.amount}</span>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="5" style={{ textAlign: 'center', padding: '2.5rem 1rem', color: '#64748b' }}>
+                  No transaction history found
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };

@@ -75,6 +75,7 @@ const STATUS_LABELS = {
   declined:          'Declined',
   'Wait for payment':'Pending Payment',
   Finished:          'Finished',
+  cancelled:         'Cancelled',
 };
 
 const STATUS_COLORS = {
@@ -95,6 +96,7 @@ const STATUS_COLORS = {
   approved:          { bg: 'rgba(16,185,129,0.16)',  color: '#34d399' },
   declined:          { bg: 'rgba(239,68,68,0.14)',   color: '#f87171' },
   'wait for payment':{ bg: 'rgba(251,191,36,0.14)',  color: '#fde68a' },
+  cancelled:         { bg: 'rgba(239,68,68,0.14)',   color: '#f87171' },
 };
 
 // React component “Status Badge” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
