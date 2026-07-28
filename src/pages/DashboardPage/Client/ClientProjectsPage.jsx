@@ -11,6 +11,7 @@ import {
   BriefcaseBusiness,
   CalendarDays,
   DollarSign,
+  Play,
   RefreshCcw,
   Trash2,
 } from "lucide-react";
@@ -20,7 +21,7 @@ import Footer from "../../../Components/Footer/Footer";
 import { useClientUser } from "../../../Components/Dashboard/Client/user";
 import { logout } from "../../../Services/authService";
 import { getMyJobs, deleteJobPost } from "../../../Services/jobService";
-import { getMyProjects } from "../../../Services/projectService";
+import { getMyProjects, createProject } from "../../../Services/projectService";
 import { getMyInvitations } from "../../../Services/invitationService";
 import "../Style/AdminDashboardPage.css";
 import "./ClientMarketplace.css";
@@ -63,6 +64,7 @@ function ClientProjectsPage() {
   const [notifications, setNotifications] = useState(2);
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState(null);
+  const [startingId, setStartingId] = useState(null);
   const [error, setError] = useState("");
   const user = useClientUser();
 
@@ -141,6 +143,31 @@ function ClientProjectsPage() {
       setError(err.message || "Failed to delete task.");
     } finally {
       setDeletingId(null);
+    }
+  };
+
+  /** Client starts a project from a pending job post */
+  const handleStartProject = async (event, jobId) => {
+    event.stopPropagation();
+
+    if (!jobId) {
+      setError("Cannot start project because job ID is missing.");
+      return;
+    }
+
+    try {
+      setStartingId(jobId);
+      setError("");
+      const result = await createProject(jobId);
+      if (result.project?.id) {
+        navigate(`/projects/${result.project.id}`);
+      } else {
+        navigate("/client/projects");
+      }
+    } catch (err) {
+      setError(err.message || "Failed to start project.");
+    } finally {
+      setStartingId(null);
     }
   };
 
@@ -260,18 +287,32 @@ function ClientProjectsPage() {
                         </p>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)' }}>
                           <span>Budget: {formatBudget(job)}</span>
-                          {job.status !== 'closed' && job.status !== 'pending' && (
-                            <button
-                              type="button"
-                              className="delete-project-btn"
-                              disabled={deletingId === jobId}
-                              onClick={(event) => handleDelete(event, jobId)}
-                              style={{ border: 'none', background: 'transparent', color: '#ff4d4f', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', padding: 0 }}
-                            >
-                              <Trash2 size={12} />
-                              {deletingId === jobId ? "Deleting..." : "Delete"}
-                            </button>
-                          )}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            {job.status === 'pending' && (
+                              <button
+                                type="button"
+                                className="draft-btn"
+                                disabled={startingId === jobId}
+                                onClick={(event) => handleStartProject(event, jobId)}
+                                style={{ color: '#10b981', display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.8rem', fontWeight: 600 }}
+                              >
+                                <Play size={12} />
+                                {startingId === jobId ? "Starting..." : "Start Project"}
+                              </button>
+                            )}
+                            {job.status !== 'closed' && job.status !== 'pending' && (
+                              <button
+                                type="button"
+                                className="delete-project-btn"
+                                disabled={deletingId === jobId}
+                                onClick={(event) => handleDelete(event, jobId)}
+                                style={{ border: 'none', background: 'transparent', color: '#ff4d4f', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', padding: 0 }}
+                              >
+                                <Trash2 size={12} />
+                                {deletingId === jobId ? "Deleting..." : "Delete"}
+                              </button>
+                            )}
+                          </div>
                         </div>
                       </div>
                     );

@@ -50,6 +50,7 @@ import {
 import '../DashboardPage/Client/ClientMarketplace.css';
 
 // ── Status metadata ──────────────────────────────────────────────────────────
+// ── Status metadata ──────────────────────────────────────────────────────────
 const STATUS_LABELS = {
   planning:          'Planning',
   change_requested:  'Changes Requested',
@@ -59,13 +60,21 @@ const STATUS_LABELS = {
   revision_requested:'Revision Needed',
   pending_payment:   'Pending Payment',
   finished:          'Finished',
-  // legacy
+  // legacy & alternate casing
   pending:           'Pending',
+  Pending:           'Pending',
   released:          'Released',
   active:            'Active',
   completed:         'Completed',
+  Completed:         'Completed',
   terminated:        'Terminated',
   disputed:          'On Hold (Disputed)',
+  Approved:          'Approved',
+  approved:          'Approved',
+  Declined:          'Declined',
+  declined:          'Declined',
+  'Wait for payment':'Pending Payment',
+  Finished:          'Finished',
 };
 
 const STATUS_COLORS = {
@@ -83,11 +92,15 @@ const STATUS_COLORS = {
   completed:         { bg: 'rgba(16,185,129,0.2)',   color: '#10b981' },
   terminated:        { bg: 'rgba(239,68,68,0.14)',   color: '#f87171' },
   disputed:          { bg: 'rgba(239,68,68,0.2)',    color: '#f87171' },
+  approved:          { bg: 'rgba(16,185,129,0.16)',  color: '#34d399' },
+  declined:          { bg: 'rgba(239,68,68,0.14)',   color: '#f87171' },
+  'wait for payment':{ bg: 'rgba(251,191,36,0.14)',  color: '#fde68a' },
 };
 
 // React component “Status Badge” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
 function StatusBadge({ status }) {
-  const s = STATUS_COLORS[status] || { bg: 'rgba(255,255,255,0.05)', color: '#fff' };
+  const normKey = status ? String(status).toLowerCase() : '';
+  const s = STATUS_COLORS[status] || STATUS_COLORS[normKey] || { bg: 'rgba(255,255,255,0.05)', color: '#fff' };
   return (
     <span style={{
       display: 'inline-block',
@@ -96,7 +109,7 @@ function StatusBadge({ status }) {
       fontSize: '0.73rem', fontWeight: '700',
       letterSpacing: '0.03em', whiteSpace: 'nowrap',
     }}>
-      {STATUS_LABELS[status] || status}
+      {STATUS_LABELS[status] || STATUS_LABELS[normKey] || status}
     </span>
   );
 }
@@ -147,7 +160,7 @@ const fmtMoney = (v) => `$${parseFloat(v || 0).toLocaleString()}`;
 // Đọc hoặc suy ra dữ liệu cho nghiệp vụ “get milestone settlement”; không nên tạo side effect ngoài những request đọc đã nêu trong thân hàm.
 const getMilestoneSettlement = (milestone) => {
   const amount = parseFloat(milestone?.amount || 0);
-  if (milestone?.status === 'finished' && milestone.released_amount != null) {
+  if (['finished', 'Finished', 'released'].includes(milestone?.status) && milestone.released_amount != null) {
     return {
       lateDays: parseInt(milestone.late_days || 0, 10),
       penaltyAmount: parseFloat(milestone.penalty_amount || 0),
@@ -231,17 +244,17 @@ export default function ProjectDetailPage() {
     return 'active';
   }, [sorted, planMilestones]);
 
-  // First planned milestone the expert can start (all previous are finished/pending_payment)
+  // First planned milestone the expert can start (all previous are finished/pending_payment/released)
   const startable = useMemo(() => {
     if (!isExp || isInactive) return null;
     for (const m of sorted) {
-      if (m.status === 'planned') {
+      if (['planned', 'Approved', 'approved'].includes(m.status)) {
         const prevOk = sorted
           .filter(p => p.position < m.position)
-          .every(p => ['finished', 'pending_payment'].includes(p.status));
+          .every(p => ['finished', 'Finished', 'pending_payment', 'Wait for payment', 'released'].includes(p.status));
         return prevOk ? m : null;
       }
-      if (!['finished', 'pending_payment'].includes(m.status)) return null;
+      if (!['finished', 'Finished', 'pending_payment', 'Wait for payment', 'released'].includes(m.status)) return null;
     }
     return null;
   }, [sorted, isExp, isInactive]);
@@ -249,7 +262,7 @@ export default function ProjectDetailPage() {
 
   const progressPct = useMemo(() => {
     if (sorted.length === 0) return 0;
-    const done = sorted.filter(m => ['pending_payment', 'finished'].includes(m.status)).length;
+    const done = sorted.filter(m => ['pending_payment', 'Wait for payment', 'finished', 'Finished', 'released'].includes(m.status)).length;
     return Math.round((done / sorted.length) * 100);
   }, [sorted]);
 
@@ -1380,7 +1393,7 @@ function MilestoneTable({ milestones, role, startable, onStart, onOpenDeliverabl
                     </div>
                   )}
                   {/* Deliverable link */}
-                  {m.deliverable_url && ['submitted', 'revision_requested', 'pending_payment', 'finished'].includes(m.status) && (
+                  {m.deliverable_url && ['submitted', 'submitted_for_review', 'under_review', 'revision_requested', 'pending_payment', 'Wait for payment', 'finished', 'Finished', 'released'].includes(m.status) && (
                     <a
                       href={m.deliverable_url}
                       target="_blank"
@@ -1390,7 +1403,7 @@ function MilestoneTable({ milestones, role, startable, onStart, onOpenDeliverabl
                       <ExternalLink size={12} /> View Deliverable
                     </a>
                   )}
-                  {m.deliverable_note && ['submitted','revision_requested','pending_payment','finished'].includes(m.status) && (
+                  {m.deliverable_note && ['submitted', 'submitted_for_review', 'under_review', 'revision_requested', 'pending_payment', 'Wait for payment', 'finished', 'Finished', 'released'].includes(m.status) && (
                     <p style={{ color: 'rgba(255,255,255,0.38)', fontSize: '0.79rem', margin: '3px 0 0 0' }}>{m.deliverable_note}</p>
                   )}
                 </td>
@@ -1407,7 +1420,7 @@ function MilestoneTable({ milestones, role, startable, onStart, onOpenDeliverabl
                       Extension {m.extension_status}: {m.extension_requested_days} day(s). {m.extension_reason}
                     </div>
                   )}
-                  {m.status === 'finished' && m.released_amount != null && (
+                  {['finished', 'Finished', 'released'].includes(m.status) && m.released_amount != null && (
                     <span style={{ display: 'block', color: '#34d399', fontSize: '0.73rem', marginTop: 3, fontWeight: 600 }}>
                       Released {fmtMoney(m.released_amount)}
                     </span>
@@ -1465,15 +1478,13 @@ function MilestoneTable({ milestones, role, startable, onStart, onOpenDeliverabl
                           <button style={{ ...btnRed, padding: '6px 14px', fontSize: '0.83rem' }} onClick={() => onRespondExtension(m.id, 'reject')} disabled={busy}>Reject Extension</button>
                         </>
                       )}
-                      {isCli && m.status === 'pending_payment' && (
-                        <button style={{ ...btnIndigo, padding: '6px 14px', fontSize: '0.83rem' }} onClick={() => onPay(m.id)} disabled={busy}>
-                          <CreditCard size={13} /> Pay
+                      {isCli && ['pending_payment', 'Wait for payment'].includes(m.status) && (
+                        <button style={{ ...btnGreen, padding: '6px 14px', fontSize: '0.83rem' }} onClick={() => handlePay(m.id)} disabled={busy}>
+                          <CreditCard size={13} /> Pay {fmtMoney(getMilestoneSettlement(m).releasedAmount)}
                         </button>
                       )}
-
-                      {/* Finished indicator */}
-                      {m.status === 'finished' && (
-                        <span style={{ color: '#34d399', fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: '600' }}>
+                      {['finished', 'Finished', 'released'].includes(m.status) && (
+                        <span style={{ color: '#34d399', fontSize: '0.83rem', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                           <CheckCircle2 size={14} /> Paid
                         </span>
                       )}

@@ -16,6 +16,7 @@ import {
   Loader2,
   Mail,
   MessageSquare,
+  Play,
   RefreshCcw,
   UserRound,
   X,
@@ -545,13 +546,14 @@ function ClientTaskDetailPage() {
                   <div className="d-flex align-items-center gap-2">
                     {job.status === "pending" && (
                       <button
-                        className="btn btn-success fw-bold"
-                        style={{ borderRadius: "8px", padding: "8px 16px", backgroundColor: "#10b981", border: "none", color: "#fff" }}
+                        className="draft-btn"
+                        style={{ color: "#10b981", display: "flex", alignItems: "center", gap: "6px" }}
                         type="button"
                         onClick={handleCreateProjectFromPending}
                         disabled={loading}
                       >
-                        Create Project
+                        <Play size={16} />
+                        Start Project
                       </button>
                     )}
                     <button className="draft-btn" type="button" onClick={fetchDetail} disabled={loading}>
