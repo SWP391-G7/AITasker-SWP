@@ -164,7 +164,7 @@ const EarningsPage = () => {
               <button className="btn-export" type="button" onClick={handleExportPdf} style={{ cursor: 'pointer' }}>
                 Export Statement
               </button>
-              <button className="btn-withdraw" onClick={handleWithdraw} style={{ cursor: 'pointer' }}>
+              <button className="btn-withdraw" type="button" onClick={handleWithdraw} style={{ cursor: 'pointer' }}>
                 <Wallet size={18} />
                 Withdraw Funds
               </button>

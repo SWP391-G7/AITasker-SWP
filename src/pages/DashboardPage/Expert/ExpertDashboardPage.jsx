@@ -106,7 +106,7 @@ const ExpertDashboardPage = ({ onLogout }) => {
         const monthLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
         const monthlyTotals = new Array(12).fill(0);
         const txList = Array.isArray(transactionsResult.transactions) ? transactionsResult.transactions : [];
-        
+
         txList.forEach((tx) => {
           if (tx.complete_at) {
             const date = new Date(tx.complete_at);
@@ -246,4 +246,3 @@ const ExpertDashboardPage = ({ onLogout }) => {
 }
 
 export default ExpertDashboardPage
-
