@@ -71,10 +71,10 @@ const AdminDashboardPage = ({ onLogout }) => {
   })
 
   // Handler “handle resolve dispute” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
-  const handleResolveDispute = (id) => {
-    setDisputes((prev) => prev.filter((item) => item.id !== id))
-    setSelectedDispute(null)
-  }
+  // const handleResolveDispute = (id) => {
+  //   setDisputes((prev) => prev.filter((item) => item.id !== id))
+  //   setSelectedDispute(null)
+  // }
 
   // Handler “handle approve moderation” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleApproveModeration = async (id) => {
@@ -145,7 +145,7 @@ const AdminDashboardPage = ({ onLogout }) => {
       <DisputeDetailModal
         dispute={selectedDispute}
         onClose={() => setSelectedDispute(null)}
-        onResolve={handleResolveDispute}
+        // onResolve={handleResolveDispute}
       />
     </div>
   )

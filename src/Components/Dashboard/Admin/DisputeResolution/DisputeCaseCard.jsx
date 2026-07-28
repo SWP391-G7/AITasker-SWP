@@ -46,7 +46,7 @@ const DisputeCaseCard = ({ item, isSelected, onSelect, onResolve }) => {
             {item.type || 'Dispute'} • {item.created_at ? new Date(item.created_at).toLocaleDateString() : 'Active'}
           </span>
           <div style={{ display: 'flex', gap: '8px' }}>
-            <button
+            {/* <button
               type="button"
               onClick={(e) => {
                 e.stopPropagation()
@@ -55,7 +55,7 @@ const DisputeCaseCard = ({ item, isSelected, onSelect, onResolve }) => {
               style={{ padding: '6px 12px', fontSize: '0.8rem' }}
             >
               View Evidence
-            </button>
+            </button> */}
 
             {!isResolved && (
               <button
