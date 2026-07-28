@@ -1039,6 +1039,111 @@ function ProfilePage() {
                     )}
                   </article>
                 </div>
+
+                {isExpertView && (
+                  <article className="profile-info-card project-history-card">
+                    <div className="section-header-row">
+                      <h2>
+                        <Briefcase size={18} className="section-icon" />
+                        Completed Project History ({profileData?.completedProjectsList?.length || 0})
+                      </h2>
+                    </div>
+                    {profileData?.completedProjectsList && profileData.completedProjectsList.length > 0 ? (
+                      <div className="project-history-list">
+                        {profileData.completedProjectsList.map((project) => (
+                          <div key={project.id} className="project-history-item">
+                            <div className="project-history-main">
+                              <h3 className="project-history-title">{project.title}</h3>
+                              <div className="project-history-meta">
+                                <span>Client: <strong>{project.clientName}</strong></span>
+                                {project.totalAmount && <span>Budget: <strong>${Number(project.totalAmount).toLocaleString()}</strong></span>}
+                                {project.endDate && <span>Completed: {formatDate(project.endDate)}</span>}
+                              </div>
+                              {project.reviewComment && (
+                                <div className="project-history-review">
+                                  <div className="review-stars-row">
+                                    {Array.from({ length: 5 }).map((_, i) => (
+                                      <Star
+                                        key={i}
+                                        size={14}
+                                        className={i < (project.reviewStars || 5) ? "star-filled" : "star-empty"}
+                                      />
+                                    ))}
+                                    <span className="review-date">{formatDate(project.reviewCreatedAt)}</span>
+                                  </div>
+                                  <p className="review-comment-text">"{project.reviewComment}"</p>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-muted text-empty">This expert has not completed any logged projects yet.</p>
+                    )}
+                  </article>
+                )}
+
+                {isExpertView && (
+                  <article className="profile-info-card reviews-card">
+                    <div className="section-header-row">
+                      <h2>
+                        <Star size={18} className="section-icon" />
+                        Client Reviews & Feedback ({profileData?.reviews?.length || 0})
+                      </h2>
+                      <div className="reviews-summary-badge">
+                        <Star size={15} className="star-filled" />
+                        <strong>{displayRating}</strong>
+                        <span>({profileData?.reviews?.length || 0})</span>
+                      </div>
+                    </div>
+
+                    {profileData?.reviews && profileData.reviews.length > 0 ? (
+                      <div className="reviews-list">
+                        {profileData.reviews.map((rev) => (
+                          <div key={rev.id} className="review-card-item">
+                            <div className="review-card-header">
+                              <div className="review-author">
+                                <div className="review-avatar">
+                                  {rev.creatorAvatar ? (
+                                    <img src={rev.creatorAvatar} alt={rev.creatorName} />
+                                  ) : (
+                                    <span>{(rev.creatorName || "C").charAt(0).toUpperCase()}</span>
+                                  )}
+                                </div>
+                                <div>
+                                  <h4 className="review-author-name">{rev.creatorName || "Client"}</h4>
+                                  <div className="review-stars-row">
+                                    {Array.from({ length: 5 }).map((_, i) => (
+                                      <Star
+                                        key={i}
+                                        size={13}
+                                        className={i < (rev.stars || 5) ? "star-filled" : "star-empty"}
+                                      />
+                                    ))}
+                                    <span className="review-time">{formatDate(rev.createdAt)}</span>
+                                  </div>
+                                </div>
+                              </div>
+                              {rev.projectTitle && (
+                                <span className="review-project-badge">
+                                  {rev.projectId ? `Project: ${rev.projectTitle}` : rev.projectTitle}
+                                </span>
+                              )}
+                            </div>
+                            {rev.review ? (
+                              <p className="review-body">"{rev.review}"</p>
+                            ) : (
+                              <p className="review-body text-muted">No written comment provided.</p>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-muted text-empty">No client reviews received yet.</p>
+                    )}
+                  </article>
+                )}
               </section>
 
               <aside className="profile-side-column">

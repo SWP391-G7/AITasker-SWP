@@ -50,16 +50,24 @@ const ServiceDetailPage = () => {
   const canUnpublishService = isAdmin && ['approved', 'open'].includes(serviceStatus);
   const canRepublishService = isAdmin && ['removed', 'rejected'].includes(serviceStatus);
 
-  const fetchReviews = useCallback(async (serviceId) => {
-    if (!serviceId) return
+  const fetchReviews = useCallback(async (targetId) => {
+    if (!targetId) return
     try {
       setReviewsLoading(true)
-      const data = await getReviewsByTargetId(serviceId)
-      setReviews(data.reviews || [])
-      setAvgStars(data.avg_stars)
-      setTotalReviews(data.total_reviews || 0)
+      const data = await getReviewsByTargetId(targetId)
+      const list = Array.isArray(data) ? data : (data.reviews || [])
+      setReviews(list)
+      setTotalReviews(list.length)
+      if (list.length > 0) {
+        const sum = list.reduce((acc, r) => acc + Number(r.stars || 5), 0)
+        setAvgStars((sum / list.length).toFixed(1))
+      } else {
+        setAvgStars(null)
+      }
     } catch {
       setReviews([])
+      setTotalReviews(0)
+      setAvgStars(null)
     } finally {
       setReviewsLoading(false)
     }
@@ -74,7 +82,7 @@ const ServiceDetailPage = () => {
         const data = await getServiceById(id)
         setService(data)
 
-        fetchReviews(data.id)
+        fetchReviews(data.expert_id || data.id)
 
         if (currentUserRole === 'client') {
           const { canReview: cr, hasReviewed: hr } = await checkCanReview(data.id)
