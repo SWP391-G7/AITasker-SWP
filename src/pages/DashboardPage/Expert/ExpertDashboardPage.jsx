@@ -33,6 +33,7 @@ const ExpertDashboardPage = ({ onLogout }) => {
   const [invitations, setInvitations] = useState([])
   const [skills, setSkills] = useState([])
   const [rating, setRating] = useState(5)
+  const [monthlyEarnings, setMonthlyEarnings] = useState(null)
   const [dashboardError, setDashboardError] = useState('')
   const [financialStats, setFinancialStats] = useState({
     totalLifetime: '$0.00',
@@ -85,7 +86,7 @@ const ExpertDashboardPage = ({ onLogout }) => {
         user?.id ? getUserProfile(user.id) : Promise.resolve(null),
         getMyProjects(),
         getMyInvitations(),
-        getMyTransactionsAPI().catch(() => ({ success: false, stats: null }))
+        getMyTransactionsAPI().catch(() => ({ success: false, stats: null, transactions: [] }))
       ])
 
       setSkills(splitCsv(profileResult?.expertProfile?.skills))
@@ -100,6 +101,24 @@ const ExpertDashboardPage = ({ onLogout }) => {
           pendingClearance: formatCurrency(stats.pendingClearance),
           inEscrow: formatCurrency(stats.inEscrow)
         });
+
+        // Compute monthly earnings for 12-month chart
+        const monthLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const monthlyTotals = new Array(12).fill(0);
+        const txList = Array.isArray(transactionsResult.transactions) ? transactionsResult.transactions : [];
+        txList.forEach((tx) => {
+          if (tx.complete_at) {
+            const date = new Date(tx.complete_at);
+            if (!isNaN(date.getTime())) {
+              monthlyTotals[date.getMonth()] += Number(tx.amount || 0);
+            }
+          }
+        });
+        const maxAmt = Math.max(...monthlyTotals, 100);
+        setMonthlyEarnings(monthLabels.map((label, idx) => {
+          const amt = monthlyTotals[idx];
+          return { label, amount: amt, height: `${Math.max(Math.round((amt / maxAmt) * 100), amt > 0 ? 15 : 12)}%`, highlighted: idx === new Date().getMonth() };
+        }));
       } else {
         setFinancialStats({
           totalLifetime: '$0.00',
@@ -107,6 +126,7 @@ const ExpertDashboardPage = ({ onLogout }) => {
           pendingClearance: '$0.00',
           inEscrow: '$0.00'
         });
+        setMonthlyEarnings(null);
       }
 
       // 2. Map projects to contracts panel
@@ -197,9 +217,9 @@ const ExpertDashboardPage = ({ onLogout }) => {
 
         <section className="expert-overview-grid">
           {dashboardError && <div className="alert alert-danger">{dashboardError}</div>}
-          <FinancialPerformancePanel {...financialStats} />
+          <FinancialPerformancePanel {...financialStats} monthlyEarnings={monthlyEarnings} />
           <div className="expert-overview-side">
-            <ExpertRatingPanel rating={rating} projectCount={contracts.length} />
+            <ExpertRatingPanel rating={rating} projectCount={contracts.length} userId={user?.id} />
             <TechnicalStackCard skills={skills} />
           </div>
         </section>

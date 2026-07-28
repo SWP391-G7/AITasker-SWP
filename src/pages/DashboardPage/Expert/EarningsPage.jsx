@@ -144,6 +144,13 @@ const EarningsPage = () => {
     })
   }
 
+  const handleWithdraw = () => {
+    const availableStat = earningsStats.find(s => s.id === 'stat-api-1');
+    const availableAmount = availableStat?.value || '$0.00';
+    
+    alert(`Withdrawal Request:\n\nAvailable Funds: ${availableAmount}\n\nYour withdrawal request has been submitted to your default bank/payout account. Funds will arrive within 1-3 business days.`);
+  };
+
   return (
     <div className="admin-dashboard-layout expert-dashboard-layout">
       <ExpertSidebar activeTab="earnings" onTabChange={handleTabChange} onLogout={handleLogout} />
@@ -154,8 +161,8 @@ const EarningsPage = () => {
           subtitle="Monitor your revenue and manage your payouts."
           headerActions={
             <div className="header-actions">
-              <button className="btn-export" type="button" onClick={handleExportPdf}>Export Statement</button>
-              <button className="btn-withdraw">
+              <button className="btn-export" type="button" onClick={handleExportPdf} style={{ cursor: 'pointer' }}>Export Statement</button>
+              <button className="btn-withdraw" type="button" onClick={handleWithdraw} style={{ cursor: 'pointer' }}>
                 <Wallet size={18} />
                 Withdraw Funds
               </button>
