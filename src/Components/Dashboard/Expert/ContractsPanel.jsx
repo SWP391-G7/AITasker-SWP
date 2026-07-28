@@ -61,8 +61,15 @@ const ContractsPanel = ({ contracts }) => {
             </div>
           ))
         ) : (
-          <div className="empty-panel-list text-muted py-5 text-center w-100" style={{ textAlign: 'center', width: '100%', gridColumn: 'span 5' }}>
-            No active contracts found.
+          <div className="empty-panel-list text-muted py-4 text-center w-100 d-flex flex-column align-items-center justify-content-center" style={{ textAlign: 'center', width: '100%', gridColumn: 'span 5', gap: '10px' }}>
+            <span>No active contracts found.</span>
+            <button
+              className="btn btn-sm btn-primary fw-semibold px-3 py-1"
+              style={{ fontSize: '0.8rem', borderRadius: '6px', cursor: 'pointer' }}
+              onClick={() => navigate('/marketplace?target=jobs')}
+            >
+              Browse Jobs
+            </button>
           </div>
         )}
       </div>

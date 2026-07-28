@@ -8,7 +8,7 @@
 import { useNavigate } from 'react-router-dom'
 import { Download } from 'lucide-react'
 
-const earningsBars = [
+const defaultEarningsBars = [
   { label: 'Jan', height: '18%' },
   { label: 'Feb', height: '32%' },
   { label: 'Mar', height: '28%' },
@@ -29,6 +29,7 @@ const FinancialPerformancePanel = ({
   availableNow = '$8,240.00',
   pendingClearance = '$4,120.00',
   inEscrow = '$12,490.00',
+  monthlyEarnings = null,
 }) => {
   const navigate = useNavigate()
 
@@ -50,6 +51,8 @@ const FinancialPerformancePanel = ({
     link.click()
     document.body.removeChild(link)
   }
+
+  const renderBars = monthlyEarnings && monthlyEarnings.length > 0 ? monthlyEarnings : defaultEarningsBars
 
   return (
     <section className="chart-panel-card expert-performance-panel">
@@ -98,8 +101,8 @@ const FinancialPerformancePanel = ({
       </div>
 
       <div className="custom-bar-chart expert-performance-chart">
-        {earningsBars.map((bar) => (
-          <div key={bar.label} className="chart-bar-container">
+        {renderBars.map((bar) => (
+          <div key={bar.label} className="chart-bar-container" title={`${bar.label}: ${bar.amount !== undefined ? '$' + bar.amount.toLocaleString() : bar.height}`}>
             <div className={`chart-bar ${bar.highlighted ? 'highlighted' : ''}`} style={{ height: bar.height }}></div>
             <span className="chart-label">{bar.label}</span>
           </div>
