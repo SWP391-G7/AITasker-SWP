@@ -1,9 +1,9 @@
 /**
  * Frontend module: Components/Dashboard/Expert/Earnings/TransactionTable.jsx
  *
- * Vai trò: Component Transaction Table: khối giao diện có thể tái sử dụng trong một hoặc nhiều page.
- * Luồng chính: Nhận props, render trạng thái tương ứng và báo sự kiện lên component cha qua callback khi cần.
- * Lưu ý bảo trì: Không thay đổi props; state cục bộ chỉ nên phục vụ hành vi thuộc phạm vi component.
+ * Vai trò: Component Transaction Table: khối giao diện hiển thị lịch sử giao dịch dùng chung cho Dashboard.
+ * Luồng chính: Nhận danh sách transactions, hỗ trợ tìm kiếm, định dạng icon/status/số tiền và render table.
+ * Lưu ý bảo trì: Thống nhất class CSS và cấu trúc HTML với ClientBillingPage table.
  */
 import React, { useState, useMemo } from 'react';
 import { Search, Share2, Database, BarChart3 } from 'lucide-react';

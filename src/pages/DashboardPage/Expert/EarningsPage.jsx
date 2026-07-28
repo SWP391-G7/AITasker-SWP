@@ -15,6 +15,7 @@ import EarningsOverviewCards from '../../../Components/Dashboard/Expert/Earnings
 import EarningsCharts from '../../../Components/Dashboard/Expert/Earnings/EarningsCharts'
 import TransactionTable from '../../../Components/Dashboard/Expert/Earnings/TransactionTable'
 import { getMyTransactionsAPI } from '../../../Services/transactionService'
+import { downloadExpertEarningsPdf } from '../../../Services/pdfExportService'
 import { createHandleLogout } from './handleLogout'
 import '../Style/AdminDashboardPage.css'
 import '../Style/ExpertDashboardPage.css'
@@ -135,25 +136,13 @@ const EarningsPage = () => {
     fetchEarningsData()
   }, [])
 
-  const handleExportStatement = () => {
-    if (!transactions || transactions.length === 0) {
-      alert("No transaction records available to export.");
-      return;
-    }
-    const csvContent = [
-      ["ID", "Project", "Date", "Status", "Amount"],
-      ...transactions.map(t => [t.id, `"${t.project}"`, t.date, t.status, `"${t.amount}"`])
-    ].map(e => e.join(",")).join("\n");
-
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `earnings-statement-${new Date().toISOString().slice(0, 10)}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-  };
+  const handleExportPdf = () => {
+    downloadExpertEarningsPdf({
+      user,
+      transactions,
+      incomeSummary,
+    })
+  }
 
   const handleWithdraw = () => {
     const availableStat = earningsStats.find(s => s.id === 'stat-api-1');
@@ -172,7 +161,7 @@ const EarningsPage = () => {
           subtitle="Monitor your revenue and manage your payouts."
           headerActions={
             <div className="header-actions">
-              <button className="btn-export" onClick={handleExportStatement} style={{ cursor: 'pointer' }}>
+              <button className="btn-export" type="button" onClick={handleExportPdf} style={{ cursor: 'pointer' }}>
                 Export Statement
               </button>
               <button className="btn-withdraw" onClick={handleWithdraw} style={{ cursor: 'pointer' }}>
@@ -206,4 +195,3 @@ const EarningsPage = () => {
 }
 
 export default EarningsPage
-

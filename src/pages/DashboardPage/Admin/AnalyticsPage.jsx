@@ -110,7 +110,7 @@ const AnalyticsPage = ({ onLogout }) => {
       }
 
       // Load the PDF library only when the admin exports a report.
-      const { downloadAnalyticsReportPdf } = await import('../../../Services/analyticsPdfService')
+      const { downloadAnalyticsReportPdf } = await import('../../../Services/pdfExportService')
       downloadAnalyticsReportPdf({
         year: loadedYear,
         analyticsData,

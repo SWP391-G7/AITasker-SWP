@@ -8,6 +8,7 @@ A modern web application front-end built for AITasker, an AI-powered freelance m
 
 - **Authentication & Onboarding**: Email/password authentication, Google OAuth 2.0 integration, password reset flow, and role-specific onboarding (Client/Expert).
 - **Client & Expert Dashboards**: Tailored navigation, project tracking, earnings overview, billing/invoice management, and service postings.
+- **PDF Statements & Export**: Centralized PDF statement generation (`pdfExportService.js`) for Client Billing, Expert Earnings, and Admin Analytics reports using `jspdf`.
 - **AI Marketplace & Search**: Advanced filtering, search for AI services & talent, and detailed proposal management.
 - **Real-time Messaging & Notifications**: Integrated WebSocket setup (`useWebSocket`) and notification management (`useNotifications`).
 - **Admin Management Panel**: Dashboard views for user management, dispute resolution, analytics, and content moderation.
@@ -20,6 +21,7 @@ A modern web application front-end built for AITasker, an AI-powered freelance m
 - **Build Tool**: [Vite 8](https://vitejs.dev/)
 - **Routing**: [React Router v7](https://reactrouter.com/)
 - **HTTP Client**: [Axios](https://axios-http.com/)
+- **PDF Generation**: [jsPDF](https://github.com/parallax/jsPDF)
 - **Authentication**: [@react-oauth/google](https://www.npmjs.com/package/@react-oauth/google)
 - **UI Components & Icons**: [React-Bootstrap](https://react-bootstrap.github.io/), [Bootstrap 5](https://getbootstrap.com/), [Lucide React](https://lucide.dev/)
 - **Linting & Quality**: ESLint
@@ -55,7 +57,7 @@ AITasker-SWP/
 │   │   ├── profile/            # Profile pages
 │   │   └── projects/           # Detailed project views
 │   ├── routes/                 # Routing configuration (AppRoutes.jsx)
-│   ├── Services/               # API service modules for backend communication
+│   ├── Services/               # API service modules for backend communication & PDF export (pdfExportService.js)
 │   ├── App.css
 │   ├── App.jsx
 │   ├── index.css

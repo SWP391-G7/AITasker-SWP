@@ -30,8 +30,10 @@ import { useClientUser } from "../../../Components/Dashboard/Client/user";
 import { logout } from "../../../Services/authService";
 import { getUserProfile } from "../../../Services/profileService";
 import { getMyTransactionsAPI } from "../../../Services/transactionService";
+import { downloadClientBillingPdf } from "../../../Services/pdfExportService";
 import "../Style/AdminDashboardPage.css";
-import "./ClientMarketplace.css";
+import "../Style/ClientDashboardPage.css";
+import "../../../Components/Dashboard/Expert/Earnings/EarningsPage.css";
 import "./ClientBillingPage.css";
 
 const EMPTY_STATS = {
@@ -53,13 +55,11 @@ const TYPE_LABELS = {
   refund: "Refund",
 };
 
-// Thực hiện phần logic “to number” trong phạm vi trách nhiệm của module hiện tại.
 const toNumber = (value) => {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : 0;
 };
 
-// Chuyển đổi dữ liệu cho “format money” thành định dạng mà lớp gọi hoặc giao diện cần.
 const formatMoney = (value) =>
   new Intl.NumberFormat("en-US", {
     style: "currency",
@@ -67,7 +67,6 @@ const formatMoney = (value) =>
     minimumFractionDigits: 2,
   }).format(toNumber(value));
 
-// Chuyển đổi dữ liệu cho “format date” thành định dạng mà lớp gọi hoặc giao diện cần.
 const formatDate = (value) => {
   if (!value) return "Not completed yet";
   const date = new Date(value);
@@ -76,18 +75,11 @@ const formatDate = (value) => {
     month: "short",
     day: "2-digit",
     year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
   }).format(date);
 };
 
-// Thực hiện phần logic “short id” trong phạm vi trách nhiệm của module hiện tại.
 const shortId = (id) => (id ? `TX-${String(id).slice(0, 8).toUpperCase()}` : "TX-PENDING");
 
-// Thực hiện phần logic “escape csv” trong phạm vi trách nhiệm của module hiện tại.
-const escapeCsv = (value) => `"${String(value ?? "").replace(/"/g, '""')}"`;
-
-// React component “Client Billing Page” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
 function ClientBillingPage() {
   const navigate = useNavigate();
   const user = useClientUser();
@@ -189,58 +181,51 @@ function ClientBillingPage() {
     ? Math.min(100, Math.round((toNumber(stats.totalLifetime) / trackedFunds) * 100))
     : 0;
 
-  // Handler “handle logout” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleLogout = () => {
     logout();
     navigate("/");
   };
 
-  // Handler “handle export” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
-  const handleExport = () => {
-    if (!filteredTransactions.length) return;
-
-    const rows = [
-      ["Transaction", "Project", "Expert", "Type", "Date", "Amount", "Status"],
-      ...filteredTransactions.map((transaction) => [
-        shortId(transaction.id),
-        transaction.project_title || "Unassigned project",
-        transaction.expert_name || "Expert",
-        TYPE_LABELS[transaction.normalizedType] || transaction.normalizedType,
-        formatDate(transaction.complete_at),
-        toNumber(transaction.amount).toFixed(2),
-        STATUS_LABELS[transaction.normalizedStatus] || transaction.normalizedStatus,
-      ]),
-    ];
-    const csv = rows.map((row) => row.map(escapeCsv).join(",")).join("\n");
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `aitasker-transactions-${new Date().toISOString().slice(0, 10)}.csv`;
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    URL.revokeObjectURL(url);
+  const handleExportPDF = () => {
+    downloadClientBillingPdf({
+      user,
+      transactions: filteredTransactions,
+      stats: {
+        ...stats,
+        budget,
+      },
+    });
   };
 
   return (
-    <div className="market-client-layout">
+    <div className="admin-dashboard-layout client-dashboard-layout">
       <ClientSidebar activeTab="billing" />
 
-      <main className="billing-main client-billing-page">
+      <main className="admin-main-panel client-main-panel client-billing-page">
         <ClientHeader
           title="Payments & Escrow"
           subtitle="Track funded work, payment activity, and your available project budget."
           headerActions={
-            <button
-              type="button"
-              className="billing-download-btn"
-              onClick={handleExport}
-              disabled={!filteredTransactions.length}
-            >
-              <Download size={17} />
-              Export CSV
-            </button>
+            <div className="header-actions">
+              <button
+                type="button"
+                className="btn-export"
+                onClick={handleExportPDF}
+                disabled={!filteredTransactions.length}
+              >
+                <Download size={16} />
+                Export PDF
+              </button>
+              <button
+                type="button"
+                className="btn-secondary-action"
+                onClick={loadBillingData}
+                aria-label="Refresh data"
+              >
+                <RefreshCw size={16} className={loading ? "spin" : ""} />
+                Refresh
+              </button>
+            </div>
           }
           notifications={0}
           onClearNotifications={() => {}}
@@ -250,137 +235,137 @@ function ClientBillingPage() {
           onLogout={handleLogout}
         />
 
-        <section className="client-billing-hero">
-          <div>
-            <div className="client-billing-eyebrow">
-              <ShieldCheck size={16} />
-              PAYMENT CONTROL CENTER
-            </div>
-            <h2>Every project payment, clearly accounted for.</h2>
-            <p>
-              Your wallet and transaction data are loaded directly from AITasker APIs.
-              Card checkout is currently running in sandbox mode.
-            </p>
-          </div>
-          <div className="client-billing-hero-actions">
-            <button type="button" className="billing-secondary-action" onClick={loadBillingData}>
-              <RefreshCw size={17} className={loading ? "spin" : ""} />
-              Refresh
-            </button>
-            <button type="button" className="billing-primary-action" onClick={() => navigate("/client/projects")}>
-              View projects
-              <ChevronRight size={17} />
-            </button>
-          </div>
-        </section>
-
-        {error && (
-          <div className="client-billing-alert" role="alert">
-            <AlertCircle size={20} />
-            <div>
-              <strong>Billing data could not be loaded</strong>
+        <div className="client-billing-container">
+          {error && (
+            <div className="alert alert-danger" role="alert">
+              <AlertCircle size={18} />
               <span>{error}</span>
+              <button type="button" className="alert-retry-btn" onClick={loadBillingData}>
+                Retry
+              </button>
             </div>
-            <button type="button" onClick={loadBillingData}>Try again</button>
+          )}
+
+          {/* Overview Cards styled like EarningsOverviewCards */}
+          <div className="earnings-stats-grid client-billing-stats-grid">
+            <div className="earnings-stat-card">
+              <div className="stat-top-info">
+                <div className="stat-icon-wrapper">
+                  <WalletCards size={20} />
+                </div>
+                <span className="stat-trend-badge trend-neutral">CLIENT WALLET</span>
+              </div>
+              <h3>Available Budget</h3>
+              <p className="stat-value">{loading ? "—" : formatMoney(budget)}</p>
+            </div>
+
+            <div className="earnings-stat-card">
+              <div className="stat-top-info">
+                <div className="stat-icon-wrapper">
+                  <ShieldCheck size={20} />
+                </div>
+                <span className="stat-trend-badge trend-neutral">ACTIVE MILESTONES</span>
+              </div>
+              <h3>In Escrow</h3>
+              <p className="stat-value">{loading ? "—" : formatMoney(stats.inEscrow)}</p>
+            </div>
+
+            <div className="earnings-stat-card">
+              <div className="stat-top-info">
+                <div className="stat-icon-wrapper">
+                  <CircleDollarSign size={20} />
+                </div>
+                <span className="stat-trend-badge trend-up">{completedCount} COMPLETED</span>
+              </div>
+              <h3>Recorded Spend</h3>
+              <p className="stat-value">{loading ? "—" : formatMoney(stats.totalLifetime)}</p>
+            </div>
+
+            <div className="earnings-stat-card">
+              <div className="stat-top-info">
+                <div className="stat-icon-wrapper">
+                  <Clock3 size={20} />
+                </div>
+                <span className="stat-trend-badge trend-neutral">IN PROCESS</span>
+              </div>
+              <h3>Pending Activity</h3>
+              <p className="stat-value">{loading ? "—" : pendingCount}</p>
+            </div>
           </div>
-        )}
 
-        <section className="client-billing-stats" aria-label="Billing summary">
-          <article className="client-billing-stat wallet">
-            <div className="client-billing-stat-icon"><WalletCards size={22} /></div>
-            <div>
-              <span>AVAILABLE BUDGET</span>
-              <strong>{loading ? "—" : formatMoney(budget)}</strong>
-              <p>Current client wallet balance</p>
-            </div>
-          </article>
-          <article className="client-billing-stat escrow">
-            <div className="client-billing-stat-icon"><ShieldCheck size={22} /></div>
-            <div>
-              <span>IN ESCROW</span>
-              <strong>{loading ? "—" : formatMoney(stats.inEscrow)}</strong>
-              <p>Funds attached to active milestones</p>
-            </div>
-          </article>
-          <article className="client-billing-stat spent">
-            <div className="client-billing-stat-icon"><CircleDollarSign size={22} /></div>
-            <div>
-              <span>RECORDED SPEND</span>
-              <strong>{loading ? "—" : formatMoney(stats.totalLifetime)}</strong>
-              <p>{completedCount} completed transaction{completedCount === 1 ? "" : "s"}</p>
-            </div>
-          </article>
-          <article className="client-billing-stat pending">
-            <div className="client-billing-stat-icon"><Clock3 size={22} /></div>
-            <div>
-              <span>PENDING ACTIVITY</span>
-              <strong>{loading ? "—" : pendingCount}</strong>
-              <p>Transactions awaiting completion</p>
-            </div>
-          </article>
-        </section>
-
-        <section className="client-billing-grid">
-          <div className="client-billing-main-column">
-            <section className="client-billing-panel transaction-panel-live">
-              <div className="client-billing-panel-heading">
+          <div className="earnings-middle-grid client-billing-grid">
+            {/* Main Column: Transaction History Table */}
+            <div className="transactions-card client-billing-transactions-panel">
+              <div className="table-header">
                 <div>
-                  <span className="client-billing-section-kicker">LIVE API DATA</span>
-                  <h2>Transaction history</h2>
-                  <p>Escrow deposits, releases, and refunds recorded for your account.</p>
+                  <h4 className="card-title">Recent Transactions</h4>
+                  <p className="card-subtitle">
+                    Escrow deposits, releases, and refunds recorded for your account.
+                  </p>
                 </div>
                 <button
                   type="button"
-                  className="billing-icon-button"
-                  onClick={handleExport}
+                  className="btn-export compact"
+                  onClick={handleExportPDF}
                   disabled={!filteredTransactions.length}
-                  aria-label="Export filtered transactions"
+                  aria-label="Export filtered transactions to PDF"
                 >
-                  <Download size={18} />
+                  <Download size={16} />
+                  <span>PDF</span>
                 </button>
               </div>
 
               <div className="client-billing-toolbar">
-                <label className="client-billing-search">
-                  <Search size={17} />
+                <div className="search-input-wrapper">
+                  <Search size={16} />
                   <input
                     type="search"
                     value={searchQuery}
                     onChange={(event) => setSearchQuery(event.target.value)}
-                    placeholder="Search transaction, project, or expert"
+                    placeholder="Search transaction, project..."
                   />
-                </label>
-                <select value={typeFilter} onChange={(event) => setTypeFilter(event.target.value)} aria-label="Filter by transaction type">
-                  <option value="all">All types</option>
-                  <option value="escrow_deposit">Escrow deposit</option>
-                  <option value="escrow_release">Escrow release</option>
-                  <option value="refund">Refund</option>
-                </select>
-                <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)} aria-label="Filter by transaction status">
-                  <option value="all">All statuses</option>
-                  <option value="completed">Completed</option>
-                  <option value="pending">Pending</option>
-                  <option value="failed">Failed</option>
-                </select>
+                </div>
+
+                <div className="filter-select-group">
+                  <select
+                    value={typeFilter}
+                    onChange={(event) => setTypeFilter(event.target.value)}
+                    aria-label="Filter by transaction type"
+                  >
+                    <option value="all">All types</option>
+                    <option value="escrow_deposit">Escrow deposit</option>
+                    <option value="escrow_release">Escrow release</option>
+                    <option value="refund">Refund</option>
+                  </select>
+
+                  <select
+                    value={statusFilter}
+                    onChange={(event) => setStatusFilter(event.target.value)}
+                    aria-label="Filter by transaction status"
+                  >
+                    <option value="all">All statuses</option>
+                    <option value="completed">Completed</option>
+                    <option value="pending">Pending</option>
+                    <option value="failed">Failed</option>
+                  </select>
+                </div>
               </div>
 
               <div className="client-billing-table-wrap">
                 {loading ? (
                   <div className="client-billing-state">
-                    <Loader2 size={30} className="spin" />
-                    <strong>Loading transactions</strong>
+                    <Loader2 size={26} className="spin" />
                     <span>Syncing your latest payment activity…</span>
                   </div>
                 ) : filteredTransactions.length ? (
-                  <table className="client-billing-table">
+                  <table className="transactions-table">
                     <thead>
                       <tr>
-                        <th>Transaction</th>
-                        <th>Project</th>
+                        <th>Project & Transaction</th>
                         <th>Type</th>
                         <th>Date</th>
-                        <th>Amount</th>
                         <th>Status</th>
+                        <th>Amount</th>
                         <th aria-label="Actions" />
                       </tr>
                     </thead>
@@ -388,30 +373,53 @@ function ClientBillingPage() {
                       {filteredTransactions.map((transaction) => (
                         <tr key={transaction.id}>
                           <td>
-                            <strong>{shortId(transaction.id)}</strong>
-                            <span>{transaction.expert_name || "AITasker expert"}</span>
+                            <div className="project-cell">
+                              <div className="project-icon-box">
+                                {transaction.normalizedType === "refund" ? (
+                                  <ArrowDownLeft size={18} />
+                                ) : transaction.normalizedType === "escrow_release" ? (
+                                  <ShieldCheck size={18} />
+                                ) : (
+                                  <Landmark size={18} />
+                                )}
+                              </div>
+                              <div className="project-info">
+                                <span className="project-name-text">
+                                  {transaction.project_title || "Proposal payment"}
+                                </span>
+                                <span className="project-id-text">
+                                  {shortId(transaction.id)} • {transaction.expert_name || "AITasker expert"}
+                                </span>
+                              </div>
+                            </div>
                           </td>
                           <td>
-                            <strong>{transaction.project_title || "Proposal payment"}</strong>
-                            <span>{transaction.project_id ? "Project linked" : "Awaiting project creation"}</span>
-                          </td>
-                          <td>
-                            <span className={`billing-type-icon ${transaction.normalizedType}`}>
-                              {transaction.normalizedType === "refund" ? <ArrowDownLeft size={15} /> : <Landmark size={15} />}
+                            <span className="billing-type-tag">
+                              {TYPE_LABELS[transaction.normalizedType] || transaction.normalizedType}
                             </span>
-                            {TYPE_LABELS[transaction.normalizedType] || transaction.normalizedType}
                           </td>
                           <td>{formatDate(transaction.complete_at)}</td>
-                          <td className="client-billing-amount">{formatMoney(transaction.amount)}</td>
                           <td>
-                            <span className={`client-billing-status ${transaction.normalizedStatus}`}>
-                              {transaction.normalizedStatus === "completed" && <CheckCircle2 size={13} />}
-                              {transaction.normalizedStatus === "pending" && <Clock3 size={13} />}
-                              {transaction.normalizedStatus === "failed" && <AlertCircle size={13} />}
-                              {transaction.normalizedType === "escrow_deposit" && transaction.normalizedStatus === "completed"
-                                ? "Secured"
-                                : STATUS_LABELS[transaction.normalizedStatus] || transaction.normalizedStatus}
+                            <span
+                              className={`status-pill ${
+                                transaction.normalizedStatus === "completed"
+                                  ? "status-success"
+                                  : transaction.normalizedStatus === "failed"
+                                    ? "status-failed"
+                                    : "status-active"
+                              }`}
+                            >
+                              {transaction.normalizedType === "escrow_deposit" &&
+                              transaction.normalizedStatus === "completed"
+                                ? "SECURED"
+                                : (
+                                    STATUS_LABELS[transaction.normalizedStatus] ||
+                                    transaction.normalizedStatus
+                                  ).toUpperCase()}
                             </span>
+                          </td>
+                          <td>
+                            <span className="amount-text">{formatMoney(transaction.amount)}</span>
                           </td>
                           <td>
                             {transaction.project_id ? (
@@ -421,7 +429,7 @@ function ClientBillingPage() {
                                 onClick={() => navigate(`/projects/${transaction.project_id}`)}
                                 aria-label={`Open ${transaction.project_title || "project"}`}
                               >
-                                <ExternalLink size={16} />
+                                <ExternalLink size={15} />
                               </button>
                             ) : null}
                           </td>
@@ -431,63 +439,84 @@ function ClientBillingPage() {
                   </table>
                 ) : (
                   <div className="client-billing-state empty">
-                    <CircleDollarSign size={32} />
-                    <strong>{normalizedTransactions.length ? "No matching transactions" : "No payment activity yet"}</strong>
+                    <CircleDollarSign size={30} />
+                    <strong>
+                      {normalizedTransactions.length
+                        ? "No matching transactions"
+                        : "No payment activity yet"}
+                    </strong>
                     <span>
                       {normalizedTransactions.length
                         ? "Try clearing your search or changing the filters."
                         : "Transactions will appear here after you fund a proposal or milestone."}
                     </span>
                     {!normalizedTransactions.length && (
-                      <button type="button" onClick={() => navigate("/client/projects")}>Go to projects</button>
+                      <button
+                        type="button"
+                        className="btn-export"
+                        onClick={() => navigate("/client/projects")}
+                      >
+                        Go to projects
+                      </button>
                     )}
                   </div>
                 )}
               </div>
-            </section>
+            </div>
+
+            {/* Side Column: Breakdown & Sandbox Info */}
+            <div className="client-billing-side-column">
+              <div className="summary-card client-billing-summary-card">
+                <h4 className="card-title">Payment Allocation</h4>
+                <div className="summary-list client-billing-breakdown-list">
+                  <div className="summary-item">
+                    <label>Recorded Spend</label>
+                    <span className="text-mint">{formatMoney(stats.totalLifetime)}</span>
+                  </div>
+                  <div className="summary-item">
+                    <label>In Escrow</label>
+                    <span>{formatMoney(stats.inEscrow)}</span>
+                  </div>
+                  <div className="summary-item">
+                    <label>Released to Experts</label>
+                    <span className="text-mint">{formatMoney(releasedAmount)}</span>
+                  </div>
+                  <div className="summary-divider" />
+                  <div className="summary-item">
+                    <label>Recorded Share</label>
+                    <span>{releasedPercent}%</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="summary-card client-billing-sandbox-card">
+                <div className="sandbox-header">
+                  <WalletCards size={20} />
+                  <span className="sandbox-badge">SANDBOX MODE</span>
+                </div>
+                <h4 className="card-title">Mock Gateway</h4>
+                <p className="sandbox-desc">
+                  Simulated card checkout for proposal funding. No real cards stored.
+                </p>
+                <ul className="sandbox-features">
+                  <li>
+                    <CheckCircle2 size={14} /> Signed webhook confirmation
+                  </li>
+                  <li>
+                    <CheckCircle2 size={14} /> Escrow transaction tracking
+                  </li>
+                </ul>
+                <button
+                  type="button"
+                  className="view-all-link text-left"
+                  onClick={() => navigate("/client/projects")}
+                >
+                  Manage funded work <ChevronRight size={14} />
+                </button>
+              </div>
+            </div>
           </div>
-
-          <aside className="client-billing-side-column">
-            <section className="client-billing-panel client-billing-funds-card">
-              <div className="client-billing-panel-heading compact">
-                <div>
-                  <span className="client-billing-section-kicker">FUNDS OVERVIEW</span>
-                  <h2>Payment allocation</h2>
-                </div>
-              </div>
-              <div
-                className="client-billing-progress-ring"
-                style={{ "--billing-progress": `${releasedPercent * 3.6}deg` }}
-              >
-                <div>
-                  <strong>{releasedPercent}%</strong>
-                  <span>Recorded</span>
-                </div>
-              </div>
-              <div className="client-billing-breakdown">
-                <div><span><i className="released" />Recorded spend</span><strong>{formatMoney(stats.totalLifetime)}</strong></div>
-                <div><span><i className="escrow" />In escrow</span><strong>{formatMoney(stats.inEscrow)}</strong></div>
-                <div><span><i className="release" />Released to experts</span><strong>{formatMoney(releasedAmount)}</strong></div>
-              </div>
-            </section>
-
-            <section className="client-billing-panel client-billing-sandbox-card">
-              <div className="client-billing-sandbox-icon"><WalletCards size={24} /></div>
-              <span className="client-billing-sandbox-badge">SANDBOX MODE</span>
-              <h2>Mock payment gateway</h2>
-              <p>
-                AITasker currently uses a simulated card checkout for proposal funding.
-                No real card is saved to your account.
-              </p>
-              <ul>
-                <li><CheckCircle2 size={15} />Signed webhook confirmation</li>
-                <li><CheckCircle2 size={15} />Escrow transaction tracking</li>
-                <li><Clock3 size={15} />Real payment provider pending</li>
-              </ul>
-              <button type="button" onClick={() => navigate("/client/projects")}>Manage funded work <ChevronRight size={16} /></button>
-            </section>
-          </aside>
-        </section>
+        </div>
 
         <Footer variant="dashboard" />
       </main>
