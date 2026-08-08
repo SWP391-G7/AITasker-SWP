@@ -34,7 +34,7 @@ const ReviewList = ({ reviews = [], avgStars, totalReviews, loading }) => {
                   color={s <= Math.round(avgStars || 0) ? '#fbbf24' : '#475569'}
                 />
               ))}
-              <span className="reviews-avg-value">{avgStars ? avgStars.toFixed(1) : 'N/A'}</span>
+              <span className="reviews-avg-value">{avgStars ? Number(avgStars).toFixed(1) : 'N/A'}</span>
             </div>
             <span className="reviews-count">
               <MessageSquare size={14} /> {totalReviews} review{totalReviews !== 1 ? 's' : ''}

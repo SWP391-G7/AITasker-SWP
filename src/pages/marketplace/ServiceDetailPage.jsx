@@ -7,7 +7,7 @@
  */
 import { useState, useEffect, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { ArrowLeft, CheckCircle2, Clock, Loader2, AlertCircle, Star, XCircle, Send, EyeOff } from 'lucide-react'
+import { ArrowLeft, CheckCircle2, Clock, Loader2, AlertCircle, Star, XCircle, Send, EyeOff, RefreshCcw } from 'lucide-react'
 import Footer from '../../Components/Footer/Footer'
 import { getServiceById } from '../../Services/serviceService'
 import { updateContentStatus } from '../../Services/adminDashboardService'
@@ -60,7 +60,7 @@ const ServiceDetailPage = () => {
       setTotalReviews(list.length)
       if (list.length > 0) {
         const sum = list.reduce((acc, r) => acc + Number(r.stars || 5), 0)
-        setAvgStars((sum / list.length).toFixed(1))
+        setAvgStars(sum / list.length)
       } else {
         setAvgStars(null)
       }
@@ -105,7 +105,7 @@ const ServiceDetailPage = () => {
       await createReview({ target_id, stars, review })
       setHasReviewed(true)
       setCanReview(false)
-      fetchReviews(target_id)
+      fetchReviews(service?.expert_id || target_id)
     } finally {
       setSubmitting(false)
     }
