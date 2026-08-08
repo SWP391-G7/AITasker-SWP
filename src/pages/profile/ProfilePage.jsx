@@ -199,8 +199,9 @@ function ProfilePage() {
 
     try {
       const conversation = await getOrCreateConversation(userId);
+      const convId = conversation?.id || conversation?._id || conversation?.data?.id || conversation?.data?._id;
       const targetPath = getMessagesPath();
-      navigate(targetPath, { state: { activeConversationId: conversation.id } });
+      navigate(targetPath, { state: { activeConversationId: convId } });
     } catch (err) {
       console.error("Failed to start conversation:", err);
       navigate(getMessagesPath());

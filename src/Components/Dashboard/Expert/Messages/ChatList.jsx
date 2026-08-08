@@ -55,9 +55,13 @@ const ChatList = ({ conversations = [], activeId, onSelect }) => {
               style={{ cursor: 'pointer' }}
             >
               <div className="avatar-wrapper">
-                <div className="chat-avatar chat-avatar-initials">
-                  {getInitials(chat.name)}
-                </div>
+                {chat.avatar && !chat.avatar.includes('ui-avatars.com') ? (
+                  <img src={chat.avatar} alt={chat.name} className="chat-avatar" style={{ objectFit: 'cover' }} />
+                ) : (
+                  <div className="chat-avatar chat-avatar-initials">
+                    {getInitials(chat.name)}
+                  </div>
+                )}
               </div>
               
               <div className="chat-info">

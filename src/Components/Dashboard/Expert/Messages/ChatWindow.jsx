@@ -69,7 +69,11 @@ const ChatWindow = ({ conversation, messages = [], onSendMessage, onRemoveMessag
     <div className="chat-window-main">
       <header className="chat-header">
         <div className="chat-user">
-          <div className="chat-avatar">{initials}</div>
+          {conversation.avatar && !conversation.avatar.includes('ui-avatars.com') ? (
+            <img src={conversation.avatar} alt={conversation.name} className="chat-avatar" style={{ width: '56px', height: '56px', borderRadius: '50%', objectFit: 'cover' }} />
+          ) : (
+            <div className="chat-avatar">{initials}</div>
+          )}
 
           <div>
             <h2>{conversation.name}</h2>
@@ -93,7 +97,7 @@ const ChatWindow = ({ conversation, messages = [], onSendMessage, onRemoveMessag
           messages.map((msg) => {
             const currentUserId = currentUser?.id || currentUser?._id;
             const isMe = Boolean(msg?.user_id && currentUserId && msg.user_id === currentUserId);
-            const senderClass = isMe ? 'expert' : 'client';
+            const senderClass = isMe ? 'expert outgoing' : 'client incoming';
             const isRemoved = Boolean(msg.is_removed || msg.content === "Message has been removed");
 
             return (

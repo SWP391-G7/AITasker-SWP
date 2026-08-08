@@ -30,16 +30,19 @@ export default function ChatPanel({ conversation, messages = [], onSendMessage, 
 
   if (!conversation) {
     return (
-      <section className="chat-panel" style={{ display: "flex", justifyContent: "center", alignItems: "center", color: "#64748b" }}>
+      <div className="chat-window-main" style={{ display: "flex", justifyContent: "center", alignItems: "center", color: "#64748b", flex: 1 }}>
         <p>Select a conversation to start chatting</p>
-      </section>
+      </div>
     );
   }
 
-  const name = conversation.other_user_name || "Direct Chat";
-  const role = conversation.other_user_role === 'expert'
-    ? (conversation.other_user_professional_title || "Expert")
-    : (conversation.other_user_company_name || "Client");
+  const name = conversation.name || conversation.other_user_name || "Direct Chat";
+  const role = conversation.role || (
+    conversation.other_user_role === 'expert'
+      ? (conversation.other_user_professional_title || "Expert")
+      : (conversation.other_user_company_name || "Client")
+  );
+  const avatarUrl = conversation.avatar || conversation.other_user_avatar_url;
 
   const initials = name
     .split(" ")
@@ -49,7 +52,6 @@ export default function ChatPanel({ conversation, messages = [], onSendMessage, 
     .slice(0, 2)
     .toUpperCase();
 
-  // Handler “handle send” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleSend = async () => {
     const messageText = inputText.trim();
     if (!messageText) return;
@@ -58,14 +60,12 @@ export default function ChatPanel({ conversation, messages = [], onSendMessage, 
     setInputText("");
   };
 
-  // Handler “handle key down” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleKeyDown = (e) => {
     if (e.key === 'Enter') {
       handleSend();
     }
   };
 
-  // Chuyển đổi dữ liệu cho “format message time” thành định dạng mà lớp gọi hoặc giao diện cần.
   const formatMessageTime = (timeString) => {
     if (!timeString) return "";
     const date = new Date(timeString);
@@ -73,16 +73,14 @@ export default function ChatPanel({ conversation, messages = [], onSendMessage, 
   };
 
   return (
-    <section className="chat-panel">
-      <div className="chat-header">
+    <div className="chat-window-main">
+      <header className="chat-header">
         <div className="chat-user">
-          <div className="chat-avatar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-            {conversation.other_user_avatar_url ? (
-              <img src={conversation.other_user_avatar_url} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-            ) : (
-              initials
-            )}
-          </div>
+          {avatarUrl && !avatarUrl.includes('ui-avatars.com') ? (
+            <img src={avatarUrl} alt={name} className="chat-avatar" style={{ width: '56px', height: '56px', borderRadius: '50%', objectFit: 'cover' }} />
+          ) : (
+            <div className="chat-avatar">{initials}</div>
+          )}
 
           <div>
             <h2>{name}</h2>
@@ -101,9 +99,9 @@ export default function ChatPanel({ conversation, messages = [], onSendMessage, 
             <MoreVertical size={18} />
           </button>
         </div>
-      </div>
+      </header>
 
-      <div className="chat-body">
+      <div className="chat-messages-area">
         {messages.length === 0 ? (
           <div style={{ textAlign: "center", padding: "20px", color: "#64748b" }}>
             <p>No messages yet. Send a greeting!</p>
@@ -112,7 +110,7 @@ export default function ChatPanel({ conversation, messages = [], onSendMessage, 
           messages.map((message) => {
             const currentUserId = currentUser?.id || currentUser?._id;
             const isMe = Boolean(message?.user_id && currentUserId && message.user_id === currentUserId);
-            const senderClass = isMe ? "client" : "expert";
+            const senderClass = isMe ? "client outgoing" : "expert incoming";
             const isRemoved = Boolean(message.is_removed || message.content === "Message has been removed");
 
             return (
@@ -150,23 +148,23 @@ export default function ChatPanel({ conversation, messages = [], onSendMessage, 
         <div ref={messagesEndRef} />
       </div>
 
-
-      <div className="chat-input-area">
-        <button type="button">
+      <footer className="chat-input-footer">
+        <button type="button" className="attach-button">
           <Paperclip size={20} />
         </button>
 
         <input
+          type="text"
           placeholder="Write a message..."
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
           onKeyDown={handleKeyDown}
         />
 
-        <button type="button" className="send-button" onClick={handleSend}>
+        <button type="button" className="btn-send-msg" onClick={handleSend}>
           <Send size={20} />
         </button>
-      </div>
-    </section>
+      </footer>
+    </div>
   );
 }

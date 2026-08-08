@@ -5,7 +5,7 @@
  * Luồng chính: Đọc route/location, gọi service trong effect/handler, quản lý loading/error/form rồi truyền props xuống UI con.
  * Lưu ý bảo trì: Giữ side effect trong handler/effect và không mutate trực tiếp state hoặc dữ liệu API.
  */
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import ClientSidebar from "../../../Components/Dashboard/Client/ClientSidebar";
 import ClientHeader from "../../../Components/Dashboard/Client/ClientHeader";
@@ -17,6 +17,7 @@ import { getConversations, getConversationMessages, sendMessage, removeMessage }
 import useWebSocket from "../../../hooks/useWebSocket";
 import "../Style/AdminDashboardPage.css";
 import "./ClientMarketplace.css";
+import "../../../Components/Dashboard/Expert/Messages/MessagesPage.css";
 
 // React component “Client Messages Page” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
 function ClientMessagesPage() {
@@ -179,7 +180,27 @@ function ClientMessagesPage() {
     }
   };
 
-  const activeConversation = conversations.find(c => c.id === activeConversationId);
+  const uiConversations = useMemo(() => {
+    return conversations.map(c => {
+      const name = c.other_user_name || "Direct Chat";
+      const role = c.other_user_role === 'expert'
+        ? (c.other_user_professional_title || "Expert")
+        : (c.other_user_company_name || "Client");
+      const avatarUrl = c.other_user_avatar_url || "";
+
+      return {
+        ...c,
+        name,
+        role,
+        avatar: avatarUrl,
+        lastMessage: c.last_message || "No messages yet",
+        time: c.last_message_time || c.created_at,
+        unread: c.unread || 0,
+      };
+    });
+  }, [conversations]);
+
+  const activeConversation = uiConversations.find(c => c.id === activeConversationId);
 
   return (
     <div className="market-client-layout">
@@ -202,7 +223,7 @@ function ClientMessagesPage() {
           onLogout={handleLogout}
         />
 
-        <section className="messages-layout">
+        <section className="messages-layout-container">
           {loading ? (
             <div style={{ flex: 1, display: "flex", justifyContent: "center", alignItems: "center", height: "400px" }}>
               <p>Loading conversations...</p>
@@ -210,7 +231,7 @@ function ClientMessagesPage() {
           ) : (
             <>
               <ConversationPanel
-                conversations={conversations}
+                conversations={uiConversations}
                 activeId={activeConversationId}
                 onSelectConversation={setActiveConversationId}
                 searchQuery={searchQuery}

@@ -12,12 +12,15 @@ import {
   CalendarDays,
   Check,
   ChevronDown,
+  Clock,
+  CreditCard,
   DollarSign,
   Loader2,
   Mail,
   MessageSquare,
   Play,
   RefreshCcw,
+  Send,
   Sparkles,
   UserRound,
   X,
@@ -30,9 +33,11 @@ import { createProject } from "../../../Services/projectService";
 import { getOrCreateConversation } from "../../../Services/messageService";
 import { analyzeProposalsWithAI } from "../../../Services/aiService";
 import PaymentSourceDialog from "../../../Components/Payment/PaymentSourceDialog";
+import "../Style/AdminDashboardPage.css";
+import "../Style/ExpertDashboardPage.css";
 import "./ClientMarketplace.css";
 
-// Đọc hoặc suy ra dữ liệu cho nghiệp vụ “get first array”; không nên tạo side effect ngoài những request đọc đã nêu trong thân hàm.
+// Đọc hoặc suy ra dữ liệu cho nghiệp vụ “get first array”
 const getFirstArray = (result, keys) => {
   for (const key of keys) {
     if (Array.isArray(result?.[key])) return result[key];
@@ -42,7 +47,7 @@ const getFirstArray = (result, keys) => {
   return [];
 };
 
-// Đọc hoặc suy ra dữ liệu cho nghiệp vụ “get job payload”; không nên tạo side effect ngoài những request đọc đã nêu trong thân hàm.
+// Đọc hoặc suy ra dữ liệu cho nghiệp vụ “get job payload”
 const getJobPayload = (result) =>
   result?.jobPost ||
   result?.job ||
@@ -52,7 +57,7 @@ const getJobPayload = (result) =>
   result?.project ||
   result;
 
-// Đọc hoặc suy ra dữ liệu cho nghiệp vụ “get expert name”; không nên tạo side effect ngoài những request đọc đã nêu trong thân hàm.
+// Đọc hoặc suy ra dữ liệu cho nghiệp vụ “get expert name”
 const getExpertName = (proposal) =>
   proposal?.expert?.fullName ||
   proposal?.expert?.name ||
@@ -71,7 +76,7 @@ const statusColor = (status) => {
   }
 };
 
-// React component “Client Task Detail Page” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
+// React component “Client Task Detail Page”
 function ClientTaskDetailPage() {
   const { jobId } = useParams();
   const navigate = useNavigate();
@@ -87,7 +92,7 @@ function ClientTaskDetailPage() {
   const [actingProposal, setActingProposal] = useState(null);
   const [paymentProposal, setPaymentProposal] = useState(null);
 
-  // Counter-offer form state (inside the proposal modal)
+  // Counter-offer form state
   const [showCounterForm, setShowCounterForm] = useState(false);
   const [counterBid, setCounterBid] = useState("");
   const [counterNote, setCounterNote] = useState("");
@@ -103,6 +108,8 @@ function ClientTaskDetailPage() {
 
   // ── Helpers ──────────────────────────────────────────────────────
   const proposalCount = useMemo(() => proposals.length, [proposals]);
+
+  const acceptedProposal = useMemo(() => proposals.find(p => p.status === "accepted"), [proposals]);
 
   /** Sort proposals so Recommended (score >= 80) appear first, followed by highest score */
   const sortedProposals = useMemo(() => {
@@ -206,7 +213,6 @@ function ClientTaskDetailPage() {
     return `${days} day${days !== 1 ? 's' : ''}`;
   };
 
-  // Chuyển đổi dữ liệu cho “format budget” thành định dạng mà lớp gọi hoặc giao diện cần.
   const formatBudget = (jobData) => {
     const min = jobData?.budget_min ?? jobData?.budgetMin;
     const max = jobData?.budget_max ?? jobData?.budgetMax ?? jobData?.budget;
@@ -225,25 +231,33 @@ function ClientTaskDetailPage() {
     proposal?.user?._id ||
     proposal?.user?.id;
 
-  // Handler “handle contact expert” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleContactExpert = async (proposal) => {
-    const expertId =
-      getProposalExpertId(proposal);
-
+    const expertId = getProposalExpertId(proposal);
     if (!expertId) {
       navigate("/client/messages");
       return;
     }
-  }
+    const pid = proposal?._id || proposal?.id;
+    try {
+      if (pid) setActingProposal(pid);
+      const conversation = await getOrCreateConversation(expertId);
+      const convId = conversation?.id || conversation?._id || conversation?.data?.id || conversation?.data?._id;
+      navigate("/client/messages", { state: { activeConversationId: convId } });
+    } catch (err) {
+      console.error("Failed to start conversation with expert:", err);
+      navigate("/client/messages");
+    } finally {
+      if (pid) setActingProposal(null);
+    }
+  };
 
-  /** Client clicks Approve on a proposal (can be a plain proposal or a counter from expert) */
+  /** Client clicks Approve on a proposal */
   const handleAcceptProposal = (proposalId) => {
     const proposal = proposals.find(p => (p._id || p.id) === proposalId);
     if (!proposal) return;
     setPaymentProposal(proposal);
   };
 
-  // Handler “handle payment source” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handlePaymentSource = async (paymentSource) => {
     const proposalId = paymentProposal?._id || paymentProposal?.id;
     if (!proposalId) return;
@@ -252,7 +266,6 @@ function ClientTaskDetailPage() {
       setError("");
       const result = await initiateProposalPayment(proposalId, paymentSource);
       if (result.funded) {
-        // Direct funding via wallet balance
         setPaymentProposal(null);
         setPendingProposalId(proposalId);
         setShowProjectPrompt(true);
@@ -278,7 +291,6 @@ function ClientTaskDetailPage() {
     const proposalId = pendingProposalId;
     if (!proposalId) return;
 
-    // Check if the proposal in our state is already accepted (from successful payment redirect)
     const proposal = proposals.find(p => (p._id || p.id) === proposalId);
     if (proposal && (proposal.status === "accepted" || job?.status === "closed")) {
       if (startProject) {
@@ -298,14 +310,12 @@ function ClientTaskDetailPage() {
           setPendingProposalId(null);
         }
       } else {
-        // User paid but declined immediate project start, just reload details
         setPendingProposalId(null);
         fetchDetail();
       }
       return;
     }
 
-    // Fallback/Legacy code pathway (for other states, safety only)
     setActingProposal(proposalId);
     try {
       setError("");
@@ -329,7 +339,6 @@ function ClientTaskDetailPage() {
     }
   };
 
-  /** Client manually starts project from a pending job */
   const handleCreateProjectFromPending = async () => {
     try {
       setLoading(true);
@@ -344,7 +353,6 @@ function ClientTaskDetailPage() {
     }
   };
 
-  /** Reject a proposal */
   const handleRejectProposal = async (proposalId) => {
     if (actingProposal) return;
     setActingProposal(proposalId);
@@ -353,7 +361,7 @@ function ClientTaskDetailPage() {
       setProposals(prev =>
         prev.map(p => (p._id || p.id) === proposalId ? { ...p, status: "rejected" } : p)
       );
-      setSelectedProposal(prev => prev ? { ...prev, status: "rejected" } : null);
+      setSelectedProposal(prev => prev ? { ...prev, ...updatedProposal } : null);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -361,7 +369,6 @@ function ClientTaskDetailPage() {
     }
   };
 
-  /** Submit a counter-offer */
   const handleSubmitCounter = async () => {
     setCounterError("");
     const amount = parseFloat(counterBid);
@@ -387,7 +394,6 @@ function ClientTaskDetailPage() {
     }
   };
 
-  // Handler “open counter form” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const openCounterForm = () => {
     setCounterBid(
       selectedProposal?.counter_bid_amount || selectedProposal?.bid_amount || ""
@@ -397,7 +403,6 @@ function ClientTaskDetailPage() {
     setShowCounterForm(true);
   };
 
-  // Handler “close modal” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const closeModal = () => {
     setSelectedProposal(null);
     setShowCounterForm(false);
@@ -406,15 +411,20 @@ function ClientTaskDetailPage() {
     setCounterError("");
   };
 
-  // ── Render action buttons for the modal ──────────────────────────
-  const renderModalActions = (proposal) => {
+  const handleTabChange = (tabId) => {
+    if (tabId === "dashboard") navigate("/client/dashboard");
+    else navigate(`/client/${tabId}`);
+  };
+
+  // ── Render action buttons for proposal modal / cards ──────────────
+  const renderProposalActions = (proposal) => {
     const pid = proposal._id || proposal.id;
     const busy = actingProposal === pid;
 
     if (job && (job.status === "removed" || job.status === "rejected")) {
       return (
         <span className="text-danger small fw-bold">
-          No actions available (Job Removed by Admin)
+          No actions available (Task Removed)
         </span>
       );
     }
@@ -422,39 +432,44 @@ function ClientTaskDetailPage() {
     if (proposal.status === "accepted") {
       if (proposal.payment_status !== "funded") {
         return (
-          <button type="button" className="btn btn-sm btn-success px-3 py-2 fw-semibold" style={{ borderRadius: "8px" }} onClick={() => handleAcceptProposal(pid)} disabled={busy}>
-            {busy ? <Loader2 className="animate-spin me-1 d-inline" size={14} /> : null}
+          <button
+            type="button"
+            className="btn btn-sm btn-success fw-bold px-3 py-2"
+            style={{ borderRadius: "8px", backgroundColor: "#10b981", border: "none", color: "#fff" }}
+            onClick={(e) => { e.stopPropagation(); handleAcceptProposal(pid); }}
+            disabled={busy}
+          >
+            {busy ? <Loader2 className="animate-spin me-1 d-inline" size={14} /> : <CreditCard size={14} className="me-1" />}
             Fund Escrow
           </button>
         );
       }
       return (
-        <span className="project-status accepted-status d-flex align-items-center py-2 px-3">
-          <Check size={14} className="me-1" /> Accepted
+        <span className="project-status accepted-status d-flex align-items-center py-2 px-3" style={{ background: "rgba(16, 185, 129, 0.1)", color: "#10b981" }}>
+          <Check size={14} className="me-1" /> Accepted & Escrow Funded
         </span>
       );
     }
 
     if (proposal.status === "rejected") {
       return (
-        <span className="project-status rejected-status d-flex align-items-center py-2 px-3">
+        <span className="project-status rejected-status d-flex align-items-center py-2 px-3" style={{ background: "rgba(239, 68, 68, 0.1)", color: "#ef4444" }}>
           <X size={14} className="me-1" /> Rejected
         </span>
       );
     }
 
-    // Waiting for the other party to reply to MY counter
     if (iWaitingForReply(proposal)) {
       return (
         <>
           <span className="text-muted small fst-italic me-auto">
-            Waiting for expert to respond…
+            Waiting for expert response…
           </span>
           <button
             type="button"
             className="btn btn-sm btn-outline-warning px-3 py-2 fw-semibold"
             style={{ borderRadius: "8px" }}
-            onClick={openCounterForm}
+            onClick={(e) => { e.stopPropagation(); setSelectedProposal(proposal); openCounterForm(); }}
             disabled={busy}
           >
             Counter Again
@@ -463,98 +478,94 @@ function ClientTaskDetailPage() {
       );
     }
 
-    // It's my turn to respond to a counter from the expert
     if (isMyTurnToRespond(proposal)) {
       return (
-        <>
+        <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
           <button
             type="button"
-            className="btn btn-sm btn-outline-danger px-3 py-2 fw-semibold"
+            className="btn btn-sm btn-success fw-semibold px-3 py-2"
             style={{ borderRadius: "8px" }}
-            onClick={() => handleRejectProposal(pid)}
+            onClick={(e) => { e.stopPropagation(); handleAcceptProposal(pid); }}
             disabled={busy}
           >
-            {busy ? <Loader2 className="animate-spin me-1 d-inline" size={14} /> : null}
-            Reject
+            {busy ? <Loader2 className="animate-spin me-1 d-inline" size={14} /> : <Check size={14} className="me-1" />}
+            Approve Counter
           </button>
           <button
             type="button"
-            className="btn btn-sm btn-outline-warning px-3 py-2 fw-semibold"
+            className="btn btn-sm btn-outline-warning fw-semibold px-3 py-2"
             style={{ borderRadius: "8px" }}
-            onClick={openCounterForm}
+            onClick={(e) => { e.stopPropagation(); setSelectedProposal(proposal); openCounterForm(); }}
             disabled={busy}
           >
             Counter Again
           </button>
           <button
             type="button"
-            className="btn btn-sm btn-success px-3 py-2 fw-semibold"
+            className="btn btn-sm btn-outline-danger fw-semibold px-3 py-2"
             style={{ borderRadius: "8px" }}
-            onClick={() => handleAcceptProposal(pid)}
+            onClick={(e) => { e.stopPropagation(); handleRejectProposal(pid); }}
             disabled={busy}
           >
-            {busy ? <Loader2 className="animate-spin me-1 d-inline" size={14} /> : null}
-            Approve Counter
+            <X size={14} className="me-1" />
+            Reject
           </button>
-        </>
+        </div>
       );
     }
 
-    // Normal pending proposal — Reject / Counter / Approve
     return (
-      <>
+      <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
         <button
           type="button"
-          className="btn btn-sm btn-outline-danger px-3 py-2 fw-semibold"
+          className="btn btn-sm btn-success fw-semibold px-3 py-2"
           style={{ borderRadius: "8px" }}
-          onClick={() => handleRejectProposal(pid)}
+          onClick={(e) => { e.stopPropagation(); handleAcceptProposal(pid); }}
           disabled={busy}
         >
-          {busy ? <Loader2 className="animate-spin me-1 d-inline" size={14} /> : null}
-          Reject
+          {busy ? <Loader2 className="animate-spin me-1 d-inline" size={14} /> : <Check size={14} className="me-1" />}
+          Approve Proposal
         </button>
-
         <button
           type="button"
-          className="btn btn-sm btn-outline-warning px-3 py-2 fw-semibold"
+          className="btn btn-sm btn-outline-warning fw-semibold px-3 py-2"
           style={{ borderRadius: "8px" }}
-          onClick={openCounterForm}
+          onClick={(e) => { e.stopPropagation(); setSelectedProposal(proposal); openCounterForm(); }}
           disabled={busy}
         >
+          <RefreshCcw size={14} className="me-1" />
           Counter Offer
         </button>
-
         <button
           type="button"
-          className="btn btn-sm btn-success px-3 py-2 fw-semibold"
+          className="btn btn-sm btn-outline-danger fw-semibold px-3 py-2"
           style={{ borderRadius: "8px" }}
-          onClick={() => handleAcceptProposal(pid)}
+          onClick={(e) => { e.stopPropagation(); handleRejectProposal(pid); }}
           disabled={busy}
         >
-          {busy ? <Loader2 className="animate-spin me-1 d-inline" size={14} /> : null}
-          Approve
+          <X size={14} className="me-1" />
+          Reject
         </button>
-
         <button
           type="button"
-          className="btn btn-sm btn-primary px-3 py-2 fw-semibold"
+          className="btn btn-sm btn-primary fw-semibold px-3 py-2"
           style={{ borderRadius: "8px" }}
-          onClick={() => { closeModal(); handleContactExpert(proposal); }}
+          onClick={(e) => { e.stopPropagation(); handleContactExpert(proposal); }}
         >
           <Mail size={14} className="me-1" />
           Message
         </button>
-      </>
+      </div>
     );
   };
 
   // ── JSX ──────────────────────────────────────────────────────────
   return (
-    <div className="market-client-layout">
-      <ClientSidebar activeTab="projects" />
+    <div className="market-client-layout expert-projects-client-style">
+      <ClientSidebar activeTab="projects" onTabChange={handleTabChange} onLogout={() => navigate("/")} />
 
       <main className="post-job-main">
-        <header className="post-job-header">
+        <header className="post-job-header" style={{ marginBottom: "24px" }}>
           <button
             type="button"
             className="back-circle"
@@ -563,13 +574,13 @@ function ClientTaskDetailPage() {
             <ArrowLeft size={26} />
           </button>
           <div>
-            <h1>Task Detail</h1>
-            <p>Review your task and proposals from AI experts.</p>
+            <h1>Task Details</h1>
+            <p>Review job post details, expert proposals, and contract status.</p>
           </div>
         </header>
 
-        {loading && <div className="alert alert-success">Loading task detail...</div>}
-        {error && <div className="alert alert-danger">{error}</div>}
+        {loading && <div className="alert alert-success" style={{ marginBottom: "24px" }}>Loading task details...</div>}
+        {error && <div className="alert alert-danger" style={{ marginBottom: "24px" }}>{error}</div>}
 
         {!loading && !error && job && (
           <>
@@ -579,142 +590,329 @@ function ClientTaskDetailPage() {
               </div>
             )}
 
-            {/* ── Job summary ─────────────────────────────────────── */}
-            <section className="task-detail-grid">
-              <article className="post-form-card task-detail-card">
-                <div className="task-detail-header">
-                  <div>
-                    <span 
-                      className={`project-status ${job.status === 'removed' ? 'rejected-status' : ''}`}
-                      style={job.status === 'removed' ? { color: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.1)', borderColor: 'rgba(239, 68, 68, 0.2)', textTransform: 'capitalize' } : {}}
-                    >
-                      {job.status === 'removed' ? 'Removed by Admin' : (job.status || "open")}
-                    </span>
-                    <h2>{job.title || job.jobTitle || "Untitled Task"}</h2>
-                  </div>
-
-                  <div className="d-flex align-items-center gap-2">
-                    {job.status === "pending" && (
+            {/* ── 2-COLUMN GRID LAYOUT (matching ServiceRequestDetailPage) ── */}
+            <div className="task-detail-grid" style={{ display: "grid", gridTemplateColumns: "3fr 1.2fr", gap: "30px", alignItems: "start" }}>
+              
+              {/* LEFT COLUMN: JOB OVERVIEW & PROPOSALS */}
+              <div className="d-flex flex-column gap-4">
+                
+                {/* 1. Job details context card */}
+                <article className="post-form-card" style={{ background: "#0b1220", border: "1px solid rgba(255, 255, 255, 0.08)", padding: "24px", borderRadius: "16px" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start", marginBottom: "16px" }}>
+                    <div>
+                      <span className={`project-status ${job.status === 'removed' ? 'rejected-status' : ''}`} style={{ background: "rgba(255,255,255,0.05)", color: "#fff", marginRight: "8px", textTransform: "capitalize" }}>
+                        {job.status === 'removed' ? 'Removed by Admin' : (job.status || "Open Task")}
+                      </span>
+                      <h2 style={{ margin: "12px 0 0 0", color: "#fff", fontSize: "1.4rem", fontWeight: "600" }}>
+                        {job.title || job.jobTitle || "Untitled Task"}
+                      </h2>
+                    </div>
+                    <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                      {job.status === "pending" && (
+                        <button
+                          className="btn btn-success fw-bold"
+                          style={{ borderRadius: "8px", padding: "8px 16px", backgroundColor: "#10b981", border: "none", color: "#fff", cursor: "pointer", display: "flex", alignItems: "center", gap: "6px" }}
+                          type="button"
+                          onClick={handleCreateProjectFromPending}
+                          disabled={loading}
+                        >
+                          <Play size={16} />
+                          Start Project
+                        </button>
+                      )}
                       <button
                         className="draft-btn"
-                        style={{ color: "#10b981", display: "flex", alignItems: "center", gap: "6px" }}
                         type="button"
-                        onClick={handleCreateProjectFromPending}
+                        onClick={fetchDetail}
                         disabled={loading}
+                        style={{ display: "flex", alignItems: "center", gap: "6px" }}
                       >
-                        <Play size={16} />
-                        Start Project
+                        <RefreshCcw size={16} />
+                        Refresh
+                      </button>
+                    </div>
+                  </div>
+                  <p style={{ color: "rgba(255, 255, 255, 0.6)", fontSize: "0.95rem", lineHeight: "1.6", whiteSpace: "pre-wrap" }}>
+                    {job.description || "No description provided."}
+                  </p>
+                  <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: "16px", display: "flex", gap: "24px", color: "rgba(255,255,255,0.4)", fontSize: "0.85rem", flexWrap: "wrap" }}>
+                    <span>Budget Range: <strong style={{ color: "#fff" }}>{formatBudget(job)}</strong></span>
+                    <span>Duration: <strong style={{ color: "#fff" }}>{formatDuration(job.duration_days)}</strong></span>
+                    <span>Proposals: <strong style={{ color: "#fff" }}>{proposalCount}</strong></span>
+                    {job.category && <span>Category: <strong style={{ color: "#fff" }}>{job.category}</strong></span>}
+                  </div>
+                </article>
+
+                {/* 2. Proposals & Negotiation Card */}
+                <article className="post-form-card" style={{ background: "#0b1220", border: "1px solid rgba(255, 255, 255, 0.08)", padding: "24px", borderRadius: "16px" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "14px", marginBottom: "20px" }}>
+                    <div>
+                      <h3 style={{ color: "#fff", fontSize: "1.2rem", margin: 0, fontWeight: "600" }}>Expert Proposals</h3>
+                      <p style={{ color: "rgba(255,255,255,0.5)", fontSize: "0.85rem", margin: "4px 0 0 0" }}>
+                        Proposals are analyzed by AI and ordered by suitability. Click any proposal to view full details.
+                      </p>
+                    </div>
+                    {proposals.length > 0 && (
+                      <button
+                        className="ai-reanalyze-btn"
+                        onClick={handleReanalyzeProposals}
+                        disabled={isAnalyzing}
+                        title="Trigger AI to re-evaluate and score all proposals for this task"
+                      >
+                        <Sparkles size={16} className={isAnalyzing ? "animate-spin" : ""} />
+                        {isAnalyzing ? "Analyzing with AI..." : "Re-analyze with AI"}
                       </button>
                     )}
-                    <button className="draft-btn" type="button" onClick={fetchDetail} disabled={loading}>
-                      <RefreshCcw size={16} /> Refresh
-                    </button>
+                  </div>
+
+                  {analysisFeedback && (
+                    <div style={{ marginBottom: "20px", padding: "12px 16px", borderRadius: "10px", background: "rgba(99, 102, 241, 0.15)", border: "1px solid rgba(168, 85, 247, 0.35)", color: "#c7d2fe", fontSize: "0.88rem", display: "flex", alignItems: "center", gap: "10px" }}>
+                      <Sparkles size={16} color="#a78bfa" />
+                      <span>{analysisFeedback}</span>
+                    </div>
+                  )}
+
+                  {sortedProposals.length === 0 ? (
+                    <div className="empty-projects" style={{ padding: "40px 20px", textAlign: "center" }}>
+                      <MessageSquare size={42} style={{ color: "rgba(255,255,255,0.3)", marginBottom: "12px" }} />
+                      <h3 style={{ color: "#fff", fontSize: "1.1rem" }}>No proposals yet</h3>
+                      <p style={{ color: "rgba(255,255,255,0.5)", fontSize: "0.9rem" }}>Once experts send proposals, they will appear here for your review.</p>
+                    </div>
+                  ) : (
+                    <div style={{ display: "flex", flexDirection: "column", gap: "20px", width: "100%" }}>
+                      {sortedProposals.map((proposal, index) => {
+                        const pid = proposal._id || proposal.id || index;
+                        const hasScore = typeof proposal.ai_match_score === "number";
+                        const isRecommended = hasScore && proposal.ai_match_score >= 80;
+
+                        return (
+                          <div
+                            key={pid}
+                            style={{
+                              width: "100%",
+                              boxSizing: "border-box",
+                              background: "rgba(255, 255, 255, 0.02)",
+                              border: isRecommended ? "1px solid rgba(168, 85, 247, 0.4)" : "1px solid rgba(255, 255, 255, 0.06)",
+                              borderRadius: "12px",
+                              padding: "22px",
+                              transition: "all 0.2s ease"
+                            }}
+                          >
+                            {/* Proposal Header */}
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "16px", marginBottom: "16px", width: "100%", flexWrap: "wrap" }}>
+                              <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+                                <div style={{ width: 48, height: 48, borderRadius: "50%", background: "rgba(255,255,255,0.06)", display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid rgba(255,255,255,0.1)", flexShrink: 0 }}>
+                                  <UserRound size={24} color="#fff" />
+                                </div>
+                                <div>
+                                  <h4 
+                                    onClick={() => navigate(`/profile/${getProposalExpertId(proposal)}`)}
+                                    style={{ margin: 0, color: "#fff", fontSize: "1.1rem", fontWeight: "600", cursor: "pointer" }}
+                                  >
+                                    {getExpertName(proposal)}
+                                  </h4>
+                                  <p style={{ margin: "2px 0 0 0", color: "rgba(255,255,255,0.5)", fontSize: "0.85rem" }}>
+                                    {proposal?.expert?.professionalTitle || proposal.professional_title || "AI Expert"}
+                                  </p>
+                                </div>
+                              </div>
+
+                              {/* Badges */}
+                              <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "8px", justifyContent: "flex-end" }}>
+                                {isRecommended && (
+                                  <span className="recommended-badge" style={{ padding: "4px 12px", fontSize: "0.75rem" }}>
+                                    <Sparkles size={12} /> Recommended
+                                  </span>
+                                )}
+                                {hasScore && (
+                                  <span className={`ai-score-pill ${proposal.ai_match_score >= 80 ? "score-high" : proposal.ai_match_score >= 60 ? "score-medium" : "score-low"}`} style={{ padding: "4px 12px", fontSize: "0.75rem" }}>
+                                    <Sparkles size={12} /> {proposal.ai_match_score}% Match
+                                  </span>
+                                )}
+                                <span style={{
+                                  display: "inline-block",
+                                  padding: "4px 14px",
+                                  borderRadius: "20px",
+                                  fontSize: "0.78rem",
+                                  fontWeight: 600,
+                                  background: statusColor(proposal.status) + "22",
+                                  color: statusColor(proposal.status),
+                                  border: `1px solid ${statusColor(proposal.status)}44`,
+                                  textTransform: "capitalize"
+                                }}>
+                                  {proposal.status === "countered" && isMyTurnToRespond(proposal) ? "Counter Received" : proposal.status || "pending"}
+                                </span>
+                              </div>
+                            </div>
+
+                            {/* Counter Offer Highlight Banner */}
+                            {proposal.status === "countered" && (
+                              <div
+                                style={{
+                                  width: "100%",
+                                  boxSizing: "border-box",
+                                  background: isMyTurnToRespond(proposal) ? "rgba(16, 185, 129, 0.08)" : "rgba(59, 130, 246, 0.08)",
+                                  border: `1px solid ${isMyTurnToRespond(proposal) ? "rgba(16, 185, 129, 0.2)" : "rgba(59, 130, 246, 0.2)"}`,
+                                  borderRadius: "8px",
+                                  padding: "14px",
+                                  marginBottom: "16px",
+                                  color: "#fff",
+                                }}
+                              >
+                                <h5 style={{ margin: "0 0 6px 0", fontWeight: "600", fontSize: "0.9rem", color: isMyTurnToRespond(proposal) ? "#10b981" : "#3b82f6" }}>
+                                  {isMyTurnToRespond(proposal) ? "Counter-proposal Received" : "Counter-proposal Sent"}
+                                </h5>
+                                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", background: "rgba(0,0,0,0.2)", padding: "10px", borderRadius: "6px" }}>
+                                  <div>
+                                    <span style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.4)" }}>COUNTER BID AMOUNT</span>
+                                    <strong style={{ display: "block", fontSize: "1rem", color: "#fff" }}>
+                                      ${proposal.counter_bid_amount}
+                                    </strong>
+                                  </div>
+                                  <div>
+                                    <span style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.4)" }}>COUNTER DELIVERY</span>
+                                    <strong style={{ display: "block", fontSize: "1rem", color: "#fff" }}>
+                                      {proposal.counter_delivery_days ? `${proposal.counter_delivery_days} Days` : "N/A"}
+                                    </strong>
+                                  </div>
+                                  {proposal.counter_cover_letter && (
+                                    <div style={{ gridColumn: "span 2" }}>
+                                      <span style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.4)" }}>COUNTER MESSAGE</span>
+                                      <p style={{ margin: "4px 0 0 0", fontSize: "0.85rem", whiteSpace: "pre-wrap", color: "rgba(255,255,255,0.8)" }}>
+                                        {proposal.counter_cover_letter}
+                                      </p>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Cover Letter / Message Box */}
+                            <div style={{ marginBottom: "16px", width: "100%" }}>
+                              <span style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.4)", fontWeight: "600", textTransform: "uppercase" }}>Cover Letter</span>
+                              <p style={{ margin: "6px 0 0 0", background: "rgba(0,0,0,0.25)", border: "1px solid rgba(255,255,255,0.04)", padding: "14px 16px", borderRadius: "8px", whiteSpace: "pre-wrap", color: "rgba(255,255,255,0.85)", fontSize: "0.92rem", lineHeight: 1.5, maxHeight: "140px", overflowY: "auto", width: "100%", boxSizing: "border-box" }}>
+                                {proposal.coverLetter || proposal.cover_letter || proposal.message || "No cover letter provided."}
+                              </p>
+                            </div>
+
+                            {/* Proposed Metrics & Actions Row */}
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "16px", borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: "16px", width: "100%" }}>
+                              <div style={{ display: "flex", gap: "24px", alignItems: "center" }}>
+                                <div>
+                                  <span style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.4)", fontWeight: "600" }}>PROPOSED BID</span>
+                                  <strong style={{ display: "flex", alignItems: "center", fontSize: "1.15rem", color: "#fff", marginTop: "2px" }}>
+                                    <DollarSign size={16} className="text-primary me-1" />
+                                    {proposal.bid_amount ? `$${proposal.bid_amount}` : "N/A"}
+                                  </strong>
+                                </div>
+                                <div>
+                                  <span style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.4)", fontWeight: "600" }}>DELIVERY</span>
+                                  <strong style={{ display: "flex", alignItems: "center", fontSize: "1.15rem", color: "#fff", marginTop: "2px" }}>
+                                    <Clock size={16} className="text-primary me-1" />
+                                    {proposal.delivery_days ? `${proposal.delivery_days} Days` : "N/A"}
+                                  </strong>
+                                </div>
+                              </div>
+
+                              <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap" }}>
+                                <button
+                                  type="button"
+                                  className="btn btn-sm btn-outline-light"
+                                  style={{ borderRadius: "8px", fontSize: "0.85rem", padding: "7px 16px", color: "rgba(255,255,255,0.8)" }}
+                                  onClick={() => { setSelectedProposal(proposal); setShowCounterForm(false); }}
+                                >
+                                  View Details
+                                </button>
+                                {renderProposalActions(proposal)}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </article>
+              </div>
+
+              {/* RIGHT SIDEBAR: TASK STATUS & HIGHLIGHTS */}
+              <aside className="post-form-card task-proposal-summary" style={{ display: "flex", flexDirection: "column", gap: "20px", background: "#0b1220", border: "1px solid rgba(255, 255, 255, 0.08)", padding: "24px", borderRadius: "16px" }}>
+                <div>
+                  <span style={{ fontSize: "0.8rem", color: "rgba(255,255,255,0.4)", fontWeight: "600" }}>TASK STATUS</span>
+                  <div style={{ marginTop: "8px" }}>
+                    <span className={`project-status ${job.status === 'removed' ? 'rejected-status' : (job.status || 'open')}`} style={{ fontSize: "1rem", padding: "6px 16px", borderRadius: "20px", display: "inline-block", textTransform: "capitalize" }}>
+                      {job.status === 'removed' ? 'Removed by Admin' : (job.status || "open")}
+                    </span>
                   </div>
                 </div>
 
-                <p className="task-detail-description">{job.description || "No description provided."}</p>
-
-                <div className="task-detail-meta">
-                  <span><DollarSign size={18} />{formatBudget(job)}</span>
-                  <span><CalendarDays size={18} />{formatDuration(job.duration_days)}</span>
-                  <span><MessageSquare size={18} />{proposalCount} proposal{proposalCount !== 1 ? "s" : ""}</span>
+                <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: "16px" }}>
+                  <span style={{ fontSize: "0.8rem", color: "rgba(255,255,255,0.4)", fontWeight: "600" }}>BUDGET RANGE</span>
+                  <strong style={{ display: "block", fontSize: "1.4rem", color: "#fff", marginTop: "4px" }}>
+                    {formatBudget(job)}
+                  </strong>
                 </div>
-              </article>
 
-              <aside className="post-form-card task-proposal-summary">
-                <span>PROPOSALS</span>
-                <strong>{proposalCount}</strong>
-                <p>Experts who are interested in this task will appear here after they send a proposal.</p>
-              </aside>
-            </section>
-
-            {/* ── Proposal list ────────────────────────────────────── */}
-            <section className="post-form-card proposals-panel">
-              <div className="projects-toolbar" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "14px" }}>
                 <div>
-                  <h2 className="projects-title">Expert Proposals</h2>
-                  <p className="projects-subtitle">Proposals are analyzed by AI and ordered by suitability.</p>
+                  <span style={{ fontSize: "0.8rem", color: "rgba(255,255,255,0.4)", fontWeight: "600" }}>ESTIMATED DURATION</span>
+                  <strong style={{ display: "block", fontSize: "1.1rem", color: "#fff", marginTop: "4px" }}>
+                    {formatDuration(job.duration_days)}
+                  </strong>
                 </div>
-                {proposals.length > 0 && (
-                  <button
-                    className="ai-reanalyze-btn"
-                    onClick={handleReanalyzeProposals}
-                    disabled={isAnalyzing}
-                    title="Trigger AI to re-evaluate and score all proposals for this task"
-                  >
-                    <Sparkles size={16} className={isAnalyzing ? "animate-spin" : ""} />
-                    {isAnalyzing ? "Analyzing with AI..." : "Re-analyze with AI"}
-                  </button>
-                )}
-              </div>
 
-              {analysisFeedback && (
-                <div style={{ margin: "14px 0 18px", padding: "10px 16px", borderRadius: "10px", background: "rgba(99, 102, 241, 0.15)", border: "1px solid rgba(168, 85, 247, 0.35)", color: "#c7d2fe", fontSize: "0.88rem", display: "flex", alignItems: "center", gap: "10px" }}>
-                  <Sparkles size={16} color="#a78bfa" />
-                  <span>{analysisFeedback}</span>
+                <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: "16px" }}>
+                  <span style={{ fontSize: "0.8rem", color: "rgba(255,255,255,0.4)", fontWeight: "600" }}>TOTAL PROPOSALS</span>
+                  <strong style={{ display: "block", fontSize: "1.4rem", color: "#fff", marginTop: "4px" }}>
+                    {proposalCount}
+                  </strong>
                 </div>
-              )}
 
-              {sortedProposals.length === 0 ? (
-                <div className="empty-projects">
-                  <MessageSquare size={42} />
-                  <h3>No proposals yet</h3>
-                  <p>Once experts send proposals, you will see them in this task detail.</p>
-                </div>
-              ) : (
-                <div className="proposal-list" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "20px" }}>
-                  {sortedProposals.map((proposal, index) => {
-                    const pid = proposal._id || proposal.id || index;
-                    const hasScore = typeof proposal.ai_match_score === "number";
-                    const isRecommended = hasScore && proposal.ai_match_score >= 80;
-                    return (
-                      <article
-                        key={pid}
-                        className={`proposal-card clickable-proposal-card ${isRecommended ? "recommended-card" : ""}`}
-                        style={{ cursor: "pointer", transition: "all 0.25s", padding: "20px", borderRadius: "14px" }}
-                        onClick={() => { setSelectedProposal(proposal); setShowCounterForm(false); }}
+                {/* Accepted proposal & escrow details */}
+                {acceptedProposal && (
+                  <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: "16px" }}>
+                    <span style={{ fontSize: "0.8rem", color: "rgba(255,255,255,0.4)", fontWeight: "600" }}>ACCEPTED EXPERT</span>
+                    <div style={{ marginTop: "6px" }}>
+                      <strong 
+                        onClick={() => navigate(`/profile/${getProposalExpertId(acceptedProposal)}`)}
+                        style={{ color: "#3b82f6", cursor: "pointer", textDecoration: "underline", fontSize: "0.9rem", fontWeight: "600" }}
                       >
-                        <div className="proposal-card-header" style={{ marginBottom: 0, borderBottom: "none" }}>
-                          <div className="proposal-expert">
-                            <div className="proposal-avatar"><UserRound size={22} /></div>
-                            <div>
-                              <h3 style={{ margin: 0 }}>{getExpertName(proposal)}</h3>
-                              <p style={{ margin: "4px 0 0 0" }}>{proposal?.expert?.professionalTitle || proposal.professional_title || "AI Expert"}</p>
-                            </div>
-                          </div>
+                        {getExpertName(acceptedProposal)}
+                      </strong>
+                    </div>
 
-                          {/* Recommendation & Score & Status Badges */}
-                          <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "6px", marginTop: "12px" }}>
-                            {isRecommended && (
-                              <span className="recommended-badge">
-                                <Sparkles size={11} /> Recommended
-                              </span>
-                            )}
-                            {hasScore && (
-                              <span className={`ai-score-pill ${proposal.ai_match_score >= 80 ? "score-high" : proposal.ai_match_score >= 60 ? "score-medium" : "score-low"}`}>
-                                <Sparkles size={11} /> {proposal.ai_match_score}% Match
-                              </span>
-                            )}
-                            <span style={{
-                              display: "inline-block",
-                              padding: "3px 10px",
-                              borderRadius: "20px",
-                              fontSize: "0.75rem",
-                              fontWeight: 600,
-                              background: statusColor(proposal.status) + "22",
-                              color: statusColor(proposal.status),
-                              border: `1px solid ${statusColor(proposal.status)}44`
-                            }}>
-                              {proposal.status === "countered" && isMyTurnToRespond(proposal) ? "Counter Received" : proposal.status || "pending"}
-                            </span>
-                          </div>
+                    <div style={{ marginTop: "12px" }}>
+                      <span style={{ fontSize: "0.8rem", color: "rgba(255,255,255,0.4)", fontWeight: "600" }}>ESCROW PAYMENT</span>
+                      {acceptedProposal.payment_status === "funded" ? (
+                        <div style={{ marginTop: "8px", background: "rgba(16, 185, 129, 0.08)", border: "1px solid rgba(16, 185, 129, 0.2)", borderRadius: "8px", padding: "12px" }}>
+                          <span style={{ color: "#10b981", fontWeight: "600", fontSize: "0.85rem" }}>✓ Funds Secured in Escrow</span>
+                          <p style={{ margin: "4px 0 0 0", color: "rgba(255,255,255,0.5)", fontSize: "0.75rem" }}>
+                            Escrow fully funded.
+                          </p>
                         </div>
-                      </article>
-                    );
-                  })}
-                </div>
-              )}
-            </section>
+                      ) : (
+                        <div style={{ marginTop: "8px" }}>
+                          <div style={{ background: "rgba(245, 158, 11, 0.08)", border: "1px solid rgba(245, 158, 11, 0.2)", borderRadius: "8px", padding: "12px", marginBottom: "12px" }}>
+                            <span style={{ color: "#f59e0b", fontWeight: "600", fontSize: "0.85rem" }}>⚠ Payment Required</span>
+                            <p style={{ margin: "4px 0 0 0", color: "rgba(255,255,255,0.5)", fontSize: "0.75rem" }}>
+                              Fund the escrow to lock in contract terms and start the project.
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleAcceptProposal(acceptedProposal._id || acceptedProposal.id)}
+                            disabled={Boolean(actingProposal)}
+                            style={{ width: "100%", background: "linear-gradient(to right, #6366f1, #4f46e5)", border: "none", borderRadius: "8px", padding: "10px 16px", color: "#fff", fontWeight: "600", fontSize: "0.9rem", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", boxShadow: "0 4px 12px rgba(99,102,241,0.3)" }}
+                          >
+                            {actingProposal ? <Loader2 size={16} className="animate-spin" /> : <CreditCard size={16} />}
+                            Pay ${acceptedProposal.bid_amount} Now
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </aside>
+
+            </div>
 
             {/* ── Proposal detail modal ────────────────────────────── */}
             {selectedProposal && (
@@ -758,7 +956,7 @@ function ClientTaskDetailPage() {
 
                     {/* AI Suitability Match Card */}
                     {typeof selectedProposal.ai_match_score === "number" && (
-                      <div className="ai-analysis-modal-card">
+                      <div className="ai-analysis-modal-card" style={{ marginBottom: "20px" }}>
                         <div className="d-flex justify-content-between align-items-center mb-1">
                           <div className="d-flex align-items-center gap-2">
                             <Sparkles size={16} color={selectedProposal.ai_match_score >= 80 ? "#34d399" : "#fbbf24"} />
@@ -819,7 +1017,7 @@ function ClientTaskDetailPage() {
                       </div>
                     </div>
 
-                    {/* Counter-proposal info (shown when status is countered) */}
+                    {/* Counter-proposal info */}
                     {selectedProposal.status === "countered" && selectedProposal.counter_bid_amount && (
                       <div className="mb-4 p-3 rounded" style={{ background: "rgba(245,158,11,0.08)", border: "1px solid rgba(245,158,11,0.3)" }}>
                         <span className="fw-bold d-block mb-2" style={{ color: "#f59e0b", fontSize: "0.8rem" }}>
@@ -862,7 +1060,7 @@ function ClientTaskDetailPage() {
                       </span>
                     </div>
 
-                    {/* ── Counter-offer form (inline, collapsible) ── */}
+                    {/* ── Counter-offer form (inline) ── */}
                     {showCounterForm && (
                       <div className="mb-4 p-3 rounded" style={{ background: "rgba(99,102,241,0.06)", border: "1px solid rgba(99,102,241,0.3)" }}>
                         <div className="d-flex justify-content-between align-items-center mb-3">
@@ -931,7 +1129,7 @@ function ClientTaskDetailPage() {
                             disabled={actingProposal !== null}
                             style={{ background: "#6366f1", border: "none", color: "#fff", borderRadius: "8px", padding: "8px 20px", cursor: "pointer", fontWeight: 600 }}
                           >
-                            {actingProposal ? <Loader2 className="animate-spin me-1 d-inline" size={14} /> : null}
+                            {actingProposal ? <Loader2 className="animate-spin me-1 d-inline" size={14} /> : <Send size={14} className="me-1" />}
                             Send Counter
                           </button>
                         </div>
@@ -941,7 +1139,7 @@ function ClientTaskDetailPage() {
 
                   {/* Footer action buttons */}
                   <div className="d-flex gap-2 justify-content-end flex-wrap pt-3 border-top border-secondary border-opacity-25 mt-2">
-                    {renderModalActions(selectedProposal)}
+                    {renderProposalActions(selectedProposal)}
                   </div>
                 </div>
               </div>

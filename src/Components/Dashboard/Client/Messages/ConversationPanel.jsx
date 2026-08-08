@@ -33,9 +33,9 @@ export default function ConversationPanel({ conversations = [], activeId, onSele
   const [filter, setFilter] = useState("");
 
   const filteredConversations = conversations.filter(c => {
-    const name = c.other_user_name || "";
+    const name = c.name || c.other_user_name || "";
     const content = c.content || "";
-    const lastMsg = c.last_message || "";
+    const lastMsg = c.lastMessage || c.last_message || "";
     const term = filter.toLowerCase();
 
     return name.toLowerCase().includes(term) ||
@@ -44,27 +44,33 @@ export default function ConversationPanel({ conversations = [], activeId, onSele
   });
 
   return (
-    <aside className="conversation-panel">
-      <div className="conversation-search">
-        <Search size={18} />
-        <input
-          placeholder="Search conversations..."
-          value={filter}
-          onChange={(e) => setFilter(e.target.value)}
-        />
+    <aside className="chat-list-sidebar">
+      <div className="chat-list-header">
+        <div className="chat-search-box">
+          <Search size={16} />
+          <input
+            type="text"
+            placeholder="Search conversations..."
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+          />
+        </div>
       </div>
 
-      <div className="conversation-list">
+      <div className="conversations-scroll">
         {filteredConversations.length === 0 ? (
           <div style={{ padding: "20px", textAlign: "center", color: "#64748b" }}>
             <p>No conversations found</p>
           </div>
         ) : (
           filteredConversations.map((item) => {
-            const name = item.other_user_name || "Direct Chat";
-            const role = item.other_user_role === 'expert'
-              ? (item.other_user_professional_title || "Expert")
-              : (item.other_user_company_name || "Client");
+            const name = item.name || item.other_user_name || "Direct Chat";
+            const role = item.role || (
+              item.other_user_role === 'expert'
+                ? (item.other_user_professional_title || "Expert")
+                : (item.other_user_company_name || "Client")
+            );
+            const avatarUrl = item.avatar || item.other_user_avatar_url;
             const initials = name
               .split(" ")
               .map((word) => word[0])
@@ -72,6 +78,8 @@ export default function ConversationPanel({ conversations = [], activeId, onSele
               .replace(".", "")
               .slice(0, 2)
               .toUpperCase();
+            const timeFormatted = formatTime(item.time || item.last_message_time || item.created_at);
+            const lastMsg = item.lastMessage || item.last_message || "No messages yet";
 
             return (
               <div
@@ -80,33 +88,25 @@ export default function ConversationPanel({ conversations = [], activeId, onSele
                 onClick={() => onSelectConversation(item.id)}
                 style={{ cursor: "pointer" }}
               >
-                <div className="conversation-avatar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-                  {item.other_user_avatar_url ? (
-                    <img src={item.other_user_avatar_url} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                <div className="avatar-wrapper">
+                  {avatarUrl && !avatarUrl.includes('ui-avatars.com') ? (
+                    <img src={avatarUrl} alt={name} className="chat-avatar" style={{ objectFit: 'cover' }} />
                   ) : (
-                    initials
+                    <div className="chat-avatar chat-avatar-initials">{initials}</div>
                   )}
                 </div>
 
-                <div className="conversation-content">
-                  <div className="conversation-top">
-                    <strong>{name}</strong>
-                    <span>{formatTime(item.last_message_time || item.created_at)}</span>
+                <div className="chat-info">
+                  <div className="chat-name-row">
+                    <span className="chat-name">{name}</span>
+                    <span className="chat-time">{timeFormatted}</span>
                   </div>
-
-                  <p style={{ margin: "2px 0", fontSize: "0.8rem", color: "#64748b" }}>{role}</p>
-                  <small style={{
-                    display: "block",
-                    whiteSpace: "nowrap",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    maxWidth: "200px"
-                  }}>
-                    {item.last_message || "No messages yet"}
-                  </small>
+                  <p className="chat-role">{role}</p>
+                  <div className="chat-name-row">
+                    <p className="chat-last-msg">{lastMsg}</p>
+                    {item.unread > 0 && <span className="unread-badge">{item.unread}</span>}
+                  </div>
                 </div>
-
-                {item.unread > 0 && <em>{item.unread}</em>}
               </div>
             );
           })

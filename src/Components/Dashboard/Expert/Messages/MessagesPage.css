@@ -37,10 +37,30 @@
   margin: 4px 0 0;
 }
 
+.market-client-layout .messages-main,
 .expert-dashboard-layout .admin-main-panel.expert-main-panel.messages-main {
   height: 100vh;
   min-height: 0;
   overflow: hidden;
+}
+
+.messages-header-actions button {
+  height: 40px;
+  padding: 0 18px;
+  border-radius: 10px;
+  border: none;
+  background: linear-gradient(135deg, #3b82f6, #22d3ee);
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.2);
+}
+
+.messages-header-actions button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.35);
 }
 
 .messages-layout-container {
@@ -330,8 +350,21 @@
   justify-content: flex-start;
 }
 
-.messages-layout-container .message-row.expert {
+.messages-layout-container .message-row.expert,
+.messages-layout-container .message-row.outgoing {
   justify-content: flex-end;
+}
+
+.messages-layout-container .message-row.incoming {
+  justify-content: flex-start;
+}
+
+.market-client-layout .messages-layout-container .message-row.client {
+  justify-content: flex-end;
+}
+
+.market-client-layout .messages-layout-container .message-row.expert {
+  justify-content: flex-start;
 }
 
 .messages-layout-container .message-bubble-wrapper {
@@ -342,11 +375,21 @@
   max-width: 80%;
 }
 
-.messages-layout-container .message-bubble-wrapper.expert {
+.messages-layout-container .message-bubble-wrapper.expert,
+.messages-layout-container .message-bubble-wrapper.outgoing {
   flex-direction: row-reverse;
 }
 
-.messages-layout-container .message-bubble-wrapper.client {
+.messages-layout-container .message-bubble-wrapper.client,
+.messages-layout-container .message-bubble-wrapper.incoming {
+  flex-direction: row;
+}
+
+.market-client-layout .messages-layout-container .message-bubble-wrapper.client {
+  flex-direction: row-reverse;
+}
+
+.market-client-layout .messages-layout-container .message-bubble-wrapper.expert {
   flex-direction: row;
 }
 
@@ -401,16 +444,30 @@
 }
 
 
-.messages-layout-container .message-row.client .message-bubble {
+.messages-layout-container .message-row.client .message-bubble,
+.messages-layout-container .message-row.incoming .message-bubble {
   background: rgba(15, 30, 53, 0.92);
   color: #dbeafe;
   border-top-left-radius: 6px;
 }
 
-.messages-layout-container .message-row.expert .message-bubble {
+.messages-layout-container .message-row.expert .message-bubble,
+.messages-layout-container .message-row.outgoing .message-bubble {
   background: linear-gradient(135deg, #3b82f6, #22d3ee);
   color: #ffffff;
   border-top-right-radius: 6px;
+}
+
+.market-client-layout .messages-layout-container .message-row.client .message-bubble {
+  background: linear-gradient(135deg, #3b82f6, #22d3ee);
+  color: #ffffff;
+  border-top-right-radius: 6px;
+}
+
+.market-client-layout .messages-layout-container .message-row.expert .message-bubble {
+  background: rgba(15, 30, 53, 0.92);
+  color: #dbeafe;
+  border-top-left-radius: 6px;
 }
 
 .messages-layout-container .message-row .message-bubble p {
