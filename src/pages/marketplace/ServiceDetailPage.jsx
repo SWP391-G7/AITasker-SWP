@@ -176,7 +176,16 @@ const ServiceDetailPage = () => {
                   <div className="expert-bar-name">{service.expert_name || 'Service Expert'}</div>
                   <div className="expert-bar-rating">
                     <Star size={14} fill="#10b981" color="#10b981" />
-                    <span className="rating-val">{service.avg_rating ? Number(service.avg_rating).toFixed(1) : 'N/A'}</span>
+                    <span className="rating-val">
+                      {service.expert_avg_rating
+                        ? Number(service.expert_avg_rating).toFixed(1)
+                        : avgStars !== null
+                          ? Number(avgStars).toFixed(1)
+                          : service.avg_rating
+                            ? Number(service.avg_rating).toFixed(1)
+                            : '5.0'}
+                    </span>
+                    {totalReviews > 0 && <span style={{ color: '#94a3b8', fontSize: '0.85rem', marginLeft: '4px' }}>({totalReviews})</span>}
                   </div>
                 </div>
               </div>
@@ -190,11 +199,13 @@ const ServiceDetailPage = () => {
 
               <div className="detail-section glass-card" style={{ marginTop: '20px' }}>
                 <h3 className="section-header">Client Reviews & Comments</h3>
-                {service.avg_rating && (
+                {(avgStars !== null || service.avg_rating) && (
                   <div className="rating-summary mb-3" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <Star size={20} fill="#10b981" color="#10b981" />
-                    <strong style={{ fontSize: '1.2rem', color: '#fff' }}>{Number(service.avg_rating).toFixed(1)}</strong>
-                    <span style={{ color: '#94a3b8' }}>out of 5.0</span>
+                    <strong style={{ fontSize: '1.2rem', color: '#fff' }}>
+                      {Number(avgStars !== null ? avgStars : service.avg_rating).toFixed(1)}
+                    </strong>
+                    <span style={{ color: '#94a3b8' }}>out of 5.0 ({totalReviews} {totalReviews === 1 ? 'review' : 'reviews'})</span>
                   </div>
                 )}
                 <p style={{ color: '#94a3b8', fontSize: '0.9rem' }}>

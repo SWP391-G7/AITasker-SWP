@@ -28,7 +28,7 @@ const ClientExpertCard = ({ person, isExpertMode, isFavorited, onToggleFavorite 
         <div className="expert-rating">
           <div>
             <Star size={18} fill="currentColor" />
-            <strong>{person.rating}</strong>
+            <strong>{person.rating && Number(person.rating) > 0 ? Number(person.rating).toFixed(1) : "5.0"}</strong>
             {person.reviews > 0 && <span>({person.reviews})</span>}
           </div>
           <strong>

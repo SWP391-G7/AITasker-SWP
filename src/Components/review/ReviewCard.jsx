@@ -37,8 +37,8 @@ const ReviewCard = ({ review }) => {
               <Star
                 key={s}
                 size={14}
-                fill={s <= review.stars ? '#fbbf24' : 'none'}
-                color={s <= review.stars ? '#fbbf24' : '#475569'}
+                fill={s <= review.stars ? '#10b981' : 'none'}
+                color={s <= review.stars ? '#10b981' : '#475569'}
               />
             ))}
           </div>

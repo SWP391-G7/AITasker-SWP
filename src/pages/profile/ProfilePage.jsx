@@ -858,9 +858,15 @@ function ProfilePage() {
   const visibleProfileProjects = profileProjects.slice(0, 2);
   const hasMoreProfileItems = isExpertView ? profileServices.length > 2 : profileProjects.length > 2;
   const skills = isExpertView ? getSkills(expertProfile?.skills) : [];
-  const expertRating = Number(expertProfile?.avgRating);
-  const displayRating = Number.isFinite(expertRating) ? expertRating.toFixed(1) : "Not rated";
-  const isTopRated = Number.isFinite(expertRating) && expertRating >= 4.8;
+  const reviewsComputedAvg = (profileData?.reviews && profileData.reviews.length > 0)
+    ? (profileData.reviews.reduce((acc, r) => acc + Number(r.stars || 5), 0) / profileData.reviews.length)
+    : null;
+  const rawExpertRating = Number(expertProfile?.avgRating);
+  const expertRating = reviewsComputedAvg !== null
+    ? reviewsComputedAvg
+    : (Number.isFinite(rawExpertRating) && rawExpertRating > 0 ? rawExpertRating : null);
+  const displayRating = expertRating !== null ? expertRating.toFixed(1) : "5.0";
+  const isTopRated = expertRating !== null && expertRating >= 4.8;
   const serviceTotal = sumNumbers(profileData.services || [], (service) => Number(service.price));
   const projectBudgetTotal = sumNumbers(profileData.projects || [], getAverageProjectBudget);
   const averageProjectBudget = profileData.projects?.length

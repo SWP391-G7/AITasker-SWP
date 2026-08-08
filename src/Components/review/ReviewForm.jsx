@@ -49,8 +49,8 @@ const ReviewForm = ({ serviceId, onSubmit, submitting }) => {
               key={s}
               size={28}
               className="star-selector-star"
-              fill={s <= (hoveredStar || stars) ? '#fbbf24' : 'none'}
-              color={s <= (hoveredStar || stars) ? '#fbbf24' : '#475569'}
+              fill={s <= (hoveredStar || stars) ? '#10b981' : 'none'}
+              color={s <= (hoveredStar || stars) ? '#10b981' : '#475569'}
               onMouseEnter={() => setHoveredStar(s)}
               onMouseLeave={() => setHoveredStar(0)}
               onClick={() => setStars(s)}

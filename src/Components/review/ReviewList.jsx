@@ -10,6 +10,12 @@ import ReviewCard from './ReviewCard';
 
 // React component “Review List” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
 const ReviewList = ({ reviews = [], avgStars, totalReviews, loading }) => {
+  const effectiveTotal = totalReviews !== undefined ? totalReviews : reviews.length;
+  const computedAvg = reviews.length > 0
+    ? (reviews.reduce((acc, r) => acc + Number(r.stars || 5), 0) / reviews.length)
+    : null;
+  const effectiveAvg = avgStars !== null && avgStars !== undefined ? avgStars : computedAvg;
+
   if (loading) {
     return (
       <div className="reviews-section glass-card">
@@ -23,27 +29,27 @@ const ReviewList = ({ reviews = [], avgStars, totalReviews, loading }) => {
     <div className="reviews-section glass-card">
       <div className="reviews-header">
         <h3 className="section-header">Reviews</h3>
-        {totalReviews > 0 && (
+        {effectiveTotal > 0 && (
           <div className="reviews-summary">
             <div className="reviews-avg-stars">
               {[1, 2, 3, 4, 5].map((s) => (
                 <Star
                   key={s}
                   size={16}
-                  fill={s <= Math.round(avgStars || 0) ? '#fbbf24' : 'none'}
-                  color={s <= Math.round(avgStars || 0) ? '#fbbf24' : '#475569'}
+                  fill={s <= Math.round(Number(effectiveAvg) || 0) ? '#10b981' : 'none'}
+                  color={s <= Math.round(Number(effectiveAvg) || 0) ? '#10b981' : '#475569'}
                 />
               ))}
-              <span className="reviews-avg-value">{avgStars ? Number(avgStars).toFixed(1) : 'N/A'}</span>
+              <span className="reviews-avg-value">{effectiveAvg ? Number(effectiveAvg).toFixed(1) : 'N/A'}</span>
             </div>
             <span className="reviews-count">
-              <MessageSquare size={14} /> {totalReviews} review{totalReviews !== 1 ? 's' : ''}
+              <MessageSquare size={14} /> {effectiveTotal} review{effectiveTotal !== 1 ? 's' : ''}
             </span>
           </div>
         )}
       </div>
 
-      {totalReviews === 0 ? (
+      {effectiveTotal === 0 ? (
         <div className="reviews-empty">
           <MessageSquare size={32} className="reviews-empty-icon" />
           <p>No reviews yet.</p>

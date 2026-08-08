@@ -137,7 +137,7 @@ function ViewAllServicePage() {
               {services.map((service, index) => {
                 const rawService = rawServices[index] || {};
                 const deliveryDays = Number(rawService.deliveryDays) || 1;
-                const ratingValue = Number(rawService.avgRating || service.rating) || 0;
+                const ratingValue = Number(rawService.avgRating || rawService.avg_rating || service.rating) || 5.0;
                 const progress = Math.min(100, Math.round(ratingValue * 20));
 
                 return (
@@ -172,7 +172,7 @@ function ViewAllServicePage() {
                       <div className="view-all-progress-wrap">
                         <div className="view-all-progress-label">
                           <span>Rating</span>
-                          <strong>{service.rating}</strong>
+                          <strong>{Number(ratingValue).toFixed(1)}</strong>
                         </div>
                         <div className="view-all-progress-track">
                           <span style={{ width: `${progress}%` }} />

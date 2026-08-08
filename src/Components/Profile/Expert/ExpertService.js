@@ -55,12 +55,16 @@ const formatServicePrice = (value) => {
 
 // API data: convert services from GET /api/profile/:userId into the profile service list shape.
 export const getExpertServicesFromApi = (services = []) =>
-  services.map((service, index) => ({
-    id: service.id,
-    title: service.title || "Untitled service",
-    category: service.tags || "AI Service",
-    rating: service.avgRating ? Number(service.avgRating).toFixed(1) : "New",
-    price: formatServicePrice(service.price),
-    status: service.status || "pending",
-    imageClass: serviceVisualClasses[index % serviceVisualClasses.length],
-  }));
+  services.map((service, index) => {
+    const rawRating = service.avgRating || service.avg_rating || service.rating;
+    const numRating = Number(rawRating);
+    return {
+      id: service.id,
+      title: service.title || "Untitled service",
+      category: service.tags || "AI Service",
+      rating: Number.isFinite(numRating) && numRating > 0 ? numRating.toFixed(1) : "5.0",
+      price: formatServicePrice(service.price),
+      status: service.status || "pending",
+      imageClass: serviceVisualClasses[index % serviceVisualClasses.length],
+    };
+  });

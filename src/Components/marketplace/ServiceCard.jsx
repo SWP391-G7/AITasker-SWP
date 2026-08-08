@@ -114,10 +114,10 @@ const ServiceCard = ({
           <span className="mp-card-expert-name">
             {isJob ? expert : expert}
           </span>
-          {!isJob && rating && Number(rating) > 0 && (
+          {!isJob && (
             <div className="mp-card-rating">
               <Star size={11} fill="currentColor" />
-              {Number(rating).toFixed(1)}
+              {rating && Number(rating) > 0 ? Number(rating).toFixed(1) : '5.0'}
             </div>
           )}
           {isJob && status && (

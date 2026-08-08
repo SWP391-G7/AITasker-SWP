@@ -119,7 +119,7 @@ export default function ProjectReviewModal({
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-              <Award size={22} style={{ color: '#fbbf24' }} />
+              <Award size={22} style={{ color: '#10b981' }} />
               <h3 style={{ margin: 0, fontSize: '1.35rem', fontWeight: '700', color: '#fff' }}>
                 Leave a Project Review
               </h3>
@@ -179,14 +179,14 @@ export default function ProjectReviewModal({
                   key={s}
                   size={32}
                   style={{ cursor: 'pointer', transition: 'transform 0.15s ease' }}
-                  fill={s <= (hoveredStar || stars) ? '#fbbf24' : 'none'}
-                  color={s <= (hoveredStar || stars) ? '#fbbf24' : '#475569'}
+                  fill={s <= (hoveredStar || stars) ? '#10b981' : 'none'}
+                  color={s <= (hoveredStar || stars) ? '#10b981' : '#475569'}
                   onMouseEnter={() => setHoveredStar(s)}
                   onMouseLeave={() => setHoveredStar(0)}
                   onClick={() => setStars(s)}
                 />
               ))}
-              <span style={{ marginLeft: '10px', fontWeight: '700', fontSize: '1rem', color: '#fbbf24' }}>
+              <span style={{ marginLeft: '10px', fontWeight: '700', fontSize: '1rem', color: '#10b981' }}>
                 {hoveredStar || stars} / 5
               </span>
             </div>

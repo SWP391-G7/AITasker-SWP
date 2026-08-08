@@ -577,13 +577,13 @@ export default function ProjectDetailPage() {
               {/* ── POST-PROJECT REVIEW BANNER ──────────────────────────── */}
               {reviewStatus?.isCompleted && (
                 <div style={{
-                  background: reviewStatus.hasReviewed ? 'rgba(16,185,129,0.1)' : reviewStatus.isWithin14Days ? 'rgba(251,191,36,0.12)' : 'rgba(255,255,255,0.05)',
-                  border: `1px solid ${reviewStatus.hasReviewed ? 'rgba(16,185,129,0.3)' : reviewStatus.isWithin14Days ? 'rgba(251,191,36,0.3)' : 'rgba(255,255,255,0.1)'}`,
+                  background: reviewStatus.hasReviewed ? 'rgba(16,185,129,0.1)' : reviewStatus.isWithin14Days ? 'rgba(16,185,129,0.12)' : 'rgba(255,255,255,0.05)',
+                  border: `1px solid ${reviewStatus.hasReviewed ? 'rgba(16,185,129,0.3)' : reviewStatus.isWithin14Days ? 'rgba(16,185,129,0.3)' : 'rgba(255,255,255,0.1)'}`,
                   borderRadius: '12px', padding: '16px 20px', color: '#fff', marginBottom: '20px',
                   display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px', flexWrap: 'wrap'
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, minWidth: '260px' }}>
-                    <Star size={24} style={{ color: reviewStatus.hasReviewed ? '#34d399' : reviewStatus.isWithin14Days ? '#fbbf24' : 'rgba(255,255,255,0.4)', flexShrink: 0 }} fill={reviewStatus.hasReviewed || reviewStatus.isWithin14Days ? (reviewStatus.hasReviewed ? '#34d399' : '#fbbf24') : 'none'} />
+                    <Star size={24} style={{ color: reviewStatus.hasReviewed || reviewStatus.isWithin14Days ? '#10b981' : 'rgba(255,255,255,0.4)', flexShrink: 0 }} fill={reviewStatus.hasReviewed || reviewStatus.isWithin14Days ? '#10b981' : 'none'} />
                     <div>
                       <h4 style={{ margin: '0 0 4px 0', fontSize: '1rem', color: '#fff' }}>
                         {reviewStatus.hasReviewed
@@ -605,8 +605,8 @@ export default function ProjectDetailPage() {
                     <button
                       type="button"
                       style={{
-                        backgroundColor: '#fbbf24',
-                        color: '#0f172a',
+                        backgroundColor: '#10b981',
+                        color: '#ffffff',
                         border: 'none',
                         borderRadius: '8px',
                         padding: '10px 18px',
@@ -619,7 +619,7 @@ export default function ProjectDetailPage() {
                       }}
                       onClick={() => setReviewModalOpen(true)}
                     >
-                      <Star size={16} fill="#0f172a" /> Leave Review Now
+                      <Star size={16} fill="#ffffff" /> Leave Review Now
                     </button>
                   )}
                 </div>

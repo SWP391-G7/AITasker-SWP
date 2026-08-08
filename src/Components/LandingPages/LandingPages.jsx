@@ -838,7 +838,7 @@ const LandingPages = () => {
                         )}
                         {exp.avg_rating > 0 && (
                           <div className="expert-rating px-2 py-1 rounded-pill d-flex align-items-center gap-1 shadow">
-                            <Star size={12} className="text-warning fill-warning" />
+                            <Star size={12} fill="#10b981" color="#10b981" />
                             <span>{Number(exp.avg_rating).toFixed(1)}</span>
                           </div>
                         )}
@@ -899,7 +899,7 @@ const LandingPages = () => {
                         )}
                         {client.avg_rating > 0 && (
                           <div className="expert-rating px-2 py-1 rounded-pill d-flex align-items-center gap-1 shadow">
-                            <Star size={12} className="text-warning fill-warning" />
+                            <Star size={12} fill="#10b981" color="#10b981" />
                             <span>{Number(client.avg_rating).toFixed(1)}</span>
                           </div>
                         )}
