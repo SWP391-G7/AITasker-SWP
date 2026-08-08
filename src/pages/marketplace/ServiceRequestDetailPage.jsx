@@ -286,6 +286,12 @@ function ServiceRequestDetailPage() {
       setSubmitting(true);
       setActionError("");
       const result = await initiateInvitationPayment(invitation.id, paymentSource);
+      if (result.funded) {
+        setShowPaymentDialog(false);
+        await fetchRequestDetail();
+        setSubmitting(false);
+        return;
+      }
       if (!result.redirectUrl) throw new Error('Failed to generate payment redirect link');
       window.location.href = result.redirectUrl;
     } catch (err) {

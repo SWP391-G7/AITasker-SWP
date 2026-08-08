@@ -251,6 +251,14 @@ function ClientTaskDetailPage() {
     try {
       setError("");
       const result = await initiateProposalPayment(proposalId, paymentSource);
+      if (result.funded) {
+        // Direct funding via wallet balance
+        setPaymentProposal(null);
+        setPendingProposalId(proposalId);
+        setShowProjectPrompt(true);
+        fetchDetail();
+        return;
+      }
       if (result.redirectUrl) {
         window.location.href = result.redirectUrl;
       } else {

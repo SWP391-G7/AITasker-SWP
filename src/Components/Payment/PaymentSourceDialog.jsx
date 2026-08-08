@@ -14,9 +14,9 @@ const money = (value) => `$${Number(value || 0).toLocaleString(undefined, { mini
 export default function PaymentSourceDialog({ open, title, amount, availableBalance, busy, onClose, onSelect }) {
   if (!open) return null
   const options = [
-    { id: 'combined', icon: Layers3, label: 'Wallet + Card', description: 'Use available wallet credit first, then charge the remainder to card.' },
-    { id: 'wallet', icon: WalletCards, label: 'Wallet balance', description: 'Pay the full amount using available, unlocked wallet credit.' },
-    { id: 'card', icon: CreditCard, label: 'Credit card', description: 'Charge the full amount to the mock payment gateway.' },
+    { id: 'combined', icon: Layers3, label: 'Wallet + Card', description: 'Use available wallet credit first, then charge the remainder via Escrow Pay.' },
+    { id: 'wallet', icon: WalletCards, label: 'Wallet balance', description: 'Pay the full amount using available, unlocked wallet credit directly.' },
+    { id: 'card', icon: CreditCard, label: 'Credit card / Escrow Pay', description: 'Checkout securely using the official Escrow Pay checkout wizard.' },
   ]
   return (
     <div className="modal-overlay" onClick={onClose}>

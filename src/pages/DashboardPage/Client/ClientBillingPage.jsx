@@ -494,16 +494,16 @@ function ClientBillingPage() {
                   <WalletCards size={20} />
                   <span className="sandbox-badge">SANDBOX MODE</span>
                 </div>
-                <h4 className="card-title">Mock Gateway</h4>
+                <h4 className="card-title">Escrow Sandbox</h4>
                 <p className="sandbox-desc">
-                  Simulated card checkout for proposal funding. No real cards stored.
+                  Powered by Escrow.com Sandbox API. Secured buyer & seller transactions with inspection protection.
                 </p>
                 <ul className="sandbox-features">
                   <li>
-                    <CheckCircle2 size={14} /> Signed webhook confirmation
+                    <CheckCircle2 size={14} /> Escrow.com Sandbox API integration
                   </li>
                   <li>
-                    <CheckCircle2 size={14} /> Escrow transaction tracking
+                    <CheckCircle2 size={14} /> Verified escrow transaction tracking
                   </li>
                 </ul>
                 <button
