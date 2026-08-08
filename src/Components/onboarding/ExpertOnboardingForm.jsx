@@ -5,17 +5,15 @@
  * Luồng chính: Nhận props, render trạng thái tương ứng và báo sự kiện lên component cha qua callback khi cần.
  * Lưu ý bảo trì: Không thay đổi props; state cục bộ chỉ nên phục vụ hành vi thuộc phạm vi component.
  */
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { submitExpertOnboarding } from "../../Services/onboardingService";
-import AIExtendButton from "../AI/AIExtendButton";
-import AISkeletonLoader from "../AI/AISkeletonLoader";
-import Toast from "../Toast";
-import "./Onboarding.css";
+import { useState } from "react"
+import { useNavigate } from "react-router-dom"
+import { submitExpertOnboarding } from "../../Services/onboardingService"
+import Toast from "../Toast"
+import "./Onboarding.css"
 
 // React component “Expert Onboarding Form” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
 function ExpertOnboardingForm({ onBack }) {
-  const navigate = useNavigate();
+  const navigate = useNavigate()
 
   const [formData, setFormData] = useState({
     professionalTitle: "",
@@ -24,12 +22,10 @@ function ExpertOnboardingForm({ onBack }) {
     portfolioUrl: "",
     hourlyRate: "",
     bio: "",
-  });
+  })
 
-  const [error, setError] = useState("");
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [isAiOptimized, setIsAiOptimized] = useState(false);
-  const [toastError, setToastError] = useState("");
+  const [error, setError] = useState("")
+  const [toastError, setToastError] = useState("")
 
   // Handler “handle extend success” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleExtendSuccess = (data) => {
@@ -38,73 +34,70 @@ function ExpertOnboardingForm({ onBack }) {
       professionalTitle: data.professionalTitle || prev.professionalTitle,
       skills: data.skills || prev.skills,
       bio: data.bio || prev.bio,
-    }));
-    setIsGenerating(false);
-    setIsAiOptimized(true);
-  };
+    }))
+  }
 
   // Handler “handle change” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleChange = (event) => {
-    const { name, value } = event.target;
+    const { name, value } = event.target
 
     setFormData({
       ...formData,
       [name]: value,
-    });
-  };
+    })
+  }
 
   // React component “validate Form” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
   const validateForm = () => {
     if (!formData.professionalTitle.trim()) {
-      return "Professional title is required";
+      return "Professional title is required"
     }
 
     if (!formData.skills.trim()) {
-      return "Skills are required";
+      return "Skills are required"
     }
 
     if (!formData.experience.trim()) {
-      return "Experience is required";
+      return "Experience is required"
     }
 
     if (!formData.hourlyRate.trim()) {
-      return "Hourly rate is required";
+      return "Hourly rate is required"
     }
 
     if (Number(formData.hourlyRate) <= 0) {
-      return "Hourly rate must be greater than 0";
+      return "Hourly rate must be greater than 0"
     }
 
-    return "";
-  };
+    return ""
+  }
 
   // Handler “handle submit” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleSubmit = async (event) => {
-    event.preventDefault();
+    event.preventDefault()
 
-    const validateError = validateForm();
+    const validateError = validateForm()
 
     if (validateError) {
-      setError(validateError);
-      return;
+      setError(validateError)
+      return
     }
 
     try {
-      setError("");
+      setError("")
 
-      const result = await submitExpertOnboarding(formData);
+      const result = await submitExpertOnboarding(formData)
 
-      console.log("Expert onboarding success:", result);
+      console.log("Expert onboarding success:", result)
 
-      navigate("/expert/dashboard");
+      navigate("/expert/dashboard")
     } catch (error) {
-      setError("Submit failed. Please try again.");
+      setError("Submit failed. Please try again.")
     }
-  };
+  }
 
   return (
     <div className="onboarding-card" style={{ position: "relative" }}>
-      {isGenerating && <AISkeletonLoader message="AI Engine is polishing your profile details..." />}
       <button type="button" className="back-btn" onClick={onBack}>
         ← Back
       </button>
@@ -176,22 +169,6 @@ function ExpertOnboardingForm({ onBack }) {
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
             <label style={{ margin: 0 }}>Short bio</label>
             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-              {isAiOptimized && (
-                <span className="ai-sparkle-badge">
-                  ✨ AI Optimized
-                </span>
-              )}
-              <AIExtendButton
-                draftFields={[formData.professionalTitle, formData.bio]}
-                onExtendStart={() => {
-                  setIsGenerating(true);
-                  setIsAiOptimized(false);
-                }}
-                onExtendSuccess={handleExtendSuccess}
-                onExtendFailure={() => setIsGenerating(false)}
-                type="bio"
-                onErrorToast={(msg) => setToastError(msg)}
-              />
             </div>
           </div>
           <textarea
@@ -210,7 +187,7 @@ function ExpertOnboardingForm({ onBack }) {
       </form>
       {toastError && <Toast message={toastError} onClose={() => setToastError("")} />}
     </div>
-  );
+  )
 }
 
-export default ExpertOnboardingForm;
+export default ExpertOnboardingForm

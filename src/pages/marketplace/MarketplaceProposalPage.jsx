@@ -5,8 +5,8 @@
  * Luồng chính: Đọc route/location, gọi service trong effect/handler, quản lý loading/error/form rồi truyền props xuống UI con.
  * Lưu ý bảo trì: Giữ side effect trong handler/effect và không mutate trực tiếp state hoặc dữ liệu API.
  */
-import { useEffect, useMemo, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useEffect, useMemo, useState } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
 import {
   AlertCircle,
   BriefcaseBusiness,
@@ -20,58 +20,54 @@ import {
   Loader2,
   Send,
   X,
-} from 'lucide-react';
-import { getMarketplaceJobById } from '../../Services/serviceService';
-import { createProposal } from '../../Services/proposalService';
-import { getStoredUser } from '../../Services/checkLogin';
-import AIExtendButton from '../../Components/AI/AIExtendButton';
-import AISkeletonLoader from '../../Components/AI/AISkeletonLoader';
-import Toast from '../../Components/Toast';
-import '../Style/ServiceDetail.css';
+} from 'lucide-react'
+import { getMarketplaceJobById } from '../../Services/serviceService'
+import { createProposal } from '../../Services/proposalService'
+import { getStoredUser } from '../../Services/checkLogin'
+import Toast from '../../Components/Toast'
+import '../Style/ServiceDetail.css'
 
 // Chuyển đổi dữ liệu cho “parse money” thành định dạng mà lớp gọi hoặc giao diện cần.
 const parseMoney = (value) => {
-  const parsed = Number(String(value || '0').replace(/[^0-9.]/g, ''));
-  return Number.isFinite(parsed) ? parsed : 0;
-};
+  const parsed = Number(String(value || '0').replace(/[^0-9.]/g, ''))
+  return Number.isFinite(parsed) ? parsed : 0
+}
 
 // Chuyển đổi dữ liệu cho “format money” thành định dạng mà lớp gọi hoặc giao diện cần.
-const formatMoney = (value) => `$${parseMoney(value).toLocaleString()}`;
+const formatMoney = (value) => `$${parseMoney(value).toLocaleString()}`
 
 // Chuyển đổi dữ liệu cho “format budget” thành định dạng mà lớp gọi hoặc giao diện cần.
 const formatBudget = (task) => {
-  const min = parseMoney(task?.budget_min ?? task?.budgetMin);
-  const max = parseMoney(task?.budget_max ?? task?.budgetMax ?? task?.budget);
+  const min = parseMoney(task?.budget_min ?? task?.budgetMin)
+  const max = parseMoney(task?.budget_max ?? task?.budgetMax ?? task?.budget)
 
-  if (min && max && min !== max) return `${formatMoney(min)} - ${formatMoney(max)}`;
-  if (max) return formatMoney(max);
-  if (min) return formatMoney(min);
-  return 'Budget TBD';
-};
+  if (min && max && min !== max) return `${formatMoney(min)} - ${formatMoney(max)}`
+  if (max) return formatMoney(max)
+  if (min) return formatMoney(min)
+  return 'Budget TBD'
+}
 
 // Chuyển đổi dữ liệu cho “format date” thành định dạng mà lớp gọi hoặc giao diện cần.
 const formatDate = (value) => {
-  if (!value) return 'No deadline';
-  return new Date(value).toLocaleDateString();
-};
+  if (!value) return 'No deadline'
+  return new Date(value).toLocaleDateString()
+}
 
 // React component “Marketplace Proposal Page” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
 const MarketplaceProposalPage = () => {
-  const { id } = useParams();
-  const navigate = useNavigate();
-  const [task, setTask] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [submitting, setSubmitting] = useState(false);
-  const [submitMessage, setSubmitMessage] = useState('');
-  const [submitError, setSubmitError] = useState('');
+  const { id } = useParams()
+  const navigate = useNavigate()
+  const [task, setTask] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [submitting, setSubmitting] = useState(false)
+  const [submitMessage, setSubmitMessage] = useState('')
+  const [submitError, setSubmitError] = useState('')
 
-  const [coverLetter, setCoverLetter] = useState('');
-  const [implementationApproach, setImplementationApproach] = useState('');
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [isAiOptimized, setIsAiOptimized] = useState(false);
-  const [toastError, setToastError] = useState('');
-  const currentUser = getStoredUser();
+  const [coverLetter, setCoverLetter] = useState('')
+  const [implementationApproach, setImplementationApproach] = useState('')
+  const [toastError, setToastError] = useState('')
+  const currentUser = getStoredUser()
 
   if (currentUser?.role !== 'expert') {
     return (
@@ -99,86 +95,83 @@ const MarketplaceProposalPage = () => {
           </section>
         </div>
       </div>
-    );
+    )
   }
 
   // Handler “handle extend success” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleExtendSuccess = (data) => {
-    if (data.coverLetter) setCoverLetter(data.coverLetter);
-    if (data.implementationApproach) setImplementationApproach(data.implementationApproach);
-    setIsGenerating(false);
-    setIsAiOptimized(true);
-  };
+    if (data.coverLetter) setCoverLetter(data.coverLetter)
+    if (data.implementationApproach) setImplementationApproach(data.implementationApproach)
+  }
 
   useEffect(() => {
     // Đọc hoặc suy ra dữ liệu cho nghiệp vụ “fetch task”; không nên tạo side effect ngoài những request đọc đã nêu trong thân hàm.
     const fetchTask = async () => {
       if (!id) {
-        setLoading(false);
-        return;
+        setLoading(false)
+        return
       }
 
       try {
-        setLoading(true);
-        setError(null);
-        const data = await getMarketplaceJobById(id);
-        setTask(data);
+        setLoading(true)
+        setError(null)
+        const data = await getMarketplaceJobById(id)
+        setTask(data)
       } catch (err) {
-        setError(err.message || 'Failed to load task summary.');
+        setError(err.message || 'Failed to load task summary.')
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
-    fetchTask();
-  }, [id]);
+    fetchTask()
+  }, [id])
 
   // Handler “handle submit proposal” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleSubmitProposal = async (event) => {
-    event.preventDefault();
+    event.preventDefault()
 
-    const form = event.currentTarget;
-    const formData = new FormData(form);
-    const coverLetter = String(formData.get('coverLetter') || '').trim();
-    const implementationApproach = String(formData.get('implementationApproach') || '').trim();
-    const portfolioUrl = String(formData.get('portfolioUrl') || '').trim();
-    const bidAmount = formData.get('bidAmount');
-    const deliveryDays = formData.get('deliveryDays');
+    const form = event.currentTarget
+    const formData = new FormData(form)
+    const coverLetter = String(formData.get('coverLetter') || '').trim()
+    const implementationApproach = String(formData.get('implementationApproach') || '').trim()
+    const portfolioUrl = String(formData.get('portfolioUrl') || '').trim()
+    const bidAmount = formData.get('bidAmount')
+    const deliveryDays = formData.get('deliveryDays')
 
     const combinedCoverLetter = [
       coverLetter,
       implementationApproach ? `Implementation Approach:\n${implementationApproach}` : '',
       portfolioUrl ? `Portfolio / Reference:\n${portfolioUrl}` : '',
-    ].filter(Boolean).join('\n\n');
+    ].filter(Boolean).join('\n\n')
 
     try {
-      setSubmitting(true);
-      setSubmitError('');
-      setSubmitMessage('');
+      setSubmitting(true)
+      setSubmitError('')
+      setSubmitMessage('')
 
       await createProposal({
         jobId: id,
         coverLetter: combinedCoverLetter,
         bidAmount: Number(bidAmount),
         deliveryDays: Number(deliveryDays),
-      });
+      })
 
-      setSubmitMessage('Proposal submitted successfully. The client can now review it from their task detail.');
-      form.reset();
-      setCoverLetter('');
-      setImplementationApproach('');
-      setIsAiOptimized(false);
+      setSubmitMessage('Proposal submitted successfully. The client can now review it from their task detail.')
+      form.reset()
+      setCoverLetter('')
+      setImplementationApproach('')
       form.querySelectorAll('input, textarea').forEach((el) => {
-        if (el.type !== 'hidden' && el.type !== 'submit' && el.type !== 'reset') el.value = '';
-      });
+        if (el.type !== 'hidden' && el.type !== 'submit' && el.type !== 'reset') el.value = ''
+      })
     } catch (err) {
-      setSubmitError(err.message || 'Failed to submit proposal.');
+      setSubmitError(err.message || 'Failed to submit proposal.')
     } finally {
-      setSubmitting(false);
+      setSubmitting(false)
     }
-  };
+  }
 
-  const requiredSkill = task?.required_skill || task?.requiredSkill || 'AI Task';
+  const requiredSkill = task?.required_skill || task?.requiredSkill || 'AI Task'
 
   const proposalDefaults = useMemo(
     () => ({
@@ -186,7 +179,7 @@ const MarketplaceProposalPage = () => {
       deliveryDays: task?.duration_days || task?.durationDays || '',
     }),
     [task]
-  );
+  )
 
   return (
     <div className="proposal-page-wrapper">
@@ -220,7 +213,6 @@ const MarketplaceProposalPage = () => {
           ) : (
             <div className="proposal-layout">
               <main className="proposal-form-card glass-card" style={{ position: "relative" }}>
-                {isGenerating && <AISkeletonLoader message="AI Engine is composing your proposal details..." />}
                 <div className="proposal-section-heading">
                   <FileText size={22} />
                   <div>
@@ -233,25 +225,6 @@ const MarketplaceProposalPage = () => {
                   <label className="proposal-field">
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                       <span>Cover Letter</span>
-                      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                        {isAiOptimized && (
-                          <span className="ai-sparkle-badge">
-                            ✨ AI Optimized
-                          </span>
-                        )}
-                        <AIExtendButton
-                          draftFields={[coverLetter, implementationApproach]}
-                          onExtendStart={() => {
-                            setIsGenerating(true);
-                            setIsAiOptimized(false);
-                          }}
-                          onExtendSuccess={handleExtendSuccess}
-                          onExtendFailure={() => setIsGenerating(false)}
-                          type="proposal"
-                          context={task ? `Task Title: ${task.title}\nTask Description: ${task.description}` : ''}
-                          onErrorToast={(msg) => setToastError(msg)}
-                        />
-                      </div>
                     </div>
                     <textarea
                       name="coverLetter"
@@ -270,10 +243,10 @@ const MarketplaceProposalPage = () => {
                         <DollarSign size={18} />
                         <input name="bidAmount" type="number" min="1" step="1" defaultValue={proposalDefaults.bidAmount} placeholder="1200" required />
                         <div className="proposal-input-stepper">
-                          <button type="button" tabIndex={-1} onClick={(e) => { const i = e.currentTarget.parentElement.previousElementSibling; i.stepUp(); i.dispatchEvent(new Event('input', { bubbles: true })); }}>
+                          <button type="button" tabIndex={-1} onClick={(e) => { const i = e.currentTarget.parentElement.previousElementSibling; i.stepUp(); i.dispatchEvent(new Event('input', { bubbles: true })) }}>
                             <ChevronUp size={14} />
                           </button>
-                          <button type="button" tabIndex={-1} onClick={(e) => { const i = e.currentTarget.parentElement.previousElementSibling; i.stepDown(); i.dispatchEvent(new Event('input', { bubbles: true })); }}>
+                          <button type="button" tabIndex={-1} onClick={(e) => { const i = e.currentTarget.parentElement.previousElementSibling; i.stepDown(); i.dispatchEvent(new Event('input', { bubbles: true })) }}>
                             <ChevronDown size={14} />
                           </button>
                         </div>
@@ -286,10 +259,10 @@ const MarketplaceProposalPage = () => {
                         <Clock size={18} />
                         <input name="deliveryDays" type="number" min="1" defaultValue={proposalDefaults.deliveryDays} placeholder="14" required />
                         <div className="proposal-input-stepper">
-                          <button type="button" tabIndex={-1} onClick={(e) => { const i = e.currentTarget.parentElement.previousElementSibling; i.stepUp(); i.dispatchEvent(new Event('input', { bubbles: true })); }}>
+                          <button type="button" tabIndex={-1} onClick={(e) => { const i = e.currentTarget.parentElement.previousElementSibling; i.stepUp(); i.dispatchEvent(new Event('input', { bubbles: true })) }}>
                             <ChevronUp size={14} />
                           </button>
-                          <button type="button" tabIndex={-1} onClick={(e) => { const i = e.currentTarget.parentElement.previousElementSibling; i.stepDown(); i.dispatchEvent(new Event('input', { bubbles: true })); }}>
+                          <button type="button" tabIndex={-1} onClick={(e) => { const i = e.currentTarget.parentElement.previousElementSibling; i.stepDown(); i.dispatchEvent(new Event('input', { bubbles: true })) }}>
                             <ChevronDown size={14} />
                           </button>
                         </div>
@@ -367,9 +340,8 @@ const MarketplaceProposalPage = () => {
           )}
         </section>
       </div>
-      {toastError && <Toast message={toastError} onClose={() => setToastError('')} />}
     </div>
-  );
-};
+  )
+}
 
-export default MarketplaceProposalPage;
+export default MarketplaceProposalPage

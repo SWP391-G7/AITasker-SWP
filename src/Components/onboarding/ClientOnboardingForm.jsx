@@ -5,28 +5,24 @@
  * Luồng chính: Nhận props, render trạng thái tương ứng và báo sự kiện lên component cha qua callback khi cần.
  * Lưu ý bảo trì: Không thay đổi props; state cục bộ chỉ nên phục vụ hành vi thuộc phạm vi component.
  */
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { submitClientOnboarding } from "../../Services/onboardingService";
-import AIExtendButton from "../AI/AIExtendButton";
-import AISkeletonLoader from "../AI/AISkeletonLoader";
-import Toast from "../Toast";
-import "./Onboarding.css";
+import { useState } from "react"
+import { useNavigate } from "react-router-dom"
+import { submitClientOnboarding } from "../../Services/onboardingService"
+import Toast from "../Toast"
+import "./Onboarding.css"
 
 // React component “Client Onboarding Form” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
 function ClientOnboardingForm({ onBack }) {
-  const navigate = useNavigate();
+  const navigate = useNavigate()
 
   const [formData, setFormData] = useState({
     companyName: "",
     industry: "",
     bio: "",
-  });
+  })
 
-  const [error, setError] = useState("");
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [isAiOptimized, setIsAiOptimized] = useState(false);
-  const [toastError, setToastError] = useState("");
+  const [error, setError] = useState("")
+  const [toastError, setToastError] = useState("")
 
   // Handler “handle extend success” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleExtendSuccess = (data) => {
@@ -35,61 +31,58 @@ function ClientOnboardingForm({ onBack }) {
       companyName: data.companyName || data.professionalTitle || prev.companyName,
       industry: data.industry || prev.industry,
       bio: data.bio || prev.bio,
-    }));
-    setIsGenerating(false);
-    setIsAiOptimized(true);
-  };
+    }))
+  }
 
   // Handler “handle change” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleChange = (event) => {
-    const { name, value } = event.target;
+    const { name, value } = event.target
 
     setFormData({
       ...formData,
       [name]: value,
-    });
-  };
+    })
+  }
 
   // React component “validate Form” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
   const validateForm = () => {
     if (!formData.companyName.trim()) {
-      return "Company name is required";
+      return "Company name is required"
     }
 
     if (!formData.industry.trim()) {
-      return "Industry is required";
+      return "Industry is required"
     }
 
-    return "";
-  };
+    return ""
+  }
 
   // Handler “handle submit” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleSubmit = async (event) => {
-    event.preventDefault();
+    event.preventDefault()
 
-    const validateError = validateForm();
+    const validateError = validateForm()
 
     if (validateError) {
-      setError(validateError);
-      return;
+      setError(validateError)
+      return
     }
 
     try {
-      setError("");
+      setError("")
 
-      const result = await submitClientOnboarding(formData);
+      const result = await submitClientOnboarding(formData)
 
-      console.log("Client onboarding success:", result);
+      console.log("Client onboarding success:", result)
 
       navigate("/client/dashboard")
     } catch (error) {
-      setError("Submit failed. Please try again.");
+      setError("Submit failed. Please try again.")
     }
-  };
+  }
 
   return (
     <div className="onboarding-card" style={{ position: "relative" }}>
-      {isGenerating && <AISkeletonLoader message="AI Engine is polishing your company details..." />}
       <button type="button" className="back-btn" onClick={onBack}>
         ← Back
       </button>
@@ -124,22 +117,6 @@ function ClientOnboardingForm({ onBack }) {
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
             <label style={{ margin: 0 }}>Company Bio</label>
             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-              {isAiOptimized && (
-                <span className="ai-sparkle-badge">
-                  ✨ AI Optimized
-                </span>
-              )}
-              <AIExtendButton
-                draftFields={[formData.companyName, formData.bio]}
-                onExtendStart={() => {
-                  setIsGenerating(true);
-                  setIsAiOptimized(false);
-                }}
-                onExtendSuccess={handleExtendSuccess}
-                onExtendFailure={() => setIsGenerating(false)}
-                type="bio"
-                onErrorToast={(msg) => setToastError(msg)}
-              />
             </div>
           </div>
           <textarea
@@ -159,7 +136,7 @@ function ClientOnboardingForm({ onBack }) {
       </form>
       {toastError && <Toast message={toastError} onClose={() => setToastError("")} />}
     </div>
-  );
+  )
 }
 
-export default ClientOnboardingForm;
+export default ClientOnboardingForm

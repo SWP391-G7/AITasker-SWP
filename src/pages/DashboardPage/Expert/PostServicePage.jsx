@@ -5,28 +5,26 @@
  * Luồng chính: Đọc route/location, gọi service trong effect/handler, quản lý loading/error/form rồi truyền props xuống UI con.
  * Lưu ý bảo trì: Giữ side effect trong handler/effect và không mutate trực tiếp state hoặc dữ liệu API.
  */
-import React, { useState, useRef, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Plus, Trash2, Camera, Video, AlertCircle, CheckCircle2, Clock, RefreshCcw } from "lucide-react";
-import ExpertSidebar from "../../../Components/Dashboard/Expert/ExpertSidebar";
-import ExpertHeader from "../../../Components/Dashboard/Expert/ExpertHeader";
-import Footer from "../../../Components/Footer/Footer";
-import AIExtendButton from "../../../Components/AI/AIExtendButton";
-import AISkeletonLoader from "../../../Components/AI/AISkeletonLoader";
-import Toast from "../../../Components/Toast";
-import { logout } from "../../../Services/authService";
-import { publishService } from "../../../Services/serviceService";
-import { uploadImage } from "../../../Services/uploadService";
-import "../Style/AdminDashboardPage.css";
-import "../Client/ClientMarketplace.css";
-import "../../../Components/Dashboard/Expert/PostService/PostService.css";
+import React, { useState, useRef, useMemo } from "react"
+import { useNavigate } from "react-router-dom"
+import { ArrowLeft, Plus, Trash2, Camera, Video, AlertCircle, CheckCircle2, Clock, RefreshCcw } from "lucide-react"
+import ExpertSidebar from "../../../Components/Dashboard/Expert/ExpertSidebar"
+import ExpertHeader from "../../../Components/Dashboard/Expert/ExpertHeader"
+import Footer from "../../../Components/Footer/Footer"
+import Toast from "../../../Components/Toast"
+import { logout } from "../../../Services/authService"
+import { publishService } from "../../../Services/serviceService"
+import { uploadImage } from "../../../Services/uploadService"
+import "../Style/AdminDashboardPage.css"
+import "../Client/ClientMarketplace.css"
+import "../../../Components/Dashboard/Expert/PostService/PostService.css"
 
 // Tạo hoặc gửi dữ liệu cho nghiệp vụ “post service page”, đồng thời chuyển lỗi về caller/UI theo cơ chế của module.
 function PostServicePage() {
-  const navigate = useNavigate();
-  const fileInputRef = useRef(null);
+  const navigate = useNavigate()
+  const fileInputRef = useRef(null)
 
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(1)
   const [formData, setFormData] = useState({
     title: "",
     techStack: "",
@@ -39,56 +37,55 @@ function PostServicePage() {
     features: ["Basic AI Model Setup"],
     images: [],
     videoLink: "",
-  });
+  })
 
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [isAiOptimized, setIsAiOptimized] = useState(false);
-  const [toastError, setToastError] = useState("");
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [notifications, setNotifications] = useState(0);
+  const [isGenerating, setIsGenerating] = useState(false)
+  const [toastError, setToastError] = useState("")
+  const [error, setError] = useState("")
+  const [success, setSuccess] = useState("")
+  const [submitting, setSubmitting] = useState(false)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [notifications, setNotifications] = useState(0)
 
   const user = useMemo(() => {
     try {
-      const storedUser = localStorage.getItem("user");
-      return storedUser ? JSON.parse(storedUser) : null;
+      const storedUser = localStorage.getItem("user")
+      return storedUser ? JSON.parse(storedUser) : null
     } catch {
-      return null;
+      return null
     }
-  }, []);
+  }, [])
 
   const avatarLetter = useMemo(() => {
-    const currentUserName = user?.fullName || user?.name || "Expert";
-    return currentUserName.trim().charAt(0).toUpperCase() || "E";
-  }, [user]);
+    const currentUserName = user?.fullName || user?.name || "Expert"
+    return currentUserName.trim().charAt(0).toUpperCase() || "E"
+  }, [user])
 
   // Handler “handle change” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleChange = (e) => {
-    setError("");
+    setError("")
     setFormData((prev) => ({
       ...prev,
       [e.target.name]: e.target.value,
-    }));
-  };
+    }))
+  }
 
   // Handler “handle extend success” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleExtendSuccess = (data) => {
-    let parsedTags = "";
+    let parsedTags = ""
     if (data.tags) {
       parsedTags = Array.isArray(data.tags)
         ? data.tags.join(", ")
         : typeof data.tags === "string"
-        ? data.tags
-        : "";
+          ? data.tags
+          : ""
     }
 
-    let titleVal = data.title || "";
+    let titleVal = data.title || ""
     if (titleVal) {
-      titleVal = titleVal.replace(/^i\s+will\s+/i, "").trim();
+      titleVal = titleVal.replace(/^i\s+will\s+/i, "").trim()
       if (titleVal) {
-        titleVal = titleVal.charAt(0).toUpperCase() + titleVal.slice(1);
+        titleVal = titleVal.charAt(0).toUpperCase() + titleVal.slice(1)
       }
     }
 
@@ -98,138 +95,138 @@ function PostServicePage() {
       description: data.description || prev.description,
       techStack: parsedTags || prev.techStack,
       tags: parsedTags || prev.tags,
-    }));
-    setIsGenerating(false);
-    setIsAiOptimized(true);
-  };
+    }))
+    setIsGenerating(false)
+    setIsAiOptimized(true)
+  }
 
   // Handler “handle tab change” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleTabChange = (id) => {
-    if (id === "dashboard") navigate("/expert/dashboard");
-    else navigate(`/expert/${id}`);
-  };
+    if (id === "dashboard") navigate("/expert/dashboard")
+    else navigate(`/expert/${id}`)
+  }
 
   // Handler “handle logout” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleLogout = () => {
-    logout();
-    navigate("/");
-  };
+    logout()
+    navigate("/")
+  }
 
   // Tạo hoặc gửi dữ liệu cho nghiệp vụ “add faq”, đồng thời chuyển lỗi về caller/UI theo cơ chế của module.
   const addFAQ = () => {
     setFormData((prev) => ({
       ...prev,
       faqs: [...prev.faqs, { question: "", answer: "" }],
-    }));
-  };
+    }))
+  }
 
   // Thay đổi trạng thái hoặc dữ liệu cho nghiệp vụ “update faq”; cần giữ validation và quyền truy cập trước khi cập nhật.
   const updateFAQ = (index, field, value) => {
     setFormData((prev) => {
-      const updatedFAQs = [...prev.faqs];
-      updatedFAQs[index] = { ...updatedFAQs[index], [field]: value };
-      return { ...prev, faqs: updatedFAQs };
-    });
-  };
+      const updatedFAQs = [...prev.faqs]
+      updatedFAQs[index] = { ...updatedFAQs[index], [field]: value }
+      return { ...prev, faqs: updatedFAQs }
+    })
+  }
 
   // Thay đổi trạng thái hoặc dữ liệu cho nghiệp vụ “remove faq”; cần giữ validation và quyền truy cập trước khi cập nhật.
   const removeFAQ = (index) => {
     setFormData((prev) => ({
       ...prev,
       faqs: prev.faqs.filter((_, i) => i !== index),
-    }));
-  };
+    }))
+  }
 
   // Tạo hoặc gửi dữ liệu cho nghiệp vụ “add feature”, đồng thời chuyển lỗi về caller/UI theo cơ chế của module.
   const addFeature = () => {
     setFormData((prev) => ({
       ...prev,
       features: [...prev.features, ""],
-    }));
-  };
+    }))
+  }
 
   // Thay đổi trạng thái hoặc dữ liệu cho nghiệp vụ “update feature”; cần giữ validation và quyền truy cập trước khi cập nhật.
   const updateFeature = (index, value) => {
     setFormData((prev) => {
-      const updatedFeatures = [...prev.features];
-      updatedFeatures[index] = value;
-      return { ...prev, features: updatedFeatures };
-    });
-  };
+      const updatedFeatures = [...prev.features]
+      updatedFeatures[index] = value
+      return { ...prev, features: updatedFeatures }
+    })
+  }
 
   // Thay đổi trạng thái hoặc dữ liệu cho nghiệp vụ “remove feature”; cần giữ validation và quyền truy cập trước khi cập nhật.
   const removeFeature = (index) => {
     setFormData((prev) => ({
       ...prev,
       features: prev.features.filter((_, i) => i !== index),
-    }));
-  };
+    }))
+  }
 
   // Thực hiện phần logic “validate step” trong phạm vi trách nhiệm của module hiện tại.
   const validateStep = () => {
-    setError("");
+    setError("")
 
     if (step === 1) {
       if (!formData.title.trim()) {
-        setError("Please enter a service title.");
-        return false;
+        setError("Please enter a service title.")
+        return false
       }
 
       if (!formData.techStack.trim()) {
-        setError("Please enter the tech stack.");
-        return false;
+        setError("Please enter the tech stack.")
+        return false
       }
     }
 
     if (step === 2) {
       if (!formData.description.trim()) {
-        setError("Please enter a service description.");
-        return false;
+        setError("Please enter a service description.")
+        return false
       }
 
       if (formData.description.trim().length < 120) {
-        setError("Service description must be at least 120 characters.");
-        return false;
+        setError("Service description must be at least 120 characters.")
+        return false
       }
     }
 
     if (step === 3) {
-      const priceNum = Number(formData.price);
+      const priceNum = Number(formData.price)
       if (!formData.price || isNaN(priceNum) || priceNum <= 0) {
-        setError("Please enter a valid positive price.");
-        return false;
+        setError("Please enter a valid positive price.")
+        return false
       }
     }
 
-    return true;
-  };
+    return true
+  }
 
   // Handler “handle next” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleNext = () => {
-    if (!validateStep()) return;
-    setStep((prev) => Math.min(prev + 1, 4));
-  };
+    if (!validateStep()) return
+    setStep((prev) => Math.min(prev + 1, 4))
+  }
 
   // Handler “handle back” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleBack = () => {
-    setError("");
-    setStep((prev) => Math.max(prev - 1, 1));
-  };
+    setError("")
+    setStep((prev) => Math.max(prev - 1, 1))
+  }
 
   // Handler “handle submit” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleSubmit = async () => {
-    if (!validateStep()) return;
+    if (!validateStep()) return
 
     try {
-      setSubmitting(true);
-      setError("");
-      setSuccess("");
+      setSubmitting(true)
+      setError("")
+      setSuccess("")
 
-      const imageUrls = [];
+      const imageUrls = []
       for (const img of formData.images) {
         if (img.file) {
-          const url = await uploadImage(img.file);
-          imageUrls.push(url);
+          const url = await uploadImage(img.file)
+          imageUrls.push(url)
         }
       }
 
@@ -243,21 +240,21 @@ function PostServicePage() {
         faqs: formData.faqs.filter((f) => f.question.trim() && f.answer.trim()),
         images: JSON.stringify(imageUrls),
         videoLink: formData.videoLink.trim(),
-      };
+      }
 
-      await publishService(serviceData);
+      await publishService(serviceData)
 
-      setSuccess("Service published successfully!");
+      setSuccess("Service published successfully!")
 
       setTimeout(() => {
-        navigate("/marketplace");
-      }, 800);
+        navigate("/marketplace")
+      }, 800)
     } catch (err) {
-      setError(err.message || "Failed to publish service.");
+      setError(err.message || "Failed to publish service.")
     } finally {
-      setSubmitting(false);
+      setSubmitting(false)
     }
-  };
+  }
 
   return (
     <div className="market-client-layout">
@@ -306,7 +303,6 @@ function PostServicePage() {
 
             <form onSubmit={(e) => e.preventDefault()}>
               <section className="post-form-card" style={{ position: "relative" }}>
-                {isGenerating && <AISkeletonLoader message="AI Engine is designing your service description..." />}
                 {error && (
                   <div
                     className="error-alert mb-4"
@@ -333,20 +329,6 @@ function PostServicePage() {
                         marginBottom: "20px",
                       }}
                     >
-                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                        {isAiOptimized && <span className="ai-sparkle-badge">✨ AI Optimized</span>}
-                      </div>
-                      <AIExtendButton
-                        draftFields={[formData.title, formData.description]}
-                        onExtendStart={() => {
-                          setIsGenerating(true);
-                          setIsAiOptimized(false);
-                        }}
-                        onExtendSuccess={handleExtendSuccess}
-                        onExtendFailure={() => setIsGenerating(false)}
-                        type="service_description"
-                        onErrorToast={(msg) => setToastError(msg)}
-                      />
                     </div>
 
                     <div className="form-group">
@@ -501,32 +483,6 @@ function PostServicePage() {
                     </div>
 
                     <div className="form-group" style={{ marginTop: "1.5rem" }}>
-                      <label>REVISIONS</label>
-                      <div className="select-group" style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                        <RefreshCcw size={14} style={{ color: "#94a3b8" }} />
-                        <select
-                          name="revisions"
-                          value={formData.revisions}
-                          onChange={handleChange}
-                          style={{
-                            background: "#060b18",
-                            border: "1px solid rgba(255, 255, 255, 0.1)",
-                            borderRadius: "0.5rem",
-                            padding: "0.75rem",
-                            color: "white",
-                            width: "100%",
-                            outline: "none",
-                          }}
-                        >
-                          <option value="1">1 Revision</option>
-                          <option value="3">3 Revisions</option>
-                          <option value="5">5 Revisions</option>
-                          <option value="Unlimited">Unlimited</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    <div className="form-group" style={{ marginTop: "1.5rem" }}>
                       <label>DELIVERABLES</label>
                       {formData.features.map((feat, idx) => (
                         <div key={idx} className="feature-input-group" style={{ display: "flex", gap: "0.5rem", marginBottom: "0.5rem" }}>
@@ -589,9 +545,9 @@ function PostServicePage() {
                               type="button"
                               className="remove-media-btn"
                               onClick={() => {
-                                URL.revokeObjectURL(formData.images[0].preview);
-                                const updated = formData.images.filter((_, i) => i !== 0);
-                                setFormData((prev) => ({ ...prev, images: updated }));
+                                URL.revokeObjectURL(formData.images[0].preview)
+                                const updated = formData.images.filter((_, i) => i !== 0)
+                                setFormData((prev) => ({ ...prev, images: updated }))
                               }}
                             >
                               <Trash2 size={16} />
@@ -615,9 +571,9 @@ function PostServicePage() {
                               type="button"
                               className="remove-media-btn"
                               onClick={() => {
-                                URL.revokeObjectURL(formData.images[1].preview);
-                                const updated = formData.images.filter((_, i) => i !== 1);
-                                setFormData((prev) => ({ ...prev, images: updated }));
+                                URL.revokeObjectURL(formData.images[1].preview)
+                                const updated = formData.images.filter((_, i) => i !== 1)
+                                setFormData((prev) => ({ ...prev, images: updated }))
                               }}
                             >
                               <Trash2 size={14} />
@@ -637,9 +593,9 @@ function PostServicePage() {
                               type="button"
                               className="remove-media-btn"
                               onClick={() => {
-                                URL.revokeObjectURL(formData.images[2].preview);
-                                const updated = formData.images.filter((_, i) => i !== 2);
-                                setFormData((prev) => ({ ...prev, images: updated }));
+                                URL.revokeObjectURL(formData.images[2].preview)
+                                const updated = formData.images.filter((_, i) => i !== 2)
+                                setFormData((prev) => ({ ...prev, images: updated }))
                               }}
                             >
                               <Trash2 size={14} />
@@ -659,16 +615,16 @@ function PostServicePage() {
                           accept="image/*"
                           multiple
                           onChange={(e) => {
-                            const files = Array.from(e.target.files);
-                            if (!files.length) return;
+                            const files = Array.from(e.target.files)
+                            if (!files.length) return
                             const newImages = files.map((file) => ({
                               file,
                               preview: URL.createObjectURL(file),
-                            }));
+                            }))
                             setFormData((prev) => ({
                               ...prev,
                               images: [...(prev.images || []), ...newImages].slice(0, 3),
-                            }));
+                            }))
                           }}
                         />
                       </div>
@@ -732,10 +688,10 @@ function PostServicePage() {
                   style={
                     formData.images?.[0]?.preview
                       ? {
-                          backgroundImage: `url(${formData.images[0].preview})`,
-                          backgroundSize: "cover",
-                          backgroundPosition: "center",
-                        }
+                        backgroundImage: `url(${formData.images[0].preview})`,
+                        backgroundSize: "cover",
+                        backgroundPosition: "center",
+                      }
                       : {}
                   }
                 >
@@ -789,7 +745,7 @@ function PostServicePage() {
       </main>
       {toastError && <Toast message={toastError} onClose={() => setToastError("")} />}
     </div>
-  );
+  )
 }
 
 export default PostServicePage;
