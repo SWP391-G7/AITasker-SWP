@@ -2675,3 +2675,128 @@
   to { transform: rotate(360deg); }
 }
 
+/* ── AI Recommendation & Suitability Scoring ─────────────────────── */
+.recommended-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.22), rgba(5, 150, 105, 0.15));
+  border: 1px solid rgba(52, 211, 153, 0.45);
+  color: #6ee7b7;
+  box-shadow: 0 0 14px rgba(16, 185, 129, 0.25);
+  animation: pulse-glow 3s infinite ease-in-out;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 10px rgba(16, 185, 129, 0.2); }
+  50% { box-shadow: 0 0 18px rgba(16, 185, 129, 0.4); }
+}
+
+.ai-score-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.ai-score-pill.score-high {
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(52, 211, 153, 0.35);
+  color: #6ee7b7;
+}
+
+.ai-score-pill.score-medium {
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(251, 191, 36, 0.35);
+  color: #fde68a;
+}
+
+.ai-score-pill.score-low {
+  background: rgba(148, 163, 184, 0.12);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  color: #cbd5e1;
+}
+
+.proposal-card.recommended-card {
+  border: 1px solid rgba(52, 211, 153, 0.4) !important;
+  background: linear-gradient(145deg, rgba(8, 28, 30, 0.95), rgba(8, 20, 39, 0.98)) !important;
+  box-shadow: 0 4px 24px rgba(16, 185, 129, 0.12) !important;
+  position: relative;
+}
+
+.proposal-card.recommended-card:hover {
+  border-color: rgba(52, 211, 153, 0.7) !important;
+  box-shadow: 0 8px 30px rgba(16, 185, 129, 0.22) !important;
+}
+
+.ai-reanalyze-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 18px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(168, 85, 247, 0.2));
+  border: 1px solid rgba(168, 85, 247, 0.4);
+  color: #e0e7ff;
+  transition: all 0.25s ease;
+}
+
+.ai-reanalyze-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.35), rgba(168, 85, 247, 0.35));
+  border-color: rgba(168, 85, 247, 0.7);
+  box-shadow: 0 0 16px rgba(168, 85, 247, 0.3);
+  transform: translateY(-1px);
+}
+
+.ai-reanalyze-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.ai-analysis-modal-card {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.06), rgba(99, 102, 241, 0.06));
+  border: 1px solid rgba(52, 211, 153, 0.25);
+  border-radius: 12px;
+  padding: 18px;
+  margin-bottom: 20px;
+}
+
+.ai-progress-track {
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+  margin: 10px 0 12px;
+}
+
+.ai-progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.ai-progress-fill.high {
+  background: linear-gradient(90deg, #10b981, #34d399);
+}
+
+.ai-progress-fill.medium {
+  background: linear-gradient(90deg, #f59e0b, #fbbf24);
+}
+
+.ai-progress-fill.low {
+  background: linear-gradient(90deg, #64748b, #94a3b8);
+}
+
+

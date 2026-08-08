@@ -18,6 +18,7 @@ import {
   MessageSquare,
   Play,
   RefreshCcw,
+  Sparkles,
   UserRound,
   X,
 } from "lucide-react";
@@ -27,6 +28,7 @@ import { getJobById, getJobProposals } from "../../../Services/jobService";
 import { updateProposalStatus, counterProposal, initiateProposalPayment } from "../../../Services/proposalService";
 import { createProject } from "../../../Services/projectService";
 import { getOrCreateConversation } from "../../../Services/messageService";
+import { analyzeProposalsWithAI } from "../../../Services/aiService";
 import PaymentSourceDialog from "../../../Components/Payment/PaymentSourceDialog";
 import "./ClientMarketplace.css";
 
@@ -95,8 +97,24 @@ function ClientTaskDetailPage() {
   const [showProjectPrompt, setShowProjectPrompt] = useState(false);
   const [pendingProposalId, setPendingProposalId] = useState(null);
 
+  // AI analysis state
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analysisFeedback, setAnalysisFeedback] = useState("");
+
   // ── Helpers ──────────────────────────────────────────────────────
   const proposalCount = useMemo(() => proposals.length, [proposals]);
+
+  /** Sort proposals so Recommended (score >= 80) appear first, followed by highest score */
+  const sortedProposals = useMemo(() => {
+    return [...proposals].sort((a, b) => {
+      const scoreA = typeof a.ai_match_score === "number" ? a.ai_match_score : -1;
+      const scoreB = typeof b.ai_match_score === "number" ? b.ai_match_score : -1;
+      const isRecA = scoreA >= 80 ? 1 : 0;
+      const isRecB = scoreB >= 80 ? 1 : 0;
+      if (isRecB !== isRecA) return isRecB - isRecA; // Recommended first
+      return scoreB - scoreA; // Highest score first
+    });
+  }, [proposals]);
 
   const currentUserId = useMemo(() => {
     try {
@@ -141,6 +159,30 @@ function ClientTaskDetailPage() {
   }, [jobId]);
 
   useEffect(() => { fetchDetail(); }, [fetchDetail]);
+
+  /** Trigger AI re-evaluation of proposals */
+  const handleReanalyzeProposals = async () => {
+    if (!jobId || isAnalyzing) return;
+    try {
+      setIsAnalyzing(true);
+      setAnalysisFeedback("");
+      const updatedProposals = await analyzeProposalsWithAI(jobId);
+      if (Array.isArray(updatedProposals) && updatedProposals.length > 0) {
+        setProposals(updatedProposals);
+        setAnalysisFeedback(`AI analysis complete! ${updatedProposals.length} proposal(s) evaluated and scored.`);
+        if (selectedProposal) {
+          const match = updatedProposals.find(p => p.id === selectedProposal.id || p._id === selectedProposal.id);
+          if (match) setSelectedProposal(match);
+        }
+      }
+    } catch (err) {
+      console.error("AI analysis failed:", err);
+      setAnalysisFeedback("AI analysis failed. Please try again.");
+    } finally {
+      setIsAnalyzing(false);
+      setTimeout(() => setAnalysisFeedback(""), 6000);
+    }
+  };
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -580,14 +622,32 @@ function ClientTaskDetailPage() {
 
             {/* ── Proposal list ────────────────────────────────────── */}
             <section className="post-form-card proposals-panel">
-              <div className="projects-toolbar">
+              <div className="projects-toolbar" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "14px" }}>
                 <div>
                   <h2 className="projects-title">Expert Proposals</h2>
-                  <p className="projects-subtitle">Compare proposals before contacting an expert.</p>
+                  <p className="projects-subtitle">Proposals are analyzed by AI and ordered by suitability.</p>
                 </div>
+                {proposals.length > 0 && (
+                  <button
+                    className="ai-reanalyze-btn"
+                    onClick={handleReanalyzeProposals}
+                    disabled={isAnalyzing}
+                    title="Trigger AI to re-evaluate and score all proposals for this task"
+                  >
+                    <Sparkles size={16} className={isAnalyzing ? "animate-spin" : ""} />
+                    {isAnalyzing ? "Analyzing with AI..." : "Re-analyze with AI"}
+                  </button>
+                )}
               </div>
 
-              {proposals.length === 0 ? (
+              {analysisFeedback && (
+                <div style={{ margin: "14px 0 18px", padding: "10px 16px", borderRadius: "10px", background: "rgba(99, 102, 241, 0.15)", border: "1px solid rgba(168, 85, 247, 0.35)", color: "#c7d2fe", fontSize: "0.88rem", display: "flex", alignItems: "center", gap: "10px" }}>
+                  <Sparkles size={16} color="#a78bfa" />
+                  <span>{analysisFeedback}</span>
+                </div>
+              )}
+
+              {sortedProposals.length === 0 ? (
                 <div className="empty-projects">
                   <MessageSquare size={42} />
                   <h3>No proposals yet</h3>
@@ -595,13 +655,15 @@ function ClientTaskDetailPage() {
                 </div>
               ) : (
                 <div className="proposal-list" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "20px" }}>
-                  {proposals.map((proposal, index) => {
+                  {sortedProposals.map((proposal, index) => {
                     const pid = proposal._id || proposal.id || index;
+                    const hasScore = typeof proposal.ai_match_score === "number";
+                    const isRecommended = hasScore && proposal.ai_match_score >= 80;
                     return (
                       <article
                         key={pid}
-                        className="proposal-card clickable-proposal-card"
-                        style={{ cursor: "pointer", transition: "all 0.2s", padding: "20px", borderRadius: "12px" }}
+                        className={`proposal-card clickable-proposal-card ${isRecommended ? "recommended-card" : ""}`}
+                        style={{ cursor: "pointer", transition: "all 0.25s", padding: "20px", borderRadius: "14px" }}
                         onClick={() => { setSelectedProposal(proposal); setShowCounterForm(false); }}
                       >
                         <div className="proposal-card-header" style={{ marginBottom: 0, borderBottom: "none" }}>
@@ -612,20 +674,32 @@ function ClientTaskDetailPage() {
                               <p style={{ margin: "4px 0 0 0" }}>{proposal?.expert?.professionalTitle || proposal.professional_title || "AI Expert"}</p>
                             </div>
                           </div>
-                          {/* Status badge */}
-                          <span style={{
-                            marginTop: "10px",
-                            display: "inline-block",
-                            padding: "3px 10px",
-                            borderRadius: "20px",
-                            fontSize: "0.75rem",
-                            fontWeight: 600,
-                            background: statusColor(proposal.status) + "22",
-                            color: statusColor(proposal.status),
-                            border: `1px solid ${statusColor(proposal.status)}44`
-                          }}>
-                            {proposal.status === "countered" && isMyTurnToRespond(proposal) ? "Counter Received" : proposal.status || "pending"}
-                          </span>
+
+                          {/* Recommendation & Score & Status Badges */}
+                          <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "6px", marginTop: "12px" }}>
+                            {isRecommended && (
+                              <span className="recommended-badge">
+                                <Sparkles size={11} /> Recommended
+                              </span>
+                            )}
+                            {hasScore && (
+                              <span className={`ai-score-pill ${proposal.ai_match_score >= 80 ? "score-high" : proposal.ai_match_score >= 60 ? "score-medium" : "score-low"}`}>
+                                <Sparkles size={11} /> {proposal.ai_match_score}% Match
+                              </span>
+                            )}
+                            <span style={{
+                              display: "inline-block",
+                              padding: "3px 10px",
+                              borderRadius: "20px",
+                              fontSize: "0.75rem",
+                              fontWeight: 600,
+                              background: statusColor(proposal.status) + "22",
+                              color: statusColor(proposal.status),
+                              border: `1px solid ${statusColor(proposal.status)}44`
+                            }}>
+                              {proposal.status === "countered" && isMyTurnToRespond(proposal) ? "Counter Received" : proposal.status || "pending"}
+                            </span>
+                          </div>
                         </div>
                       </article>
                     );
@@ -673,6 +747,43 @@ function ClientTaskDetailPage() {
                         <p className="m-0 text-muted small">{selectedProposal?.expert?.professionalTitle || selectedProposal.professional_title || "AI Expert"}</p>
                       </div>
                     </div>
+
+                    {/* AI Suitability Match Card */}
+                    {typeof selectedProposal.ai_match_score === "number" && (
+                      <div className="ai-analysis-modal-card">
+                        <div className="d-flex justify-content-between align-items-center mb-1">
+                          <div className="d-flex align-items-center gap-2">
+                            <Sparkles size={16} color={selectedProposal.ai_match_score >= 80 ? "#34d399" : "#fbbf24"} />
+                            <span className="fw-bold text-white" style={{ fontSize: "0.95rem" }}>
+                              AI Suitability Match: {selectedProposal.ai_match_score}%
+                            </span>
+                          </div>
+                          {selectedProposal.ai_match_score >= 80 && (
+                            <span className="recommended-badge" style={{ padding: "3px 10px", fontSize: "0.72rem" }}>
+                              <Sparkles size={10} /> Recommended Match
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Progress Bar */}
+                        <div className="ai-progress-track">
+                          <div
+                            className={`ai-progress-fill ${
+                              selectedProposal.ai_match_score >= 80 ? "high" : selectedProposal.ai_match_score >= 60 ? "medium" : "low"
+                            }`}
+                            style={{ width: `${Math.min(100, Math.max(5, selectedProposal.ai_match_score))}%` }}
+                          />
+                        </div>
+
+                        {/* AI Match Reason Text */}
+                        {selectedProposal.ai_match_reason && (
+                          <p className="m-0 text-light" style={{ fontSize: "0.85rem", opacity: 0.9, lineHeight: 1.55 }}>
+                            <strong style={{ color: "#a5b4fc" }}>Analysis: </strong>
+                            {selectedProposal.ai_match_reason}
+                          </p>
+                        )}
+                      </div>
+                    )}
 
                     {/* Cover letter */}
                     <div className="mb-4">

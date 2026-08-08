@@ -52,3 +52,37 @@ export const generateFormWithAI = async (text, type, context = '') => {
     throw error;
   }
 };
+
+/**
+ * Trigger AI batch analysis and scoring of proposals for a job post.
+ *
+ * @param {string} jobId ID of the job post
+ * @returns {Promise<Array>} List of proposals with ai_match_score and ai_match_reason
+ */
+export const analyzeProposalsWithAI = async (jobId) => {
+  try {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      throw new Error('No authentication token found');
+    }
+
+    const response = await fetch(`${API_BASE_URL}/ai/analyze-proposals/${jobId}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.message || 'Failed to analyze proposals with AI');
+    }
+
+    return result.proposals || [];
+  } catch (error) {
+    console.error('AI proposal analysis error:', error);
+    throw error;
+  }
+};
