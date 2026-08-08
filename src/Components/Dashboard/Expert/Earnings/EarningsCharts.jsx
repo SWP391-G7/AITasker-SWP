@@ -9,9 +9,18 @@ import React from 'react';
 import { ChevronDown } from 'lucide-react';
 
 // React component “Earnings Charts” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
-const EarningsCharts = ({ summary = {} }) => {
-  const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN'];
-  const values = [40, 65, 45, 80, 55, 90]; // Percentage heights for bars
+const EarningsCharts = ({ summary = {}, monthlyChartData = [] }) => {
+  // Use passed dynamic 6-month chart data or compute fallbacks
+  const defaultMonths = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN'];
+  const hasData = Array.isArray(monthlyChartData) && monthlyChartData.length > 0;
+  
+  const chartItems = hasData ? monthlyChartData : defaultMonths.map((m, idx) => ({ month: m, amount: [400, 650, 450, 800, 550, 900][idx] }));
+  const maxAmount = Math.max(...chartItems.map(item => item.amount || 0), 100);
+  
+  const formatYAxis = (val) => {
+    if (val >= 1000) return `$${(val / 1000).toFixed(1)}K`;
+    return `$${Math.round(val)}`;
+  };
 
   const grossText = summary?.gross || '$0.00';
   const feesText = summary?.fees || '$0.00';
@@ -32,8 +41,8 @@ const EarningsCharts = ({ summary = {} }) => {
         
         <div className="chart-placeholder">
           <div className="chart-y-axis">
-            <span>$5K</span>
-            <span>$2.5K</span>
+            <span>{formatYAxis(maxAmount)}</span>
+            <span>{formatYAxis(maxAmount / 2)}</span>
             <span>$0</span>
           </div>
           
@@ -41,12 +50,15 @@ const EarningsCharts = ({ summary = {} }) => {
           <div className="chart-grid-line" style={{ bottom: '50%' }}></div>
           <div className="chart-grid-line" style={{ bottom: '100%' }}></div>
 
-          {months.map((month, idx) => (
-            <div key={month} className="chart-bar-group">
-              <div className="chart-bar" style={{ height: `${values[idx]}%` }}></div>
-              <span className="chart-label">{month}</span>
-            </div>
-          ))}
+          {chartItems.map((item) => {
+            const heightPct = maxAmount > 0 ? Math.max(12, Math.min(100, (item.amount / maxAmount) * 100)) : 12;
+            return (
+              <div key={item.month} className="chart-bar-group" title={`${item.month}: $${Number(item.amount || 0).toFixed(2)}`}>
+                <div className="chart-bar" style={{ height: `${heightPct}%` }}></div>
+                <span className="chart-label">{item.month}</span>
+              </div>
+            );
+          })}
         </div>
       </div>
 

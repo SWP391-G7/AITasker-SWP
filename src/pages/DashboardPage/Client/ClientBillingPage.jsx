@@ -18,6 +18,7 @@ import {
   ExternalLink,
   Landmark,
   Loader2,
+  PlusCircle,
   RefreshCw,
   Search,
   ShieldCheck,
@@ -212,18 +213,19 @@ function ClientBillingPage() {
                 className="btn-export"
                 onClick={handleExportPDF}
                 disabled={!filteredTransactions.length}
+                style={{ cursor: 'pointer' }}
               >
                 <Download size={16} />
-                Export PDF
+                Export Statement
               </button>
               <button
                 type="button"
-                className="btn-secondary-action"
-                onClick={loadBillingData}
-                aria-label="Refresh data"
+                className="btn-withdraw"
+                onClick={() => navigate("/client/projects")}
+                style={{ cursor: 'pointer' }}
               >
-                <RefreshCw size={16} className={loading ? "spin" : ""} />
-                Refresh
+                <PlusCircle size={16} />
+                Fund Project
               </button>
             </div>
           }
@@ -387,9 +389,16 @@ function ClientBillingPage() {
                                 <span className="project-name-text">
                                   {transaction.project_title || "Proposal payment"}
                                 </span>
-                                <span className="project-id-text">
-                                  {shortId(transaction.id)} • {transaction.expert_name || "AITasker expert"}
-                                </span>
+                                <div className="id-badges-row">
+                                  <span className="project-id-text">
+                                    {shortId(transaction.id)} • {transaction.expert_name || "AITasker expert"}
+                                  </span>
+                                  {transaction.escrow_tx_id && (
+                                    <span className="escrow-id-tag" title="Escrow.com Sandbox Transaction ID">
+                                      Escrow #{transaction.escrow_tx_id}
+                                    </span>
+                                  )}
+                                </div>
                               </div>
                             </div>
                           </td>
@@ -428,6 +437,27 @@ function ClientBillingPage() {
                                 className="billing-row-action"
                                 onClick={() => navigate(`/projects/${transaction.project_id}`)}
                                 aria-label={`Open ${transaction.project_title || "project"}`}
+                                title="View Active Project"
+                              >
+                                <ExternalLink size={15} />
+                              </button>
+                            ) : transaction.job_id ? (
+                              <button
+                                type="button"
+                                className="billing-row-action"
+                                onClick={() => navigate(`/client/projects/${transaction.job_id}`)}
+                                aria-label="Open Job"
+                                title="View Job Post"
+                              >
+                                <ExternalLink size={15} />
+                              </button>
+                            ) : transaction.invitation_id ? (
+                              <button
+                                type="button"
+                                className="billing-row-action"
+                                onClick={() => navigate(`/service-requests/${transaction.invitation_id}`)}
+                                aria-label="Open Service Request"
+                                title="View Service Request"
                               >
                                 <ExternalLink size={15} />
                               </button>

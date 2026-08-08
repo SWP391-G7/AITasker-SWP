@@ -69,7 +69,14 @@ const TransactionTable = ({ transactions }) => {
                     </div>
                     <div className="project-info">
                       <span className="project-name-text">{tx.project}</span>
-                      <span className="project-id-text">{tx.id}</span>
+                      <div className="id-badges-row">
+                        <span className="project-id-text">{tx.id}</span>
+                        {tx.escrowTxId && (
+                          <span className="escrow-id-tag" title="Escrow.com Sandbox Transaction ID">
+                            Escrow #{tx.escrowTxId}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </td>

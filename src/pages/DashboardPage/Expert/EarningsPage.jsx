@@ -14,6 +14,7 @@ import Footer from '../../../Components/Footer/Footer'
 import EarningsOverviewCards from '../../../Components/Dashboard/Expert/Earnings/EarningsOverviewCards'
 import EarningsCharts from '../../../Components/Dashboard/Expert/Earnings/EarningsCharts'
 import TransactionTable from '../../../Components/Dashboard/Expert/Earnings/TransactionTable'
+import WithdrawalModal from '../../../Components/Dashboard/Expert/Earnings/WithdrawalModal'
 import { getMyTransactionsAPI } from '../../../Services/transactionService'
 import { downloadExpertEarningsPdf } from '../../../Services/pdfExportService'
 import { createHandleLogout } from './handleLogout'
@@ -21,7 +22,6 @@ import '../Style/AdminDashboardPage.css'
 import '../Style/ExpertDashboardPage.css'
 import '../../../Components/Dashboard/Expert/Earnings/EarningsPage.css'
 
-// React component “Earnings Page” nhận props, quản lý trạng thái cần thiết và render giao diện tương ứng.
 const EarningsPage = () => {
   const navigate = useNavigate()
   const [searchQuery, setSearchQuery] = useState('')
@@ -33,8 +33,11 @@ const EarningsPage = () => {
     net: '$0.00',
     nextPayout: 'Not scheduled',
   })
+  const [monthlyChartData, setMonthlyChartData] = useState([])
   const [transactions, setTransactions] = useState([])
   const [earningsError, setEarningsError] = useState('')
+  const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false)
+  const [availableNumeric, setAvailableNumeric] = useState(0)
   const handleLogout = createHandleLogout(navigate)
 
   const user = useMemo(() => {
@@ -46,93 +49,116 @@ const EarningsPage = () => {
     }
   }, [])
 
-  // Handler “handle tab change” điều phối sự kiện, cập nhật state và gọi service/callback liên quan.
   const handleTabChange = (id) => {
     if (id === 'dashboard') navigate('/expert/dashboard')
     else navigate(`/expert/${id}`)
   }
 
-  // Chuyển đổi dữ liệu cho “format currency” thành định dạng mà lớp gọi hoặc giao diện cần.
   const formatCurrency = (value) =>
     new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
     }).format(Number(value) || 0)
 
-  useEffect(() => {
-    // Đọc hoặc suy ra dữ liệu cho nghiệp vụ “fetch earnings data”; không nên tạo side effect ngoài những request đọc đã nêu trong thân hàm.
-    const fetchEarningsData = async () => {
-      try {
-        setEarningsError('')
+  const fetchEarningsData = async () => {
+    try {
+      setEarningsError('')
 
-        const result = await getMyTransactionsAPI()
-        if (result && result.success) {
-          const stats = result.stats || { totalLifetime: 0, availableNow: 0, pendingClearance: 0, inEscrow: 0 }
-          const txList = Array.isArray(result.transactions) ? result.transactions : []
+      const result = await getMyTransactionsAPI()
+      if (result && result.success) {
+        const stats = result.stats || { totalLifetime: 0, availableNow: 0, pendingClearance: 0, inEscrow: 0 }
+        const txList = Array.isArray(result.transactions) ? result.transactions : []
 
-          const totalLifetime = stats.totalLifetime
-          const availableNow = stats.availableNow
-          const pendingClearance = stats.pendingClearance
-          const inEscrow = stats.inEscrow
+        const totalLifetime = stats.totalLifetime
+        const availableNow = stats.availableNow
+        const inEscrow = stats.inEscrow
+        setAvailableNumeric(availableNow)
 
-          setEarningsStats([
-            {
-              id: 'stat-api-1',
-              label: 'Available for Withdrawal',
-              value: formatCurrency(availableNow),
-              trend: 'WALLET READY',
-              trendType: 'neutral',
-              icon: 'bank',
-            },
-            {
-              id: 'stat-api-2',
-              label: 'Pending Clearance',
-              value: formatCurrency(pendingClearance),
-              trend: 'IN PROCESS',
-              trendType: 'neutral',
-              icon: 'lock',
-            },
-            {
-              id: 'stat-api-3',
-              label: 'Total Lifetime Earnings',
-              value: formatCurrency(totalLifetime),
-              trend: `${txList.length} TRANSACTIONS`,
-              trendType: 'up',
-              icon: 'chart',
-            },
-          ])
+        setEarningsStats([
+          {
+            id: 'stat-api-1',
+            label: 'Available for Withdrawal',
+            value: formatCurrency(availableNow),
+            trend: 'WALLET READY',
+            trendType: 'neutral',
+            icon: 'bank',
+          },
+          {
+            id: 'stat-api-2',
+            label: 'In Escrow (Secured)',
+            value: formatCurrency(inEscrow),
+            trend: 'ESCROW SECURED',
+            trendType: 'up',
+            icon: 'lock',
+          },
+          {
+            id: 'stat-api-3',
+            label: 'Total Lifetime Earnings',
+            value: formatCurrency(totalLifetime),
+            trend: `${txList.length} TRANSACTIONS`,
+            trendType: 'up',
+            icon: 'chart',
+          },
+        ])
 
-          // Calculate gross, fees (10%), net
-          const gross = totalLifetime
-          const fees = gross * 0.1
-          const net = gross - fees
+        // Calculate gross, fees (10%), net
+        const gross = totalLifetime
+        const fees = gross * 0.1
+        const net = gross - fees
 
-          setIncomeSummary({
-            gross: formatCurrency(gross),
-            fees: `-${formatCurrency(fees)}`,
-            net: formatCurrency(net),
-            nextPayout: 'Not scheduled',
-          })
+        setIncomeSummary({
+          gross: formatCurrency(gross),
+          fees: `-${formatCurrency(fees)}`,
+          net: formatCurrency(net),
+          nextPayout: availableNow > 0 ? 'Ready for Withdrawal' : 'No funds ready',
+        })
 
-          setTransactions(
-            txList.map((tx) => ({
-              id: `#tx-${tx.id.slice(0, 8)}`,
-              project: tx.project_title || 'Payment Release',
-              date: tx.complete_at ? new Date(tx.complete_at).toLocaleDateString() : 'Completed',
-              status: tx.status ? tx.status.toUpperCase() : 'COMPLETED',
-              statusType: tx.status === 'completed' ? 'active' : 'pending',
-              amount: `+${formatCurrency(tx.amount)}`,
-              iconType: 'wallet',
-            }))
-          )
+        // Compute dynamic last 6 months chart data
+        const monthNames = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+        const now = new Date();
+        const last6 = [];
+        for (let i = 5; i >= 0; i--) {
+          const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+          last6.push({
+            year: d.getFullYear(),
+            monthIdx: d.getMonth(),
+            month: monthNames[d.getMonth()],
+            amount: 0
+          });
         }
-      } catch (err) {
-        setEarningsError(err.message || 'Failed to load earnings data.')
-        setEarningsStats([])
-        setTransactions([])
-      }
-    }
 
+        txList.forEach(tx => {
+          if (tx.status === 'completed' && tx.complete_at) {
+            const txDate = new Date(tx.complete_at);
+            const found = last6.find(m => m.year === txDate.getFullYear() && m.monthIdx === txDate.getMonth());
+            if (found) {
+              found.amount += parseFloat(tx.amount || 0);
+            }
+          }
+        });
+        setMonthlyChartData(last6.map(m => ({ month: m.month, amount: m.amount })));
+
+        setTransactions(
+          txList.map((tx) => ({
+            id: `#tx-${tx.id.slice(0, 8)}`,
+            escrowTxId: tx.escrow_tx_id,
+            project: tx.project_title || 'Payment Release',
+            date: tx.complete_at ? new Date(tx.complete_at).toLocaleDateString() : 'Completed',
+            status: tx.status ? tx.status.toUpperCase() : 'COMPLETED',
+            statusType: tx.status === 'completed' ? 'success' : 'pending',
+            amount: `+${formatCurrency(tx.amount)}`,
+            iconType: 'wallet',
+          }))
+        )
+      }
+    } catch (err) {
+      setEarningsError(err.message || 'Failed to load earnings data.')
+      setEarningsStats([])
+      setTransactions([])
+    }
+  }
+
+  useEffect(() => {
     fetchEarningsData()
   }, [])
 
@@ -143,13 +169,6 @@ const EarningsPage = () => {
       incomeSummary,
     })
   }
-
-  const handleWithdraw = () => {
-    const availableStat = earningsStats.find(s => s.id === 'stat-api-1');
-    const availableAmount = availableStat?.value || '$0.00';
-    
-    alert(`Withdrawal Request:\n\nAvailable Funds: ${availableAmount}\n\nYour withdrawal request has been submitted to your default bank/payout account. Funds will arrive within 1-3 business days.`);
-  };
 
   return (
     <div className="admin-dashboard-layout expert-dashboard-layout">
@@ -164,7 +183,7 @@ const EarningsPage = () => {
               <button className="btn-export" type="button" onClick={handleExportPdf} style={{ cursor: 'pointer' }}>
                 Export Statement
               </button>
-              <button className="btn-withdraw" type="button" onClick={handleWithdraw} style={{ cursor: 'pointer' }}>
+              <button className="btn-withdraw" type="button" onClick={() => setIsWithdrawModalOpen(true)} style={{ cursor: 'pointer' }}>
                 <Wallet size={18} />
                 Withdraw Funds
               </button>
@@ -183,10 +202,18 @@ const EarningsPage = () => {
 
           <EarningsOverviewCards stats={earningsStats} />
           
-          <EarningsCharts summary={incomeSummary} />
+          <EarningsCharts summary={incomeSummary} monthlyChartData={monthlyChartData} />
           
           <TransactionTable transactions={transactions} />
         </div>
+
+        <WithdrawalModal
+          isOpen={isWithdrawModalOpen}
+          onClose={() => setIsWithdrawModalOpen(false)}
+          availableBalance={formatCurrency(availableNumeric)}
+          availableNumeric={availableNumeric}
+          onSuccess={fetchEarningsData}
+        />
 
         <Footer variant="dashboard" />
       </main>

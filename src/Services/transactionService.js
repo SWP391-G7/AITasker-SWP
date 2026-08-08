@@ -37,3 +37,22 @@ export const getMyTransactionsAPI = async () => {
     throw error;
   }
 };
+
+export const requestWithdrawalAPI = async ({ amount, payout_method, account_details }) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/transactions/withdraw`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ amount, payout_method, account_details })
+    });
+
+    const result = await response.json();
+    if (!response.ok) {
+      throw new Error(result.message || 'Failed to submit withdrawal request.');
+    }
+    return result;
+  } catch (error) {
+    console.error('Request withdrawal error:', error);
+    throw error;
+  }
+};

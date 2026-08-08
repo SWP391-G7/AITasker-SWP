@@ -1,7 +1,7 @@
 /**
  * Frontend module: pages/DashboardPage/Client/ClientBillingPage.css
  *
- * Vai trò: Page Client Billing Page styling, đồng bộ giao diện và font chữ (Plus Jakarta Sans) với EarningsPage và toàn hệ thống.
+ * Vai trò: Page Client Billing Page styling, đồng bộ giao diện và font chữ với EarningsPage.
  */
 
 .client-billing-page {
@@ -16,6 +16,7 @@
   gap: 1.5rem;
 }
 
+/* Overview Stats Grid (4 columns on desktop, styled identical to EarningsOverviewCards) */
 .client-billing-stats-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -24,7 +25,7 @@
 
 .client-billing-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 320px;
+  grid-template-columns: minmax(0, 1fr) 340px;
   gap: 1.5rem;
   align-items: start;
 }
@@ -35,15 +36,16 @@
 }
 
 .card-subtitle {
-  color: var(--text-dark, #94a3b8);
-  font-size: 0.825rem;
+  color: #8a94a6;
+  font-size: 0.85rem;
   margin: 0.25rem 0 0;
 }
 
+/* Secondary Button Action */
 .btn-secondary-action {
   background: transparent;
-  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
-  color: var(--text-muted, #cbd5e1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #cbd5e1;
   padding: 0.65rem 1.25rem;
   border-radius: 12px;
   font-weight: 600;
@@ -61,25 +63,53 @@
 }
 
 .btn-export.compact {
-  padding: 0.4rem 0.85rem;
+  padding: 0.45rem 0.85rem;
   font-size: 0.8rem;
   display: flex;
   align-items: center;
   gap: 0.35rem;
+  border-radius: 8px;
 }
 
+/* Toolbar & Filters (Search + Select Dropdowns) */
 .client-billing-toolbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  margin-bottom: 1.25rem;
+  margin-bottom: 1.5rem;
   flex-wrap: wrap;
 }
 
 .client-billing-toolbar .search-input-wrapper {
   flex: 1;
-  min-width: 220px;
+  min-width: 240px;
+  position: relative;
+}
+
+.client-billing-toolbar .search-input-wrapper input {
+  width: 100%;
+  background-color: #090D1A;
+  border: 1px solid #1E293B;
+  border-radius: 12px;
+  padding: 0.65rem 1rem 0.65rem 2.75rem;
+  color: #ffffff;
+  font-size: 0.9rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.client-billing-toolbar .search-input-wrapper input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+  outline: none;
+}
+
+.client-billing-toolbar .search-input-wrapper svg {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #64748b;
 }
 
 .filter-select-group {
@@ -92,11 +122,19 @@
   border: 1px solid #1E293B;
   border-radius: 12px;
   padding: 0.65rem 0.85rem;
-  color: #ffffff;
+  color: #cbd5e1;
   font-size: 0.85rem;
-  font-family: var(--font-family);
+  font-family: inherit;
+  font-weight: 600;
   outline: none;
   cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.filter-select-group select:focus,
+.filter-select-group select:hover {
+  border-color: #3b82f6;
+  color: #ffffff;
 }
 
 .filter-select-group select option {
@@ -108,16 +146,18 @@
   overflow-x: auto;
 }
 
+/* Badges & Tags */
 .billing-type-tag {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  padding: 0.3rem 0.65rem;
+  padding: 0.35rem 0.65rem;
   border-radius: 8px;
-  background-color: rgba(59, 130, 246, 0.08);
-  color: #93c5fd;
-  font-size: 0.78rem;
-  font-weight: 600;
+  background-color: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
 }
 
 .status-failed {
@@ -129,20 +169,21 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 34px;
+  height: 34px;
   border-radius: 8px;
   border: 1px solid #1E293B;
-  background: transparent;
+  background: rgba(30, 41, 59, 0.3);
   color: #94a3b8;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .billing-row-action:hover {
-  background: rgba(59, 130, 246, 0.1);
+  background: rgba(59, 130, 246, 0.15);
   color: #3b82f6;
-  border-color: rgba(59, 130, 246, 0.3);
+  border-color: rgba(59, 130, 246, 0.4);
+  transform: translateY(-1px);
 }
 
 .client-billing-state {
@@ -151,7 +192,7 @@
   align-items: center;
   justify-content: center;
   gap: 0.75rem;
-  padding: 3rem 1.5rem;
+  padding: 3.5rem 1.5rem;
   color: #64748b;
   text-align: center;
 }
@@ -166,6 +207,7 @@
   color: #94a3b8;
 }
 
+/* Side Column Cards */
 .client-billing-side-column {
   display: flex;
   flex-direction: column;
@@ -185,9 +227,9 @@
 }
 
 .sandbox-badge {
-  padding: 0.25rem 0.65rem;
+  padding: 0.35rem 0.75rem;
   border-radius: 999px;
-  background-color: rgba(245, 158, 11, 0.12);
+  background-color: rgba(245, 158, 11, 0.15);
   color: #fbbf24;
   font-size: 0.65rem;
   font-weight: 800;
@@ -204,7 +246,7 @@
 .sandbox-features {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.6rem;
   list-style: none;
   padding: 0;
   margin: 0;
@@ -215,7 +257,7 @@
   align-items: center;
   gap: 0.5rem;
   color: #cbd5e1;
-  font-size: 0.82rem;
+  font-size: 0.85rem;
 }
 
 .sandbox-features svg {
